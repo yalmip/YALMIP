@@ -1,0 +1,9 @@
+Data from EuroStoxx50
+
+Weekly returns (r) and covariance (R) for N=48 stocks during 264 weeks from March 2003 to March 2008. An artificial risk-free asset r0 is also included.
+
+Data suppplied by 
+Fabio Tardella
+Professor of Operations Research
+University of Rome "La Sapienza"
+http://w3.uniroma1.it/Tardella/datasets.html
