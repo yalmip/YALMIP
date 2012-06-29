@@ -12,7 +12,6 @@ function solution = saveampl(varargin)
 % are called x, binary are called y while z denotes integer variables.
 
 % Author Johan Löfberg
-% $Id: saveampl.m,v 1.7 2006-06-02 12:18:07 joloef Exp $
 
 F = varargin{1};
 h = varargin{2};
@@ -29,8 +28,20 @@ if failure % Convexity propgation failed
     return
 end
 
+%% FIXME: SYNC with expandmodel etc. Same in compileinterfacedata
+nv = yalmip('nvars');
+yalmip('setbounds',1:nv,repmat(-inf,nv,1),repmat(inf,nv,1));
+LU = getbounds(F);
+LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),yalmip('extvariables'));
+yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
+solver.constraint.equalities.polynomial=0;
+solver.constraint.binary=1;
+solver.constraint.integer=0;
+[F] = modelComplementarityConstraints(F,solver,[]);
+        
+        
+%%
 nvars = yalmip('nvars');
-
 vars = depends(F);
 vars = unique([vars depends(h)]);
 
