@@ -33,12 +33,21 @@ if isa(X,'sdpvar')
     nv = length(lmi_variables);
     y  = X;
     sparse_Y = sparse(Y);
+    % This one used also for checking size
     temp = kron(getbasematrix(X,0),sparse_Y);
-    y.basis=temp(:);
-    for i = 1:nv
-        temp = kron(getbasematrix(X,lmi_variables(i)),sparse_Y);
-        y.basis(:,i+1) = temp(:);
-    end;
+    if size(Y,2)==1
+        % Special case
+        % [kron([N1(:) N2(:)],vec(M))]=[vec(kron(N1,M)) vec(kron(N2,M))]
+        y.basis = kron(X.basis,sparse_Y);
+    else
+        y.basis=temp(:);
+        X_base = X.basis;
+        for i = 1:nv
+            %temp = kron(getbasematrix(X,lmi_variables(i)),sparse_Y);
+            temp = kron(sparse_Y,reshape(X_base(:,i+1),X.dim));
+            y.basis(:,i+1) = temp(:);
+        end;
+    end
 end
 
 if isa(Y,'sdpvar')
@@ -46,14 +55,23 @@ if isa(Y,'sdpvar')
     nv = length(lmi_variables);
     y  = Y;
     sparse_X = sparse(X);
+    % This one used also for checking size
     temp = kron(sparse_X,getbasematrix(Y,0));
-    y.basis = temp(:);
-    y.basis = spalloc(length(temp(:)),nv+1,0);
-    y.basis(:,1) = temp(:);
-    for i = 1:nv
-        temp = kron(sparse_X,getbasematrix(Y,lmi_variables(i)));
-        y.basis(:,i+1) = temp(:);
-    end    
+    if size(X,1)==1
+        % In this special case
+        %[kron(vec(M),[N1(:) N2(:)])]==[vec(kron(M,N1)) vec(kron(M,N2))]        
+        y.basis = kron(sparse_X(:),Y.basis);
+    else
+        y.basis = temp(:);
+        y.basis = spalloc(length(temp(:)),nv+1,0);
+        y.basis(:,1) = temp(:);
+        Y_base = Y.basis;
+        for i = 1:nv
+            % temp = kron(sparse_X,getbasematrix(Y,lmi_variables(i)));
+            temp = kron(sparse_X,reshape(Y_base(:,i+1),Y.dim));
+            y.basis(:,i+1) = temp(:);
+        end
+    end
 end
 y.dim(1) = size(temp,1);
 y.dim(2) = size(temp,2);
