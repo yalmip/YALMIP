@@ -92,6 +92,14 @@ switch property
         n = X.dim(1);
         YESNO = full(issymmetric(X) & nnz(base)==n*n & all(sum(base,2)==1) & all(base(:,1)==0)) & length(X.lmi_variables)==n*(n+1)/2 & isreal(base); 
         
+        % Fixes bug #15
+        if length(X.lmi_variables)>1
+            if ~all(diff(X.lmi_variables)==1)
+                YESNO=0;
+                return;
+            end
+        end
+                
     case 'shiftsdpcone'
         
         if isequal(X.conicinfo,[1 0])
@@ -102,6 +110,13 @@ switch property
             return
         end
         
+        % Fixes bug #15
+        if length(X.lmi_variables)>1
+            if ~all(diff(X.lmi_variables)==1)
+                YESNO=0;
+                return;
+            end
+        end
         
         base = X.basis;
         n = X.dim(1);
@@ -115,8 +130,7 @@ switch property
             Y = tril(Y);
             Y = (Y+Y')-diag(sparse(diag(Y)));
             [uu,oo,pp] = unique(Y(:));
-            YESNO = isequal(i,pp+1);
-            %             YESNO = isequal(base,getbase(sdpvar(n,n)));
+            YESNO = isequal(i,pp+1);            
         end
         
     case 'socone'
