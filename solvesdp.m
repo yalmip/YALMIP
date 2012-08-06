@@ -141,6 +141,12 @@ if ~isempty(F)
         return
     end
 end
+
+if isa(h,'sdpvar')
+    if is(h,'complex')
+        error('Complex valued objective does not make sense.');
+    end
+end
     
 if nargin>=3
     options = varargin{3};
