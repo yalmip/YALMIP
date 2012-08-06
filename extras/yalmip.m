@@ -17,7 +17,6 @@ function  varargout = yalmip(varargin)
 %   See also YALMIPTEST, YALMIPDEMO
 
 % Author Johan Löfberg
-% $Id: yalmip.m,v 1.104 2009-05-05 11:42:00 joloef Exp $
 
 persistent prefered_solver internal_sdpvarstate internal_setstate
 
@@ -753,7 +752,7 @@ switch varargin{1}
 
 
     case {'version','ver'}
-        varargout{1} = '20120609';        
+        varargout{1} = '20120806';        
 
     case 'setintvariables'
         internal_sdpvarstate.intVariables = varargin{2};

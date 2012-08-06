@@ -1,5 +1,5 @@
 % YALMIP
-% Version 3 (R2012a) 09-June-2012
+% Version 3 (R2012a) 06-Aug-2012
 %
 % Information
 %
@@ -16,4 +16,4 @@
 %
 
 % Author Johan Löfberg
-% $Id: Contents.m,v 1.53 2009-10-14 09:10:35 joloef Exp $   
+
