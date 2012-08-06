@@ -1,4 +1,4 @@
-function output = callquadprog(interfacedata)
+function output = callooqp(interfacedata)
 
 % Author Johan Löfberg 
 % $Id: callooqp.m,v 1.3 2006-11-29 16:45:58 joloef Exp $
