@@ -904,6 +904,18 @@ else
         options.bonmin =[];
     end
     
+     try
+        options.nomad = nomadset;                       
+        cNames = recursivefieldnames(options.nomad);
+        for i = 1:length(cNames)
+            Names{end+1} = ['nomad.' cNames{i}];          
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+    catch
+        options.nomad =[];
+    end
+    
     try
         options.xpress = xprsoptimset;
         cNames = recursivefieldnames(options.xpress);

@@ -140,6 +140,7 @@ do_not_convert = do_not_convert | strcmpi(options.solver,'snopt');
 do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-geometric') | strcmpi(options.solver,'snopt-standard');
 do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt');
 do_not_convert = do_not_convert | strcmpi(options.solver,'bonmin');
+do_not_convert = do_not_convert | strcmpi(options.solver,'nomad');
 do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-geometric') | strcmpi(options.solver,'ipopt-standard');
 do_not_convert = do_not_convert | strcmpi(options.solver,'pennon');
 do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-geometric') | strcmpi(options.solver,'pennon-standard');
