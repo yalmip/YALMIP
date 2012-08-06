@@ -28,13 +28,22 @@ opts.maxiter = options.clp.maxnumiterations;
 opts.maxtime = options.clp.maxnumseconds;
 opts.display = options.verbose;
 
+if length(b)>0
+    rl = repmat(-inf,length(b),1);
+else
+    rl = [];
+end
+ru = full(b);
+lb = full(lb);
+ub = full(ub);
+
 H = 2*sparse(tril(Q));
 if options.savedebug
     save clpdebug c A b  lb ub opts H
 end
 
 solvertime = clock; 
-[x,fval,exitflag,iter] = clp(full(c), A, repmat(-inf,length(b),1), full(b), full(lb), full(ub),opts,H);
+[x,fval,exitflag,iter] = clp(full(c), A, rl, ru, lb, ub,opts,H);
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % No duals
