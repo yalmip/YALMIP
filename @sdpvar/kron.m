@@ -15,9 +15,9 @@ end
 
 if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
     y = [];
+    s.type = '()';
     for i = 1:size(X,1)
-        this_row = [];
-        s.type = '()';
+        this_row = [];       
         for j = 1:size(X,2);
             s.subs = {i,j};
             this_row = [this_row subsref(X,s)*Y];
