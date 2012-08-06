@@ -43,8 +43,8 @@ if isa(X,'sdpvar')
         y.basis=temp(:);
         X_base = X.basis;
         for i = 1:nv
-            %temp = kron(getbasematrix(X,lmi_variables(i)),sparse_Y);
-            temp = kron(sparse_Y,reshape(X_base(:,i+1),X.dim));
+           % temp = kron(getbasematrix(X,lmi_variables(i)),sparse_Y);            
+            temp = kron(reshape(X_base(:,i+1),X.dim),sparse_Y);
             y.basis(:,i+1) = temp(:);
         end;
     end
