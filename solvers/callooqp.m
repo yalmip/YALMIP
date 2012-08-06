@@ -22,7 +22,7 @@ otherwise
     options.quadprog.Display = 'iter';
 end
     
-showprogress('Calling QUADPROG',options.showprogress);
+showprogress('Calling OOQP',options.showprogress);
 
 if ~isempty(F_struc)
     A = -F_struc(1:1:K.f,2:end);
