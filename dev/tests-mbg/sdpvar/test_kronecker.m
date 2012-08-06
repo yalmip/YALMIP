@@ -36,4 +36,14 @@ mbg_asserttolequal(double(kron(a,B)),kron(a,b))
 mbg_asserttolequal(double(kron(B,a)),kron(b,a))
 mbg_asserttolequal(double(kron(A,B)),kron(a,b))
 
+% General matrix
+b = [6 7 8;9 10 11];
+B = sdpvar(2,3);
+assign(B,b);
+mbg_asserttolequal(double(kron(A,b)),kron(a,b))
+mbg_asserttolequal(double(kron(b,A)),kron(b,a))
+mbg_asserttolequal(double(kron(a,B)),kron(a,b))
+mbg_asserttolequal(double(kron(B,a)),kron(b,a))
+mbg_asserttolequal(double(kron(A,B)),kron(a,b))
+
 
