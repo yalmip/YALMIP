@@ -24,7 +24,8 @@ else
     f = model.f + (model.c'+xevaled'*model.Q)*xevaled;
 end
 f=full(f);
-if nargout==1
+df = [];
+if nargout==1 || ~model.derivative_available
     return
 elseif model.SimpleLinearObjective
     df = model.c(model.linearindicies);

@@ -34,7 +34,7 @@ end
 
 dgAll_test = [];
 
-if nargout == 2
+if nargout == 2 || ~model.derivative_available
     return
 elseif ~isempty(dgAll_test) & isempty(model.evalMap)
     dgAll = dgAll_test;
