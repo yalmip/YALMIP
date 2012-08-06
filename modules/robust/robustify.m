@@ -121,7 +121,7 @@ F_robust = F_robust + F_elimination;
 % dependence w.r.t w in equalities has to be removed
 F_eq = extractConstraints(UncertainModel.F_xw,'equality');
 UncertainModel.F_xw = UncertainModel.F_xw - F_eq;
-[F_eq_left,F_eliminate_equality] = filter_eliminatation(F_eq,w,0);
+[F_eq_left,F_eliminate_equality] = filter_eliminatation(F_eq,w,0,ops);
 F_robust = F_robust + F_eliminate_equality + F_eq_left;
 
 % The problem should now be linear in the uncertainty, with no uncertain
