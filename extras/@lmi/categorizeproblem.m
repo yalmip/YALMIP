@@ -228,7 +228,7 @@ for i = 1:Counter
                                 while convex & ii<=length(f)
                                     [Q,c,f,x,info] = quaddecomp(f(ii));
                                     
-                                    if info | any(eig(Q) > 0)
+                                    if info | any(eig(full(Q)) > 0)
                                         convex = 0;
                                     end
                                     ii= ii + 1;
