@@ -50,14 +50,20 @@ if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvert
 % No duals
 D_struc = [];
 
+%   Return Status:
+%       0 - optimal
+%       1 - not finished
+%       2 - maximum iterations exceeded
+%       3 - infeasible
+%       4 - ooqp error 
 switch stat
-    case 1
-        problem = 0;
     case 0
+        problem = 0;
+    case 2
         problem = 3;
-    case -1
+    case 3
         problem = 1;
-    case -2
+    case 1
         problem = 11; 
     otherwise
         problem = -1;
