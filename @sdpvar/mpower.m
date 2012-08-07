@@ -93,7 +93,7 @@ if x.dim(1)>1 | x.dim(2)>1
 else %Integer power of scalar
     
     base = x.basis;
-    if isequal(base,[0 1]) % Unit scalar can be done fast
+    if 0%isequal(base,[0 1]) % Unit scalar can be done fast
         [mt,variabletype] = yalmip('monomtable');
         %var = getvariables(x);
         var = x.lmi_variables;
@@ -139,7 +139,12 @@ else %Integer power of scalar
             case 1
                 y = x;
             otherwise
-                y = x*mpower(x,d-1);
+                if even(d)
+                    z = mpower(x,d/2);
+                    y = z*z;
+                else
+                    y = x*mpower(x,d-1);
+                end
         end
     end
 end
