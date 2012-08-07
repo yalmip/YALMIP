@@ -9,7 +9,7 @@ model = yalmip2nonlinearsolver(model);
 % don't need there
 model.derivative_available = 0;
 
-nlrhs = [model.bnonlinineq*0;model.b];
+nlrhs = [model.bnonlinineq*0;model.b*0];
 if isempty(nlrhs)
     % clean
     nlrhs = [];
@@ -52,6 +52,7 @@ xtype(integer_variables) = 'I';
 xtype(binary_variables)  = 'B';  % Should not happen except from bmibnb
 xtype = xtype( model.linearindicies);
 opts = model.options.nomad;
+opts.display_degree = model.options.verbose;
 
 showprogress('Calling NOMAD',model.options.showprogress);
 solvertime = clock;
