@@ -162,6 +162,9 @@ Names = {'solver'
     'bmibnb.numglobal'
     'bmibnb.localstart'
     'bmibnb.strengthscheme'
+    'cbc.tolint'
+    'cbc.maxiter'
+    'cbc.maxnodes'
     'cutsdp.solver'
     'cutsdp.maxiter'
     'cutsdp.cutlimit'
@@ -873,6 +876,10 @@ else
     options.mpcvx.plot = 0;
     options.mpcvx.rays = 'n*20';
     
+    options.cbc.tolint = 1e-4;
+    options.cbc.maxiter = 10000;
+    options.cbc.maxnodes = 100000;
+
     options.cdd.method = 'criss-cross';
     
     options.clp.solver = 1;

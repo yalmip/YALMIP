@@ -30,10 +30,8 @@ solvertime = clock;
 ivars = zeros(length(c),1);
 ivars(interfacedata.integer_variables) = 1;
 ivars = int32(ivars);
+opts = options.cbc;
 opts.nin = length(b);
-opts.tolint = 1e-4;
-opts.maxiter = 10000;
-opts.maxnodes = 100000;
 opts.maxtime =  100000;
 opts.display = options.verbose;
 
