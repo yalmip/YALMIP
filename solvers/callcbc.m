@@ -8,8 +8,8 @@ options = interfacedata.options;
 F_struc = interfacedata.F_struc;
 c       = interfacedata.c;
 K       = interfacedata.K;
-lb      = interfacedata.lb;
-ub      = interfacedata.ub;
+lb      = full(interfacedata.lb);
+ub      = full(interfacedata.ub);
 x0      = interfacedata.x0;
 
 showprogress('Calling CBC',options.showprogress);
@@ -37,16 +37,22 @@ opts.maxnodes = 100000;
 opts.maxtime =  100000;
 opts.display = options.verbose;
 
-if options.savedebug
-    save cbcdebug c A b Aeq beq lb ub opts
-end
+% CBC merges equalities and equalities
+ru = full([beq;b]);
+rl = full([beq;repmat(-inf,length(b),1)]);
+A = [Aeq;A];
 
+% SOS currently not supported
 sos.sostype=[];
 sos.sosind=[];
 sos.soswt=[];
 
+if options.savedebug
+    save cbcdebug c A b Aeq beq lb ub opts
+end
+
 solvertime = clock;
-[x,fval,exitflag,iter] = cbc(full(c), A, repmat(-inf,length(b),1), full(b), full(lb), full(ub), ivars,sos,opts);
+[x,fval,exitflag,iter] = cbc(full(c), A, rl, ru, lb, ub, ivars,sos,opts);
 solvertime = etime(clock,solvertime);
 problem = 0;
 
