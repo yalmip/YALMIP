@@ -38,7 +38,7 @@ opts.maxiter = options.clp.maxnumiterations;
 opts.maxtime = options.clp.maxnumseconds;
 opts.display = options.verbose;
 
-H = 2*sparse(tril(Q));
+H = 2*sparse(triu(Q));
 if options.savedebug
     save ooqpdebug c H lb ub Aeq beq A blow bupp opts
 end
