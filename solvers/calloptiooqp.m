@@ -6,10 +6,10 @@ function output = calloptiooqp(interfacedata)
 % Standard input interface
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
-c       = interfacedata.c;
+c       = full(interfacedata.c);
 K       = interfacedata.K;
-lb      = interfacedata.lb;
-ub      = interfacedata.ub;
+lb      = full(interfacedata.lb);
+ub      = full(interfacedata.ub);
 Q       = interfacedata.Q;
 
 showprogress('Calling OOQP',options.showprogress);
@@ -23,9 +23,9 @@ if isempty(F_struc)
     beq = [];
 else
     Aeq = -F_struc(1:K.f,2:end);
-    beq = F_struc(1:K.f,1);
+    beq = full(F_struc(1:K.f,1));
     A =-F_struc(K.f+1:end,2:end);
-    bupp =F_struc(K.f+1:end,1);
+    bupp = full(F_struc(K.f+1:end,1));
 end
 
 if isempty(lb)
@@ -39,12 +39,14 @@ opts.maxtime = options.clp.maxnumseconds;
 opts.display = options.verbose;
 
 H = 2*sparse(triu(Q));
+A = A';
+Aeq = Aeq';
 if options.savedebug
     save ooqpdebug c H lb ub Aeq beq A blow bupp opts
 end
 
 solvertime = clock; 
-[x,fval,stat,iter] = ooqp(H, full(c), A', full(blow), full(bupp), Aeq',full(beq),full(lb),full(ub),opts);
+[x,fval,stat,iter] = ooqp(H, c, A, blow, bupp, Aeq,beq,lb,ub,opts);
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % No duals
