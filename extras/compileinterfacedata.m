@@ -275,7 +275,7 @@ if ProblemClass.constraint.complementarity.linear | ProblemClass.constraint.comp
         else
             LU = getbounds(Ftemp);
         end                
-        LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables)       
+        LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables);       
         yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
                         
         [F] = modelComplementarityConstraints(F,solver,ProblemClass);  
