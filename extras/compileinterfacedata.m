@@ -127,56 +127,6 @@ else
 end
 
 % *************************************************************************
-%% CONVERT CONVEX QUADRATIC CONSTRAINTS
-% We do not convert quadratic constraints to SOCPs if we have have
-% sigmonial terms (thus indicating a GP problem), if we have relaxed
-% nonlinear expressions, or if we have specified a nonlinear solver.
-% Why do we convert them already here? Don't remember, should be cleaned up
-% *************************************************************************
-[monomtable,variabletype] = yalmip('monomtable');
-F_vars = getvariables(F);
-do_not_convert = any(variabletype(F_vars)==4);
-do_not_convert = do_not_convert | strcmpi(options.solver,'snopt');
-do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-geometric') | strcmpi(options.solver,'snopt-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt');
-do_not_convert = do_not_convert | strcmpi(options.solver,'bonmin');
-do_not_convert = do_not_convert | strcmpi(options.solver,'nomad');
-do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-geometric') | strcmpi(options.solver,'ipopt-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennon');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-geometric') | strcmpi(options.solver,'pennon-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennlp') | strcmpi(options.solver,'penbmi');
-do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon') | strcmpi(options.solver,'lindo') | strcmpi(options.solver,'sqplab');
-do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon-geometric') | strcmpi(options.solver,'fmincon-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
-do_not_convert = do_not_convert | strcmpi(options.solver,'moment');
-%do_not_convert = do_not_convert | strcmpi(options.solver,'xpress');
-do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
-do_not_convert = do_not_convert | (options.convertconvexquad == 0);
-do_not_convert = do_not_convert | (options.relax == 1);
-if ~do_not_convert & any(variabletype(F_vars))
-    [F,socp_changed,infeasible] = convertquadratics(F);
-    if infeasible
-        diagnostic.solvertime = 0;
-        diagnostic.problem = 1;
-        diagnostic.info = yalmiperror(diagnostic.problem,'YALMIP');
-        return        
-    end
-    if socp_changed % changed holds the number of QC -> SOCC conversions
-        options.saveduals = 0; % We cannot calculate duals since we changed the problem
-        F_vars = []; % We have changed model so we cannot use this in categorizemodel
-    end
-else
-    socp_changed = 0;
-end
-
-% CHEAT FOR QC
-if socp_changed>0 & length(find(is(F,'socc')))==socp_changed
-    socp_are_really_qc = 1;
-else
-    socp_are_really_qc = 0;
-end
-
-% *************************************************************************
 %% LOOK FOR AVAILABLE SOLVERS
 % Finding solvers can be very slow on some systems. To alleviate this
 % problem, YALMIP can cache the list of available solvers.
@@ -226,6 +176,64 @@ if isempty(solvers)
         disp(['Warning: ' diagnostic.info]);
     end
     return
+end
+
+% *************************************************************************
+%% CONVERT CONVEX QUADRATIC CONSTRAINTS
+% We do not convert quadratic constraints to SOCPs if we have have
+% sigmonial terms (thus indicating a GP problem), if we have relaxed
+% nonlinear expressions, or if we have specified a nonlinear solver.
+% Why do we convert them already here? Don't remember, should be cleaned up
+% *************************************************************************
+[monomtable,variabletype] = yalmip('monomtable');
+F_vars = getvariables(F);
+do_not_convert = any(variabletype(F_vars)==4);
+%do_not_convert = do_not_convert | ~solverCapable(solvers,options.solver,'constraint.inequalities.secondordercone');
+do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
+do_not_convert = do_not_convert | strcmpi(options.solver,'snopt');
+do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-geometric'); 
+do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-standard');
+do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt');
+do_not_convert = do_not_convert | strcmpi(options.solver,'bonmin');
+do_not_convert = do_not_convert | strcmpi(options.solver,'nomad');
+do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-geometric');
+do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-standard');
+do_not_convert = do_not_convert | strcmpi(options.solver,'pennon');
+do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-geometric');
+do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-standard');
+do_not_convert = do_not_convert | strcmpi(options.solver,'pennlp');
+do_not_convert = do_not_convert | strcmpi(options.solver,'penbmi');
+do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon');
+do_not_convert = do_not_convert | strcmpi(options.solver,'lindo');
+do_not_convert = do_not_convert | strcmpi(options.solver,'sqplab');
+do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon-geometric');
+do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon-standard');
+do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
+do_not_convert = do_not_convert | strcmpi(options.solver,'moment');
+do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
+do_not_convert = do_not_convert | (options.convertconvexquad == 0);
+do_not_convert = do_not_convert | (options.relax == 1);
+if ~do_not_convert & any(variabletype(F_vars))
+    [F,socp_changed,infeasible] = convertquadratics(F);
+    if infeasible
+        diagnostic.solvertime = 0;
+        diagnostic.problem = 1;
+        diagnostic.info = yalmiperror(diagnostic.problem,'YALMIP');
+        return        
+    end
+    if socp_changed % changed holds the number of QC -> SOCC conversions
+        options.saveduals = 0; % We cannot calculate duals since we changed the problem
+        F_vars = []; % We have changed model so we cannot use this in categorizemodel
+    end
+else
+    socp_changed = 0;
+end
+
+% CHEAT FOR QC
+if socp_changed>0 & length(find(is(F,'socc')))==socp_changed
+    socp_are_really_qc = 1;
+else
+    socp_are_really_qc = 0;
 end
 
 % *************************************************************************
