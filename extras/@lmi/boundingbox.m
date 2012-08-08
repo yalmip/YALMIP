@@ -75,7 +75,17 @@ for i = 1:n
     end
 end
 
-B = [L <= x <= U];
+% Only add finite bounds
+Lf = find(~isinf(L));
+Uf = find(~isinf(U));
+B = [];
+if ~isempty(Lf)
+    B = [B, (x(Lf) >= L(Lf)):'Finite lower bounds'];
+end
+if ~isempty(Uf)
+    B = [B, (x(Uf) >= L(Uf)):'Finite upper bounds'];
+end
+%B = [L <= x <= U];
 switch nargout
     case 0
         B
