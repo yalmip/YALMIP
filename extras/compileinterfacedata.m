@@ -258,15 +258,24 @@ end
 if ProblemClass.constraint.complementarity.linear | ProblemClass.constraint.complementarity.nonlinear
     if ~(solver.constraint.complementarity.linear | solver.constraint.complementarity.nonlinear)
                
+        % Extract the terms in the complementarity constraints x^Ty==0,
+        % x>=0, y>=0, since these involves bounds that should be appended
+        % to the list of constraints from which we do bound propagation
+        Fc = F(find(is(F,'complementarity')));      
+        Ftemp = F;
+        for i = 1:length(Fc)
+            [Cx,Cy] = getComplementarityTerms(Fc(i));
+            Ftemp = [Ftemp, Cx>=0, Cy >=0];
+        end
         % FIXME: SYNC with expandmodel
         nv = yalmip('nvars');
         yalmip('setbounds',1:nv,repmat(-inf,nv,1),repmat(inf,nv,1));        
         if isfield(options,'avoidequalitybounds')
-            LU = getbounds(F,0);
+            LU = getbounds(Ftemp,0);
         else
-            LU = getbounds(F);
+            LU = getbounds(Ftemp);
         end                
-        LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables);        
+        LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables)       
         yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
                         
         [F] = modelComplementarityConstraints(F,solver,ProblemClass);  
