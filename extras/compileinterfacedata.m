@@ -275,16 +275,8 @@ if ProblemClass.constraint.complementarity.linear | ProblemClass.constraint.comp
             [Cx,Cy] = getComplementarityTerms(Fc(i));
             Ftemp = [Ftemp, Cx>=0, Cy >=0];
         end
-        % FIXME: SYNC with expandmodel
-        nv = yalmip('nvars');
-        yalmip('setbounds',1:nv,repmat(-inf,nv,1),repmat(inf,nv,1));        
-        if isfield(options,'avoidequalitybounds')
-            LU = getbounds(Ftemp,0);
-        else
-            LU = getbounds(Ftemp);
-        end                
-        LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables);       
-        yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
+        % FIXME: SYNC with expandmodel       
+        setupBounds(Ftemp,options,extendedvariables);
                         
         [F] = modelComplementarityConstraints(F,solver,ProblemClass);  
         % FIXME Reclassify should be possible to do manually!
