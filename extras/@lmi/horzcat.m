@@ -2,7 +2,7 @@ function F = horzcat(varargin)
 
 F = [];
 for i=1:1:nargin
-    if isa(varargin{i},'double')
+    if isa(varargin{i},'double') & ~isempty(varargin{i})
         warning('One of the constraints evaluates to a DOUBLE variable');
     elseif isa(varargin{i},'logical')
         if all(varargin{i}==1)
