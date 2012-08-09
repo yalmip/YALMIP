@@ -60,5 +60,4 @@ F=[F,85.3==x9];
 
 % Solve problem
 sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_assertfalse(sol.problem);
 mbg_asserttolequal(double(objective),2.251945831860312e+002, 1e-2);
