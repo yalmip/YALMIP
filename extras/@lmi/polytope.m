@@ -9,10 +9,7 @@ function [P,x] = polytope(X,options)
 % F : set-object with linear inequalities
 
 % Author Johan Löfberg
-% $Id: polytope.m,v 1.3 2005-02-04 10:10:27 johanl Exp $
 
-
-%[model,recoverdata,diagnostic,p] = export(X,[],[],[],[],0);
 if nargin < 2
     options = sdpsettings;
 elseif isempty(options)
@@ -25,6 +22,17 @@ if p.K.q(1) > 0 | p.K.s(1) > 0 | any(p.variabletype)
   error('Polytope can only be applied to MILP-representable constraints.')
 end
 
+if p.K.f > 0
+    try
+        [P,x] = polyhedron(X,options);
+        return
+    catch
+        disp('MPT does not support polytopes with empty interior')
+        disp('Note that these equality constraints might have been generated internally by YALMIP')
+        error('Functionality not yet supported')
+    end
+end
+
 if isempty(p.binary_variables) & isempty(p.integer_variables)
     P = polytope(-p.F_struc(:,2:end),p.F_struc(:,1));
     x = recover(p.used_variables);
@@ -35,12 +43,6 @@ else
     p.F_struc = [p.F_struc(removeEQ,:);p.F_struc(p.K.f+removeLP,:)];
     p.K.f = length(removeEQ);
     p.K.l = length(removeLP);
-    
-    if p.K.f > 0
-        disp('MPT does not support polytopes with empty interior')
-        disp('Note that these equality constraints might have been generated internally by YALMIP')
-        error('Functionality not yet supported')        
-    end
     
     P = [];
     for i = 0:2^nBin-1;
@@ -55,19 +57,6 @@ else
         end
     end
 end
-%     f = [];
-%     X = expandmodel(X,[]);
-%     for i = 1:length(X)
-%         if  X.clauses{i}.type==2
-%             fi =  X.clauses{i}.data;
-%             f = [f;fi(:)];
-%         end
-%     end
-%     B = full(getbase(f));
-%     p = polytope(-B(:,2:end),B(:,1));
-
-
-
 
 function pLP = extractLP(p);
 pLP = p;
