@@ -23,18 +23,21 @@ if isa(x,'sdpvar') & (isa(p,'polytope') | isa(p,'Polyhedron'))
     else
         d = binvar(length(p),1);
         YESNO = set(sum(d)==1);
-        [temp,L,U] = bounding_box(p(1));
+        [L,U] = safe_bounding_box(p(1));
         for i = 1:length(p)
-            [temp,Li,Ui] = bounding_box(p(i));
+            [Li,Ui] = safe_bounding_box(p(i));
             L = min([L Li],[],2);
             U = max([U Ui],[],2);
         end
         for i = 1:length(p)
-            [H,K] = double(p(i));
+            [H,K,Ae,be] = poly2data(p(i));
+            % Merge equalities into inequalities
+            H = [H;Ae;-Ae];
+            K = [K;be;-be];
             if min(size(x))>1
                 error('first argument should be a vector');
             end
-            if length(x) == size(H,2)
+            if length(x) == size([H],2)
                 x = reshape(x,length(x),1);
                 lhs = H*x-K;
                 % Derive bounds based on YALMIPs knowledge on bounds on
@@ -89,4 +92,14 @@ else
     K = p.b;
     Ae = p.Ae;
     be = p.be;   
+end
+
+function [L,U] = safe_bounding_box(P)
+
+if isa(P,'polytope')
+     [temp,L,U] = bounding_box(P);
+else
+    S = outerApprox(P);
+    L = S.Internal.lb;
+    U = S.Internal.ub;
 end

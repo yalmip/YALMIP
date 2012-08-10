@@ -67,7 +67,7 @@ end
 switch class(varargin{1})
     case 'sdpvar'
         if isa(varargin{1},'sdpvar') & (isa(varargin{2},'polytope') | isa(varargin{2},'Polyhedron'))
-            if ~isequal(length(varargin{1}),dimension(varargin{2}))
+            if 0%~isequal(length(varargin{1}),dimension(varargin{2}))
                 disp('The polytope in the ismember condition has wrong dimension')
                 error('Dimension mismatch.');
             end
@@ -75,6 +75,8 @@ switch class(varargin{1})
         if isa(varargin{2},'polytope') & length(varargin{2})==1
             [H,K] = double(varargin{2});
             varargout{1} = [H*x <= K];
+        elseif isa(varargin{2},'Polyhedron') & length(varargin{2})==1
+            varargout{1} = [varargin{2}.A*x <= varargin{2}.b, varargin{2}.Ae*x == varargin{2}.be];
         else                            
             varargout{1} = set(yalmip('define',mfilename,varargin{:}) == 1);            
             varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
