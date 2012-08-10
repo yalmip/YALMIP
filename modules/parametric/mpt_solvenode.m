@@ -72,26 +72,18 @@ if ~infeasible & ~parametric_empty
 
     if ~infeasible
         if Matrices.qp
-            if isequal(options.solver,'mplcp')
-                [Pn,Fi,Gi,ac,Pfinal,details] = mpt_mpqp_mplcp(Matrices,options);
-            else
-                e = eig(full(Matrices.H));
-                if min(e) == 0
-                    disp('Lack of strict convexity may lead to troubles in the mpQP solver')
-                elseif min(e) < -1e-8
-                    disp('Problem is not positive semidefinite! Your mpQP solution may be completely wrong')
-                elseif min(e) < 1e-5
-                    disp('QP is close to being (negative) semidefinite, may lead to troubles in mpQP solver')
-                end
-                %Matrices.H = Matrices.H + eye(length(Matrices.H))*1e-4;
-                [Pn,Fi,Gi,ac,Pfinal,details] = mpt_mpqp(Matrices,options.mpt);
+            e = eig(full(Matrices.H));
+            if min(e) == 0
+                disp('Lack of strict convexity may lead to troubles in the mpQP solver')
+            elseif min(e) < -1e-8
+                disp('Problem is not positive semidefinite! Your mpQP solution may be completely wrong')
+            elseif min(e) < 1e-5
+                disp('QP is close to being (negative) semidefinite, may lead to troubles in mpQP solver')
             end
-        else
-            if isequal(options.solver,'mplcp')
-                [Pn,Fi,Gi,ac,Pfinal,details] = mpt_mpqp_mplcp(Matrices,options);
-            else               
-                [Pn,Fi,Gi,ac,Pfinal,details] = mpt_mplp(Matrices,options.mpt);
-            end
+            %Matrices.H = Matrices.H + eye(length(Matrices.H))*1e-4;
+            [Pn,Fi,Gi,ac,Pfinal,details] = mpt_mpqp(Matrices,options.mpt);
+        else            
+            [Pn,Fi,Gi,ac,Pfinal,details] = mpt_mplp(Matrices,options.mpt);            
         end
         [Fi,Gi,details] = mpt_project_back_equality(Matrices,Fi,Gi,details,OriginalModel);
         [Fi,Gi] = mpt_select_rows(Fi,Gi,Matrices.requested_variables);
