@@ -19,7 +19,7 @@ switch class(varargin{1})
      
         xy = [x y];      
         varargout{1} = F + set(sum(xy) >= 1);
-        varargout{2} = struct('convexity','none','monotonicity','exact','definiteness','none');
+        varargout{2} = struct('convexity','none','monotonicity','exact','definiteness','none','extra','marker');
         varargout{3} = recover(depends(F));
 
     case {'lmi'}
