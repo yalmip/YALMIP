@@ -746,6 +746,20 @@ i = i+1;
 
 solver(i) = emptysolver;
 solver(i).tag     = 'MPT';
+solver(i).version = '3';
+solver(i).checkfor= {'mpt_mpqp','mpt_plcp'};
+solver(i).call    = 'callmpt';
+solver(i).objective.linear = 1;
+solver(i).objective.quadratic.convex = 1;
+solver(i).objective.quadratic.nonconvex = 1;
+solver(i).constraint.inequalities.elementwise.linear = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).parametric = 1;
+solver(i).constraint.binary = 1;
+i = i+1;
+
+solver(i) = emptysolver;
+solver(i).tag     = 'MPT';
 solver(i).version = '';
 solver(i).checkfor= {'mpt_mpqp'};
 solver(i).call    = 'callmpt';
