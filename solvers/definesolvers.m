@@ -748,7 +748,7 @@ solver(i) = emptysolver;
 solver(i).tag     = 'MPT';
 solver(i).version = '3';
 solver(i).checkfor= {'mpt_mpqp','mpt_plcp'};
-solver(i).call    = 'callmpt';
+solver(i).call    = 'callmpt3';
 solver(i).objective.linear = 1;
 solver(i).objective.quadratic.convex = 1;
 solver(i).objective.quadratic.nonconvex = 1;
@@ -760,7 +760,7 @@ i = i+1;
 
 solver(i) = emptysolver;
 solver(i).tag     = 'MPT';
-solver(i).version = '';
+solver(i).version = '2';
 solver(i).checkfor= {'mpt_mpqp'};
 solver(i).call    = 'callmpt';
 solver(i).objective.linear = 1;

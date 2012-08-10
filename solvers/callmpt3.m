@@ -1,12 +1,10 @@
-function output = callmpt(interfacedata)
+function output = callmpt3(interfacedata)
 
 % Author Johan Löfberg
 
-% This file is kept for MPT2 compatability
-
 % Speeds up solving LPs in mpmilp
-global mptOptions
-if ~isstruct(mptOptions)
+global MPTOPTIONS
+if ~isstruct(MPTOPTIONS)
     mpt_error
 end
 
@@ -16,8 +14,8 @@ Matrices = yalmip2mpt(interfacedata);
 
 % Get some MPT options
 options = interfacedata.options;
-options.mpt.lpsolver = mptOptions.lpsolver;
-options.mpt.milpsolver = mptOptions.milpsolver;
+options.mpt.lpsolver = MPTOPTIONS.lpsolver;
+options.mpt.milpsolver = MPTOPTIONS.milpsolver;
 options.mpt.verbose = options.verbose;
 
 if options.savedebug

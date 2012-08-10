@@ -296,7 +296,7 @@ end
 %******************************************
 % DID WE SELECT THE MPT solver (backwards comb)
 %******************************************
-if strcmpi(solver.tag,'mpt') | strcmpi(solver.tag,'mpcvx') | strcmpi(solver.tag,'mplcp')
+if strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.tag,'mpcvx') | strcmpi(solver.tag,'mplcp')
     actually_save_output = interfacedata.options.savesolveroutput;
     interfacedata.options.savesolveroutput = 1;
     if isempty(interfacedata.parametric_variables)
