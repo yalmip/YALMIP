@@ -4,16 +4,16 @@ function YESNO = ismember_internal(x,p)
 % Author Johan Löfberg
 % $Id: ismember_internal.m,v 1.10 2007-08-08 08:14:28 joloef Exp $
 
-if isa(x,'sdpvar') & isa(p,'polytope')
+if isa(x,'sdpvar') & (isa(p,'polytope') | isa(p,'Polyhedron'))
 
     if length(p) == 1
-        [H,K] = double(p);
+        [H,K,Ae,be] = poly2data(p);
         if min(size(x))>1
             error('first argument should be a vector');
         end
         if length(x) == size(H,2)
             x = reshape(x,length(x),1);
-            YESNO = set(H*x <= K);
+            YESNO = [H*x <= K,Ae*x == be];
             return
         else
             disp('The polytope in the ismember condition has wrong dimension')
@@ -75,4 +75,18 @@ if isa(x,'sdpvar') & isa(p,'double')
 
     YESNO = F;
     return
+end
+
+function [H,K,Ae,be] = poly2data(p);
+
+if isa(p,'polytope')
+    [H,K] = double(p);
+    Ae = [];
+    be = [];
+    
+else
+    H = p.A;
+    K = p.b;
+    Ae = p.Ae;
+    be = p.be;   
 end
