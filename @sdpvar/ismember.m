@@ -66,7 +66,7 @@ end
 % Here is the real overloaded ismember
 switch class(varargin{1})
     case 'sdpvar'
-        if isa(varargin{1},'sdpvar') & isa(varargin{2},'polytope')
+        if isa(varargin{1},'sdpvar') & (isa(varargin{2},'polytope') | isa(varargin{2},'Polyhedron'))
             if ~isequal(length(varargin{1}),dimension(varargin{2}))
                 disp('The polytope in the ismember condition has wrong dimension')
                 error('Dimension mismatch.');
@@ -79,13 +79,10 @@ switch class(varargin{1})
             varargout{1} = set(yalmip('define',mfilename,varargin{:}) == 1);            
             varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
             if isa(varargin{2},'double')
-                 %varargout{1} = [ varargout{1}, min(varargin{2}) <= varargin{1} <= max(varargin{2})];
                  varargout{1} = [ varargout{1}, min(varargin{2},[],2) <= varargin{1} <= max(varargin{2},[],2)];
             end
         end
 
     case 'char'
         varargout{1} = ismember_internal(varargin{3},varargin{4});
-      %  varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','extra','marker','model','integer');
-      %  varargout{3} = varargin{3};
 end
