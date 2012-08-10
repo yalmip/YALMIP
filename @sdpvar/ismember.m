@@ -67,7 +67,7 @@ end
 switch class(varargin{1})
     case 'sdpvar'
         if isa(varargin{1},'sdpvar') & (isa(varargin{2},'polytope') | isa(varargin{2},'Polyhedron'))
-            if 0%~isequal(length(varargin{1}),dimension(varargin{2}))
+            if ~isequal(length(varargin{1}),dimension(varargin{2}))
                 disp('The polytope in the ismember condition has wrong dimension')
                 error('Dimension mismatch.');
             end

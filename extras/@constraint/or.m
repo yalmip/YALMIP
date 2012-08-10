@@ -51,10 +51,14 @@ switch class(varargin{1})
         varargout{3} = xy;
 
     case {'sdpvar','constraint'}
-        x = varargin{1};
-        y = varargin{2};
-        varargout{1} = yalmip('define','or',varargin{:});
-
+        for i = 1:nargin
+            varargin{i} = set(varargin{i});
+        end
+        %x = varargin{1};
+        %y = varargin{2};
+        %varargout{1} = yalmip('define','or',varargin{:});
+        varargout{1} = set(yalmip('define','lmior',varargin{:}) == 1);
+ 
     otherwise
 end
 
