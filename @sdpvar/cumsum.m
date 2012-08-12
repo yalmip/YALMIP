@@ -18,7 +18,7 @@ for i = 1:length(X.lmi_variables)+1
     B = [B C(:)];
 end
 X.basis = B;
-Y.conicinfo = [0 0];
-Y.extra.opname = '';
-Y = flush(Y);
-Y = clean(Y);
+X.conicinfo = [0 0];
+X.extra.opname = '';
+X = flush(X);
+X = clean(X);
