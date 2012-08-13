@@ -43,6 +43,8 @@ else
     p.F_struc = [p.F_struc(removeEQ,:);p.F_struc(p.K.f+removeLP,:)];
     p.K.f = length(removeEQ);
     p.K.l = length(removeLP);
+    p.used_variables(p.binary_variables)=[];
+    x = recover(p.used_variables);
     
     P = [];
     for i = 0:2^nBin-1;
