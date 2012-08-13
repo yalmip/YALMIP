@@ -79,8 +79,9 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
             method = 'exact';
         else
             if failure & options.allowmilp
-                [properties,F_graph,arguments] = model(variable,'exact',options,[],w); 
-                
+               % [properties,F_graph,arguments] = model(variable,'exact',options,[],w); 
+                [properties,F_graph,arguments] = model(variable,'exact',options,allExtStruct(ext_index),w); 
+                               
                 if ~isempty(properties)
                     properties = properties{1};
                 end

@@ -32,6 +32,7 @@ switch class(varargin{1})
                 t = varargin{2};
                 X = varargin{3};
                 varargout{1} = set(-t <= X <= t);
+                
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph');
                 varargout{3} = X;
 
