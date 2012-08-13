@@ -329,15 +329,18 @@ try
     expression_basis = getbase(expression);
     expression_vars  = getvariables(expression);
     [yesno,location] = ismember(variables(index_in_extended),expression_vars);
+    ztemp = recover(variables(index_in_extended));
     while j<=length(index_in_extended) & ~failure
-        i = index_in_extended(j);
+        % i = index_in_extended(j);
+        % zi = recover(variables(i));
+        zi = ztemp(j);%recover(variables(i));
         basis = expression_basis(:,1 + location(j));
         if 0%all(basis == 0) % The nonlinear term is inside a monomial
-            [F_expand,failure,cause] = expandrecursive(recover(variables(i)),F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
+            [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
         elseif all(basis >= 0)
-            [F_expand,failure,cause] = expandrecursive(recover(variables(i)),F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
+            [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
         else
-            [F_expand,failure,cause] = expandrecursive(recover(variables(i)),F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'concave',allExtStruct,w);
+            [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'concave',allExtStruct,w);
         end
         j=j+1;
     end
