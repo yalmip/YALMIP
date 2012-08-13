@@ -13,7 +13,7 @@ function varargout = ismember(varargin)
 % generated. 
 %
 % If P is a single polytope, the linear constraints [H,K] = double(P);
-% F=set(H*x <= K) will be created. 
+% F=[H*x <= K] will be created. 
 %
 % If P is a polytope array, then length(P) binary variables will be
 % introduced and the constraint will model that x is inside at least one of
@@ -67,7 +67,7 @@ end
 switch class(varargin{1})
     case 'sdpvar'
         if isa(varargin{1},'sdpvar') & (isa(varargin{2},'polytope') | isa(varargin{2},'Polyhedron'))
-            if ~isequal(length(varargin{1}),dimension(varargin{2}))
+            if ~isequal(length(varargin{1}),safe_dimension(varargin{2}))
                 disp('The polytope in the ismember condition has wrong dimension')
                 error('Dimension mismatch.');
             end
@@ -87,4 +87,11 @@ switch class(varargin{1})
 
     case 'char'
         varargout{1} = ismember_internal(varargin{3},varargin{4});
+end
+
+function d = safe_dimension(P)
+if isa(P,'polytope')
+    d = dimension(P);
+elseif isa(P,'Polyhedron')
+    d = P.Dim;
 end
