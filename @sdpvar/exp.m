@@ -2,12 +2,23 @@ function varargout = exp(varargin)
 %EXP (overloaded)
 
 % Author Johan Löfberg
-% $Id: exp.m,v 1.30 2009-03-11 09:45:32 joloef Exp $
 switch class(varargin{1})
 
     case 'sdpvar'
-        varargout{1} = InstantiateElementWise(mfilename,varargin{:});
-
+        x = varargin{1};
+        d = size(x);
+        x = x(:);
+        y = [];
+        for i = 1:length(x)
+            xi = extsubsref(x,i);
+            if isreal(xi)
+                y = [y;InstantiateElementWise(mfilename,xi)];
+            else
+                y = [y;cos(xi) + sqrt(-1)*sin(xi)];
+            end
+        end
+        varargout{1} = reshape(y,d);
+                    
     case 'char'
         
         varargout{1} = [];
