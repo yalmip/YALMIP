@@ -50,14 +50,8 @@ switch class(varargin{1})
         varargout{2} = struct('convexity','none','monotonicity','exact','definiteness','none','model','integer');
         varargout{3} = xy;
 
-    case {'sdpvar','constraint'}
-        for i = 1:nargin
-            varargin{i} = set(varargin{i});
-        end
-        %x = varargin{1};
-        %y = varargin{2};
-        %varargout{1} = yalmip('define','or',varargin{:});
-        varargout{1} = set(yalmip('define','lmior',varargin{:}) == 1);
+    case {'sdpvar','constraint'}             
+        varargout{1} = yalmip('define','or',varargin{:});       
  
     otherwise
 end
