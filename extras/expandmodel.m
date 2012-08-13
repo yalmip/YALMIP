@@ -111,6 +111,13 @@ if ~isempty(F)
     end
 end
 
+% Expand equalities first, since these might generate nonconvex models,
+% thus making it unnecessaryu to generate epigraphs etc
+equalities = is(F,'equality');
+if any(equalities)
+    F = [F(find(equalities));F(find(~equalities))];
+end
+
 % All variable indicies used in the problem
 v1 = getvariables(F);
 v2 = depends(F);
