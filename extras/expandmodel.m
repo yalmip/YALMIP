@@ -96,11 +96,15 @@ end
 
 
 % Check if it already has ben expanded in robustify or similar
+F_alreadyexpanded = [];
 already_expanded = expanded(F);
 if all(already_expanded)
     if isempty(setdiff(getvariables(h),expanded(h)))
         return
     end
+elseif any(already_expanded)
+    F_alreadyexpanded = F(find(already_expanded));
+    F = F(find(~already_expanded));
 end
 
 % Extract all simple bounds from the model, and update the internal bounds
@@ -301,7 +305,9 @@ if ~failure
     end
 end
 
-% declare this model as expanded
+% Append the previously appended
+F = F + F_alreadyexpanded;
+% Declare this model as expanded
 F = expanded(F,1);
 
 function [F_expand,failure,cause] = expand(index_in_extended,variables,expression,F_expand,extendedvariables,monomtable,variabletype,where,level,options,method,extstruct,allExtStruct,w)
