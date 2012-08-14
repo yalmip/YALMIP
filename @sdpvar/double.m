@@ -181,6 +181,14 @@ if ~isempty(allextended)
                         val = all([extstruct.arg{1:end-1}]);
                     case 'xor'
                         val = nnz([extstruct.arg{1:end-1}]) == 1;
+                    case 'abs'
+                        try
+                            % ABS has predefined binary appended to
+                            % argument list
+                            val = feval(extstruct.fcn,extstruct.arg{1:end-2});
+                        catch
+                            val = nan;
+                        end
 
                     otherwise
                         try
