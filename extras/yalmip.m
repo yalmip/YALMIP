@@ -217,6 +217,9 @@ switch varargin{1}
                 X = varargin{3:end};
                 y = sdpvar(numel(X),1);
                 allNewExtended = [];
+                allNewExtendedIndex = [];
+                allPreviouslyDefinedExtendedToIndex = [];
+                allPreviouslyDefinedExtendedFromIndex = [];
                 if numel(X)==1
                     found = 0;
                     if ~isempty(correct_operator)
@@ -224,7 +227,9 @@ switch varargin{1}
                         for j = find(correct_operator)
                             if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
                                 if isequal(X,internal_sdpvarstate.ExtendedMap(j).arg{1},1)                                  
-                                    y = internal_sdpvarstate.ExtendedMap(j).var;
+                                  %  y = internal_sdpvarstate.ExtendedMap(j).var;
+                                    allPreviouslyDefinedExtendedToIndex = [1];
+                                    allPreviouslyDefinedExtendedFromIndex = [j];
                                     found = 1;
                                     break
                                 end
@@ -238,25 +243,28 @@ switch varargin{1}
                         internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);                        
                         internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X);
                         allNewExtended = y;
+                        allNewExtendedIndex = 1;
                     end
                 else
                     aux_bin = binvar(numel(X),1);
-                    for i = 1:numel(X)
-                        yi = y(i);
+                    for i = 1:numel(X)                       
                         % This is a bummer. If we scalarize the abs-operator,
                         % we have to search through all scalar abs-operators
                         % to find this single element
                         found = 0;
-                        if isa(X(i),'double')
+                        Xi = X(i);
+                        if isa(Xi,'double')
                             found = 1;
-                            y(i) = X(i);
+                            y(i) = Xi;
                         else
                             if ~isempty(correct_operator)
-                                this_hash = create_trivial_hash(X(i));
+                                this_hash = create_trivial_hash(Xi);
                                 for j = find(correct_operator)
                                     if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
-                                        if isequal(X(i),internal_sdpvarstate.ExtendedMap(j).arg{1},1)
-                                            y(i) = internal_sdpvarstate.ExtendedMap(j).var;
+                                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
+                                          %  y(i) = internal_sdpvarstate.ExtendedMap(j).var;
+                                            allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
+                                            allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
                                             found = 1;
                                             break
                                         end
@@ -265,15 +273,19 @@ switch varargin{1}
                             end
                         end
                         if ~found
+                            yi = y(i);
                             internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
-                            internal_sdpvarstate.ExtendedMap(end).arg = {X(i),aux_bin(i),[]};
+                            internal_sdpvarstate.ExtendedMap(end).arg = {Xi,aux_bin(i),[]};
                             internal_sdpvarstate.ExtendedMap(end).var = yi;
                             internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
-                            internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X(i));
-                            allNewExtended = [allNewExtended y(i)];
+                            internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(Xi);
+                            %allNewExtended = [allNewExtended yi];
+                            allNewExtendedIndex = [allNewExtendedIndex i];
                         end
                     end
                 end
+                y(allPreviouslyDefinedExtendedToIndex) = [internal_sdpvarstate.ExtendedMap(allPreviouslyDefinedExtendedFromIndex).var];
+                allNewExtended = y(allNewExtendedIndex);
                 y_vars = getvariables(allNewExtended);
                 internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables y_vars];
                 y = reshape(y,size(X,1),size(X,2));
