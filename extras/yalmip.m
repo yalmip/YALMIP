@@ -216,7 +216,7 @@ switch varargin{1}
                 % new variable for each element...
                 X = varargin{3:end};
                 y = sdpvar(numel(X),1);
-                yy = [];
+                allNewExtended = [];
                 if numel(X)==1
                     found = 0;
                     if ~isempty(correct_operator)
@@ -237,7 +237,7 @@ switch varargin{1}
                         internal_sdpvarstate.ExtendedMap(end).var = y;
                         internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);                        
                         internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X);
-                        yy = y;
+                        allNewExtended = y;
                     end
                 else
                     aux_bin = binvar(numel(X),1);
@@ -270,11 +270,11 @@ switch varargin{1}
                             internal_sdpvarstate.ExtendedMap(end).var = yi;
                             internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
                             internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X(i));
-                            yy = [yy y(i)];
+                            allNewExtended = [allNewExtended y(i)];
                         end
                     end
                 end
-                y_vars = getvariables(yy);
+                y_vars = getvariables(allNewExtended);
                 internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables y_vars];
                 y = reshape(y,size(X,1),size(X,2));
                 y = setoperatorname(y,varargin{2});
