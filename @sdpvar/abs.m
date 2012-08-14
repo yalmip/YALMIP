@@ -31,7 +31,8 @@ switch class(varargin{1})
                 % Description using epigraphs
                 t = varargin{2};
                 X = varargin{3};
-                varargout{1} = set(-t <= X <= t);
+              %  varargout{1} = set(-t <= X <= t);
+                varargout{1} = [1 -1;-1 -1]*[X;t] <= [0;0];%-t <= X <= t);
                 
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph');
                 varargout{3} = X;
@@ -40,19 +41,19 @@ switch class(varargin{1})
                 % Exact description using binary variables
                 t = varargin{2};
                 X = varargin{3};
-                F = set([]);
+                d = varargin{4};
                 [M,m]=derivebounds(X);
                 if m>=0
-                    F = F + set(t == X);
+                    F = set(t == X);
                 elseif M<=0
-                    F = F + set(t == -X);
+                    F = set(t == -X);
                 else
-                    d = binvar(1,1);
+                   % d = binvar(1,1);
                     maxABSX = max([abs(m) abs(M)],[],2);
                    % F = F + set(0<= t <= maxABSX);
                    % F = F + set(X <= M*d)     + set(0 <= t+X <= 2*maxABSX*d);
                    % F = F + set(X >= m*(1-d)) + set(0 <= t-X <= 2*maxABSX*(1-d));
-                    F = [F, [0 1 0;
+                    F = [[0 1 0;
                      0 -1 0;   
                      1 0 -M;
                      1 1 -2*maxABSX;

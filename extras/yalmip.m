@@ -233,13 +233,14 @@ switch varargin{1}
                     end
                     if ~found
                         internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
-                        internal_sdpvarstate.ExtendedMap(end).arg = {X,[]};
+                        internal_sdpvarstate.ExtendedMap(end).arg = {X,binvar(1),[]};
                         internal_sdpvarstate.ExtendedMap(end).var = y;
                         internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);                        
                         internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X);
                         yy = y;
                     end
                 else
+                    aux_bin = binvar(numel(X),1);
                     for i = 1:numel(X)
                         yi = y(i);
                         % This is a bummer. If we scalarize the abs-operator,
@@ -265,7 +266,7 @@ switch varargin{1}
                         end
                         if ~found
                             internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
-                            internal_sdpvarstate.ExtendedMap(end).arg = {X(i),[]};
+                            internal_sdpvarstate.ExtendedMap(end).arg = {X(i),aux_bin(i),[]};
                             internal_sdpvarstate.ExtendedMap(end).var = yi;
                             internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
                             internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X(i));
