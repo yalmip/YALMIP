@@ -259,8 +259,6 @@ switch varargin{1}
                         else
                             if ~isempty(correct_operator)
                                 this_hash = create_trivial_hash(Xi);
-                                
-                                jj=find(this_hash == [internal_sdpvarstate.ExtendedMap(find(correct_operator)).Hash]);
                                 for j = find(correct_operator)
                                     if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash                                       
                                         if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
