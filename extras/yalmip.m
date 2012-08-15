@@ -259,8 +259,10 @@ switch varargin{1}
                         else
                             if ~isempty(correct_operator)
                                 this_hash = create_trivial_hash(Xi);
+                                
+                                jj=find(this_hash == [internal_sdpvarstate.ExtendedMap(find(correct_operator)).Hash]);
                                 for j = find(correct_operator)
-                                    if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
+                                    if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash                                       
                                         if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
                                           %  y(i) = internal_sdpvarstate.ExtendedMap(j).var;
                                             allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
@@ -335,7 +337,16 @@ switch varargin{1}
             end
             if isa(varargin{3},'sdpvar')
                 varargin{3} = getvariables(varargin{3});
-            end                    
+            end
+            % This dies not work since the arguments have different
+            % ordering. Try for instance x=sdpvar(2),[x>=0,abs(x)>=0]
+            % nx = max(size(internal_sdpvarstate.DependencyMap,1),max(varargin{2}));
+            % ny = max(size(internal_sdpvarstate.DependencyMap,2),max(varargin{3}));
+            % index = sub2ind([nx ny], varargin{2},varargin{3});
+            % if size(internal_sdpvarstate.DependencyMap,1) < nx | size(internal_sdpvarstate.DependencyMap,2) < ny
+            %     internal_sdpvarstate.DependencyMap(nx,ny) = 0;
+            % end
+            % internal_sdpvarstate.DependencyMap(index) = 1; 
             internal_sdpvarstate.DependencyMap(varargin{2},varargin{3}) = 1;                
             n = size(internal_sdpvarstate.monomtable,1);
             if size(internal_sdpvarstate.DependencyMap,1) < n
