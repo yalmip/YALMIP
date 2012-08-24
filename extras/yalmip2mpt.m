@@ -28,7 +28,7 @@ end
 % Extract data for free and parametric variables
 Matrices.F  = (2*Q(param_var,free_var));
 Matrices.Y  = (Q(param_var,param_var));
-Matrices.H  = (2*Q(free_var,free_var));
+Matrices.H  = full((2*Q(free_var,free_var)));
 Matrices.G  = (-F_struc(1+K.f:end,1+free_var));
 Matrices.E  = (F_struc(1+K.f:end,1+param_var));
 Matrices.W  = (F_struc(1+K.f:end,1));
