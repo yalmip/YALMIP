@@ -35,7 +35,7 @@ if ~all(isinf(interfacedata.ub))
 end
 
 x = sdpvar(length(c),1);
-[L,U] = boundingbox(A*x < b);
+[dummy, L, U] = boundingbox(A*x <= b);
 
 % Formulation here assumes maximization...
 Q = -2*interfacedata.Q;
