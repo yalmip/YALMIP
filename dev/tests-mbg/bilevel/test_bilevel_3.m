@@ -12,6 +12,7 @@ CI = [[y1 y2 y3] >= 0,
       2*x2+2*y1-y2-0.5*y3 <= 9.7];
 
 [K,details] = kkt(CI,OI^2,[y1 y2 y3]);
+ops = sdpsettings('solver','bnb','quadprog.Algorithm','interior-point-convex');
 solvesdp([K,CO,-100<=[x1 x2 y1 y2 y3 details.dual(:)']<=100],OO+OO^2,sdpsettings('solver','bnb'))
 
 
