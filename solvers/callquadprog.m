@@ -92,7 +92,9 @@ problem = 0;
 if solveroutput.flag==0
     solution.problem = 3;
 else
-    if solveroutput.flag==-2
+    if solveroutput.flag==-3
+        solution.problem = 2;
+    elseif solveroutput.flag==-2
         solution.problem = 1;
     else
         if solveroutput.flag>0
