@@ -171,7 +171,7 @@ end
 if ProblemClass.constraint.inequalities.secondordercone & ~socp_are_really_qc
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-         keep(i) = solvers(i).constraint.inequalities.secondordercone | solvers(i).constraint.inequalities.semidefinite.linear;
+         keep(i) = solvers(i).constraint.inequalities.secondordercone | solvers(i).constraint.inequalities.semidefinite.linear | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
     end
     solvers = solvers(find(keep));
 end  

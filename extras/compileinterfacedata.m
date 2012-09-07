@@ -693,7 +693,11 @@ end
 if ~((solver.constraint.inequalities.elementwise.quadratic.convex == 1) & socp_are_really_qc)
     if ~(strcmp(solver.tag,'bnb') & socp_are_really_qc & localsolver.constraint.inequalities.elementwise.quadratic.convex==1 )
         if ((solver.constraint.inequalities.secondordercone == 0) | (strcmpi(solver.tag,'bnb') & localsolver.constraint.inequalities.secondordercone==0))
-            [F,changed] = convertsocp(F);
+            if solver.constraint.inequalities.semidefinite.linear
+                [F,changed] = convertsocp(F);
+            else
+                [F,changed] = convertsocp2NONLINEAR(F);
+            end
             if changed
                 options.saveduals = 0; % We cannot calculate duals since we change the problem
             end
@@ -1215,6 +1219,20 @@ for i = 1:length(F)
     end
 end
 
+
+function [Fnew,changed] = convertsocp2NONLINEAR(F);
+changed = 0;
+socps = find(is(F,'socp'));
+Fsocp = F(socps);
+Fnew = F;
+if length(socps) > 0
+    changed = 1;
+    Fnew(socps) = [];
+    for i = socps(:)'
+        z = sdpvar(Fsocp(i));
+        Fnew = [Fnew, z(1)>=0, z(1)^2 >= z(2:end)'*z(2:end)];
+    end
+end
 
 
 
