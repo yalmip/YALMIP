@@ -182,7 +182,10 @@ if ~isempty(E)
     s = s + E'*mu;
 end
 if ~isempty(U)
-    KKTConstraints = [KKTConstraints, (Lambda <= U(:)):'Upper bound on duals'];
+    finU = find(~isinf(U));
+    if ~isempty(finU)
+        KKTConstraints = [KKTConstraints, (Lambda(finU) <= U(finU)):'Upper bound on duals'];
+    end
 end
 KKTConstraints = [KKTConstraints, (s == 0):'Stationarity'];
 
