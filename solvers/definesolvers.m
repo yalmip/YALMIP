@@ -310,13 +310,15 @@ solver(i).checkfor= {'mexclp'};
 solver(i).call    = 'callclp';
 i = i+1;
 
-solver(i) = lpsolver;
+solver(i) = qpsolver;
 solver(i).tag     = 'SCIP';
 solver(i).version = '';
 solver(i).checkfor= {'scip'};
 solver(i).call    = 'callscipmex';
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
+solver(i).constraint.sos2 = 1;
+solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 i = i+1;
 
 solver(i) = qpsolver;

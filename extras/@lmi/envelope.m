@@ -27,17 +27,46 @@ if ~isempty(p.evalMap)
     p_cut = addEvalVariableCuts(p_cut);   
 end
 
-% Now project onto the variables of interest
-for i = 1:length(x)
-    xi(i) = find(getvariables(x(i)) == p.used_variables);
+p_cut = mergeBoundsToModel(p_cut);
+if nargin > 1
+    % Now project onto the variables of interest
+    for i = 1:length(x)
+        xi(i) = find(getvariables(x(i)) == p.used_variables);
+    end
+    A = -p_cut.F_struc(:,2:end);
+    b = p_cut.F_struc(:,1);
+    
+    Akeep = A(:,xi);
+    A(:,xi)=[];
+    P = projection(polytope([Akeep A],b),1:length(xi));
+    E = ismember(x,P);
+else
+    E = p_cut.F_struc*[1;recover(p_cut.used_variables)]>=0;
 end
-A = -p_cut.F_struc(:,2:end);
-b = p_cut.F_struc(:,1);
 
-Akeep = A(:,xi);
-A(:,xi)=[];
-P = projection(polytope([Akeep A],b),1:length(xi));
-E = ismember(x,P);
+function p = mergeBoundsToModel(p);
+
+A = [];
+b = [];
+if ~isempty(p.lb)
+    A = [eye(length(p.c))];
+    b = p.ub;
+end
+if ~isempty(p.ub)
+    A = [A;-eye(length(p.c))];
+    b = [b;-p.lb];
+end
+infbounds = find(isinf(b));
+A(infbounds,:)=[];
+b(infbounds)=[];
+if length(b)>0
+    p.F_struc = [p.F_struc(1:p.K.f,:);[b -A];p.F_struc(p.K.f+1:end,:)];
+    p.K.l = p.K.l + length(b);
+end
+
+
+
+
 
 
 
