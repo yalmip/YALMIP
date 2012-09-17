@@ -3,6 +3,8 @@ function E = envelope(C,x)
 [aux1,aux2,aux3,p] = export(C,[],sdpsettings('solver','bmibnb'));
 
 % Copied from bmibnb
+p.high_monom_model=[];
+[p,changed] = convert_polynomial_to_quadratic(p);
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p);
 p = presolve_bounds_from_quadratics(p);
