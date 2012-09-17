@@ -353,6 +353,7 @@ if (relax==1) | (relax==3)
     poly_constraint = 0;
     bilin_constraint = 0;
     sigm_constraint = 0;
+    problem.evaluation = 0;
 end
 
 
