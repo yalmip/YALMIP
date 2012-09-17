@@ -38,7 +38,7 @@ if nargin > 1
     
     Akeep = A(:,xi);
     A(:,xi)=[];
-    P = projection(polytope([Akeep A],b),1:length(xi));
+    P = projection(polytope([Akeep A],b),1:length(xi));   
     E = ismember(x,P);
 else
     E = p_cut.F_struc*[1;recover(p_cut.used_variables)]>=0;
