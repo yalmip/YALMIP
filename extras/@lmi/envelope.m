@@ -14,7 +14,6 @@ p = update_monomial_bounds(p);
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
 p = compile_nonlinear_table(p);
-[p,x_min,upper] = initializesolution(p);
 
 % Copied from solvelower
 p_cut = p;
