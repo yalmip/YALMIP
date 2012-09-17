@@ -31,8 +31,6 @@ function varargout = ismember(varargin)
 % involved variable should have explicit variable bounds. 
 
 % Author Johan Löfberg 
-% $Id: ismember.m,v 1.18 2010-02-24 15:17:25 joloef Exp $  
-
 
 x = varargin{1};
 p = varargin{2};
