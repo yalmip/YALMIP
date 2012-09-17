@@ -1,9 +1,6 @@
 function YESNO = ismember_internal(x,p)
 %ISMEMBER_INTERNAL Helper for ISMEMBER
 
-% Author Johan Löfberg
-% $Id: ismember_internal.m,v 1.10 2007-08-08 08:14:28 joloef Exp $
-
 if isa(x,'sdpvar') & (isa(p,'polytope') | isa(p,'Polyhedron'))
 
     if length(p) == 1
