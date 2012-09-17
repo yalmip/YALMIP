@@ -88,6 +88,7 @@ if isa(p,'polytope')
     be = [];
     
 else
+    p = convexHull(p);
     H = p.A;
     K = p.b;
     Ae = p.Ae;
