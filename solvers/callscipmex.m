@@ -51,6 +51,9 @@ if K.q(1)>0
         qc.r = [qc.r;full(ai*ai-di'*di)];
         top = top  + K.q(i);
     end
+    if i == 1
+        qc.Q = qc.Q{1};
+    end
 else
     qc = [];
 end
