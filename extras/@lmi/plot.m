@@ -1,4 +1,4 @@
-function x_opt = plot(varargin)
+function varargout = plot(varargin)
 %PLOT  Plots the feasible region of a set of constraints
 %
 % p = plot(C,x,c,n,options)
@@ -185,6 +185,10 @@ elseif nargout == 0
         catch
         end
     end
+end
+
+if nargout > 0
+    varargout{1} = x_opt;
 end
 
 

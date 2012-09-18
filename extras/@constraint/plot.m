@@ -18,4 +18,7 @@ function varargout = plot(varargin)
 % $Id: plot.m,v 1.1 2007-02-28 16:20:33 joloef Exp $
 
 varargin{1} = lmi(varargin{1});
-plot(varargin{:});
+p = plot(varargin{:});
+if nargout > 0
+    varargout{1} = p;
+end
