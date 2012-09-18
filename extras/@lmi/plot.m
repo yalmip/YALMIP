@@ -205,8 +205,12 @@ if size(x_opt,1)==2
     set(p,'EdgeColor',options.plot.edgecolor);
     set(p,'Facealpha',options.plot.shade);    
 else
-    K = convhulln(x_opt');
-    p = patch('Vertices', x_opt', 'Faces', K,'FaceColor', color);
+    try
+        K = convhulln(x_opt');
+        p = patch('Vertices', x_opt');
+    catch
+         p = fill3(x_opt(1,:),x_opt(2,:),x_opt(3,:),1);
+    end
     set(p,'LineStyle',options.plot.wirestyle);   
     set(p,'LineWidth',options.plot.linewidth);
     set(p,'EdgeColor',options.plot.edgecolor);
