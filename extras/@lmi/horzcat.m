@@ -6,7 +6,7 @@ for i=1:1:nargin
         warning('One of the constraints evaluates to a DOUBLE variable');
     elseif isa(varargin{i},'logical')
         if all(varargin{i}==1)
-            warning('One of the constraints evaluates to a LOGICAL variable');
+          %  warning('One of the constraints evaluates to a LOGICAL variable');
         else
             error('One of the constraints evaluates to a FALSE LOGICAL variable');
         end
