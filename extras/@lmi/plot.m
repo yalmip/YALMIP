@@ -211,7 +211,7 @@ if size(x_opt,1)==2
 else
     try
         K = convhulln(x_opt');
-        p = patch('Vertices', x_opt');
+        p = patch('Vertices', x_opt','Faces',K,'FaceColor', color);
     catch
          p = fill3(x_opt(1,:),x_opt(2,:),x_opt(3,:),1);
     end
