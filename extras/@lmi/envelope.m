@@ -2,6 +2,13 @@ function [E,P] = envelope(C,x)
 
 [aux1,aux2,aux3,p] = export(C,[],sdpsettings('solver','bmibnb'));
 
+if isempty(p)
+    if ~isempty(aux3)
+        aux3.info
+    end
+    error('Failed to export a model')
+end
+
 % Copied from bmibnb
 p.high_monom_model=[];
 p.originalModel = p;
