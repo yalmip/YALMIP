@@ -78,7 +78,6 @@ if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
     dfM = cos(xM);
     dfU = cos(xU);
     [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-    %    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
 elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
     fL = sin(xL);
     fU = sin(xU);
