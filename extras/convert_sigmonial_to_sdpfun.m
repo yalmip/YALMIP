@@ -222,10 +222,18 @@ if xL<0 & xU>0
     b = [];
     return
 end
-if power > 1 | power < 0
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
+average_derivative = (fU-fL)/(xU-xL);
+xM = (average_derivative/power).^(1/(power-1));
+if xU < 0
+    xM = -xM;
+end
+fM = xM^power;
+dfM = power*xM^(power-1);
+
+if xL >= 0
+    [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
+    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 end
 if ~isempty(Ax)
     if isinf(Ax(1))
