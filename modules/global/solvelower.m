@@ -22,6 +22,8 @@ if ~isempty(p.evalMap)
     psave.evalMap = p_cut.evalMap;
 end
 
+p_cut = addMonomialCuts(p_cut);
+
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
