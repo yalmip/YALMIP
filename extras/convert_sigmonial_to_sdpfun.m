@@ -67,7 +67,9 @@ if any(model.variabletype > 3)
             model.F_struc = [model.F_struc zeros(size(model.F_struc,1),length(sigs))];
             model.lb = [model.lb;-inf(length(sigs),1)];
             model.ub = [model.ub;inf(length(sigs),1)];
-            model.x0 = [model.x0;model.x0(sigs).^powers(:)];
+            if ~isempty(model.x0)
+                model.x0 = [model.x0;model.x0(sigs).^powers(:)];
+            end
             for j = 1:length(sigs)
                 model.evalVariables = [model.evalVariables n_old_monoms+j];
                 model.isevalVariable(model.evalVariables)=1;               

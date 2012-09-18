@@ -5,19 +5,28 @@ function [E,P] = envelope(C,x)
 % Copied from bmibnb
 p.high_monom_model=[];
 p.originalModel = p;
+p = presolve_bounds_from_domains(p);
+p = presolve_bounds_from_modelbounds(p);
+p = presolve_bounds_from_quadratics(p);
+p = update_eval_bounds(p);
+p = update_monomial_bounds(p);
+p = presolve_bounds_from_equalities(p);
+p = update_eval_bounds(p);
+p = update_monomial_bounds(p);
+p = update_eval_bounds(p);
+p = update_monomial_bounds(p);
+p = convert_sigmonial_to_sdpfun(p);
 [p,changed] = convert_polynomial_to_quadratic(p);
-for i = 1:2
-    p = presolve_bounds_from_domains(p);
-    p = presolve_bounds_from_modelbounds(p);
-    p = presolve_bounds_from_quadratics(p);
-    p = update_eval_bounds(p);
-    p = update_monomial_bounds(p);
-    p = presolve_bounds_from_equalities(p);
-    p = update_eval_bounds(p);
-    p = update_monomial_bounds(p);
-    p = update_eval_bounds(p);
-    p = update_monomial_bounds(p);
-end
+p = presolve_bounds_from_modelbounds(p);
+p = presolve_bounds_from_quadratics(p);
+p = update_eval_bounds(p);
+p = update_monomial_bounds(p);
+p = presolve_bounds_from_equalities(p);
+p = update_eval_bounds(p);
+p = update_monomial_bounds(p);
+p = update_eval_bounds(p);
+p = update_monomial_bounds(p);
+
 p = compile_nonlinear_table(p);
 
 % Copied from solvelower

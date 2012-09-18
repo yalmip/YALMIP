@@ -14,7 +14,7 @@ if any(p.originalModel.variabletype==3)
                     U = p.ub(monom_variable);
                     
                     % Tangent at x = lower bound
-                    if L<=0
+                    if L<=0                        
                         p.F_struc(end+1,1) = L^n-n*L^n;
                         p.F_struc(end,1+monom_index)=-1;
                         p.F_struc(end,1+monom_variable)=n*L^(n-1);
