@@ -32,7 +32,8 @@ if any(p.originalModel.variabletype==3)
                     % Line between lower bound and tangent intersection
                     r = zeros(1,n+1);r(1)=n-1;r(2)=-L*n;r(end)=L^n;
                     r = roots(r);
-                    r = r(min(find(r==real(r))));
+                    %r = r(min(find(r==real(r))));
+                    r = max(r(imag(r)==0));
                     if r >= U
                         r = U;
                         fprim = (U^n-L^n)/(U-L);
@@ -44,10 +45,11 @@ if any(p.originalModel.variabletype==3)
                     p.F_struc(end,1+monom_variable)=-fprim;
                     p.K.l = p.K.l+1;
                     
-                    % Line between upper bound and tangent intersection
+%                     % Line between upper bound and tangent intersection
                     r = zeros(1,n+1);r(1)=n-1;r(2)=-U*n;r(end)=U^n;
                     r = roots(r);
-                    r = r(min(find(r==real(r))));
+                    %r = r(min(find(r==real(r))));
+                    r = min(r(imag(r)==0));
                     if r <= L
                         r = L;
                         fprim = (U^n-L^n)/(U-L);

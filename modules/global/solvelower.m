@@ -23,10 +23,10 @@ if ~isempty(p.evalMap)
 end
 
 if any(p.originalModel.variabletype == 3)
-    pp = p_cut;
-    p_cut.F_struc(p_cut.K.f+p_cut.K.l+1:end,:)=[];
-    p_cut = addMonomialCuts(p_cut);
-    p_cut.F_struc = [p_cut.F_struc;pp.F_struc(pp.K.f+pp.K.l+1:end,:)];
+     pp = p_cut;
+     p_cut.F_struc(p_cut.K.f+p_cut.K.l+1:end,:)=[];
+     p_cut = addMonomialCuts(p_cut);
+     p_cut.F_struc = [p_cut.F_struc;pp.F_struc(pp.K.f+pp.K.l+1:end,:)];
 end
 
 
