@@ -8,11 +8,20 @@ if any(p.originalModel.variabletype==3)
         monom_variable = find(monom);
         if length(monom_variable)==1
             n = monom(monom_variable);
-            if ~even(n)
-                if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0
-                    L = p.lb(monom_variable);
-                    U = p.ub(monom_variable);
+            
+             L = p.lb(monom_variable);
+             U = p.ub(monom_variable);
                     
+            if even(n)
+%                 M = (L+U)/2;
+%                 [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));
+%                 p.F_struc(end+1:end+length(b),1) = b;
+%                 p.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
+%                 p.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
+%                 p.K.l = p.K.l+length(b);
+            else
+                if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0
+                   
                     % Tangent at x = lower bound
                     if L<=0                        
                         p.F_struc(end+1,1) = L^n-n*L^n;
