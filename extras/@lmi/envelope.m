@@ -45,7 +45,6 @@ end
 % Copied from bmibnb
 p.high_monom_model=[];
 p.originalModel = p;
-
 p = presolveOneMagicRound(p);   
 p = convert_sigmonial_to_sdpfun(p);
 [p,changed] = convert_polynomial_to_quadratic(p);
