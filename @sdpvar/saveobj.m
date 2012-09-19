@@ -1,10 +1,4 @@
 function out = saveobj(obj)
 %SAVEOBJ (overloaded)
-
-% Author Johan Löfberg 
-% $Id: saveobj.m,v 1.4 2005-02-14 16:46:38 johanl Exp $   
-
-% We have to save the persistent variables in the SDPVAR class
-obj.savedata.internalsdpvarstate = yalmip('getinternalsdpvarstate');
-obj.savedata.version = yalmip('version');
-out = obj;
+warning('YALMIP objects cannot be saved in binary format. You will run into troubles if you try to load this file later. You should clear all YALMIP objects first, or avoid having any YALMIP objects in the list of variables which you save.');
+out = [];
