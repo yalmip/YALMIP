@@ -1,9 +1,7 @@
 function p = addMonomialCuts(p)
 
-p_cut = emptyNumericalModel;
-top = 0;
-
 if any(p.originalModel.variabletype==3)
+    p_cut = emptyNumericalModel;
     monomials = find(p.originalModel.variabletype==3);
     for i = 1:length(monomials)
         monom_index = monomials(i);

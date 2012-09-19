@@ -8,7 +8,15 @@ else
     p = p0;
     return;
 end
+if isempty(p0.F_struc)
+    p = p1;
+    return
+end
 
+if size(p0.F_struc,2) < size(p1.F_struc,2)
+    p0.F_struc(end,size(p1.F_struc,2))=0;
+end
+    
 p1.F_struc = sparse(p1.F_struc);
 p0.F_struc = sparse(p0.F_struc);
 
@@ -27,11 +35,13 @@ if p1.K.l > 0
     p.K.l = p.K.l + p1.K.l;
 end
 
-% if p1.K.q > 0
-% end
+if p1.K.q > 0
+    error('FIXME')
+end
 
-% if p1.K.s > 0
+if p1.K.s > 0
+  error('FIXME')
 %     p.F_struc = [p.F_struc;p1.F_struc(1+p1.K.f+p1.K.l+sum(p1.K.q):end,:)];
 %     p.K.s = [p.K.s p1.K.s];p.K.s(p1.K.s==0)=[];
-% end
+end
 

@@ -2,9 +2,10 @@ function pcut = addEvalVariableCuts(p)
 
 pcut = p;
 if ~isempty(p.evalMap)
-    temp = p.F_struc(1:p.K.f,:);
-    p.F_struc(1:p.K.f,:) = [];
-    pcut = p;
+   % temp = p.F_struc(1:p.K.f,:);
+   % p.F_struc(1:p.K.f,:) = [];
+    %pcut = p;
+    pcut = emptyNumericalModel;
     for i = 1:length(p.evalMap)
         y = p.evalVariables(i);
         x = p.evalMap{i}.variableIndex;
@@ -24,12 +25,12 @@ if ~isempty(p.evalMap)
                         K = p.evalMap{i}.oldhull.K;
                     else
                         [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-                        pcut.evalMap{i}.oldhull.xL = xL;
-                        pcut.evalMap{i}.oldhull.xU = xU;
-                        pcut.evalMap{i}.oldhull.Ax = Ax;
-                        pcut.evalMap{i}.oldhull.Ay = Ay;
-                        pcut.evalMap{i}.oldhull.b = b;
-                        pcut.evalMap{i}.oldhull.K = K;
+                        p.evalMap{i}.oldhull.xL = xL;
+                        p.evalMap{i}.oldhull.xU = xU;
+                        p.evalMap{i}.oldhull.Ax = Ax;
+                        p.evalMap{i}.oldhull.Ay = Ay;
+                        p.evalMap{i}.oldhull.b = b;
+                        p.evalMap{i}.oldhull.K = K;
                     end
                 catch
                     if isfield(p.evalMap{i},'oldhull') & isequal(p.evalMap{i}.oldhull.xL,xL) & isequal(p.evalMap{i}.oldhull.xU,xU)
@@ -39,12 +40,12 @@ if ~isempty(p.evalMap)
                         K = p.evalMap{i}.oldhull.K;
                     else
                         [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-                        pcut.evalMap{i}.oldhull.xL = xL;
-                        pcut.evalMap{i}.oldhull.xU = xU;
-                        pcut.evalMap{i}.oldhull.Ax = Ax;
-                        pcut.evalMap{i}.oldhull.Ay = Ay;
-                        pcut.evalMap{i}.oldhull.b = b;
-                        pcut.evalMap{i}.oldhull.K = K;
+                        p.evalMap{i}.oldhull.xL = xL;
+                        p.evalMap{i}.oldhull.xU = xU;
+                        p.evalMap{i}.oldhull.Ax = Ax;
+                        p.evalMap{i}.oldhull.Ay = Ay;
+                        p.evalMap{i}.oldhull.b = b;
+                        p.evalMap{i}.oldhull.K = K;
                     end
                 end
             else
@@ -109,12 +110,16 @@ if ~isempty(p.evalMap)
                 F_structemp(:,1+y) = -Ay;
                 F_structemp(:,1+x) = -Ax;
                 F_structemp(:,1) = b;
-                pcut.F_struc = [F_structemp; pcut.F_struc];
-                pcut.K.l = pcut.K.l + K.l;%length(b);
-                pcut.K.f = pcut.K.f + K.f;%length(b);
+                localModel = createNumericalModel(F_structemp,K);
+                pcut = mergeNumericalModels(pcut,localModel);
+              %  pcut.F_struc = [F_structemp; pcut.F_struc];
+              %  pcut.K.l = pcut.K.l + K.l;%length(b);
+              %  pcut.K.f = pcut.K.f + K.f;%length(b);
             end
         end
     end
-    pcut.F_struc = [temp;pcut.F_struc];
+    
+    pcut = mergeNumericalModels(p,pcut);
+    %pcut.F_struc = [temp;pcut.F_struc];
 end
 
