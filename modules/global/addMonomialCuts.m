@@ -1,5 +1,8 @@
 function p = addMonomialCuts(p)
 
+p_cut = emptyNumericalModel;
+top = 0;
+
 if any(p.originalModel.variabletype==3)
     monomials = find(p.originalModel.variabletype==3);
     for i = 1:length(monomials)
@@ -24,18 +27,18 @@ if any(p.originalModel.variabletype==3)
                    
                     % Tangent at x = lower bound
                     if L<=0                        
-                        p.F_struc(end+1,1) = L^n-n*L^n;
-                        p.F_struc(end,1+monom_index)=-1;
-                        p.F_struc(end,1+monom_variable)=n*L^(n-1);
-                        p.K.l = p.K.l+1;
+                        p_cut.F_struc(end+1,1) = L^n-n*L^n;
+                        p_cut.F_struc(end,1+monom_index)=-1;
+                        p_cut.F_struc(end,1+monom_variable)=n*L^(n-1);
+                        p_cut.K.l = p_cut.K.l+1;
                     end
                      
                     % Tangent at x = upper bound
                     if U >= 0
-                        p.F_struc(end+1,1) = -(U^n-n*U^n);
-                        p.F_struc(end,1+monom_index)= 1;
-                        p.F_struc(end,1+monom_variable)=-n*U^(n-1);
-                        p.K.l = p.K.l+1;
+                        p_cut.F_struc(end+1,1) = -(U^n-n*U^n);
+                        p_cut.F_struc(end,1+monom_index)= 1;
+                        p_cut.F_struc(end,1+monom_variable)=-n*U^(n-1);
+                        p_cut.K.l =  p_cut.K.l+1;
                     end
                     
                     % Line between lower bound and tangent intersection
@@ -49,10 +52,10 @@ if any(p.originalModel.variabletype==3)
                     else
                         fprim = n*r^(n-1);
                     end
-                    p.F_struc(end+1,1) = -L^n+L*fprim;
-                    p.F_struc(end,1+monom_index)=1;
-                    p.F_struc(end,1+monom_variable)=-fprim;
-                    p.K.l = p.K.l+1;
+                    p_cut.F_struc(end+1,1) = -L^n+L*fprim;
+                    p_cut.F_struc(end,1+monom_index)=1;
+                    p_cut.F_struc(end,1+monom_variable)=-fprim;
+                    p_cut.K.l = p_cut.K.l+1;
                     
 %                     % Line between upper bound and tangent intersection
                     r = zeros(1,n+1);r(1)=n-1;r(2)=-U*n;r(end)=U^n;
@@ -65,12 +68,13 @@ if any(p.originalModel.variabletype==3)
                     else
                         fprim = n*r^(n-1);
                     end
-                    p.F_struc(end+1,1) = U^n-U*fprim;
-                    p.F_struc(end,1+monom_index)=-1;
-                    p.F_struc(end,1+monom_variable)=fprim;
-                    p.K.l = p.K.l+1;
+                    p_cut.F_struc(end+1,1) = U^n-U*fprim;
+                    p_cut.F_struc(end,1+monom_index)=-1;
+                    p_cut.F_struc(end,1+monom_variable)=fprim;
+                    p_cut.K.l = p_cut.K.l+1;
                 end
             end
         end
     end
+    p = mergeNumericalModels(p,p_cut);
 end

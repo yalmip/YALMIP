@@ -1,5 +1,17 @@
 function p = mergeNumericalModels(p0,p1)
 
+if ~isempty(p1.F_struc)
+    if size(p1.F_struc,2) < size(p0.F_struc,2)
+        p1.F_struc(end,size(p0.F_struc,2))=0;
+    end
+else
+    p = p0;
+    return;
+end
+
+p1.F_struc = sparse(p1.F_struc);
+p0.F_struc = sparse(p0.F_struc);
+
 % It is assumed p0 is the master model, i.e. p1 only contains constraints
 p = p0;
 

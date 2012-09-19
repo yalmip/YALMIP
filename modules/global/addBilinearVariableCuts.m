@@ -1,5 +1,8 @@
 function pcut = addBilinearVariableCuts(p)
 
+if isempty(p.bilinears)
+    pcut = p;
+else
 %pcut = p;
 pcut = emptyNumericalModel;
 
@@ -61,19 +64,7 @@ if ~isempty(still_uncertain)
 end
 
 pcut = mergeNumericalModels(p,pcut);
+end
 
-% if p1.K.q > 0
-% end
-% if p1.K.s > 0
-%     p.F_struc = [p.F_struc;p1.F_struc(1+p1.K.f+p1.K.l+sum(p1.K.q):end,:)];
-%     p.K.s = [p.K.s p1.K.s];p.K.s(p1.K.s==0)=[];
-% end
-
-function p = emptyNumericalModel;
-p.F_struc = [];
-p.K.f = 0;
-p.K.l = 0;
-p.K.q = 0;
-p.K.s = 0;
 
 

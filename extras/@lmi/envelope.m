@@ -59,9 +59,8 @@ if ~isempty(p.bilinears)
     p_cut = addBilinearVariableCuts(p_cut);
     p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
 end
-if ~isempty(p.evalMap)
-    p_cut = addEvalVariableCuts(p_cut);
-end
+
+p_cut = addEvalVariableCuts(p_cut);
 p_cut = addMonomialCuts(p_cut);
 
 p_cut = mergeBoundsToModel(p_cut);

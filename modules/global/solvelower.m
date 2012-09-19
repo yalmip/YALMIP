@@ -12,9 +12,9 @@ p.K.f = p.K.f - length(removeThese);
 p_cut = p;
 
 if ~isempty(p.bilinears)
-  %  p_cut.F_struc(1:p.K.f,:)=[];    
+    p_cut.F_struc(1:p.K.f,:)=[];
     p_cut = addBilinearVariableCuts(p_cut);
-  %  p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
+    p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
 end
 
 if ~isempty(p.evalMap)
@@ -23,10 +23,10 @@ if ~isempty(p.evalMap)
 end
 
 if any(p.originalModel.variabletype == 3)
-     pp = p_cut;
-     p_cut.F_struc(p_cut.K.f+p_cut.K.l+1:end,:)=[];
-     p_cut = addMonomialCuts(p_cut);
-     p_cut.F_struc = [p_cut.F_struc;pp.F_struc(pp.K.f+pp.K.l+1:end,:)];
+    %  pp = p_cut;
+    %  p_cut.F_struc(p_cut.K.f+p_cut.K.l+1:end,:)=[];
+    p_cut = addMonomialCuts(p_cut);
+    %  p_cut.F_struc = [p_cut.F_struc;pp.F_struc(pp.K.f+pp.K.l+1:end,:)];
 end
 
 
@@ -39,7 +39,7 @@ if any(p_cut.ub+1e-8<p_cut.lb)
 else
     % We are solving relaxed problem (penbmi might be local solver)
     p_cut.monomtable = eye(length(p_cut.c));
-
+    
     if p.solver.lowersolver.objective.quadratic.convex
         % Setup quadratic
         for i = 1:size(p.bilinears,1)
@@ -71,7 +71,7 @@ else
         end
         cost = output.Primal'*p.Q*output.Primal + p.c'*output.Primal + p.f;
     else
-
+        
         if nnz(fixed)==0
             
             if ~isempty(p_cut.bilinears) & 0
@@ -81,7 +81,7 @@ else
                 end
                 usedterms = zeros(size(p_cut.bilinears,1),1);
                 for i = 1:size(p_cut.bilinears,1)
-                    if ~usedterms(i) 
+                    if ~usedterms(i)
                         windex = p_cut.bilinears(i,1);
                         xindex = p_cut.bilinears(i,2);
                         yindex = p_cut.bilinears(i,3);
@@ -95,54 +95,54 @@ else
                                 usedterms(ysquaredindex) = 1;
                                 xsquaredindex =  p_cut.bilinears(xsquaredindex,1);
                                 ysquaredindex =  p_cut.bilinears(ysquaredindex,1);
-                         if 0
-                             Z = zeros(9,size(p_cut.F_struc,2));
-                            Z(1,xsquaredindex+1) = 1;
-                            Z(2,windex+1) = 1;
-                            Z(4,windex+1) = 1;
-                            Z(5,ysquaredindex+1) = 1;
-                            Z(3,xindex+1) = 1;
-                            Z(7,xindex+1) = 1;
-                            Z(6,yindex+1) = 1;
-                            Z(8,yindex+1) = 1;
-                            Z(9,1)=1;
-                         else
-                             xL = p.lb(xindex);
-                             yL = p.lb(yindex);
-                             
-                            Z = zeros(9,size(p_cut.F_struc,2));
-                            Z(1,xsquaredindex+1) = 1;
-                            Z(2,windex+1) = 1;
-                            Z(4,windex+1) = 1;
-                            Z(5,ysquaredindex+1) = 1;
-                            Z(3,xindex+1) = 1;
-                            Z(7,xindex+1) = 1;
-                            Z(6,yindex+1) = 1;
-                            Z(8,yindex+1) = 1;
-                            Z(9,1)=1;
-                            Z(3,1) = -xL;
-                            Z(7,1) = -xL;
-                            Z(6,1) = -yL;
-                            Z(8,1) = -yL;
-                            
-                            Z(1,xindex+1) = -2*xL;
-                            Z(5,yindex+1) = -2*yL;
-                            
-                            Z(1,1) = xL^2;
-                            Z(5,1) = yL^2;
-                            
-                            Z(4,xindex+1) = -yL;
-                            Z(4,yindex+1) = -xL;
-                            Z(4,1) = xL*yL;
-
-                            Z(2,xindex+1) = -yL;
-                            Z(2,yindex+1) = -xL;
-                            Z(2,1) = xL*yL;
-
-                            
-                         end
-                            p_cut.F_struc = [p_cut.F_struc;Z];
-                            p_cut.K.s = [p_cut.K.s 3];
+                                if 0
+                                    Z = zeros(9,size(p_cut.F_struc,2));
+                                    Z(1,xsquaredindex+1) = 1;
+                                    Z(2,windex+1) = 1;
+                                    Z(4,windex+1) = 1;
+                                    Z(5,ysquaredindex+1) = 1;
+                                    Z(3,xindex+1) = 1;
+                                    Z(7,xindex+1) = 1;
+                                    Z(6,yindex+1) = 1;
+                                    Z(8,yindex+1) = 1;
+                                    Z(9,1)=1;
+                                else
+                                    xL = p.lb(xindex);
+                                    yL = p.lb(yindex);
+                                    
+                                    Z = zeros(9,size(p_cut.F_struc,2));
+                                    Z(1,xsquaredindex+1) = 1;
+                                    Z(2,windex+1) = 1;
+                                    Z(4,windex+1) = 1;
+                                    Z(5,ysquaredindex+1) = 1;
+                                    Z(3,xindex+1) = 1;
+                                    Z(7,xindex+1) = 1;
+                                    Z(6,yindex+1) = 1;
+                                    Z(8,yindex+1) = 1;
+                                    Z(9,1)=1;
+                                    Z(3,1) = -xL;
+                                    Z(7,1) = -xL;
+                                    Z(6,1) = -yL;
+                                    Z(8,1) = -yL;
+                                    
+                                    Z(1,xindex+1) = -2*xL;
+                                    Z(5,yindex+1) = -2*yL;
+                                    
+                                    Z(1,1) = xL^2;
+                                    Z(5,1) = yL^2;
+                                    
+                                    Z(4,xindex+1) = -yL;
+                                    Z(4,yindex+1) = -xL;
+                                    Z(4,1) = xL*yL;
+                                    
+                                    Z(2,xindex+1) = -yL;
+                                    Z(2,yindex+1) = -xL;
+                                    Z(2,1) = xL*yL;
+                                    
+                                    
+                                end
+                                p_cut.F_struc = [p_cut.F_struc;Z];
+                                p_cut.K.s = [p_cut.K.s 3];
                             end
                         end
                     end
@@ -173,12 +173,12 @@ else
             if ~isempty(p_cut.F_struc)
                 p_cut.F_struc(:,1)=p_cut.F_struc(:,1)+p_cut.F_struc(:,1+find(fixed))*p_cut.lb(fixed);
                 p_cut.F_struc(:,1+find(fixed))=[];
-
+                
                 rf = find(~any(p_cut.F_struc,2));
                 rf = rf(rf<=(p_cut.K.f + p_cut.K.l));
                 p_cut.F_struc(rf,:) = [];
-                p_cut.K.l = p_cut.K.l - nnz(rf>p_cut.K.f);                
-                p_cut.K.f = p_cut.K.f - nnz(rf<=p_cut.K.f);               
+                p_cut.K.l = p_cut.K.l - nnz(rf>p_cut.K.f);
+                p_cut.K.f = p_cut.K.f - nnz(rf<=p_cut.K.f);
             end
             p_cut.c(removethese)=[];
             if nnz(p_cut.Q)>0
@@ -188,7 +188,7 @@ else
             else
                 p_cut.Q = spalloc(length(p_cut.c),length(p_cut.c),0);
             end
-
+            
             if ~isempty(p_cut.binary_variables)
                 new_bin = [];
                 new_var = find(~fixed);
@@ -207,13 +207,13 @@ else
                 end
                 p_cut.integer_variables = new_bin;
             end
-
+            
             p_cut.lb(removethese)=[];
             p_cut.ub(removethese)=[];
             p_cut.x0(removethese)=[];
             p_cut.monomtable(:,find(removethese))=[];
             p_cut.monomtable(find(removethese),:)=[];
-            try                                            
+            try
                 output = feval(lowersolver,p_cut);
             catch
                 1
@@ -223,6 +223,6 @@ else
             x(~removethese)=output.Primal;
             output.Primal = x;
             cost = output.Primal'*pp.Q*output.Primal + pp.c'*output.Primal + p.f;
-        end      
+        end
     end
 end
