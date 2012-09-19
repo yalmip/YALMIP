@@ -35,5 +35,5 @@ F=[F,0<=x10];
 
 % Solve problem
 sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem == 3);
+mbg_asserttrue(sol.problem == 0);
 mbg_asserttolequal(double(objvar),-0.375, 1e-2);
