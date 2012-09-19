@@ -55,9 +55,9 @@ p = compile_nonlinear_table(p);
 % Copied from solvelower
 p_cut = p;
 if ~isempty(p.bilinears)
-    p_cut.F_struc(1:p.K.f,:)=[];
+   % p_cut.F_struc(1:p.K.f,:)=[];
     p_cut = addBilinearVariableCuts(p_cut);
-    p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
+   % p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
 end
 
 p_cut = addEvalVariableCuts(p_cut);

@@ -13,7 +13,7 @@ if isempty(p0.F_struc) & isempty(p1.F_struc)
     return
 end
 
-if size(p0.F_struc,2) < size(p1.F_struc,2)
+if (size(p0.F_struc,2) < size(p1.F_struc,2)) & (size(p0.F_struc,1)>0)
     p0.F_struc(end,size(p1.F_struc,2))=0;
 end
     

@@ -25,6 +25,7 @@ if ~isnan(lower) & ~isinf(lower)
             c(neg) = c(neg) + 2*d(neg).*xmin(neg);
             d(neg) = 0;
             p_test.F_struc = [-(p.lower-abs(p.lower)*0.01)+f c' d';p_test.F_struc];
+            p_test.K.l = p_test.K.l + 1;
         end
     end
 end
@@ -41,10 +42,11 @@ if upper < inf & ~(nnz(p.c)==0 &  nnz(p.Q)==0)
             d(pos) = 0;
             p_test.F_struc = [upper+abs(upper)*0.01-f -c' -d';p_test.F_struc];
             p_test.F_struc = [upper+abs(upper)*0.01-p.f -p_test.c';p_test.F_struc];
-
+            p_test.K.l = p_test.K.l + 2;
         end
     end
     p_test.F_struc = [upper+abs(upper)*0.01-p.f -p_test.c';p_test.F_struc];
+    p_test.K.l = p_test.K.l + 1;
 end
 
 if ~isempty(p.bilinears)
