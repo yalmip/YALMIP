@@ -46,10 +46,10 @@ end
 p.high_monom_model=[];
 p.originalModel = p;
 
-p = preSolveOneMagicRound(p);   
+p = presolveOneMagicRound(p);   
 p = convert_sigmonial_to_sdpfun(p);
 [p,changed] = convert_polynomial_to_quadratic(p);
-p = preSolveOneMagicRound(p);  
+p = presolveOneMagicRound(p);  
 p = compile_nonlinear_table(p);
 
 % Copied from solvelower
