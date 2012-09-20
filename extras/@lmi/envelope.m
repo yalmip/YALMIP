@@ -52,13 +52,7 @@ p = presolveOneMagicRound(p);
 p = compile_nonlinear_table(p);
 
 % Copied from solvelower
-p_cut = p;
-if ~isempty(p.bilinears)
-   % p_cut.F_struc(1:p.K.f,:)=[];
-    p_cut = addBilinearVariableCuts(p_cut);
-   % p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
-end
-
+p_cut = addBilinearVariableCuts(p);
 p_cut = addEvalVariableCuts(p_cut);
 p_cut = addMonomialCuts(p_cut);
 

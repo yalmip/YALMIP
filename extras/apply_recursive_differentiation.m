@@ -75,35 +75,17 @@ if 1 % USE NEW
                                     dp = 0;
                                     monomsj = mtT(:,j)';
                                     
-%                                    
-%                                     
-%                                         k = find(monomsj);
-%                                         n = length(k);
-%                                         M = repmat(monomsj(k),length(k),1);
-%                                         D = diag(M);
-%                                         N = M-speye(n);
-%                                         mos = prod((repmat(x(k)',n,1).^N)');
-%                                         dp2 = sum(mos'.*dX(k,variable).*D);
-%                                         
-%                                    
-                                   
                                     for k = find(monomsj & dX(:,variable)')
-                                        %monoms = monomsj;
-                                        %monoms(k) = 0;
-                                        %r = model.monomtable(j,k);
-                                        %s = find(monoms);
-                                        %dp = dp + r*x(k)^(r-1)*dX(k,variable)*prod((x(s)').^monoms(s));
+                                        
                                         
                                         monoms = monomsj;
                                         r = monoms(k);
-                                        monoms(k) = r-1;                                      
+                                        monoms(k) = r-1;
                                         s = find(monoms);
                                         z = prod((x(s)').^monoms(s));
                                         dp = dp + r*dX(k,variable)*z;
                                     end
-%                                     if abs(dp-dp2)>1e-12
-%                                         error
-%                                     end
+                                    %
                                     dX(j,variable) = real(dp);
                                 end
                             end

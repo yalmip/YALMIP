@@ -9,26 +9,31 @@ removeThese = find(p.EqualityConstraintState==inf);
 p.F_struc(removeThese,:) = [];
 p.K.f = p.K.f - length(removeThese);
 
-p_cut = p;
 
-if ~isempty(p.bilinears)
- %   p_cut.F_struc(1:p.K.f,:)=[];
-    p_cut = addBilinearVariableCuts(p_cut);
- %   p_cut.F_struc = [p.F_struc(1:p.K.f,:);p_cut.F_struc];
-end
-
+p_cut = addBilinearVariableCuts(p);
 if ~isempty(p.evalMap)
     p_cut = addEvalVariableCuts(p_cut);
     psave.evalMap = p_cut.evalMap;
 end
+p_cut = addMonomialCuts(p_cut);
 
-if any(p.originalModel.variabletype == 3)
-    %  pp = p_cut;
-    %  p_cut.F_struc(p_cut.K.f+p_cut.K.l+1:end,:)=[];
-    p_cut = addMonomialCuts(p_cut);
-    %  p_cut.F_struc = [p_cut.F_struc;pp.F_struc(pp.K.f+pp.K.l+1:end,:)];
-end
-
+% if p_cut.solver.lowersolver.constraint.inequalities.secondordercone
+%     if length(p_cut.bilinears) > 0
+%         for i = 1:length(p_cut.bilinears)
+%             if p_cut.bilinears(i,2) == p_cut.bilinears(i,3)
+%                 q = p_cut.bilinears(i,1);
+%                 xi = p_cut.bilinears(i,2);
+%                 p_cut.K.q = [p_cut.K.q 3];
+%                 p_cut.F_struc(end+1,1)=1;
+%                 p_cut.F_struc(end,1+q)=1;
+%                 p_cut.F_struc(end+1,1+xi)=2;
+%                 p_cut.F_struc(end+1,1)=1;
+%                 p_cut.F_struc(end,1+q)=-1;
+%             end
+%         end
+%         p_cut.K.q =  p_cut.K.q(p_cut.K.q>0);
+%     end
+% end
 
 % **************************************
 % SOLVE NODE PROBLEM
