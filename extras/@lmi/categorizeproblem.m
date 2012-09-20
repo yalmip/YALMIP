@@ -226,7 +226,7 @@ for i = 1:Counter
                                 f = Fi.data;f = f(:);
                                 ii = 1;
                                 while convex & ii<=length(f)
-                                    [Q,c,f,x,info] = quaddecomp(f(ii));
+                                    [Q,caux,faux,xaux,info] = quaddecomp(f(ii));
                                     
                                     if info | any(eig(full(Q)) > 0)
                                         convex = 0;
