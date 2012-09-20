@@ -80,8 +80,8 @@ else
     %  end
     
     % Call ISMEMBER to determine list of non-matching elements of A.
-    %tf = ~(ismember(a,b));
-    tf = ~(ismembc(a,b));
+    tf = ~(ismember(a,b));
+    %tf = ~(ismembc(sort(a),sort(b)));
     c = a(tf);
     c = uniquestripped(c);
     
