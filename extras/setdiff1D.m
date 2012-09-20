@@ -1,4 +1,4 @@
-function [c,ia] = setdiff(a,b,flag)
+function [c] = setdiff1D(a,b)
 %SETDIFF Set difference.
 %   SETDIFF(A,B) when A and B are vectors returns the values
 %   in A that are not in B.  The result will be sorted.  A and B
@@ -29,102 +29,69 @@ rowvec = ~((rowsA > 1 & colsB <= 1) | (rowsB > 1 & colsA <= 1) | isrows);
 
 nOut = 1;
 
-  
-  numelA = length(a);
-  numelB = length(b);
-  
-  if prod(size(a))~=numelA | prod(size(b))~=numelB
-    error('MATLAB:SETDIFF:AandBvectorsOrRowsFlag', ...
-          'A and B must be vectors or ''rows'' must be specified.');
-  end
-  
-  % Handle empty arrays.
-  
-  if (numelA == 0)
+
+numelA = length(a);
+numelB = length(b);
+
+% Handle empty arrays.
+
+if (numelA == 0)
     % Predefine outputs to be of the correct type.
     c = a([]);
     ia = [];
     % Ambiguous if no way to determine whether to return a row or column.
     ambiguous = (rowsA==0 & colsA==0) & ...
-      ((rowsB==0 & colsB==0) | numelB == 1);
+        ((rowsB==0 & colsB==0) | numelB == 1);
     if ~ambiguous
-      c = reshape(c,0,1);
-      ia = reshape(ia,0,1);
+        c = reshape(c,0,1);
+        ia = reshape(ia,0,1);
     end
-  elseif (numelB == 0)
+elseif (numelB == 0)
     % If B is empty, invoke UNIQUE to remove duplicates from A.
     if nOut <= 1
-      c = unique(a);
+        c = unique(a);
     else
-      [c,ia] = unique(a);
+        [c,ia] = unique(a);
     end
     return
     
-    % Handle scalar: one element.  Scalar A done only.  
+    % Handle scalar: one element.  Scalar A done only.
     % Scalar B handled within ISMEMBER and general implementation.
     
-  elseif (numelA == 1)
+elseif (numelA == 1)
     if ~ismember(a,b)
-      c = a;
-      ia = 1;
+        c = a;
+        ia = 1;
     else
-      c = [];
-      ia = [];
+        c = [];
+        ia = [];
     end
     return
     
     % General handling.
     
-  else
+else
     
     % Convert to columns.
     a = a(:);
     b = b(:);
-    
-    % Convert to double arrays, which sort faster than other types.
-    
-    whichclass = class(a);    
-    isdouble = strcmp(whichclass,'double');
-    
-    if ~isdouble
-      a = double(a);
-    end
-    
-    if ~strcmp(class(b),'double')
-      b = double(b);
-    end
+    %a = double(a);
+    %b = double(b);
+    %  end
     
     % Call ISMEMBER to determine list of non-matching elements of A.
-    tf = ~(ismember(a,b));
+    %tf = ~(ismember(a,b));
+    tf = ~(ismembc(a,b));
     c = a(tf);
+    c = uniquestripped(c);
     
-    % Call UNIQUE to remove duplicates from list of non-matches.
-    if nargout <= 1
-      c = unique(c);
-    else
-      [c,ndx] = unique(c);
-      
-      % Find indices by using TF and NDX.
-      where = find(tf);
-      ia = where(ndx);
-    end
-    
-    % Re-convert to correct output data type using FEVAL.
-    if ~isdouble
-      c = feval(whichclass,c);
-    end    
-  end
-  
-  % If row vector, return as row vector.
-  if rowvec
+end
+
+% If row vector, return as row vector.
+if rowvec
     c = c.';
     if nOut > 1
-      ia = ia.';
+        ia = ia.';
     end
-  end
-  
-
-% Automatically deblank strings
-if ischar(a)
-  c = deblank(c);
 end
+

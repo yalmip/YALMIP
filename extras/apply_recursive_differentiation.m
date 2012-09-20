@@ -62,7 +62,7 @@ if 1 % USE NEW
                 
                 % These are more complicated than just bilinear, so they
                 % have to be taken care of separately
-                computed = setdiff(computed,Alreadydone);   
+                computed = setdiff1D(computed,Alreadydone);   
                 if i > 1
                     % We might have inner derivatives from earlier
                     for variable = 1:length(model.linearindicies)
@@ -101,15 +101,12 @@ if 1 % USE NEW
                             for j = computed(find(hh))
                                 if requested(j)                                  
                                     monomsj = mtT(:,j)';                                    
-                                    %k = find(monomsj & dX(:,variable)');    
-                                    %if ~isequal(k,model.linearindicies(variable))
-                                    %    error
-                                    %end
+                                
                                     k = model.linearindicies(variable);
                                     monoms = monomsj;
                                     r = monoms(k);
                                     monoms(k) = r-1;
-                                  %  newMonoms = [newMonoms;monoms];
+                                
                                     s = find(monoms);
                                     dp = r*prod((x(s)').^monoms(s));                                    
                                     dX(j,variable) = real(dp);
@@ -122,7 +119,6 @@ if 1 % USE NEW
             otherwise
         end
     end
- %   size(newMonoms)
 else
     for variable = 1:length(model.linearindicies)
         dx = zeros(length(model.c),1);

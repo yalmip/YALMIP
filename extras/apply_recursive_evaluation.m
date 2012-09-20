@@ -20,8 +20,8 @@ try
     Bilinears = p.variabletype(indicies)==1;
     if any(Bilinears)
         Bilinears = indicies(p.variabletype(indicies)==1);
-        x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));
-        indicies = setdiff(indicies,Bilinears);
+        x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));       
+        indicies = setdiff1D(indicies,Bilinears);
     end
     V = p.monomtable(indicies,:);
     r = find(any(V,1));
