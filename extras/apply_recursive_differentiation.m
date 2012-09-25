@@ -87,7 +87,6 @@ if 1 % USE NEW
                                         z = prod((x(s)').^(monoms(s)));                                       
                                         dp = dp + r*dX(k,variable)*z;
                                     end
-                                    %
                                     dX(j,variable) = real(dp);
                                 end
                             end
