@@ -74,7 +74,8 @@ switch class(varargin{1})
             [H,K] = double(varargin{2});
             varargout{1} = [H*x <= K];
         elseif isa(varargin{2},'Polyhedron') & length(varargin{2})==1
-            P = convexHull(varargin{2});
+            %P = convexHull(varargin{2});
+            P = minHRep(varargin{2});
             varargout{1} = [P.A*x <= P.b, P.Ae*x == P.be];
         else                            
             varargout{1} = set(yalmip('define',mfilename,varargin{:}) == 1);            
