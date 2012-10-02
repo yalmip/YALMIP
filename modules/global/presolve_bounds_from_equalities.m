@@ -12,17 +12,45 @@ p_F_struc = p.F_struc;
 n_p_F_struc_cols = size(p_F_struc,2);
 
 if p.K.f >0
-    % Find bounds from sum(xi) = 1, xi>0
+    
     for j = 1:p.K.f
         if p_F_struc(j,1)>0
             [row,col,val] = find(p_F_struc(j,:));
+            % Find bounds from sum(xi) = 1, xi>0
             if all(val(2:end) < 0)
                 if all(p.lb(col(2:end)-1)>=0)
                     p.ub(col(2:end)-1) = min( p.ub(col(2:end)-1) , val(1)./abs(val(2:end)'));
                 end
+            end            
+        end
+    end
+    
+    % Presolve from bilinear x*y == k
+    for j = 1:p.K.f
+        if p_F_struc(j,1)~=0
+            [row,col,val] = find(p_F_struc(j,:));
+            
+            % Find bounds from sum(xi) = 1, xi>0
+            if length(col)==2
+                val = val/val(2); % val(1) + x==0
+                var = col(2)-1;
+                if p.variabletype(var)==1
+                    [ij] = find(p.monomtable(var,:));
+                    if p.lb(ij(1))>0 & p.lb(ij(2))>0
+                        % xi*xj == val(1)
+                        if -val(1)<0
+                            p.feasible = 0;
+                            return
+                        else
+                            p.ub(ij(2)) = min( p.ub(ij(2)),-val(1)/p.lb(ij(1)));
+                            p.ub(ij(1)) = min( p.ub(ij(1)),-val(1)/p.lb(ij(2)));
+                        end
+                    end
+                end
             end
         end
     end
+    
    
     A = p.F_struc(1:p.K.f,2:end);
     AT = A';
