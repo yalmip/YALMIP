@@ -89,10 +89,12 @@ end
 
 if K.q(1)>0
     nof_new = sum(K.q);
-    prob.a = [prob.a [spalloc(K.f,nof_new,0);
-              spalloc(K.l,nof_new,0);speye(nof_new)]];
-    prob.blc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end);
-    prob.buc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end);    
+    prob.a = [prob.a [spalloc(K.f,nof_new,0);spalloc(K.l,nof_new,0);speye(nof_new);spalloc(sum(K.s.^2),nof_new,0)]];
+   % prob.blc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end); % Note, fixed the SDP cones too
+   % prob.buc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end); % Note, fixed the SDP cones too 
+    prob.blc(1+K.f+K.l:K.f+K.l+sum(K.q)) = prob.buc(1+K.f+K.l:K.f+K.l+sum(K.q)); % Note, fixed the SDP cones too
+    %prob.buc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end); % Note, fixed the SDP cones too 
+    
     prob.c = [prob.c;zeros(nof_new,1)];
     top = size(F_struc,2)-1;
     for i = 1:length(K.q)
@@ -103,6 +105,46 @@ if K.q(1)>0
         top = top + K.q(i);
     end    
 end
+
+
+if K.s(1)>0  
+    % Semidefinite expressions start here
+    prob.bardim = [];
+    prob.bara.subi = [];
+    prob.bara.subj = [];
+    prob.bara.subk = [];
+    prob.bara.subl = [];
+    prob.bara.val = [];
+    
+    prob.barc.subj = [];
+    prob.barc.subk = [];
+    prob.barc.subl = [];
+    prob.barc.val  = [];   
+    
+    prob.blc(1+K.f+K.l+sum(K.q):end) = prob.buc(1+K.f+K.l+sum(K.q):end);
+
+    top = 1 + K.f + K.l + sum(K.q);
+    localtop = top;
+    remove = [];
+    for i = 1:length(K.s)
+        n = K.s(i);
+        aux = ones(n);
+        remove = [remove;top + find(triu(reshape(1:n^2,n,n),1))-1];
+        [k,l,val] = find(tril(aux+eye(n))/2); 
+        prob.bardim = [prob.bardim n];
+        prob.bara.subi = [prob.bara.subi localtop+(0:length(k)-1)];
+        prob.bara.subj = [prob.bara.subj repmat(i,1,length(k))];
+        prob.bara.subk = [prob.bara.subk k(:)'];
+        prob.bara.subl = [prob.bara.subl l(:)'];
+        prob.bara.val =  [prob.bara.val val(:)'];
+        top = top + n^2;
+        localtop = localtop + length(val);
+    end        
+    prob.a(remove,:)=[];
+    prob.blc(remove,:)=[];
+    prob.buc(remove,:)=[];
+end
+
 
 if ~isempty(integer_variables)
     prob.ints.sub = integer_variables;

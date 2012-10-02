@@ -570,6 +570,16 @@ solver(i).constraint.inequalities.secondordercone = 1;
 solver(i).objective.maxdet.convex = 1;
 i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'MOSEK';
+solver(i).version = 'SDP';
+solver(i).checkfor= {'mosekopt'};
+solver(i).call    = 'callmosek';
+solver(i).constraint.integer = 1;
+solver(i).constraint.inequalities.secondordercone = 1;
+solver(i).constraint.inequalities.semidefinite.linear = 1;
+i = i+1;
+
 solver(i) = sdpsolver;
 solver(i).tag     = 'SDPNAL';
 solver(i).version = '0.1';
