@@ -84,7 +84,23 @@ else
     if m>0
         z = [z;sdpvar(m,1)];
     end
-    E = p_cut.F_struc*[1;z]>=0;
+    E = [];
+    top = 1;
+    if p_cut.K.f > 0
+        E = [E,p_cut.F_struc(1:p_cut.K.f,:)*[1;z]==0];
+    end
+    if p_cut.K.l > 0
+        E = [E,p_cut.F_struc(1+p_cut.K.f:p_cut.K.f + p_cut.K.l,:)*[1;z]>=0];
+    end
+    if p_cut.K.s(1) > 0
+        top = 1 + p_cut.K.f + p_cut.K.l;
+        for i = 1:length(p_cut.K.s)
+            n = p_cut.K.s(i);
+            M = p_cut.F_struc(top:top+n^2-1,:)*[1;z];
+            top = top + n^2;
+            E = [E,reshape(M,n,n)>=0];
+        end
+    end 
 end
 
 function p = mergeBoundsToModel(p);
