@@ -3,7 +3,6 @@ function pcut = addBilinearVariableCuts(p)
 if isempty(p.bilinears)
     pcut = p;
 else
-%pcut = p;
 pcut = emptyNumericalModel;
 
 z = p.bilinears(:,1);

@@ -72,8 +72,6 @@ reduction_result = [];
 lower_hist = [];
 upper_hist = [];
 
-% load dummy
-
 while go_on
 
 %     if solved_nodes == 77
@@ -87,33 +85,28 @@ while go_on
     % *********************************************************************
     % Strenghten variable bounds a couple of runs
     % *********************************************************************
-   % for i = 1:1:1
-   
-  % options.bmibnb.strengthscheme = [1 2 1 5 6 1 4 1];
-  % options.bmibnb.strengthscheme = [1 2 1 3 1 4 1 5 1 6 1 4 1 6 1 4 1];
-  % options.bmibnb.strengthscheme = [];
-   p.changedbounds = 1;
-   
-   for i = 1:length(options.bmibnb.strengthscheme)
-       if ~p.feasible
-           break
-       end
-       switch options.bmibnb.strengthscheme(i)
-           case 1
-               p = updatebounds_recursive_evaluation(p);
-           case 2
-               p = updateboundsfromupper(p,upper,p.originalModel);
-           case 3
-               p = propagatequadratics(p,upper,lower);
-           case 4
-               p = propagatecomplementary(p);
-           case 5              
-               p = domain_reduction(p,upper,lower,lpsolver,x_min);               
-           case 6
-               p = presolve_bounds_from_equalities(p);
-           otherwise
-       end
-   end
+    p.changedbounds = 1;
+    
+    for i = 1:length(options.bmibnb.strengthscheme)
+        if ~p.feasible
+            break
+        end
+        switch options.bmibnb.strengthscheme(i)
+            case 1
+                p = updatebounds_recursive_evaluation(p);
+            case 2
+                p = updateboundsfromupper(p,upper,p.originalModel);
+            case 3
+                p = propagatequadratics(p,upper,lower);
+            case 4
+                p = propagatecomplementary(p);
+            case 5
+                p = domain_reduction(p,upper,lower,lpsolver,x_min);
+            case 6
+                p = presolve_bounds_from_equalities(p);
+            otherwise
+        end
+    end
 
     % *********************************************************************
     % Detect redundant constraints
@@ -235,8 +228,15 @@ while go_on
     % CONTINUE SPLITTING?
     % ************************************************
     if keep_digging & max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol
+        node = [];
+      %  already_tested = []
+      %  while ~isempty(setdiff(p.branch_variables,already_tested)) & isempty(node)
+      %  temp = p.branch_variables;
+      %  p.branch_variables=setdiff(p.branch_variables,already_tested);
         spliton = branchvariable(p,options,x);
-        node  = [];
+      %  p.branch_variables = union(p.branch_variables,already_tested);
+      %  already_tested = [already_tested spliton];
+      
         if ismember(spliton,p.complementary)
             i = find(p.complementary(:,1) == spliton);
             if isempty(i)
@@ -249,17 +249,26 @@ while go_on
             gap_over_v2 = (p.lb(v2)<=0) & (p.ub(v2)>=0) & (p.ub(v2)-p.lb(v2))>0;
             
             if gap_over_v1
-                node = savetonode(p,v1,0,0,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                pp = p;
+                pp.complementary( find((pp.complementary(:,1)==v1) | (pp.complementary(:,2)==v1)),:)=[];
+                node = savetonode(pp,v1,0,0,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
-                stack = push(stack,node);
+                if all(node.lb <= node.ub)
+                    stack = push(stack,node);                 
+                end
             end
             if gap_over_v2
-                node = savetonode(p,v2,0,0,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                pp = p;
+                %pp.complementary(i,:)=[];
+                pp.complementary( find((pp.complementary(:,1)==v2) | (pp.complementary(:,2)==v2)),:)=[];
+                node = savetonode(pp,v2,0,0,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
-                stack = push(stack,node);
-            end
+                if all(node.lb <= node.ub)
+                    stack = push(stack,node);                 
+                end
+            end     
         end
         if isempty(node)
             bounds  = partition(p,options,spliton,x);
@@ -274,7 +283,9 @@ while go_on
                 end
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
-                stack = push(stack,node);
+                if all(node.lb <= node.ub)
+                    stack = push(stack,node);
+                end
             end
         end
         lower = min([stack.lower]);
@@ -395,6 +406,7 @@ node.lb(p.integer_variables) = ceil(node.lb(p.integer_variables));
 node.ub(p.integer_variables) = floor(node.ub(p.integer_variables));
 node.lb(p.binary_variables) = ceil(node.lb(p.binary_variables));
 node.ub(p.binary_variables) = floor(node.ub(p.binary_variables));
+node.complementary = p.complementary;
 
 if direction == -1
     node.dpos = p.dpos-1/(2^sqrt(p.depth));
@@ -499,13 +511,19 @@ else
     acc_res2 = sum(abs(res(find((p.bilinears(:,2)==v2) |  p.bilinears(:,3)==v2))));
     
     if abs(acc_res1-acc_res2)<1e-3 & ismember(v2,p.branch_variables) & ismember(v1,p.branch_variables)
+        if abs(p.ub(v1)-p.lb(v1))>abs(p.ub(v2)-p.lb(v2))
+              spliton = v1;
+        elseif abs(p.ub(v1)-p.lb(v1))<abs(p.ub(v2)-p.lb(v2))
+            spliton = v2;
+        else
         % Oops, two with the same impact. To avoid that we keep pruning on
         % a variable that doesn't influence the bounds, we flip a coin on
         % which to branch on
-        if rand(1)>0
+        if rand(1)>0.5
             spliton = v1;
         else
             spliton = v2;
+        end
         end
     else
         if (~ismember(v2,p.branch_variables) | (acc_res1>acc_res2)) & ismember(v1,p.branch_variables)
@@ -586,6 +604,7 @@ else
     p.x0 = node.x0;
     p.InequalityConstraintState = node.InequalityConstraintState;
     p.EqualityConstraintState = node.EqualityConstraintState;
+    p.complementary = node.complementary;
     p.cutState = node.cutState;
     p.feasible = 1;
 end

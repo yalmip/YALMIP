@@ -88,7 +88,8 @@ p = presolve_bounds_from_quadratics(p);
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
 
-if p.K.f > 0
+if p.K.f > 0 &  ~isempty(p.KCut.f)
+    % FIXME: Turned off when having cut indicies 
     % Sort the equalities such that equalities with few terms are at the
     % top. This will improve bound propagation from equalities. If a tie,
     % place equality with least number of variables with infinite bound on

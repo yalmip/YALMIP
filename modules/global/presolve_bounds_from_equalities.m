@@ -36,7 +36,7 @@ if p.K.f >0
                 var = col(2)-1;
                 if p.variabletype(var)==1
                     [ij] = find(p.monomtable(var,:));
-                    if p.lb(ij(1))>0 & p.lb(ij(2))>0
+                    if p.lb(ij(1))>=0 & p.lb(ij(2))>=0
                         % xi*xj == val(1)
                         if -val(1)<0
                             p.feasible = 0;
@@ -44,7 +44,13 @@ if p.K.f >0
                         else
                             p.ub(ij(2)) = min( p.ub(ij(2)),-val(1)/p.lb(ij(1)));
                             p.ub(ij(1)) = min( p.ub(ij(1)),-val(1)/p.lb(ij(2)));
+                            p.lb(ij(2)) = max( p.lb(ij(2)),-val(1)/p.ub(ij(1)));
+                            p.lb(ij(1)) = max( p.lb(ij(1)),-val(1)/p.ub(ij(2)));                            
                         end
+                    elseif -val(1)>0 &  p.lb(ij(1))>=0
+                         p.lb(ij(2)) = max(0,p.lb(ij(2)));
+                    elseif -val(1)>0 &  p.lb(ij(2))>=0
+                         p.lb(ij(1)) = max(0,p.lb(ij(1)));     
                     end
                 end
             end
