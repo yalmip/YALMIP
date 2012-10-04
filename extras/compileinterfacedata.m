@@ -424,6 +424,7 @@ if strcmpi(solver.tag,'bmibnb')
     tempProblemClass.constraint.inequalities.semidefinite.linear = sdp.linear | sdp.quadratic | sdp.polynomial;
     tempProblemClass.constraint.inequalities.semidefinite.quadratic = 0;
     tempProblemClass.constraint.inequalities.semidefinite.polynomial = 0;
+    tempProblemClass.constraint.inequalities.rank = 0;
 
     lp = tempProblemClass.constraint.inequalities.elementwise;
     tempProblemClass.constraint.inequalities.elementwise.linear = lp.linear | lp.quadratic.convex | lp.quadratic.nonconvex | sdp.polynomial;
@@ -487,6 +488,7 @@ if strcmpi(solver.tag,'bmibnb')
     temp_ProblemClass.constraint.binary = 0;
     temp_ProblemClass.constraint.integer = 0;
     temp_ProblemClass.constraint.semicont = 0;
+      temp_ProblemClass.constraint.inequalities.rank = 0;
     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc);
     if ~isempty(uppersolver) & strcmpi(uppersolver.tag,'bnb')
         temp_options.solver = 'none';

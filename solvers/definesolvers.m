@@ -1211,6 +1211,7 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.semivar = 0;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
+solver(i).constraint.inequalities.rank = 0;
 i = i+1;
 
 solver(i) = qpsolver;
