@@ -11,6 +11,15 @@ LU = [p.lb p.ub];
 p_F_struc = p.F_struc;
 n_p_F_struc_cols = size(p_F_struc,2);
 
+fixedVars = find(p.lb == p.ub & p.variabletype(:) == 0);
+if ~isempty(fixedVars)
+    p_F_struc_forbilin = p_F_struc;
+    p_F_struc_forbilin(:,1) = p_F_struc(:,1) + p_F_struc(:,1+fixedVars)*p.lb(fixedVars);
+    p_F_struc_forbilin(:,1+fixedVars) = 0;
+else
+    p_F_struc_forbilin=p_F_struc;
+end
+
 if p.K.f >0
     
     for j = 1:p.K.f
@@ -32,8 +41,8 @@ if p.K.f >0
     
     % Presolve from bilinear x*y == k
     for j = 1:p.K.f
-        if p_F_struc(j,1)~=0
-            [row,col,val] = find(p_F_struc(j,:));
+        if p_F_struc_forbilin(j,1)~=0
+            [row,col,val] = find(p_F_struc_forbilin(j,:));
             
             % Find bounds from sum(xi) = 1, xi>0
             if length(col)==2

@@ -15,7 +15,16 @@ if ~isempty(p.bilinears)
     update = find(p.lb(z) < p.ub(z)-1e-4);
     p.lb(z(update)) = new_lb(update);
     p.ub(z(update)) = new_ub(update);
-
+    
+    implied_pos = find(p.lb(z)>0 & p.lb(x)>=0 & p.lb(y)<0);
+    if ~isempty(implied_pos)
+        p.lb(y(implied_pos))=0;
+    end
+    implied_pos = find(p.lb(z)>0 & p.lb(y)>=0 & p.lb(x)<0);
+    if ~isempty(implied_pos)
+        p.lb(x(implied_pos))=0;
+    end
+    
     if p.lb(p.integer_variables) ~= fix(p.lb(p.integer_variables))
         p.lb(p.integer_variables) = fix(p.lb(p.integer_variables)-1e-3);
     end
