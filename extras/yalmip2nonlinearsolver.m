@@ -133,6 +133,7 @@ if ~isempty(beq) &  (~model.equalitypresolved | ~(isequal(lb,lb_old) & isequal(u
     p.K.f = size(beq,1);
     p.lb = lb;
     p.ub = ub;
+    p.variabletype = zeros(1,length(lb));
     p = presolve_bounds_from_equalities(p);
     lb = p.lb;
     ub = p.ub;
