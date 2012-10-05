@@ -34,4 +34,6 @@ for k = n: -1: 1,
 end
 p = p';
 
-if nargin >= 2, p = p(n+1-r); end
+if nargin >= 2,
+    p = extsubsref(p,n+1-r);
+end
