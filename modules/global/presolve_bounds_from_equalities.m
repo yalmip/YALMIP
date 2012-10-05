@@ -14,12 +14,17 @@ n_p_F_struc_cols = size(p_F_struc,2);
 if p.K.f >0
     
     for j = 1:p.K.f
-        if p_F_struc(j,1)>0
-            [row,col,val] = find(p_F_struc(j,:));
+        thisrow = p_F_struc(j,:);
+        if thisrow(1)<0
+            thisrow = -thisrow;
+        end
+        if thisrow(1)>0
+            [row,col,val] = find(thisrow);
             % Find bounds from sum(xi) = 1, xi>0
             if all(val(2:end) < 0)
-                if all(p.lb(col(2:end)-1)>=0)
-                    p.ub(col(2:end)-1) = min( p.ub(col(2:end)-1) , val(1)./abs(val(2:end)'));
+                usedVars = col(2:end)-1;
+                if all(p.lb(usedVars)>=0)
+                    p.ub(usedVars) = min( p.ub(usedVars) , val(1)./abs(val(2:end)'));
                 end
             end            
         end

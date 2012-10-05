@@ -10,3 +10,4 @@ p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
+p = propagatequadratics(p,inf,-inf);
