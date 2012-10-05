@@ -155,6 +155,7 @@ if p.K.f > 0
     pp.F_struc(:,r+1)=[];
     pp.lb(r)=[];
     pp.ub(r)=[];
+    pp.variabletype(r)=[];
     pp = presolve_bounds_from_equalities(pp);
     other = setdiff(1:length(p.lb),r);
     p.lb(other) = pp.lb;
