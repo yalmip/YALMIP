@@ -64,10 +64,13 @@ if ~isempty(p.F_struc)
         if ~isempty(used_rows_lp)
             used_rows_lp = used_rows_lp(find(~any(p.F_struc(p.K.f+used_rows_lp,1+p.nonlinears),2)));
             not_used_rows = setdiff(1:p.K.l,used_rows_lp);
+             newKCutl = [];
             for i = 1:length(p.KCut.l)
-                p.KCut.l(i) = find(not_used_rows == p.KCut.l(i));
+                 newKCutl  = [newKCutl  find(not_used_rows==p.KCut.l(i))];
+               % p.KCut.l(i) = find(not_used_rows == p.KCut.l(i));
                % p.originalModel.KCut.l(i) = find(not_used_rows == p.originalModel.KCut.l(i) );
             end
+             p.KCut.l = newKCutl;
             if ~isempty(used_rows_lp)
                 p.F_struc(p.K.f+used_rows_lp,:)=[];
               %  p.originalModel.F_struc(p.originalModel.K.f+used_rows_lp,:)=[];
@@ -79,10 +82,13 @@ if ~isempty(p.F_struc)
         if ~isempty(used_rows_eq)
             used_rows_eq = used_rows_eq(find(~any(p.F_struc(used_rows_eq,1+p.nonlinears),2)));                       
             not_used_rows = setdiff(1:p.K.f,used_rows_eq);
+            newKCutf = [];
             for i = 1:length(p.KCut.f)
-                p.KCut.f(i) = find(not_used_rows==p.KCut.f(i));
+                newKCutf  = [newKCutf  find(not_used_rows==p.KCut.f(i))];
+               % p.KCut.f(i) = find(not_used_rows==p.KCut.f(i));
               %  p.originalModel.KCut.f(i) = find(not_used_rows==p.originalModel.KCut.f(i));
             end
+            p.KCut.f = newKCutf;
             if ~isempty(used_rows_eq)
                 p.F_struc(used_rows_eq,:)=[];
               %  p.originalModel.F_struc(used_rows_eq,:)=[];
