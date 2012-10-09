@@ -487,8 +487,14 @@ if strcmpi(solver.tag,'bmibnb')
     temp_ProblemClass = ProblemClass;
     temp_ProblemClass.constraint.binary = 0;
     temp_ProblemClass.constraint.integer = 0;
-    temp_ProblemClass.constraint.semicont = 0;
-      temp_ProblemClass.constraint.inequalities.rank = 0;
+    if temp_ProblemClass.objective.linear
+        % Allow feasibility solver to be selected if the objective is
+        % linear. We will create feasibility problems based on lower and
+        % upper bounds clevery inside bmibnb
+        temp_ProblemClass.objective.linear = 0;
+    end
+   % temp_ProblemClass.constraint.semicont = 0;
+   % temp_ProblemClass.constraint.inequalities.rank = 0;
     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc);
     if ~isempty(uppersolver) & strcmpi(uppersolver.tag,'bnb')
         temp_options.solver = 'none';
@@ -1230,7 +1236,7 @@ Fnew = F;
 if length(socps) > 0
     changed = 1;
     Fnew(socps) = [];
-    for i = socps(:)'
+    for i = 1:length(Fsocp)
         z = sdpvar(Fsocp(i));
         Fnew = [Fnew, z(1)>=0, z(1)^2 >= z(2:end)'*z(2:end)];
     end
