@@ -1205,13 +1205,11 @@ solver(i).constraint.inequalities.semidefinite.quadratic = 1;
 solver(i).constraint.inequalities.semidefinite.polynomial = 1;
 solver(i).constraint.inequalities.secondordercone = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone = 1;
-solver(i).constraint.inequalities.rank = 0;
 solver(i).constraint.binary  = 1;
 solver(i).constraint.integer = 1;
 solver(i).constraint.semivar = 0;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
-solver(i).constraint.inequalities.rank = 0;
 i = i+1;
 
 solver(i) = qpsolver;
