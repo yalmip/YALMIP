@@ -9,7 +9,7 @@ function diagnostic = solvesdp(varargin)
 %            F >=(<=,==) 0
 %
 %   NOTES
-%    Desptite the name, SOLVESDP is the interface for solving all
+%    Despite the name, SOLVESDP is the interface for solving all
 %    supported problem classes (LP, QP, SOCP, SDP, BMI, MILP, MIQP,...)
 %
 %    To obtain solution for a variable, use DOUBLE.
