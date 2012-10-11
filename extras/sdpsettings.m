@@ -833,7 +833,7 @@ else
     options.bmibnb.numglobal = inf;
     options.bmibnb.localstart = 'relaxed';
     options.bmibnb.presolvescheme = [];
-    options.bmibnb.strengthscheme = [1 2 1 3 1 4 1 5 1 6 1 4 1 6 1 4 1];
+    options.bmibnb.strengthscheme = [1 2 1 3 1 4 1 6 1 5 1 4 1 6 1 4 1];
     
     options.cutsdp.solver = '';
     options.cutsdp.maxiter = 100;
