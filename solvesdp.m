@@ -6,7 +6,7 @@ function diagnostic = solvesdp(varargin)
 %
 %    min        h
 %    subject to
-%            F >(=) 0
+%            F >=(<=,==) 0
 %
 %   NOTES
 %    Desptite the name, SOLVESDP is the interface for solving all
