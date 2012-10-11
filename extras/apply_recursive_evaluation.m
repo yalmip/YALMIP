@@ -16,17 +16,38 @@ xevaled = xevaled(:);
 function x = process_monomials(p,x,indicies);
 indicies = p.monomials(indicies);
 try
-    % Do bilinears directly
-    Bilinears = p.variabletype(indicies)==1;
-    if any(Bilinears)
-        Bilinears = indicies(p.variabletype(indicies)==1);
-        x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));       
-        indicies = setdiff1D(indicies,Bilinears);
+    % Do bilinears and quadratics directly
+    if max(p.variabletype(indicies))==2
+        Bilinears = p.variabletype(indicies)==1;
+        if any(Bilinears)
+            Bilinears = indicies(p.variabletype(indicies)==1);
+            x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));
+        end
+        Quadratics = p.variabletype(indicies)==2;
+        if any(Quadratics)
+            Quadratics = indicies(p.variabletype(indicies)==2);
+            x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).^2;
+        end
+    else
+        % Mixed stuff. At least do bilinear and quadratics efficiently
+        Bilinears = p.variabletype(indicies)==1;
+        if any(Bilinears)
+            Bilinears = indicies(p.variabletype(indicies)==1);
+            x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));
+            indicies = setdiff1D(indicies,Bilinears);
+        end
+        Quadratics = p.variabletype(indicies)==2;
+        if any(Quadratics)
+            Quadratics = indicies(p.variabletype(indicies)==2);
+            x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).*x(p.QuadraticsList(Quadratics,2));
+            indicies = setdiff1D(indicies,Bilinears);
+        end
+        
+        V = p.monomtable(indicies,:);
+        r = find(any(V,1));
+        V = V(:,r);
+        x(indicies) = prod(repmat(x(r),length(indicies),1).^V,2);
     end
-    V = p.monomtable(indicies,:);
-    r = find(any(V,1));
-    V = V(:,r);
-    x(indicies) = prod(repmat(x(r),length(indicies),1).^V,2);
 catch
    
     for i = indicies(:)'
