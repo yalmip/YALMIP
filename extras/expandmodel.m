@@ -341,8 +341,8 @@ try
         % zi = recover(variables(i));
         zi = ztemp(j);%recover(variables(i));
         basis = expression_basis(:,1 + location(j));
-        if 0%all(basis == 0) % The nonlinear term is inside a monomial
-            [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
+        if all(basis == 0) % The nonlinear term is inside a monomial
+            [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'exact',allExtStruct,w);
         elseif all(basis >= 0)
             [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
         else
