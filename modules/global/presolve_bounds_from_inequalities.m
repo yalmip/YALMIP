@@ -16,9 +16,6 @@ if p.K.l >0
             U(k) = 0;
             if a(k) > 0 & (p.ub(k)-p.lb(k)) > 1e-8
                 newlower = (-b - ap*U - am*L)/a(k);
-                if k==1 & newlower>0
-                    newlower
-                end
                 p.lb(k) = max(p.lb(k),newlower);               
             elseif a(k) < 0
                 newupper = (b + ap*U + am*L)/(-a(k));
