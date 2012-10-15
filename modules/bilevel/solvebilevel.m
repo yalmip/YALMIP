@@ -346,12 +346,12 @@ while length(list)>0 & gap > options.bilevel.relgaptol & iter < options.bilevel.
                 if outputCheck.problem == 1
                     % We will not continue branching, and let the user now
                     % that this choice
-                    Comment = [Comment 'Infeasible solution returned, resolve => abort'];
+                    Comment = ['Infeasible'];
                     cost = inf;
                     sol.problem = 4;  
                 else
                     % Hard to say anything                    
-                    Comment = [Comment 'Infeasible solution returned, resolve => continue'];
+                    Comment = ['Infeasible solution returned, resolve => continue'];
                     sol.problem = 4;  
                     cost = p.lower;
                 end
