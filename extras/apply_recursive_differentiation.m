@@ -69,6 +69,7 @@ if 1 % USE NEW
 %                 end
                computed = setdiff(computed,Alreadydone);    
                 if i > 1
+                    isBilinear = model.variabletype==1;
                     % We might have inner derivatives from earlier
                     for variable = 1:length(model.linearindicies)
                         if ss(variable)
@@ -77,15 +78,22 @@ if 1 % USE NEW
                             hh = sum(monomTablePattern(computed,fdX),2);
                             for j = computed(find(hh))
                                 if requested(j)
-                                    dp = 0;
-                                    monomsj = mtT(:,j)';                                    
-                                    for k = find(monomsj & dX(:,variable)')                                                                                
-                                        monoms = monomsj;
-                                        r = monoms(k);
-                                        monoms(k) = r-1;
-                                        s = find(monoms);
-                                        z = prod((x(s)').^(monoms(s)));                                       
-                                        dp = dp + r*dX(k,variable)*z;
+                                    if isBilinear(j)      
+                                        b1 = model.BilinearsList(j,1);
+                                        b2 = model.BilinearsList(j,2);
+                                        dp = x(b2)*dX(b1,variable)+x(b1)*dX(b2,variable);                                       
+                                    else
+                                        dp = 0;
+                                        monomsj = mtT(:,j)';
+                                        active = find(monomsj & dX(:,variable)');
+                                        for k = active
+                                            monoms = monomsj;
+                                            r = monoms(k);
+                                            monoms(k) = r-1;
+                                            s = find(monoms);
+                                            z = prod((x(s)').^(monoms(s)));
+                                            dp = dp + r*dX(k,variable)*z;
+                                        end
                                     end
                                     dX(j,variable) = real(dp);
                                 end
