@@ -47,9 +47,10 @@ if nlmi>0
         data{i,1} = ['#' num2str(i)];
         data{i,2} = X.clauses{i}.symbolic;
         data{i,3} = lmiinfo{X.clauses{i}.type};
+        data{i,4} = '';
         if length(getvariables(X.clauses{i}.data)) == 1
             if any(ismember(getvariables(X.clauses{i}.data),rankVariables))
-                 data{i,3} = 'Rank constraint';
+                 data{i,3} = 'Rank constraint';                
             end
         end
         
@@ -113,6 +114,7 @@ if length([data{:,4}])==0
     headers = {headers{:,1:3}};
     data = reshape({data{:,1:3}},length({data{:,1:3}})/3,3);
 end
+
 
 
 table('',headers,data)
