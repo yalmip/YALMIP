@@ -92,7 +92,8 @@ if 1 % USE NEW
                                             monoms(k) = r-1;
                                             s = find(monoms);
                                             z = prod((x(s)').^(monoms(s)));
-                                            dp = dp + r*dX(k,variable)*z;
+                                            aux = dX(k,variable);
+                                            dp = dp + r*aux*z;
                                         end
                                     end
                                     dX(j,variable) = real(dp);
