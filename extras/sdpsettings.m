@@ -1316,7 +1316,7 @@ else
     options.sdplr.centol = 1e-1;
     options.sdplr.dir = 1;
     options.sdplr.penfac = 2;
-    options.sdplr.reduce = 1;
+    options.sdplr.reduce = 0;
     options.sdplr.limit = 3600;
     options.sdplr.soln_factored = 0;
     options.sdplr.maxrank = 0;
