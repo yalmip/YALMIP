@@ -81,6 +81,12 @@ if any(model.variabletype > 3)
                 model.evalMap{end}.properties.bounds = @power_bound;
                 model.evalMap{end}.properties.convexhull = @power_convexhull;
                 model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(powers(j)) '*x^(' num2str(powers(j)) '-1);']);
+                if even(powers(j))
+                    model.evalMap{end}.properties.range = [0 inf];
+                else
+                    model.evalMap{end}.properties.range = [-inf inf];
+                end
+                 model.evalMap{end}.properties.domain = [-inf inf];
                 % Save information about this new variable 
                 found_and_converted = [found_and_converted;sigs(j) powers(j) n_old_monoms+j];
             end
