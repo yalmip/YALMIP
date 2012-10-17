@@ -6,17 +6,20 @@ function varargout = subsref(varargin)
 
 
 % Stupid first slice call (supported by MATLAB)
-if  length(varargin{2}.subs) > 2 & isequal(varargin{2}.type,'()')
-    i = 3;
-    ok = 1;
-    while ok & (i <= length(varargin{2}.subs))
-        ok = ok & (isequal(varargin{2}.subs{i},1) | isequal(varargin{2}.subs{i},':'));
-        i = i + 1;
-    end
-    if ok
-        varargin{2}.subs = {varargin{2}.subs{1:2}};
-    else
-        error('??? Index exceeds matrix dimensions.');
+% x = sdpvar(2);x(1,:,:)
+if length(varargin{2})==1
+    if  length(varargin{2}.subs) > 2 & isequal(varargin{2}.type,'()')
+        i = 3;
+        ok = 1;
+        while ok & (i <= length(varargin{2}.subs))
+            ok = ok & (isequal(varargin{2}.subs{i},1) | isequal(varargin{2}.subs{i},':'));
+            i = i + 1;
+        end
+        if ok
+            varargin{2}.subs = {varargin{2}.subs{1:2}};
+        else
+            error('??? Index exceeds matrix dimensions.');
+        end
     end
 end
 
@@ -32,22 +35,22 @@ else
 end
 
 try
-    switch Y.type
+    switch Y(1).type
         case '()'
-            if  isa(Y.subs{1},'constraint')
+            if  isa(Y(1).subs{1},'constraint')
                 error('Conditional indexing not supported.');
             end
             % Check for simple cases to speed things up (yes, ugly but we all want speed don't we!)
-            switch size(Y.subs,2)
+            switch size(Y(1).subs,2)
                 case 1
-                    if isa(Y.subs{1},'sdpvar')
+                    if isa(Y(1).subs{1},'sdpvar')
                         varargout{1} = yalmip('addextendedvariable',mfilename,varargin{:});
                         return
                     else
-                        y = subsref1d(X,Y.subs{1});
+                        y = subsref1d(X,Y(1).subs{1});
                     end
                 case 2
-                    y = subsref2d(X,Y.subs{1},Y.subs{2});
+                    y = subsref2d(X,Y.subs{1},Y(1).subs{2});
                 otherwise
                     error('Indexation error.');
             end
@@ -70,7 +73,7 @@ try
                     end
                 end
                 if mpt_solution
-                    assign(nonlinearModel{1}.arg{2},Y.subs{:});
+                    assign(nonlinearModel{1}.arg{2},Y(1).subs{:});
                     XX = double(X);
                     varargout{1} = double(X);
                     return
@@ -108,19 +111,47 @@ try
                     end
                 end
                 if isa([Y.subs{:}],'double')
-                    assign(reshape(OldArgument,[],1),reshape([Y.subs{:}],[],1));
+                    assign(reshape(OldArgument,[],1),reshape([Y(1).subs{:}],[],1));
                     varargout{1} = double(X);
                     return
                 end
             end
-            y = replace(X,OldArgument,[Y.subs{:}]);
+            y = replace(X,OldArgument,[Y(1).subs{:}]);
             if isa(y,'double')
                 varargout{1} = y;
                 return
             end
             
         case '.'
-            switch Y.subs
+            switch Y(1).subs
+                case {'minimize','maximize'}
+                    options = [];
+                    constraints = [];                  
+                    objective = varargin{1};
+                    if length(Y)==2
+                        if isequal(Y(2).type,'()')
+                            for i = 1:length(Y(2).subs)
+                                switch class(Y(2).subs{i})
+                                    case {'lmi','constraint'}
+                                        constraints = [constraints, Y(2).subs{i}];
+                                    case 'struct'
+                                        options = Y(2).subs{i};
+                                    otherwise
+                                        error('Argument to minimize should be constraints or options');
+                                end
+                            end
+                        else
+                            error(['What do you mean with ' Y(2).type '?']);
+                        end
+                    end      
+                    if isequal(Y(1).subs,'minimize')
+                        sol = solvesdp(constraints,objective,options);
+                    else
+                        sol = solvesdp(constraints,-objective,options);
+                    end
+                    varargout{1} = varargin{1};
+                    varargout{2} = sol;
+                    return
                 case 'derivative'
                     try
                         m = model(varargin{1});
