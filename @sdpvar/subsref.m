@@ -128,6 +128,7 @@ try
                     options = [];
                     constraints = [];                  
                     objective = varargin{1};
+                    opsargs = {};
                     if length(Y)==2
                         if isequal(Y(2).type,'()')
                             for i = 1:length(Y(2).subs)
@@ -136,6 +137,8 @@ try
                                         constraints = [constraints, Y(2).subs{i}];
                                     case 'struct'
                                         options = Y(2).subs{i};
+                                    case {'double','char'}
+                                        opsargs{end+1} = Y(2).subs{i};
                                     otherwise
                                         error('Argument to minimize should be constraints or options');
                                 end
@@ -144,6 +147,13 @@ try
                             error(['What do you mean with ' Y(2).type '?']);
                         end
                     end      
+                    if length(opsargs)>0
+                        if isempty(options)
+                           options = sdpsettings(opsargs{:}); 
+                        else
+                            options = sdpsettings(options,opsargs{:});
+                        end
+                    end
                     if isequal(Y(1).subs,'minimize')
                         sol = solvesdp(constraints,objective,options);
                     else
