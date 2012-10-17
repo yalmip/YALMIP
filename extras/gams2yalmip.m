@@ -170,7 +170,7 @@ end
 if writetofile
     
     fprintf(fileOUT,['%% Model generated from ' fileName '\n']);
-    [v,d] = yalmip('ver');
+    [d] = yalmip('ver');
     fprintf(fileOUT,['%% Created ' datestr(now) ' using YALMIP R' d '\n\n']);
     fprintf(fileOUT,'%% Setup a clean YALMIP environment \n');
     fprintf(fileOUT,'yalmip(''clear'') \n\n');
