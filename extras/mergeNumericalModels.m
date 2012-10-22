@@ -16,7 +16,7 @@ end
 if (size(p0.F_struc,2) < size(p1.F_struc,2)) & (size(p0.F_struc,1)>0)
     p0.F_struc(end,size(p1.F_struc,2))=0;
 end
-    
+
 p1.F_struc = sparse(p1.F_struc);
 p0.F_struc = sparse(p0.F_struc);
 
@@ -37,7 +37,7 @@ end
 
 if isfield(p1.K,'q')
     if p1.K.q > 0
-    error('FIXME')
+        error('FIXME')
     end
 end
 
