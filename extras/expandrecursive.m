@@ -2,7 +2,7 @@ function [F_expand,failure,cause] = expandrecursive(variable,F_expand,extendedva
 
 % Some crazy stuff to help out when hand;ling nonocnvex and other
 % non-standard problems
-global DUDE_ITS_A_GP ALREADY_MODELLED ALREADY_MODELLED_INDEX REMOVE_THESE_IN_THE_END MARKER_VARIABLES OPERATOR_IN_POLYNOM LUbounds
+global DUDE_ITS_A_GP ALREADY_MODELLED ALREADY_MODELLED_INDEX REMOVE_THESE_IN_THE_END MARKER_VARIABLES OPERATOR_IN_POLYNOM LUbounds CONSTRAINTCUTSTATE
 
 % Assume no failure due to failed model or convexity propagation
 cause = '';
@@ -251,5 +251,12 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
         end
         j = j+1;
     end
+    
+    % If the variable modelled originates in a constraint which is a cut in
+    % the global solver, all defined constraints are also cuts
+    if isa(F_graph,'lmi') | isa(F_graph,'constraint') & CONSTRAINTCUTSTATE
+        F_graph = setcutflag(lmi(F_graph),CONSTRAINTCUTSTATE);
+    end
+    
     F_expand = F_expand + F_graph;
 end

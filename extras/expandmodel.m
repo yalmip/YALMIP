@@ -16,6 +16,7 @@ global ALREADY_MODELLED
 global ALREADY_MODELLED_INDEX
 global REMOVE_THESE_IN_THE_END
 global OPERATOR_IN_POLYNOM
+global CONSTRAINTCUTSTATE
 
 % All extended variables in the problem. It is expensive to extract this
 % one so we will keep it and pass it along in the recursion
@@ -212,6 +213,10 @@ while constraint <=length(F) & ~failure
     
     if ~already_expanded(constraint)
         variables = uniquestripped([depends(F(constraint)) getvariables(F(constraint))]);
+        
+        % If constraint is a cut, all generated constraints must be marked
+        % as cuts too
+        CONSTRAINTCUTSTATE =  getcutflag(F(constraint));
         [ix,jx,kx] = find(monomtable(variables,:));
         if ~isempty(jx) % Bug in 6.1
             if any(kx>1)
@@ -235,6 +240,8 @@ while constraint <=length(F) & ~failure
     end
     constraint = constraint+1;
 end
+
+CONSTRAINTCUTSTATE = 0;
 
 % *************************************************************************
 % Temporary hack to fix the implies operator (cplex has some problem on
