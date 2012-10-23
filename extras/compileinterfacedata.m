@@ -484,7 +484,17 @@ if strcmpi(solver.tag,'bmibnb')
 
     temp_options = options;
     temp_options.solver = options.bmibnb.uppersolver;
-    temp_ProblemClass = ProblemClass;
+    
+    if any(getcutflag(F))
+        % Could be that the model involves, e.g., semidefinite cuts, which
+        % shouldn't be sent to the upper bound solver
+        Ftemp = F;
+        Ftemp(find(getcutflag(F)))=[];
+        [temp_ProblemClass,aux1,aux2,aux3,aux4,aux5,aux6] = categorizeproblem(Ftemp,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars);
+    else
+        temp_ProblemClass = ProblemClass;
+    end
+    
     temp_ProblemClass.constraint.binary = 0;
     temp_ProblemClass.constraint.integer = 0;
 %     if temp_ProblemClass.objective.linear
