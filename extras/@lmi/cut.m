@@ -1,3 +1,2 @@
-function F = set(F)
-
+function F = cut(F)
 F = setcutflag(F);
