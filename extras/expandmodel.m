@@ -352,7 +352,12 @@ try
         zi = ztemp(j);%recover(variables(i));
         basis = expression_basis(:,1 + location(j));
         if all(basis == 0) % The nonlinear term is inside a monomial
-            [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,'exact',[],'exact',allExtStruct,w);
+            if options.allownonconvex
+                [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,'exact',[],'exact',allExtStruct,w);
+            else
+                failure = 1;
+                cause = 'Possible nonconvexity due to operator in monomial';
+            end
             %[F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'exact',allExtStruct,w);
         elseif all(basis >= 0)
             [F_expand,failure,cause] = expandrecursive(zi,F_expand,extendedvariables,monomtable,variabletype,where,level+1,options,method,[],'convex',allExtStruct,w);
