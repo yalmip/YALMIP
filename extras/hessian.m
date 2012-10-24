@@ -1,5 +1,5 @@
 function d2fdx2 = hessian(f,x)
-% HESSIAN Hessian of scalar SDPVAR object
+% HESSIAN Hessian of scalar polynomial SDPVAR object
 %
 % J = HESSIAN(p)    Hessian w.r.t all variables in p
 % J = HESSIAN(p,x)  Hessian w.r.t the SDPVAR variables x
@@ -23,8 +23,12 @@ else
 end
 
 if prod(size(f))>1
-   error('Hessian only defined for scalars.')
-end 
+    error('Hessian only defined for scalars.')
+end
+
+if any(ismember([getvariables(f) depends(f)],yalmip('extvariables')))
+    error('Hessian is only applicable to polynomial expressions');
+end
 
 if isa(f,'double')
     d2fdx2 = zeros(length(x));
