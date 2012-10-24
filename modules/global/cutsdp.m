@@ -218,7 +218,15 @@ if p.K.s(1)>0
         for m = 1:p.K.s(i)
             d = eyev(p.K.s(i),m);
             index = (1+(m-1)*(p.K.s(i)+1));
-            newF = [newF;p.F_struc(top+index-1,:)];
+            ab = p.F_struc(top+index-1,:);
+            b =  ab(1);
+            a = -ab(2:end);
+            % a*x <= b
+            pos = find(a>0);
+            neg = find(a<0);
+            if a(pos)*p.ub(pos) + a(neg)*p.lb(neg)>b
+                newF = [newF;p.F_struc(top+index-1,:)];
+            end
         end
         % Clean
         newF(abs(newF)<1e-12) = 0;
@@ -419,7 +427,7 @@ if p.K.s(1)>0
                     end
                     bA =  d(:,m)'*(kron(d(:,m),speye(n)).'*p.F_struc(top:top+n^2-1,:));
                     b = bA(:,1);
-                    A = -bA(:,2:end);
+                    A = -bA(:,2:end);                   
                     newF = real([newF;[b -A]]);
                     newcuts = newcuts + 1;
                 end
