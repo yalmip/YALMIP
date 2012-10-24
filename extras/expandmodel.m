@@ -91,36 +91,39 @@ if nargin < 4
     w = [];
 end
 
-if isempty(F)
+if isempty(F) & isempty(h)
     return
 end
 
-
 % Check if it already has ben expanded in robustify or similar
 F_alreadyexpanded = [];
-already_expanded = expanded(F);
-if all(already_expanded)
-    if isempty(setdiff(getvariables(h),expanded(h)))
-        return
+if ~isempty(F)
+    F_alreadyexpanded = [];
+    already_expanded = expanded(F);
+    if all(already_expanded)
+        if isempty(setdiff(getvariables(h),expanded(h)))
+            return
+        end
+    elseif any(already_expanded)
+        F_alreadyexpanded = F(find(already_expanded));
+        F = F(find(~already_expanded));
     end
-elseif any(already_expanded)
-    F_alreadyexpanded = F(find(already_expanded));
-    F = F(find(~already_expanded));
 end
 
-% Extract all simple bounds from the model, and update the internal bounds
-% in YALMIP. This is done in order to get tighter big-M models
 if ~isempty(F)
+    % Extract all simple bounds from the model, and update the internal bounds
+    % in YALMIP. This is done in order to get tighter big-M models
+    
     if boundsAlreadySet == 0;
         LUbounds = setupBounds(F,options,extendedvariables);
     end
-end
-
-% Expand equalities first, since these might generate nonconvex models,
-% thus making it unnecessaryu to generate epigraphs etc
-equalities = is(F,'equality');
-if any(equalities)
-    F = [F(find(equalities));F(find(~equalities))];
+    
+    % Expand equalities first, since these might generate nonconvex models,
+    % thus making it unnecessaryu to generate epigraphs etc
+    equalities = is(F,'equality');
+    if any(equalities)
+        F = [F(find(equalities));F(find(~equalities))];
+    end
 end
 
 % All variable indicies used in the problem
