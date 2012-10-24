@@ -9,14 +9,7 @@ switch class(varargin{1})
         error('Overloaded SDPVAR/LOG CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
-%         if prod(size(varargin{1}))==1
-%             g = getbase(varargin{1});
-%             if g(1)==0 & nnz(1)==1
-%                 i = find(g(2:end));
-%                 varargout{1} = log(g(i)) + log(getvariables(varargin{1}));
-%             end
-%         end
-%         % Try to detect logsumexp construction etc
+         % Try to detect logsumexp construction etc
         varargout{1} = check_for_special_cases(varargin{:});
         % Nope, then just define this logarithm
         if isempty(varargout{1})
@@ -32,6 +25,7 @@ switch class(varargin{1})
         operator.inverse = 'exp';
         operator.convexhull = @convexhull;
         operator.bounds = @bounds;
+        operator.domain = [0 inf];
         operator.derivative = @(x)(1./(abs(x)+eps));
 
         varargout{1} = F;
