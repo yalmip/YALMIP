@@ -9,10 +9,10 @@ if ~p.options.bmibnb.lpreduce | ((size(p.lpcuts,1)==0) & (any(p.lb(p.linears)<-1
     vol_reduction = 1;
     p.feasible = 1;
 
-    p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables));
-    p.ub(p.integer_variables) = floor(p.ub(p.integer_variables));
-    p.lb(p.binary_variables) = ceil(p.lb(p.binary_variables));
-    p.ub(p.binary_variables) = floor(p.ub(p.binary_variables));
+    p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables)-1e-7);
+    p.ub(p.integer_variables) = floor(p.ub(p.integer_variables)+1e-7);
+    p.lb(p.binary_variables) = ceil(p.lb(p.binary_variables)-1e-7);
+    p.ub(p.binary_variables) = floor(p.ub(p.binary_variables)+1e-7);
 
 else
     [p,p.feasible] =  boxreduce(p,upper,lower,lpsolver,p.options,xmin);
