@@ -53,10 +53,12 @@ try
     for i = 1:length(extstruct.arg)-1
         involved = union(involved,getvariables(extstruct.arg{i}));
     end
-    if ~(strcmp(options.robust.auxreduce,'none'))
-        % This info is only needed when we do advanced Robust optimization
-        yalmip('setdependence',[getvariables(extstruct.var) newAux],involved);
-        yalmip('setdependence',[getvariables(extstruct.var)],newAux);
+    if ~isempty(options)
+        if ~(strcmp(options.robust.auxreduce,'none'))
+            % This info is only needed when we do advanced Robust optimization
+            yalmip('setdependence',[getvariables(extstruct.var) newAux],involved);
+            yalmip('setdependence',[getvariables(extstruct.var)],newAux);
+        end
     end
 catch
     error(['Failed when trying to create a model for the "' extstruct.fcn '" operator']);
