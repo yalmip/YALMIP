@@ -8,7 +8,7 @@ yalmip('clear')
 x1 = sdpvar(1);
 
 % Define objective function 
-objective = -(-(4*sqr(x1)-4*POWER(x1,3)+POWER(x1,4)));
+objective = -(-(4*sqr(x1)-4*power(x1,3)+power(x1,4)));
 
 % Define constraints 
 F = set([]);

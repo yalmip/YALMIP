@@ -12,7 +12,7 @@ objvar = sdpvar(1);
 % Define constraints 
 objvar = -(-(sqr(x2)-7*x2)+12*x1);
 F = set([]);
-F=[F,-2*POWER(x1,4)-x2==-2];
+F=[F,-2*power(x1,4)-x2==-2];
 F=[F,0<=x1<=2];
 F=[F,0<=x2<=3];
 
