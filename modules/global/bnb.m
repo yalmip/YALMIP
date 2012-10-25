@@ -118,14 +118,15 @@ if ~isempty(p.binary_variables)
     p.ub(p.binary_variables) =  min(p.ub(p.binary_variables),1);
     p.lb(p.binary_variables) =  max(p.lb(p.binary_variables),0);
     
-    godown = find(p.ub(p.binary_variables) < 1);
-    goup   = find(p.lb(p.binary_variables) > 0);
-    p.ub(p.binary_variables(godown)) = 0;
-    p.lb(p.binary_variables(goup)) = 1;
+   % godown = find(p.ub(p.binary_variables) < 1);
+   % goup   = find(p.lb(p.binary_variables) > 0);
+   % p.ub(p.binary_variables(godown)) = 0;
+   % p.lb(p.binary_variables(goup)) = 1;
 end
 
-p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables));
-p.ub(p.integer_variables) = floor(p.ub(p.integer_variables));
+%p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables));
+%p.ub(p.integer_variables) = floor(p.ub(p.integer_variables));
+p = update_integer_bounds(p);
 
 if ~isempty(p.semicont_variables)
     redundant = find(p.lb<=0 & p.ub>=0);
@@ -156,10 +157,14 @@ if p.K.f > 0
     pp.lb(r)=[];
     pp.ub(r)=[];
     pp.variabletype(r)=[];
-    pp = presolve_bounds_from_equalities(pp);
+    % FIXME: This is lazy, should update new list
+    pp.binary_variables = [];
+    pp.integer_variables = [];
+    pp = propagate_bounds_from_equalities(pp);
     other = setdiff(1:length(p.lb),r);
     p.lb(other) = pp.lb;
     p.ub(other) = pp.ub;
+    p = update_integer_bounds(p);
     redundant = find(~any(pp.F_struc(1:p.K.f,2:end),2));
     if any(p.F_struc(redundant,1)<0)
         p.feasible = 0;
