@@ -1,4 +1,4 @@
-function model = fixbounds(model,these);
+function model = update_monomial_bounds(model,these);
 
 if nargin == 1
     polynomials = find((model.variabletype ~= 0));
@@ -15,12 +15,5 @@ for i = 1:length(polynomials)
         model.ub(j) = min(model.ub(j),bound(2));
     end
 end
-if ~isempty(model.integer_variables)
-    model.lb(model.integer_variables) = fix(model.lb(model.integer_variables)-1e-8);
-    model.ub(model.integer_variables) = fix(model.ub(model.integer_variables)+1e-8);
-end
-if ~isempty(model.binary_variables)
-    model.lb(model.binary_variables) = fix(model.lb(model.binary_variables)-1e-8);
-    model.ub(model.binary_variables) = fix(model.ub(model.binary_variables)+1e-8);
-end
+
 
