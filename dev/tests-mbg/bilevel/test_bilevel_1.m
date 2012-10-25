@@ -17,7 +17,7 @@ OO = -8*x1-4*x2+4*y1-40*y2+x1^2+x2^2;
 CO = [x1 x2]>=0;
 OI = x1+2*x2+y1+y2+2*y3;
 CI = [[y1 y2 y3] >= 0,-y1+y2+y3 <= 1, 2*x1-y1+2*y2-0.5*y3 <= 1, 2*x2+2*y1-y2-0.5*y3 <= 1]
-[sol,info] = solvebilevel(CO,OO,CI,OI,[y1 y2 y3]);
+[sol,info] = solvebilevel(CO,OO,CI,OI,[y1 y2 y3],sdpsettings('quadprog.Algorithm','interior-point-convex'));
 mbg_asserttolequal(double(OO), -26.7900, 1e-5);
 
 
