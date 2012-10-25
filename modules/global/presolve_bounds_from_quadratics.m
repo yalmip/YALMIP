@@ -8,12 +8,7 @@ if p.K.l >0
                 col = col(:);
                 if all(p.variabletype(col)==2) & all(val<=0)
                     p.ub(col) = min([p.ub(col) U./-val(:)],[],2);
-                    p.lb(col) = max([p.lb(col) 0*val(:)],[],2);
-%                     for j = 1:length(col)
-%                         var = find(p.monomtable(col(j),:));
-%                       %  p.ub(var) = sqrt(-val(j));
-%                       %  p.lb(var) = max(-U./-val(:),p.lb(var));
-%                     end
+                    p.lb(col) = max([p.lb(col) 0*val(:)],[],2);                 
                 end
             end
         end
