@@ -95,9 +95,9 @@ p = update_monomial_bounds(p);
 p = presolve_sortrows(p);
 
 % *************************************************************************
-% Improve the bounds by performing some standard presolve
+% Improve the bounds by performing some standard propagation
 % *************************************************************************
-p = presolve_bounds_from_equalities(p); 
+p = propagate_bounds_from_equalities(p); 
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
 p = presolve_bounds_from_inequalities(p);
@@ -132,9 +132,9 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
     p = preprocess_bilinear_bounds(p);
     p = update_eval_bounds(p);
     p = updateboundsfromupper(p,upper);
-    p = propagatecomplementary(p);
+    p = propagate_bounds_from_complementary(p);
     p = updatemonomialbounds(p);
-    p = presolve_bounds_from_equalities(p);
+    p = propagate_bounds_from_equalities(p);
     p = updatemonomialbounds(p);   
     p = updatemonomialbounds(p);    
     p = update_eval_bounds(p);    
@@ -227,7 +227,7 @@ p.ub(close) = p.lb(close);
 p = root_node_tighten(p,upper);
 p = updatemonomialbounds(p);
 p = update_eval_bounds(p);
-p = presolve_bounds_from_equalities(p);
+p = propagate_bounds_from_equalities(p);
 p = updatemonomialbounds(p);
 output = yalmip_default_output;
 
@@ -483,9 +483,9 @@ while goon
     % 2
     p = updateboundsfromupper(p,upper);
     % 3
-    p = propagatecomplementary(p);
+    p = propagate_bounds_from_complementary(p);
     p = updatemonomialbounds(p);  
-    p = presolve_bounds_from_equalities(p);       
+    p = propagate_bounds_from_equalities(p);       
     p = updatemonomialbounds(p);
     p = updatemonomialbounds(p);        
     p = update_eval_bounds(p);

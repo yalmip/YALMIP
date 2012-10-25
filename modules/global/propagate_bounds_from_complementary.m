@@ -1,4 +1,4 @@
-function p = propagatecomplementary(p)
+function p = propagate_bounds_from_complementary(p)
 LU = [p.lb p.ub];
 complementary = find(p.lb==0 & p.ub==0 & p.variabletype'==1);
 if ~isempty(complementary)

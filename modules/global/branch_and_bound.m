@@ -96,11 +96,11 @@ while go_on
             case 3
                 p = propagatequadratics(p);
             case 4
-                p = propagatecomplementary(p);
+                p = propagate_bounds_from_complementary(p);
             case 5
                 p = domain_reduction(p,upper,lower,lpsolver,x_min);
             case 6
-                p = presolve_bounds_from_equalities(p);
+                p = propagate_bounds_from_equalities(p);
             otherwise
         end
     end
