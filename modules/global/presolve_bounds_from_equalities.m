@@ -131,8 +131,7 @@ close = find(abs(p.lb - p.ub) < 1e-12);
 p.lb(close) = (p.lb(close)+p.ub(close))/2;
 p.ub(close) = p.lb(close);
 
-p.lb(p.binary_variables) = ceil(p.lb(p.binary_variables)-1e-7);
-p.ub(p.binary_variables) = floor(p.ub(p.binary_variables)+1e-7);
+p = update_integer_bounds(p);
 
 if ~isequal(LU,[p.lb p.ub])
     p.changedbounds = 1;

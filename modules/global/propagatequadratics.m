@@ -50,7 +50,7 @@ if p.bilinears~=0
                         end
                     end
                 elseif p.lb(k)<0
-                    %  [p.lb(k) p.ub(k)]
+                  
                 end
             end
         end
@@ -102,7 +102,7 @@ if p.bilinears~=0
                     
                     
                 elseif p.lb(k)<0
-                    %   [p.lb(k) p.ub(k)]
+              
                 end
             end
         end
