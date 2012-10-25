@@ -94,7 +94,7 @@ while go_on
             case 2
                 p = updateboundsfromupper(p,upper,p.originalModel);
             case 3
-                p = propagatequadratics(p,upper,lower);
+                p = propagatequadratics(p);
             case 4
                 p = propagatecomplementary(p);
             case 5

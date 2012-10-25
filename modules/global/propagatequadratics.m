@@ -1,9 +1,9 @@
-function pout = propagatequadratics(p,upper,lower)
+function pout = propagatequadratics(p)
 
 pout = p;
 if p.bilinears~=0
     F_struc = p.F_struc;
-
+    
     p.F_struc = [-p.F_struc(1:p.K.f,:);p.F_struc];
     p.K.f=2*p.K.f;
     
@@ -55,7 +55,7 @@ if p.bilinears~=0
             end
         end
     end
-
+    
     if p.K.l+p.K.f>0
         bilinear_variables = find(p.bilinears(:,2) ~= p.bilinears(:,3));
         if ~isempty(bilinear_variables)
@@ -79,14 +79,7 @@ if p.bilinears~=0
                             a(k) = 0;
                             newLB = (-p.F_struc(j,1)-a([indPOS(:);indNEG(:)])*[UB(indPOS);LB(indNEG)])/aij;
                             p.lb(k) = max(p.lb(k),newLB);
-% 
-%                             if p.lb(y) > 0 & p.ub(y)~=0
-%                                 p.lb(x) = max(p.lb(x),newLB/p.ub(y));                                
-%                             end
-%                             if p.lb(x) > 0 & p.ub(x)~=0
-%                                 p.lb(y) = max(p.lb(y),newLB/p.ub(x));                                
-%                             end
-
+                                                       
                         elseif aij < 0
                             indNEG = find(a < 0);
                             indPOS = find(a > 0);
@@ -97,20 +90,14 @@ if p.bilinears~=0
                             a(k) = 0;
                             newUB = (p.F_struc(j,1)+a([indPOS(:);indNEG(:)])*[UB(indPOS);LB(indNEG)])/(-aij);
                             p.ub(k) = min(p.ub(k),newUB);
-%                             if p.lb(y) > 0 & p.lb(y)~=0
-%                                 p.ub(x) = min(p.ub(x),newUB/p.lb(y));                                
-%                             end
-%                             if p.lb(x) > 0 & p.lb(x)~=0
-%                                 p.ub(y) = min(p.ub(y),newUB/p.lb(x));
-%                             end
                         end
-                    end    
+                    end
                     
                     if p.lb(k)>0 & p.lb(x)>0 & p.lb(y)>0
                         p.ub(x) = min(p.ub(x), p.ub(k)/p.lb(y));
                         p.ub(y) = min(p.ub(y), p.ub(k)/p.lb(x));
                         p.lb(x) = max(p.lb(x), p.lb(k)/p.ub(y));
-                        p.lb(y) = max(p.lb(y), p.lb(k)/p.ub(x));                                                
+                        p.lb(y) = max(p.lb(y), p.lb(k)/p.ub(x));
                     end
                     
                     

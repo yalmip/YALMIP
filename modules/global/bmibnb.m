@@ -171,7 +171,7 @@ end
 
 p.EqualityConstraintState = ones(p.K.f,1);
 p.InequalityConstraintState = ones(p.K.l,1);
-p = propagatequadratics(p,inf,-inf);
+p = propagatequadratics(p);
     
 
 % *************************************************************************
