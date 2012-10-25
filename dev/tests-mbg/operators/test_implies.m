@@ -61,23 +61,24 @@ mbg_asserttrue(sol.problem == 0)
 mbg_asserttolequal(double(x),0.5,1e-4);
 mbg_asserttolequal(double(u),-0.5,1e-4);
 
+ops = sdpsettings('quadprog.Algorithm','interior-point-convex');
 x = sdpvar(2,1);
-sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x+.1)'*(x+.1));
+sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x+.1)'*(x+.1),ops)
 mbg_asserttrue(sol.problem == 0)
 mbg_asserttolequal(double(u),0.2,1e-4);
 
-sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x-.1)'*(x-.1));
+sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x-.1)'*(x-.1),ops);
 mbg_asserttrue(sol.problem == 0)
 mbg_asserttolequal(double(u),-.1,1e-4);
 
 
-sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x-[.1;-.1])'*(x-[.1;-.1])+u^2);
+sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x-[.1;-.1])'*(x-[.1;-.1])+u^2,ops);
 mbg_asserttrue(sol.problem == 0)
 mbg_asserttolequal(double(x),[.1;-0.1],1e-4);
 mbg_asserttolequal(double(u),0,1e-4);
 
 sdpvar x y u
-sol = solvesdp([-10<=u<=10,-1<=x<=1,-5<=y<=5,implies([x>=0, u==0],y == 4)],(x-1)^2 + u^2);
+sol = solvesdp([-10<=u<=10,-1<=x<=1,-5<=y<=5,implies([x>=0, u==0],y == 4)],(x-1)^2 + u^2,ops);
 mbg_asserttrue(sol.problem == 0)
 mbg_asserttolequal(double(x),1,1e-4);
 mbg_asserttolequal(double(u),0,1e-4);
@@ -95,11 +96,11 @@ mbg_asserttrue(double(y) > 1)
 
 x = sdpvar(2,1);
 u = sdpvar(1);
-solvesdp([-10 <= [x;u] <= 10,implies(x==0.5,u == pi)],(x-.5)'*(x-.5))
+solvesdp([-10 <= [x;u] <= 10,implies(x==0.5,u == pi)],(x-.5)'*(x-.5),ops)
 mbg_asserttolequal(double(x),0.5,1e-4);
 mbg_asserttolequal(double(u),pi,1e-4);
 
-solvesdp([-10 <= [x;u] <= 10,implies(x==0.5,u == 15,1e-3)],(x-.5)'*(x-.5))
+solvesdp([-10 <= [x;u] <= 10,implies(x==0.5,u == 15,1e-3)],(x-.5)'*(x-.5),ops)
 mbg_asserttrue(any(abs(double(x)-0.5)>1e-5));
 
 
