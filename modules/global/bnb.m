@@ -146,7 +146,7 @@ p = updatemonomialbounds(p);
 %% PRE-SOLVE (nothing fancy coded)
 % *******************************
 pss=[];
-p = presolve_bounds_from_equalities(p);
+p = propagate_bounds_from_equalities(p);
 
 if p.K.f > 0
     pp = p;
@@ -193,7 +193,7 @@ end
 
 % Silly redundancy
 p = updatemonomialbounds(p);
-p = presolve_bounds_from_equalities(p);
+p = propagate_bounds_from_equalities(p);
 if p.K.l > 0
     b = p.F_struc(1+p.K.f:p.K.l+p.K.f,1);
     A = -p.F_struc(1+p.K.f:p.K.l+p.K.f,2:end);
