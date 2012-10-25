@@ -65,7 +65,7 @@ else
                 % the implied bounds x<=1
                 [lo,up] = findulb(Zmodel.F_struc(1:K.f + K.l,:),K);
                 Zmodel.lb = lo;Zmodel.ub = up;
-                Zmodel = presolve_bounds_from_equalities(Zmodel);
+                Zmodel = propagate_bounds_from_equalities(Zmodel);
                 up = Zmodel.ub;
                 lo = Zmodel.lb;
                 upfi = find(~isinf(up));
