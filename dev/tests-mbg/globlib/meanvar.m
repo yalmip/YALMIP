@@ -31,6 +31,6 @@ F=[F,0<=x8<=1];
 F=[F,0<=x9<=1];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'quadprog.Algorithm','interior-point-convex'));
 mbg_assertfalse(sol.problem)
 mbg_asserttolequal(double(objective),5.2434 , 1e-2);

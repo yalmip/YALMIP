@@ -40,6 +40,6 @@ F=[F,-x3-x12+x16==0];
 F=[F,-x4-x9+x17==0];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1))
+sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'quadprog.Algorithm','interior-point-convex'))
 mbg_assertfalse(sol.problem)
 mbg_asserttolequal(double(objective),  3.968220361763031, 1e-2);
