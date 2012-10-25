@@ -88,19 +88,11 @@ p = presolve_bounds_from_quadratics(p);
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
 
-if p.K.f > 0 &  ~isempty(p.KCut.f)
-    % FIXME: Turned off when having cut indicies 
-    % Sort the equalities such that equalities with few terms are at the
-    % top. This will improve bound propagation from equalities. If a tie,
-    % place equality with least number of variables with infinite bound on
-    % top. 
-    s = p.lb-p.ub;
-    b = p.F_struc(1:p.K.f,1);
-    A = p.F_struc(1:p.K.f,2:end);
-    [i,j] = sortrows([sum(A | A,2) sum(A(:,find(isinf(s))) | A(:,find(isinf(s))),2)],[1 2]);
-    p.F_struc(1:p.K.f,:)=[];
-    p.F_struc = [b(j) A(j,:);p.F_struc];
-end
+
+% *************************************************************************
+% Sort equalities in order to improve future bound propagation
+% *************************************************************************
+p = presolve_sortrows(p);
 
 % *************************************************************************
 % Improve the bounds by performing some standard presolve
