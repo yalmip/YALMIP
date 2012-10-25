@@ -218,10 +218,24 @@ else
             p_cut.x0(removethese)=[];
             p_cut.monomtable(:,find(removethese))=[];
             p_cut.monomtable(find(removethese),:)=[];
-            try
-                output = feval(lowersolver,p_cut);
-            catch
-                1
+            
+            % The model can become absolutely trivial in some case
+            % For instance in ex9_2_2 everything is presolved
+            if nnz(p_cut.c)==0 & nnz(p_cut.Q)==0 & size(p_cut.F_struc,1)==0
+                % No objective and no constraints
+                if all(p_cut.lb <= p_cut.ub)
+                    output.Primal = (p_cut.lb + p_cut.ub)/2;
+                    output.problem = 0;
+                else
+                    output.Primal = zeros(length(p_cut.lb),1);
+                    output.problem = 1;
+                end
+            else
+                try
+                    output = feval(lowersolver,p_cut);
+                catch
+                    1
+                end
             end
             x=p.c*0;
             x(removethese)=p.lb(removethese);
