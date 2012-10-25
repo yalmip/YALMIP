@@ -118,12 +118,7 @@ if p.K.f >0
                 [p_lb,p_ub] = propagatewoINFreduced(full(a(find_a)),full(ap(find_a)),full(am(find_a)),p_lb,p_ub,b);
                 p.lb(find_a) = p_lb;
                 p.ub(find_a) = p_ub;
-            end
-            %               if  any(isinf(p.lb)) | any(isinf(p.ub))
-            %                p = propagatewINF(p,AT,ApT,AmT,j,b);
-            %            else
-            %                p = propagatewoINF(p,AT,ApT,AmT,j,b);
-            %            end
+            end          
         end
     end
 end
