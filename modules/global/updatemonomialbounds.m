@@ -25,18 +25,8 @@ if ~isempty(p.bilinears)
         p.lb(x(implied_pos))=0;
     end
     
-    if p.lb(p.integer_variables) ~= fix(p.lb(p.integer_variables))
-        p.lb(p.integer_variables) = fix(p.lb(p.integer_variables)-1e-3);
-    end
-    if p.ub(p.integer_variables) ~= fix(p.ub(p.integer_variables))
-        p.ub(p.integer_variables) = fix(p.ub(p.integer_variables)+1e-3);
-    end
-    if p.lb(p.binary_variables) ~= fix(p.lb(p.binary_variables));
-        p.lb(p.binary_variables) = fix(p.lb(p.binary_variables)-1e-3);
-    end
-    if p.ub(p.binary_variables) ~= fix(p.ub(p.binary_variables));
-    p.ub(p.binary_variables) = fix(p.ub(p.binary_variables)+1e-3);
-    end
+    p = update_integer_bounds(p);
+    
     quadratic_variables = p.bilinears(x==y,1);
     p.lb(quadratic_variables(p.lb(quadratic_variables)<0)) = 0;
 end
