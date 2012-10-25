@@ -1,7 +1,7 @@
 function model = yalmip2nonlinearsolver(model)
 
 if ~model.equalitypresolved
-    model = presolve_bounds_from_equalities(model);
+    model = propagate_bounds_from_equalities(model);
 end
 
 K = model.K;
@@ -134,7 +134,9 @@ if ~isempty(beq) &  (~model.equalitypresolved | ~(isequal(lb,lb_old) & isequal(u
     p.lb = lb;
     p.ub = ub;
     p.variabletype = zeros(1,length(lb));
-    p = presolve_bounds_from_equalities(p);
+    p.binary_variables = [];
+    p.integer_variables = [];
+    p = propagate_bounds_from_equalities(p);
     lb = p.lb;
     ub = p.ub;
 end
