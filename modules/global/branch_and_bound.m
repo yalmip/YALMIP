@@ -71,6 +71,10 @@ go_on  = 1;
 reduction_result = [];
 lower_hist = [];
 upper_hist = [];
+p.branchwidth = [];
+
+pseudo_costgain=[];
+pseudo_variable=[];
 
 while go_on
 
@@ -158,6 +162,12 @@ while go_on
                 end
                 x = output.Primal;
 
+                if ~isempty(p.branchwidth)
+                    if ~isempty(p.lower)
+                        pseudo_costgain = [pseudo_costgain (cost-p.lower)/p.branchwidth];
+                        pseudo_variable = [pseudo_variable p.spliton];
+                    end
+                end
                 % UPDATE THE LOWER BOUND
                 if isnan(lower)
                     lower = cost;
@@ -252,6 +262,7 @@ while go_on
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
                 if all(node.lb <= node.ub)
+                    node.branchwidth=[];
                     stack = push(stack,node);                 
                 end
             end
@@ -263,6 +274,7 @@ while go_on
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
                 if all(node.lb <= node.ub)
+                    node.branchwidth=[];
                     stack = push(stack,node);                 
                 end
             end     
@@ -280,6 +292,7 @@ while go_on
                 end
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
+                node.branchwidth = [p.ub(spliton)-p.lb(spliton)];
                 if all(node.lb <= node.ub)
                     stack = push(stack,node);
                 end
@@ -604,6 +617,7 @@ else
     p.complementary = node.complementary;
     p.cutState = node.cutState;
     p.feasible = 1;
+    p.branchwidth = node.branchwidth;
 end
 
 % *************************************************************************
