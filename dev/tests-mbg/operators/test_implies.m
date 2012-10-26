@@ -92,7 +92,7 @@ mbg_asserttrue(double(y) < 1+1e-5)
 
 solvesdp([-4 <= [x y] <= 10,implies([d1==1,x>=0],y>=1)],-d1-x)
 mbg_asserttolequal(double(d1),1,1e-4);
-mbg_asserttrue(double(y) > 1)
+mbg_asserttrue(double(y) > 1-1e-5)
 
 x = sdpvar(2,1);
 u = sdpvar(1);
