@@ -46,7 +46,8 @@ end
 p.EqualityConstraintState = ones(p.K.f,1);
 p.InequalityConstraintState = ones(p.K.l,1);
 p = compile_nonlinear_table(p);
-p = propagatequadratics(p,inf,-inf);
+%p = propagatequadratics(p,inf,-inf);
+p = propagatequadratics(p);
 p.high_monom_model=[];
 p.originalModel = p;
 p = presolveOneMagicRound(p);   
