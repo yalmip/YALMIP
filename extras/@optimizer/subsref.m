@@ -70,6 +70,7 @@ elseif isequal(subs.type,'{}')
             else
                 output.problem = 1;
                 output.Primal = originalModel.c*0;
+                output.Dual = [];
             end
         else
             
