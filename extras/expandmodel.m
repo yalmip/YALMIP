@@ -230,7 +230,7 @@ while constraint <=length(F) & ~failure
         index_in_extended = find(ismembc(variables,extendedvariables));
         if ~isempty(index_in_extended)
             if is(F(constraint),'equality')
-                if options.allowmilp
+                if options.allowmilp | options.allownonconvex
                     [F_expand,failure,cause] = expand(index_in_extended,variables,-sdpvar(F(constraint)),F_expand,extendedvariables,monomtable,variabletype,['constraint #' num2str(constraint)],0,options,'exact',[],allExtStructs,w);
                 else
                     failure = 1;
