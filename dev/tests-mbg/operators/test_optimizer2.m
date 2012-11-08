@@ -1,9 +1,6 @@
 function test_optimizer2
 
-% Tests a regression bug that made expandmodel flawed. Basically, when
-% optmizer generates the model, it constraints the parametric variables to
-% pi. However, these constraints can not be used to tighten the model since
-% they are completely artificial.
+% Tests issue #39
 
 yalmip('clear')
 sdpvar x
