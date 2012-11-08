@@ -138,7 +138,16 @@ sys.map = map;
 sys.input.expression = x;
 sys.output.expression = u;
 sys.output.z = z;
-[a,b,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end));
+% This is not guaranteed to give the index in the order the variables where
+% given (tested in test_optimizer2
+% [a,b,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end));
+% Could be done using
+% [b,a,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end)');
+% but let us be safe
+b = [];
+for i = 1:prod(sys.dimin)
+    b = [b;find(sys.model.F_struc(i,2:end))];
+end
 sys.parameters = b;
 used_in = find(any(sys.model.monomtable(:,b),2));
 if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1)
