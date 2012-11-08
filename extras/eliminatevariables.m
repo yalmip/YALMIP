@@ -49,6 +49,58 @@ if model.K.l > 0
         end
     end
 end
+if model.K.q(1) > 0
+    top = model.K.f + model.K.l + 1;
+    removeqs = [];
+    removeRows = [];
+    for i = 1:length(model.K.q)
+        rows = top:top+model.K.q(i)-1;
+        v = model.F_struc(rows,:);
+        if sum(abs(v(:,2:end)==0))
+            if norm(v(2:end)) > v(1,1)
+                infeasible = 1;
+                return
+            else
+                removeqs = [removeqs;i];
+                removeRows = [removeRows;rows];
+            end
+        end
+        top = top + model.K.q(i);
+    end
+    model.K.q(removeqs)=[];
+    model.F_struc(removeRows,:)=[];
+    if isempty(model.K.q)
+        model.K.q = 0;
+    end
+end
+if model.K.s(1) > 0
+    % This code cannot occur yet, so untested
+    % Nonlinear semidefinite program with parameter
+    top = model.K.f + model.K.l + sum(model.K.q) + 1;
+    removeqs = [];
+    removeRows = [];
+    for i = 1:length(model.K.q)
+        n = model.K.s(i);
+        rows = top:top+n^2-1;
+        v = model.F_struc(rows,:);
+        if sum(abs(v(:,2:end)==0))
+            [R,p] = chol(reshape(v(:,1),n,n));
+            if p
+                infeasible = 1;
+                return
+            else
+                removeqs = [removeqs;i];
+                removeRows = [removeRows;rows];
+            end
+        end
+        top = top + n^2;
+    end
+    model.K.s(removeqs)=[];
+    model.F_struc(removeRows,:)=[];
+    if isempty(model.K.q)
+        model.K.q = 0;
+    end
+end
 
 model.f = model.f + model.c(removethese)'*value;
 
