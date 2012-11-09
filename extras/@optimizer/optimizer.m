@@ -159,5 +159,15 @@ end
 sys.F = Constraints;
 sys.h = Objective;
 sys.ops = options;
+
+% This data is used in eliminatevariables (nonlinear parameterizations)
+% A lot of performance is gained by precomputing them
+sys.model.precalc.newmonomtable = sys.model.monomtable;
+sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
+sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
+[ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','stable');
+sys.model.precalc.S = sparse(kk,1:length(kk),1);
+sys.model.precalc.skipped = setdiff(1:length(kk),jj);
+
 sys = class(sys,'optimizer');
 

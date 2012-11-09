@@ -62,7 +62,8 @@ elseif isequal(subs.type,'{}')
         if self.nonlinear & isempty(self.model.evalMap) & isempty(self.model.integer_variables)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
-            if ~infeasible                
+            if ~infeasible           
+                %self.model.solver.call ='callgurobi';
                 eval(['output = ' self.model.solver.call '(self.model);']);
                 x = originalModel.c*0;
                 x(keptvariables) = output.Primal;
@@ -72,6 +73,10 @@ elseif isequal(subs.type,'{}')
                 output.Primal = originalModel.c*0;
                 output.Dual = [];
             end
+            originalModel.precalc.S = self.model.precalc.S;
+            originalModel.precalc.skipped = self.model.precalc.skipped;
+            originalModel.precalc.newmonomtable = self.model.precalc.newmonomtable;
+            self.model = originalModel;
         else
             
             %[ii,jj,kk] = find(self.model.F_struc(1:prod(self.dimin),2:end))
@@ -99,8 +104,9 @@ elseif isequal(subs.type,'{}')
         end
         varargout{2}(i) = output.problem;
         varargout{3}{i} = yalmiperror(output.problem);
-        varargout{4}{i} = output.Dual;
+        varargout{4}{i} = output.Dual;       
         start = start + self.dimin(2);
     end
     varargout{1} = u;
+    varargout{5} = self;
 end

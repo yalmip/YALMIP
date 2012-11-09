@@ -1,13 +1,19 @@
-function [model,keptvariables,infeasible] = eliminatevariable(model,varindex,value)
+function [model,keptvariables,infeasible] = eliminatevariables(model,varindex,value)
 
 keptvariables = 1:length(model.c);
 
+% The first set of equalities are just used when the model is linear in the
+% parametric variables, hence we delete them 
 model.F_struc(1:length(varindex),:) = [];
 model.K.f = model.K.f - length(varindex);
+
 
 newmonomtable = model.monomtable;
 rmvmonoms = newmonomtable(:,varindex);
 newmonomtable(:,varindex) = 0;
+
+%newmonomtable = model.precalc.newmonomtable;
+%rmvmonoms = model.precalc.rmvmonoms;
 
 monomvalue = prod(repmat(value(:)',size(rmvmonoms,1),1).^rmvmonoms,2);
 
@@ -20,7 +26,8 @@ monomgain = monomvalue;monomgain(removethese) = [];
 if ~isempty(model.F_struc)
     model.F_struc(:,1) = model.F_struc(:,1)+model.F_struc(:,1+removethese)*value;
     model.F_struc(:,1+removethese) = [];
-    model.F_struc = model.F_struc*diag([1;monomgain]);
+   % model.F_struc = model.F_struc*sparse(diag([1;monomgain]));
+    model.F_struc = model.F_struc*diag(sparse([1;monomgain]));
 end
 infeasible = 0;
 if model.K.f > 0
@@ -118,29 +125,45 @@ model.ub(removethese)=[];
 newmonomtable(:,removethese) = [];
 newmonomtable(removethese,:) = [];
 
-skipped = [];
-alreadyAdded = zeros(1,size(newmonomtable,1));
-[ii,jj,kk] = unique(newmonomtable,'rows','stable');
-for i  = 1:size(newmonomtable,1)
-    if ~alreadyAdded(i)
-        this = newmonomtable(i,:);
-        j = findrows(newmonomtable(i+1:1:end,:),this);
-        if ~isempty(j)
-            j = j + i;
-           % j = setdiff(j,skipped);
-           % if ~isempty(j)
+if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
+    skipped = [];
+    alreadyAdded = zeros(1,size(newmonomtable,1));
+    [ii,jj,kk] = unique(newmonomtable,'rows','stable');
+    S = sparse(kk,1:length(kk),1);
+    skipped = setdiff(1:length(kk),jj);
+    model.precalc.S = S;
+    model.precalc.skipped = skipped;
+    model.precalc.newmonomtable = newmonomtable;
+else
+    S = model.precalc.S;
+    skipped = model.precalc.skipped;
+end
+model.c = S*model.c;
+%model.F_struc2 = [model.F_struc(:,1) (S*model.F_struc(:,2:end)')'];
+model.F_struc = model.F_struc*blkdiag(1,S');
+%norm(model.F_struc-model.F_struc2)
+if 0
+    for i  = 1:size(newmonomtable,1)
+        if ~alreadyAdded(i)
+            this = newmonomtable(i,:);
+            j = findrows(newmonomtable(i+1:1:end,:),this);
+            if ~isempty(j)
+                j = j + i;
+                % j = setdiff(j,skipped);
+                % if ~isempty(j)
                 model.c(i) = model.c(i) + sum(model.c(j));
                 model.F_struc(:,i+1) = model.F_struc(:,i+1) + sum(model.F_struc(:,j+1),2);
-                skipped = [skipped j(:)'];
+                skipped = unique([skipped j(:)']);
                 alreadyAdded(j)=1;
-          %  end
+                %  end
+            end
         end
     end
+    model.c(skipped) = [];   
+    model.F_struc(:,1+skipped) = [];
 end
-model.c(skipped) = [];
 model.lb(skipped) = [];
 model.ub(skipped) = [];
-model.F_struc(:,1+skipped) = [];
 newmonomtable(skipped,:) = [];
 newmonomtable(:,skipped) = [];
 model.Q(:,skipped)=[];
