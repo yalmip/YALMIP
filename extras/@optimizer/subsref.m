@@ -63,6 +63,7 @@ elseif isequal(subs.type,'{}')
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
             if ~infeasible
+                self.model.solver.call = 'callgurobi';
                 eval(['output = ' self.model.solver.call '(self.model);']);
                 x = originalModel.c*0;
                 x(keptvariables) = output.Primal;
@@ -87,14 +88,14 @@ elseif isequal(subs.type,'{}')
         end
         if isempty(self.output.z)
             if ~isempty(output.Primal)
-                u = [u output.Primal(self.map)];
+                u = [u reshape(output.Primal(self.map),self.dimout)];
             else
-                u = [u 0*self.map+nan];
+                u = [u reshape(0*self.map+nan,self.dimout)];
             end
         else
             if ~isempty(output.Primal)
                 assign(self.output.z,output.Primal(self.map));
-                u = [u double(self.output.expression)];
+                u = [u reshape(double(self.output.expression),self.dimout)];
             end
         end
         varargout{2}(i) = output.problem;

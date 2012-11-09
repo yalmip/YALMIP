@@ -108,8 +108,9 @@ if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2))==1 & all(bas
     % This is just a vecotr of variables
     z = [];
     map = [];
-    for i = 1:length(u)
-        var = getvariables(u(i));
+    uvec = u(:);
+    for i = 1:length(uvec)
+        var = getvariables(uvec(i));
         map = [map;find(var == model.used_variables)];
     end
 else
