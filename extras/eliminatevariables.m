@@ -119,16 +119,21 @@ newmonomtable(:,removethese) = [];
 newmonomtable(removethese,:) = [];
 
 skipped = [];
+alreadyAdded = zeros(1,size(newmonomtable,1));
+[ii,jj,kk] = unique(newmonomtable,'rows','stable');
 for i  = 1:size(newmonomtable,1)
-    this = newmonomtable(i,:);
-    j = findrows(newmonomtable(i+1:1:end,:),this);
-    if ~isempty(j)
-        j = j + i;
-        j = setdiff(j,skipped);
+    if ~alreadyAdded(i)
+        this = newmonomtable(i,:);
+        j = findrows(newmonomtable(i+1:1:end,:),this);
         if ~isempty(j)
-            model.c(i) = model.c(i) + sum(model.c(j));
-            model.F_struc(:,i+1) = model.F_struc(:,i+1) + sum(model.F_struc(:,j+1),2);
-            skipped = [skipped j(:)'];
+            j = j + i;
+           % j = setdiff(j,skipped);
+           % if ~isempty(j)
+                model.c(i) = model.c(i) + sum(model.c(j));
+                model.F_struc(:,i+1) = model.F_struc(:,i+1) + sum(model.F_struc(:,j+1),2);
+                skipped = [skipped j(:)'];
+                alreadyAdded(j)=1;
+          %  end
         end
     end
 end

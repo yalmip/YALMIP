@@ -62,8 +62,7 @@ elseif isequal(subs.type,'{}')
         if self.nonlinear & isempty(self.model.evalMap) & isempty(self.model.integer_variables)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
-            if ~infeasible
-                self.model.solver.call = 'callgurobi';
+            if ~infeasible                
                 eval(['output = ' self.model.solver.call '(self.model);']);
                 x = originalModel.c*0;
                 x(keptvariables) = output.Primal;
