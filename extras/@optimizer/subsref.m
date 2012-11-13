@@ -59,7 +59,7 @@ elseif isequal(subs.type,'{}')
     for i = 1:nBlocks
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
         %        if self.nonlinear & isempty(self.model.evalMap) & isempty(self.model.bilinear_variables) & isempty(self.model.integer_variables)
-        if self.nonlinear & isempty(self.model.evalMap) & isempty(self.model.integer_variables)
+        if self.nonlinear & isempty(self.model.evalMap)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
             if ~infeasible           
