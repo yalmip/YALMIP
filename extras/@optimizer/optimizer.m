@@ -71,6 +71,11 @@ x = x(:);
 if isempty(options)
     options = sdpsettings;
 end
+
+if ~isa(options,'struct')
+    error('Third argument in OPTIMIZER should be an options structure.');
+end
+
 % Silent by default. If we want displays, set to 2
 options.verbose = max(options.verbose-1,0);
 
@@ -151,7 +156,10 @@ for i = 1:prod(sys.dimin)
 end
 sys.parameters = b;
 used_in = find(any(sys.model.monomtable(:,b),2));
-if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1)
+Q = sys.model.Q;
+Qa = Q;Qa(:,b)=[];Qa(b,:)=[];
+Qb = Q(:,b);Qb(b,:)=[];
+if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | (nnz(Qa)==0 & nnz(Qb)>0))
     sys.nonlinear = 1;
 else
     sys.nonlinear = 0;
@@ -162,12 +170,17 @@ sys.ops = options;
 
 % This data is used in eliminatevariables (nonlinear parameterizations)
 % A lot of performance is gained by precomputing them
+% This will work as long as there a no zeros in the parameters, which might
+% cause variables to dissapear (as in x*parameter >=0, parameter = 0)
+% (or similiar effects happen)
 sys.model.precalc.newmonomtable = sys.model.monomtable;
 sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
 sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
 [ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','stable');
 sys.model.precalc.S = sparse(kk,1:length(kk),1);
 sys.model.precalc.skipped = setdiff(1:length(kk),jj);
+
+
 
 sys = class(sys,'optimizer');
 

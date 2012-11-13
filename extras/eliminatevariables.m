@@ -15,7 +15,8 @@ newmonomtable(:,varindex) = 0;
 %newmonomtable = model.precalc.newmonomtable;
 %rmvmonoms = model.precalc.rmvmonoms;
 
-monomvalue = prod(repmat(value(:)',size(rmvmonoms,1),1).^rmvmonoms,2);
+ss = repmat(value(:)',size(rmvmonoms,1),1);
+monomvalue = prod(ss.^rmvmonoms,2);
 
 removethese = find(~any(newmonomtable,2));
 keepingthese = find(any(newmonomtable,2));
@@ -91,7 +92,7 @@ if model.K.s(1) > 0
         rows = top:top+n^2-1;
         v = model.F_struc(rows,:);
         if sum(abs(v(:,2:end)==0))
-            [R,p] = chol(reshape(v(:,1),n,n));
+            [~,p] = chol(reshape(v(:,1),n,n));
             if p
                 infeasible = 1;
                 return
@@ -129,6 +130,7 @@ if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
     alreadyAdded = zeros(1,size(newmonomtable,1));
     [ii,jj,kk] = unique(newmonomtable,'rows','stable');
+   % [ii,jj,kk] = unique(newmonomtable,'rows');
     S = sparse(kk,1:length(kk),1);
     skipped = setdiff(1:length(kk),jj);
     model.precalc.S = S;
@@ -185,4 +187,41 @@ if ~isempty(nonlinear)
 end
 
 model.x0 = zeros(length(model.c),1);
-%model.x0 = zeros(length(find(model.variabletype)),1);
+
+% Try to reduce to QP
+if all(model.variabletype) <= 2 & any(model.variabletype)
+    monomials = find(model.variabletype);
+    if nnz(model.F_struc(:,1+monomials))==0
+        if all(isinf(model.lb(monomials)))
+            if all(isinf(model.ub(monomials)))
+                for k = monomials(:)'
+                    i = find(model.monomtable(k,:));
+                    if model.variabletype(k)==1
+                        model.Q(i(1),i(2)) = model.Q(i(1),i(2)) + model.c(k)/2;
+                        model.Q(i(2),i(1)) = model.Q(i(1),i(2));
+                    else
+                        model.Q(i,i) = model.Q(i,i) + model.c(k);
+                    end
+                end
+                model.c(monomials)=[];
+                model.F_struc(:,1+monomials) = [];
+                model.lb(monomials) = [];
+                model.ub(monomials) = [];
+                newmonomtable(monomials,:) = [];
+                newmonomtable(:,monomials) = [];
+                model.monomtable = newmonomtable;
+                model.Q(:,monomials) = [];
+                model.Q(monomials,:) = [];
+                model.x0(monomials) = [];
+                model.variabletype(monomials)=[];                
+                keptvariables(monomials) = [];
+                
+            end
+        end 
+    end
+end
+
+% Remap indicies
+[~,model.integer_variables]=ismember(model.integer_variables,keptvariables);
+[~,model.binary_variables]=ismember(model.binary_variables,keptvariables);
+[~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
