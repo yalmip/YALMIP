@@ -17,4 +17,12 @@ if length(X) ~= length(f)
 end
 
 % f < -eps implies X==1
+if all(all(getbase(f)==fix(getbase(f))))
+    xv = getvariables(f);
+    if all(ismember(xv,yalmip('intvariables')) | ismember(xv,yalmip('binvariables')))
+        % This is an integer expression so we can use a really large margin
+        F = [f >= 0.5 + (m-0.5).*X];
+        return
+    end
+end
 F = [f >= -eps + (m+eps).*X];

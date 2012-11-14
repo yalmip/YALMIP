@@ -11,6 +11,13 @@ switch class(varargin{1})
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         if isreal(varargin{1})
             varargout{1} = yalmip('define',mfilename,varargin{1});
+            B = getbase(varargin{1});
+            if all(all(fix(B)==B))
+                CurrInt = yalmip('quantvariables');
+                if all(ismember(getvariables(varargin{1}),CurrInt))
+                    yalmip('setintvariables',[CurrInt getvariables(varargout{1})]);
+                end
+            end                        
         else
             % For complex args, abs(X) is defined [norm(X(i,j),2)] in MATLAB
             y = [];
@@ -61,6 +68,12 @@ switch class(varargin{1})
                      -1 0 -m;
                      -1 1 2*maxABSX;1 -1 0]*[X;t;d] <= [maxABSX;0;0;0;0;-m;2*maxABSX;0]];
                 end
+%                 if all(all(getbase(X)==fix(getbase(X))))
+%                     xv = getvariables(X);
+%                     if all(ismember(xv,yalmip('intvariables')) | ismember(xv,yalmip('binvariables')))
+%                         F = [F,integer(t)];
+%                     end
+%                 end
                 varargout{1} = F;
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','integer');
                 varargout{3} = X;
