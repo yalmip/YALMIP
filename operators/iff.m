@@ -24,7 +24,7 @@ function varargout = iff(varargin)
 %
 % The iff overloads == for logic constraints.
 %
-%  sdpvar X;binvar Y; F = set((X>5) == Y);
+%  sdpvar X;binvar Y; F = set((X>=5) == Y);
 %  sdpvar X;binvar Y; F = set(Y == (X==5));
 
 %

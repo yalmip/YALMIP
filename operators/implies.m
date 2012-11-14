@@ -18,8 +18,8 @@ function varargout = implies(varargin)
 % Examples
 %
 %  binvar X,Y; F = implies(X,Y);
-%  binvar X;sdpvar Y; F = implies(X,Y>5);
-%  binvar X;Y=sdpvar(3,1); F = set(implies(X,[sum(Y);Y(2)]>[5;0]));
+%  binvar X;sdpvar Y; F = implies(X,Y>=5);
+%  binvar X;Y=sdpvar(3,1); F = set(implies(X,[sum(Y);Y(2)]>=[5;0]));
 %
 % Note
 %  Using implies with X non-binary is highly sensitive numerically.
@@ -27,11 +27,11 @@ function varargout = implies(varargin)
 %  environment, and precision in the solver. To account for this,
 %  the user can supply a third argument to define a dead-zone around
 %  zero, i.e Implies(X<=0,Y) will be replaced with IMPLIES(X<=-tol,Y)
-%  Note, you typically need to tweak this number for your application. By
-%  default, YALMIP uses tol = 0, which means you can get garbage...
-%  A positive number means YALMIP is cautious in terms of activating the
-%  condition, while a negative number means YALMIP will be aggressive  in
-%  activating the condition. 
+%  Note, you typically need to tweak this number for your
+%  application/solver. By default, YALMIP uses tol = 0, which means you
+%  easily can get garbage... A positive number means YALMIP is cautious in
+%  terms of activating the condition, while a negative number means YALMIP
+%  will be aggressive  in activating the condition. 
 %
 %   See also @SDPVAR/AND, @SDPVAR/OR, IFF
 
