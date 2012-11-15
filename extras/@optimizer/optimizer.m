@@ -176,7 +176,7 @@ sys.ops = options;
 sys.model.precalc.newmonomtable = sys.model.monomtable;
 sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
 sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
-[ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','stable');
+[ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','first');
 sys.model.precalc.S = sparse(kk,1:length(kk),1);
 sys.model.precalc.skipped = setdiff(1:length(kk),jj);
 
