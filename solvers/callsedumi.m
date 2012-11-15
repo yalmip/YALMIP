@@ -39,6 +39,7 @@ if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showp
 
 solvertime = clock; 
 problem = 0;  
+warnState = warning;
 try
     [x_s,y_s,info] = sedumi(-F_struc(:,2:end),-c,F_struc(:,1),K,pars);
 catch
@@ -68,6 +69,7 @@ catch
         disp(' ')                
     end
 end
+warning(warnState);
 % solvertime = cputime - solvertime;%etime(clock,solvertime
 if model.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
