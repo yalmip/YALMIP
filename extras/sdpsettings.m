@@ -207,6 +207,7 @@ Names = {'solver'
     'gurobi.SolutionLimit'
     'gurobi.TimeLimit'
     'gurobi.BarConvTol'
+    'gurobi.BarQCPConvTol'
     'gurobi.FeasibilityTol'
     'gurobi.IntFeasTol'
     'gurobi.MarkowitzTol'
@@ -224,15 +225,18 @@ Names = {'solver'
     'gurobi.SiftMethod'
     'gurobi.SimplexPricing'
     'gurobi.BarCorrectors'
+    'gurobi.BarHomogeneous'
     'gurobi.BarOrder'
     'gurobi.Crossover'
     'gurobi.CrossoverBasis'
+    'gurobi.QCPDual'
     'gurobi.BranchDir'
     'gurobi.Heuristics'
     'gurobi.ImproveStartGap'
     'gurobi.ImproveStartTime'
     'gurobi.MinRelNodes'
     'gurobi.MIPFocus'
+    'gurobi.MIQCPMethod'
     'gurobi.NodefileDir'
     'gurobi.NodefileStart'
     'gurobi.NodeMethod'
@@ -262,14 +266,18 @@ Names = {'solver'
     'gurobi.AggFill'
     'gurobi.Aggregate'
     'gurobi.DisplayInterval'
+    'gurobi.DualReductions'
+    'gurobi.FeasRelaxBigM'
     'gurobi.IISMethod'
     'gurobi.LogFile'
     'gurobi.Method'
     'gurobi.PreCrush'
     'gurobi.PreDepRow'
     'gurobi.PreDual'
+    'gurobi.PrePasses'
     'gurobi.PreMIQPMethod'
     'gurobi.PrePasses'
+    'gurobi.PreQLinearize'
     'gurobi.Presolve'
     'gurobi.PreSparsify'
     'gurobi.ResultFile'
@@ -1087,6 +1095,7 @@ else
     options.gurobi.TimeLimit = inf;
     
     options.gurobi.BarConvTol = 1e-8;
+     options.gurobi.BarQCPConvTol = 1e-6;
     options.gurobi.FeasibilityTol = 1e-6;
     options.gurobi.IntFeasTol = 1e-6;
     options.gurobi.MarkowitzTol = 0.0078125;
@@ -1104,15 +1113,18 @@ else
     options.gurobi.SiftMethod = -1;
     options.gurobi.SimplexPricing = -1;
     options.gurobi.BarCorrectors = -1;
+    options.gurobi.BarHomogeneous = -1;
     options.gurobi.BarOrder = -1;
     options.gurobi.Crossover = -1;
     options.gurobi.CrossoverBasis = 0;
+    options.gurobi.QCPDual = 0;
     options.gurobi.BranchDir = 0;
     options.gurobi.Heuristics = 0.05;
     options.gurobi.ImproveStartGap = 0;
     options.gurobi.ImproveStartTime = inf;
     options.gurobi.MinRelNodes = 0;
     options.gurobi.MIPFocus = 0;
+    options.gurobi.MIQCPMethod = -1;
     options.gurobi.NodefileDir = '.';
     options.gurobi.NodefileStart = inf;
     options.gurobi.NodeMethod = 1;
@@ -1140,8 +1152,10 @@ else
     options.gurobi.CutPasses = -1;
     options.gurobi.GomoryPasses = -1;
     options.gurobi.AggFill = 10;
-    options.gurobi.Aggregate = 1;
+    options.gurobi.Aggregate = 1;    
     options.gurobi.DisplayInterval = 5;
+    options.gurobi.DualReductions = 1;
+    options.gurobi.FeasRelaxBigM = 1e6;
     options.gurobi.IISMethod = -1;
     options.gurobi.LogFile = '';
     options.gurobi.Method = -1;
@@ -1149,6 +1163,7 @@ else
     options.gurobi.PreDepRow = -1;
     options.gurobi.PreDual = -1;
     options.gurobi.PreMIQPMethod = -1;
+    options.gurobi.PreQLinearize = -1;
     options.gurobi.PrePasses = -1;
     options.gurobi.Presolve = -1;
     options.gurobi.PreSparsify = 0;
