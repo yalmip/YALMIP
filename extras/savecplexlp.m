@@ -58,7 +58,7 @@ end
 
 fid = fopen(filename,'w');
 
-obj = lptext(c(:)');
+obj = strrep(lptext(c(:)'),'+ -','-');
     
 fprintf(fid,['Minimize\r\n obj:  ' obj(1:end-2) '']);
 if any(any(Q))
@@ -74,13 +74,13 @@ for i = 1:length(b)
     rowtext = lptext(-A(i,:));
     rhs = sprintf('%0.20g',full(-b(i)));
     rowtext = [rowtext(1:end-2) ' >= ' rhs]; 
-    fprintf(fid,[' c%i: ' rowtext ''],i);
+    fprintf(fid,[' c%i: ' strrep(rowtext,'+ -','-') ''],i);
     fprintf(fid,'\r\n');
 end
 for i = 1:length(beq)
     rowtext = lptext(-Aeq(i,:));
     rowtext = [rowtext(1:end-2) '== ' sprintf('%0.20g',full(-beq(i)))];    
-    fprintf(fid,[' eq%i: ' rowtext ''],i);
+    fprintf(fid,[' eq%i: ' strrep(rowtext,'+ -','-') ''],i);
     fprintf(fid,'\r\n');
 end
 
