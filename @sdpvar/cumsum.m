@@ -4,18 +4,22 @@ function X=cumsum(X,I)
 % Author Johan Löfberg
 % $Id: cumsum.m,v 1.9 2009-10-15 10:25:41 joloef Exp $
 
-if nargin == 1
-    I = min(find(X.dim>1));
-    if isempty(I)
-        I = 1;
+if nargin == 1 & min(X.dim)==1
+    B = cumsum(X.basis);
+else
+    if nargin == 1
+        I = min(find(X.dim>1));
+        if isempty(I)
+            I = 1;
+        end
     end
-end
-
-B = [];
-for i = 1:length(X.lmi_variables)+1
-    C = reshape(X.basis(:,i),X.dim);
-    C = cumsum(C,I);
-    B = [B C(:)];
+    
+    B = [];
+    for i = 1:length(X.lmi_variables)+1
+        C = reshape(X.basis(:,i),X.dim);
+        C = cumsum(C,I);
+        B = [B C(:)];
+    end
 end
 X.basis = B;
 X.conicinfo = [0 0];
