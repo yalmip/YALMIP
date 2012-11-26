@@ -959,6 +959,7 @@ else
         
     try
         options.cplex = cplexoptimset('cplex');
+        options.cplex.output.clonelog = 0;
         remove = zeros(length(Names),1);
         for i = 1:length(Names)
             if strfind(Names{i},'cplex')
