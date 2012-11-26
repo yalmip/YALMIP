@@ -176,10 +176,17 @@ sys.ops = options;
 sys.model.precalc.newmonomtable = sys.model.monomtable;
 sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
 sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
-[ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','first');
-sys.model.precalc.S = sparse(kk,1:length(kk),1);
-sys.model.precalc.skipped = setdiff(1:length(kk),jj);
-
+% R2012b...
+try
+    [ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','stable');
+    sys.model.precalc.S = sparse(kk,1:length(kk),1);
+    sys.model.precalc.skipped = setdiff(1:length(kk),jj);
+catch
+    % Optimizer should crash on old versions when trying to solve nonlinear
+    % replacement problems
+   % sys.model.precalc.S=[];
+   % sys.model.precalc.skipped=[];
+end
 
 
 sys = class(sys,'optimizer');

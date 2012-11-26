@@ -129,8 +129,8 @@ newmonomtable(removethese,:) = [];
 if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
     alreadyAdded = zeros(1,size(newmonomtable,1));
-    [ii,jj,kk] = unique(newmonomtable,'rows','first');
-   % [ii,jj,kk] = unique(newmonomtable,'rows');
+    % R2012b
+    [ii,jj,kk] = unique(newmonomtable,'rows','stable');  
     S = sparse(kk,1:length(kk),1);
     skipped = setdiff(1:length(kk),jj);
     model.precalc.S = S;

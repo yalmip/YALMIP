@@ -61,7 +61,11 @@ elseif isequal(subs.type,'{}')
         %        if self.nonlinear & isempty(self.model.evalMap) & isempty(self.model.bilinear_variables) & isempty(self.model.integer_variables)
         if self.nonlinear & isempty(self.model.evalMap)
             originalModel = self.model;
-            [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
+            try
+                [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
+            catch
+                error('Nonlinear replacement in optimizer object only supported in MATLAB R2012A or later');
+            end
             if ~infeasible           
                 %self.model.solver.call ='callgurobi';
                 eval(['output = ' self.model.solver.call '(self.model);']);
