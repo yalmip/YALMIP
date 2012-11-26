@@ -83,6 +83,9 @@ for i = 1:length(solvers)
     if solvers(i).show
         data{j,1} = upper(solvers(i).tag); 
         data{j,2} = solvers(i).version;
+        if length(solvers(i).subversion)>0
+            data{j,2} = [data{j,2} ' ' solvers(i).subversion];
+        end
         data{j,3} = foundstring{found(i)+1};   
         if ~donttest
             if found(i)
