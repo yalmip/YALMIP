@@ -81,7 +81,11 @@ switch class(varargin{1})
             varargout{1} = set(yalmip('define',mfilename,varargin{:}) == 1);            
             varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
             if isa(varargin{2},'double')
+                if size(varargin{1},1) == size(varargin{2},1) % v in [v1 v2 v3]
                  varargout{1} = [ varargout{1}, min(varargin{2},[],2) <= varargin{1} <= max(varargin{2},[],2)];
+                else
+                 varargout{1} = [ varargout{1}, min(min(varargin{2})) <= varargin{1}(:) <= max(max(varargin{2}))];
+                end
             end
         end
 
