@@ -57,7 +57,7 @@ case -5
  case -4
   error_string = ['Solver not applicable ' solver];    
 case -3
-  error_string = 'Solver not found';
+  error_string = ['Solver not found ' solver];
  case -2
   error_string = 'No suitable solver';
  case -1
