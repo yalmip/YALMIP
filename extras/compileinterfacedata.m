@@ -247,7 +247,7 @@ end
 [solver,problem] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
 if isempty(solver)
     diagnostic.solvertime = 0;
-    if problem == -4
+    if problem == -4 | problem == -3 
         diagnostic.info = yalmiperror(problem,options.solver);
     else
         diagnostic.info = yalmiperror(problem,'YALMIP');
