@@ -1568,7 +1568,11 @@ end
 function [Names,solvernames,solverops] = trytoset(solver,Names)
 
 try
-    solverops = optimset(solver);
+    try
+        solverops = optimset(solver);
+    catch
+        solverops = optimset;
+    end
     solvernames = fieldnames(solverops);
     
     
