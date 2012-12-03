@@ -200,11 +200,11 @@ for k = 1:length(a)%find_a
         if ak > 0
             %newlower = (-b-apU+papU(k)-amL+pamL(k) )/ak;
             %newupper = (-b-amU+pamU(k)-apL+papL(k) )/ak;
-            newlower = (minusbminusapUminusamL+papU(k)+pamL(k) )/ak;
-            newupper = (minusbminusamUminusapL+pamU(k)+papL(k) )/ak;
+            newlower = -1e-15 + (minusbminusapUminusamL+papU(k)+pamL(k) )/ak;
+            newupper = 1e-15 + (minusbminusamUminusapL+pamU(k)+papL(k) )/ak;
         else
-            newlower = (minusbminusamUminusapL+pamU(k)+papL(k) )/ak;
-            newupper = (minusbminusapUminusamL+papU(k)+pamL(k) )/ak;
+            newlower = -1e-15 + (minusbminusamUminusapL+pamU(k)+papL(k) )/ak;
+            newupper = 1e-15 + (minusbminusapUminusamL+papU(k)+pamL(k) )/ak;
         end
         if p_ub_k>newupper
             p_ub(k) = newupper;
