@@ -126,4 +126,7 @@ else
      model.params.outputflag = 1;
 end
 
+if ~isempty(x0)
+    model.start = x0;
+end
 model.NegativeSemiVar=NegativeSemiVar;
