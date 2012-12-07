@@ -48,27 +48,27 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     xevaled(linearindicies) = x;
     X = repmat(xevaled,size(mtNonlinear,1),1);
     % FIXME: This should be vectorized
-        
-     news = model.fastdiff.news;
-     allDerivemt = model.fastdiff.allDerivemt;
-     c = model.fastdiff.c;
-        
+    
+    news = model.fastdiff.news;
+    allDerivemt = model.fastdiff.allDerivemt;
+    c = model.fastdiff.c;
+    
     zzz = c.*prod(repmat(x(:)',length(c),1).^allDerivemt,2);
     newdxx = spalloc(length(linearindicies),max(linearindicies),length(linearindicies));
-    for i = 1:length(c)    
+    for i = 1:length(c)
         newdxx(news(i,2),model.nonlinearindicies(news(i,1)))=zzz(i);%c(i)*prod(x(:)'.^allDerivemt(i,:));
     end
     for i = 1:length(linearindicies)
         newdxx(i,linearindicies(i)) = 1;
     end
     dgAll = allA*newdxx';
-        
+    
 else
     allA = [model.Anonlineq;model.Anonlinineq];
     requested = any(allA',2);
     [i,j,k] = find((model.deppattern(find(requested),:)));
     requested(j) = 1;
-    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);    
+    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);
     dgAll = allA*dx;
 end
 
