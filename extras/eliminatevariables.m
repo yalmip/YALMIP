@@ -64,8 +64,8 @@ if model.K.q(1) > 0
     for i = 1:length(model.K.q)
         rows = top:top+model.K.q(i)-1;
         v = model.F_struc(rows,:);
-        if sum(abs(v(:,2:end)==0))
-            if norm(v(2:end)) > v(1,1)
+        if nnz(v(:,2:end))==0
+            if norm(v(2:end,1)) > v(1,1)
                 infeasible = 1;
                 return
             else
@@ -91,7 +91,7 @@ if model.K.s(1) > 0
         n = model.K.s(i);
         rows = top:top+n^2-1;
         v = model.F_struc(rows,:);
-        if sum(abs(v(:,2:end)==0))
+        if nnz(v(:,2:end))==0
             [~,p] = chol(reshape(v(:,1),n,n));
             if p
                 infeasible = 1;
@@ -186,6 +186,7 @@ if ~isempty(nonlinear)
     model.variabletype(sigmonial) = 4;
 end
 
+x0wasempty = isempty(model.x0);
 model.x0 = zeros(length(model.c),1);
 
 % Try to reduce to QP
@@ -219,6 +220,10 @@ if all(model.variabletype) <= 2 & any(model.variabletype)
             end
         end 
     end
+end
+
+if x0wasempty
+    model.x0 = [];
 end
 
 % Remap indicies
