@@ -1075,7 +1075,7 @@ end
 mt = mt(used_variables,used_variables);
 variabletype = variabletype(used_variables);
 if (options.relax == 1)|(options.relax==3)
-    mt = eye(length(used_variables));
+    mt = speye(length(used_variables));
     variabletype = variabletype*0;
 end
 
