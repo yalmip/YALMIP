@@ -1095,6 +1095,33 @@ if ~isempty(oldc)
     ub = [];
 end
 
+% Sanity check
+if ~isempty(c)
+    if any(isnan(c) )
+        error('You have NaNs in your objective!. Please fix model')
+    end
+end
+if ~isempty(Q)
+    if any(any(isnan(Q)))
+        error('You have NaNs in your quadratic objective!. Please fix model')
+    end
+end
+if ~isempty(lb)
+    if any(isnan(lb))
+        error('You have NaNs in a lower bound!. Please fix model')
+    end
+end
+if ~isempty(ub)
+    if any(isnan(ub))
+        error('You have NaNs in an upper bound!. Please fix model')
+    end
+end
+if ~isempty(F_struc)
+    if any(any(isnan(F_struc)))
+        error('You have NaNs in your constraints!. Please fix model')
+    end
+end
+
 % *************************************************************************
 %% GENERAL DATA EXCHANGE WITH SOLVER
 % *************************************************************************
