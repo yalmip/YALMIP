@@ -27,3 +27,4 @@ if ~isempty(model.Aeq)
     F = [F;model.Aeq*x - model.beq];
     G = [G;model.Aeq];
 end
+G = full(G(model.sparsityElements));
