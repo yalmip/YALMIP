@@ -39,23 +39,28 @@ all_f = [];
 all_c_w = [];
 all_c_x = [];
 all_Q_xw = [];
+HigherOrder = [];
+top = 1;
 for i = 1:length(X)
     Q = Qs{i};
     c = cs{i};
     f = fs{i};
     if nonquadratic
-        error('Constraints can be at most quadratic, with the linear term uncertain');
+        HigherOrder = [HigherOrder;i];
+        %error('Constraints can be at most quadratic, with the linear term uncertain');
+    else        
+        Q_ww = Q(wind,wind);
+        Q_xw = Q(xind,wind);
+        Q_xx{top} = Q(xind,xind);
+        c_x = c(xind);
+        c_w = c(wind);
+        
+        all_f = [all_f;f];
+        all_c_w = [all_c_w;c_w'];
+        all_c_x = [all_c_x;sparse(c_x)];
+        all_Q_xw = [all_Q_xw Q_xw'];
+        top = top + 1;
     end
-    Q_ww = Q(wind,wind);
-    Q_xw = Q(xind,wind);
-    Q_xx{i} = Q(xind,xind);
-    c_x = c(xind);
-    c_w = c(wind);
-
-    all_f = [all_f;f];
-    all_c_w = [all_c_w;c_w'];
-    all_c_x = [all_c_x;sparse(c_x)];
-    all_Q_xw = [all_Q_xw Q_xw'];
 end
 % Linear uncertain constraint is (Bbetai*x + cdi) >= 0 for all w, or
 % (bi' + (Bi*w)')*x + (ci'*w + di).
@@ -65,16 +70,25 @@ if ops.verbose
     disp([' - Eliminating uncertainty using explicit maximization of ' norm_p])
 end
 
-switch norm_p
-    case '1-norm'
-        [F,feasible] = filter_norm_1(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType);
-        
-    case '2-norm'
-        [F,feasible] = filter_norm_2(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType);
-        
-    case 'inf-norm'
-        [F,feasible] = filter_norm_inf(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType);
-        
-    otherwise
-        error('The detected norm-ball has not been implemented yet')
+if length(Q)> 0
+    switch norm_p
+        case '1-norm'
+            [F,feasible] = filter_norm_1(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType);
+            
+        case '2-norm'
+            [F,feasible] = filter_norm_2(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType);
+            
+        case 'inf-norm'
+            [F,feasible] = filter_norm_inf(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType);
+            
+        otherwise
+            error('The detected norm-ball has not been implemented yet')
+    end
+else
+    F = [];
+    feasible = 1;
+end
+
+if ~isempty(HigherOrder)
+    F = [F,X(HigherOrder) >= 0];
 end
