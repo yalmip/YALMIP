@@ -12,6 +12,7 @@ emptysolver.call    = '';
 emptysolver.subcall = '';
 emptysolver.show    = 1;
 emptysolver.usesother = 0;
+emptysolver.supportsinitial = 1;
 
 emptysolver.objective.linear = 0;
 emptysolver.objective.quadratic.convex = 0;
