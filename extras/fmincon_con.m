@@ -39,8 +39,8 @@ if nargout == 2 || ~model.derivative_available
 elseif ~isempty(dgAll_test) & isempty(model.evalMap)
     dgAll = dgAll_test;
 elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities)
-    allA = [model.Anonlineq;model.Anonlinineq];
-    dgAll = [];
+   % allA = [model.Anonlineq;model.Anonlinineq];
+   % dgAll = [];
     n = length(model.c);
     linearindicies = model.linearindicies;
     mtNonlinear = model.monomtable(model.nonlinearindicies,:);
@@ -57,15 +57,38 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     nz = find(allDerivemt);
     O(nz) = X(nz).^allDerivemt(nz);
     zzz = c.*prod(O,2);
-    newdxx = spalloc(length(linearindicies),max(linearindicies),length(linearindicies));
-    for i = 1:length(c)
-        newdxx(news(i,2),model.nonlinearindicies(news(i,1)))=zzz(i);%c(i)*prod(x(:)'.^allDerivemt(i,:));
+   
+    if 1
+        a1 = news(1:length(c),2);
+        a2 = model.nonlinearindicies(news(1:length(c),1))';
+        nn = max(max(length(linearindicies)),max(news(:,2)));
+        mm = max(max(linearindicies),max(model.nonlinearindicies(news(:,1))));
+      %  newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
+     %   newdxx = spalloc(nn,mm,length(linearindicies));
+     %   iii = sub2ind(size(newdxx),a1(:),a2(:));
+     %   newdxx(iii) = zzz;
+        newdxx = sparse(a1,a2,zzz,nn,mm);
+    else
+        newdxx = spalloc(length(linearindicies),max(linearindicies),length(linearindicies));
+        for i = 1:length(c)
+            newdxx(news(i,2),model.nonlinearindicies(news(i,1)))=zzz(i);%c(i)*prod(x(:)'.^allDerivemt(i,:));
+        end
     end
 
     for i = 1:length(linearindicies)
         newdxx(i,linearindicies(i)) = 1;
-    end  
-    dgAll = allA*newdxx';
+    end
+    
+    if ~isempty(model.Anonlineq)
+        dgAll = model.Anonlineq*newdxx';
+    else
+        dgAll = [];
+    end
+    if ~isempty(model.Anonlinineq)
+        aux = model.Anonlinineq*newdxx';
+        dgAll = [dgAll;aux];
+    end    
+  %  dgAll = allA*newdxx';
     
 else
     allA = [model.Anonlineq;model.Anonlinineq];
