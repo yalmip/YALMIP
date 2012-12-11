@@ -68,6 +68,11 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
      %   iii = sub2ind(size(newdxx),a1(:),a2(:));
      %   newdxx(iii) = zzz;
         newdxx = sparse(a1,a2,zzz,nn,mm);
+
+    %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
+    %    iii = sub2ind(size(newdxx),a1,a2);
+    %    newdxx(iii) = zzz;
+    %    newdxx = sparse(a1,a2,zzz);
     else
         newdxx = spalloc(length(linearindicies),max(linearindicies),length(linearindicies));
         for i = 1:length(c)
