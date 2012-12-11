@@ -710,10 +710,10 @@ else
     % YALMIP options
     options.solver = '';
     options.verbose = 1;
-    options.dimacs = 0;
+    options.debug = 0;
+    options.usex0 = 0;
     options.warning = 1;
-    options.cachesolvers = 0;
-    options.beeponproblem = [-5 -4 -3 -2 -1];
+    options.cachesolvers = 0;  
     options.showprogress = 0;
     options.saveduals = 1;
     options.removeequalities = 0;
@@ -725,13 +725,14 @@ else
     options.relax = 0;
     options.dualize = 0;
     options.usex0 = 0;
-    options.shift = 0;
     options.savedebug = 0;
     options.debug = 0;
     options.expand = 1;
     options.allowmilp = 1;
     options.allownonconvex = 1;
-    
+    options.shift = 0;
+    options.dimacs = 0;
+    options.beeponproblem = [-5 -4 -3 -2 -1];
     % options.plot.colormap = 'hsv';
     % options.plot.gradcolor = 0;
     options.plot.edgecolor = 'k';
