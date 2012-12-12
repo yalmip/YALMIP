@@ -15,7 +15,7 @@ switch class(varargin{1})
                 if all(ismember(getvariables(varargin{1}),CurrInt))
                     yalmip('setintvariables',[CurrInt getvariables(varargout{1})]);
                 end
-            end                        
+            end
         else
             % For complex args, abs(X) is defined [norm(X(i,j),2)] in MATLAB
             y = [];
