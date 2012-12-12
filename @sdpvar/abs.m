@@ -2,8 +2,6 @@ function varargout=abs(varargin)
 %ABS (overloaded)
 
 % Author Johan Löfberg
-% $Id: abs.m,v 1.28 2008-11-11 13:29:20 joloef Exp $
-
 switch class(varargin{1})
     case 'double'
         error('Overloaded SDPVAR/ABS CALLED WITH DOUBLE. Report error')
@@ -37,10 +35,8 @@ switch class(varargin{1})
             case 'graph'
                 % Description using epigraphs
                 t = varargin{2};
-                X = varargin{3};
-              %  varargout{1} = set(-t <= X <= t);
-                varargout{1} = [1 -1;-1 -1]*[X;t] <= [0;0];%-t <= X <= t);
-                
+                X = varargin{3};             
+                varargout{1} = [1 -1;-1 -1]*[X;t] <= [0;0];                
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph');
                 varargout{3} = X;
 
