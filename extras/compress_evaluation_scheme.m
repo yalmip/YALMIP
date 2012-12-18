@@ -1,5 +1,5 @@
 function model = compress_evaluation_scheme(model);
-scalars = {'exp','log','sin','cos','log2','log10','inverse_internal2'};
+scalars = {'exp','log','sin','cos','log2','log10','slog','inverse_internal2'};
 for i = 1:length(model.evaluation_scheme)
     if strcmp(model.evaluation_scheme{i}.group,'eval')
         clear fun

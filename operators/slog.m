@@ -19,8 +19,8 @@ switch class(varargin{1})
         
     case 'sdpvar'
 
-        if min(size(varargin{1}))>1
-            error('SLOG only defined for vector arguments');
+        if 0%min(size(varargin{1}))>1
+       %     error('SLOG only defined for vector arguments');
         else            
             varargout{1} = check_for_special_cases(varargin{:});            
             if isempty(varargout{1})
