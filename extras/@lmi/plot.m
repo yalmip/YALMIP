@@ -293,8 +293,14 @@ try % Try to ensure that we close h
     while i<=n & errorstatus ~=1
         [xi,errorstatus] = solvefordirection(c(:,i),internalmodel,localindex(:));
         if errorstatus == 2
-            disp('Discovered unbounded direction. You should add bounds on variables')
-        end
+            disp('Discovered unbounded direction. You should add bounds on variables')            
+        elseif errorstatus == 12
+            [xi,errorstatus] = solvefordirection(0*c(:,i),internalmodel,localindex(:));
+            if errorstatus == 0
+                errorstatus = 2;
+                disp('Discovered unbounded direction. You should add bounds on variables')
+            end
+        end                                        
         x_opt = [x_opt xi];
         if ~waitbar_created
             if etime(clock,t0)>waitbar_starts_at;
