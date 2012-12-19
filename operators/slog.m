@@ -11,21 +11,15 @@ function varargout = slog(varargin)
 % evaluation.
 
 % Author Johan Löfberg
-% $Id: slog.m,v 1.11 2007-08-02 20:57:53 joloef Exp $
 switch class(varargin{1})
     case 'double'
         x = varargin{1};       
         varargout{1} = log(abs(1+x)+sqrt(eps));
         
-    case 'sdpvar'
-
-        if 0%min(size(varargin{1}))>1
-       %     error('SLOG only defined for vector arguments');
-        else            
-            varargout{1} = check_for_special_cases(varargin{:});            
-            if isempty(varargout{1})
-                varargout{1} = InstantiateElementWise(mfilename,varargin{:});
-            end                     
+    case 'sdpvar'         
+        varargout{1} = check_for_special_cases(varargin{:});
+        if isempty(varargout{1})
+            varargout{1} = InstantiateElementWise(mfilename,varargin{:});
         end
 
     case 'char'
