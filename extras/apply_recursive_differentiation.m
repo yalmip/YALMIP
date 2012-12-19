@@ -1,12 +1,21 @@
 function dX = apply_recursive_differentiation(model,x,requested,recursivederivativeprecompute);
 
 % Compute all evaluation-based derivatives df(x)
-for i = 1:length(model.evaluation_scheme)
+dxi = [];
+dxj = [];
+dxs = [];
+for i = 1:length(model.evaluation_scheme)    
     if isequal(model.evaluation_scheme{i}.group,'eval')
         for j = model.evaluation_scheme{i}.variables
             k = model.evalMap{j}.variableIndex;
             if any(requested(model.evalMap{j}.computes))
-                z{i,j} = model.evalMap{j}.properties.derivative(x(k));
+                derivative = model.evalMap{j}.properties.derivative(x(k));
+                z{i,j} = derivative;
+                if i == 1
+                    dxj = [dxj model.evalMap{j}.variableIndex];
+                    dxi = [dxi model.evalMap{j}.computes];
+                    dxs = [dxs;derivative(:)];
+                end
             end
         end
     end
@@ -20,19 +29,26 @@ ss = sum(ss,1)>1;
 monomTablePattern = sparse(double(model.monomtable | model.monomtable));
 mtT = model.monomtable';
 if 1 % USE NEW
-    dX = sparse(model.linearindicies,1:length(model.linearindicies),ones(length(model.linearindicies),1),length(model.c),length(model.linearindicies)); 
+    [~,dxj] = ismember(dxj,model.linearindicies);
+    dxi = [dxi model.linearindicies];
+    dxj = [dxj 1:length(model.linearindicies)];
+    dxs = [dxs(:)' ones(length(model.linearindicies),1)'];
+    dX = sparse(dxi,dxj,dxs,length(model.c),length(model.linearindicies)); 
+   % dX = sparse(model.linearindicies,1:length(model.linearindicies),ones(length(model.linearindicies),1),length(model.c),length(model.linearindicies)); 
     newMonoms = [];
     for i = 1:length(model.evaluation_scheme)
         switch model.evaluation_scheme{i}.group
             case 'eval'
-                for variable = 1:length(model.linearindicies)
-                    if ss(variable)
-                        for j = recursivederivativeprecompute{variable,i}
-                            k = model.evalMap{j}.variableIndex;
-                            if length(model.evalMap{j}.computes) == 1
-                                dX(model.evalMap{j}.computes,variable) = dX(k,variable)'*z{i,j};
-                            else
-                                dX(model.evalMap{j}.computes,variable) = dX(k,variable).*z{i,j};
+                if i>1
+                    for variable = 1:length(model.linearindicies)
+                        if ss(variable)
+                            for j = recursivederivativeprecompute{variable,i}
+                                k = model.evalMap{j}.variableIndex;
+                                if length(model.evalMap{j}.computes) == 1
+                                    dX(model.evalMap{j}.computes,variable) = dX(k,variable)'*z{i,j};
+                                else
+                                    dX(model.evalMap{j}.computes,variable) = dX(k,variable).*z{i,j};
+                                end
                             end
                         end
                     end
