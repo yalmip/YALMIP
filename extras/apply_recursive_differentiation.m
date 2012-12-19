@@ -4,7 +4,7 @@ function dX = apply_recursive_differentiation(model,x,requested,recursivederivat
 dxi = [];
 dxj = [];
 dxs = [];
-for i = 1:length(model.evaluation_scheme)    
+for i = 1:length(model.evaluation_scheme)
     if isequal(model.evaluation_scheme{i}.group,'eval')
         for j = model.evaluation_scheme{i}.variables
             k = model.evalMap{j}.variableIndex;
@@ -13,7 +13,11 @@ for i = 1:length(model.evaluation_scheme)
                 z{i,j} = derivative;
                 if i == 1
                     dxj = [dxj model.evalMap{j}.variableIndex];
-                    dxi = [dxi model.evalMap{j}.computes];
+                    if length(derivative)>1 & length(model.evalMap{j}.computes)==1
+                         dxi = [dxi repmat(model.evalMap{j}.computes,1,length(derivative))]; 
+                    else
+                        dxi = [dxi model.evalMap{j}.computes];
+                    end
                     dxs = [dxs;derivative(:)];
                 end
             end
@@ -33,8 +37,8 @@ if 1 % USE NEW
     dxi = [dxi model.linearindicies];
     dxj = [dxj 1:length(model.linearindicies)];
     dxs = [dxs(:)' ones(length(model.linearindicies),1)'];
-    dX = sparse(dxi,dxj,dxs,length(model.c),length(model.linearindicies)); 
-   % dX = sparse(model.linearindicies,1:length(model.linearindicies),ones(length(model.linearindicies),1),length(model.c),length(model.linearindicies)); 
+    dX = sparse(dxi,dxj,dxs,length(model.c),length(model.linearindicies));
+    % dX = sparse(model.linearindicies,1:length(model.linearindicies),ones(length(model.linearindicies),1),length(model.c),length(model.linearindicies));
     newMonoms = [];
     for i = 1:length(model.evaluation_scheme)
         switch model.evaluation_scheme{i}.group
@@ -57,7 +61,7 @@ if 1 % USE NEW
                 computed = model.monomials(model.evaluation_scheme{i}.variables);
                 
                 % quadratic and bilinear expressions in the bottom layer of
-                % the computational tree can be differentiated very easily 
+                % the computational tree can be differentiated very easily
                 if i == 1
                     Bilinears = computed(find(model.variabletype(computed)==1));
                     if ~isempty(Bilinears)
@@ -70,49 +74,50 @@ if 1 % USE NEW
                     if ~isempty(Quadratics)
                         x1 =  model.QuadraticsList(Quadratics,1);
                         dX(sub2ind(size(dX),Quadratics',x1))=2*x(x1);
-                    end                    
+                    end
                     Alreadydone = [Bilinears Quadratics];
                 else
                     Alreadydone=[];
                 end
-                
-                % These are more complicated than just bilinear, so they
-                % have to be taken care of separately
-%                 computed1 = setdiff(computed,Alreadydone);   
-%                 computed2 = setdiff1D(computed,Alreadydone);   
-%                 if ~isequal(computed1,computed2)
-%                     1
-%                 end
-               computed = setdiff(computed,Alreadydone);    
+                               
+                computed = setdiff(computed,Alreadydone);
                 if i > 1
-                    isBilinear = model.variabletype==1;
                     % We might have inner derivatives from earlier
-                    for variable = 1:length(model.linearindicies)
-                        if ss(variable)
-                            dx = dX(:,variable)';
-                            fdX = find(dx);
-                            hh = sum(monomTablePattern(computed,fdX),2);
-                            for j = computed(find(hh))
-                                if requested(j)
-                                    if isBilinear(j)      
-                                        b1 = model.BilinearsList(j,1);
-                                        b2 = model.BilinearsList(j,2);
-                                        dp = x(b2)*dX(b1,variable)+x(b1)*dX(b2,variable);                                       
-                                    else
-                                        dp = 0;
-                                        monomsj = mtT(:,j)';
-                                        active = find(monomsj & dX(:,variable)');
-                                        for k = active
-                                            monoms = monomsj;
-                                            r = monoms(k);
-                                            monoms(k) = r-1;
-                                            s = find(monoms);
-                                            z = prod((x(s)').^(monoms(s)));
-                                            aux = dX(k,variable);
-                                            dp = dp + r*aux*z;
+                    isBilinear = model.variabletype==1;
+                    if all(isBilinear(computed))
+                        % Special case quicker. Only bilinear monomials
+                        b1 = model.BilinearsList(computed,1);
+                        b2 = model.BilinearsList(computed,2);
+                        dp = repmat(x(b2),1,length(model.linearindicies)).*dX(b1,:)+repmat(x(b1),1,length(model.linearindicies)).*dX(b2,:);
+                        dX(computed,:) = dp;
+                    else                      
+                        for variable = 1:length(model.linearindicies)
+                            if ss(variable)
+                                dx = dX(:,variable)';
+                                fdX = find(dx);
+                                hh = sum(monomTablePattern(computed,fdX),2);
+                                for j = computed(find(hh))
+                                    if requested(j)
+                                        if isBilinear(j)
+                                            b1 = model.BilinearsList(j,1);
+                                            b2 = model.BilinearsList(j,2);
+                                            dp = x(b2)*dX(b1,variable)+x(b1)*dX(b2,variable);
+                                        else
+                                            dp = 0;
+                                            monomsj = mtT(:,j)';
+                                            active = find(monomsj & dX(:,variable)');
+                                            for k = active
+                                                monoms = monomsj;
+                                                r = monoms(k);
+                                                monoms(k) = r-1;
+                                                s = find(monoms);
+                                                z = prod((x(s)').^(monoms(s)));
+                                                aux = dX(k,variable);
+                                                dp = dp + r*aux*z;
+                                            end
                                         end
+                                        dX(j,variable) = real(dp);
                                     end
-                                    dX(j,variable) = real(dp);
                                 end
                             end
                         end
@@ -125,16 +130,16 @@ if 1 % USE NEW
                             fdX = find(dx);
                             hh = sum(monomTablePattern(computed,fdX),2);
                             for j = computed(find(hh))
-                                if requested(j)                                  
-                                    monomsj = mtT(:,j)';                                    
-                                
+                                if requested(j)
+                                    monomsj = mtT(:,j)';
+                                    
                                     k = model.linearindicies(variable);
                                     monoms = monomsj;
                                     r = monoms(k);
                                     monoms(k) = r-1;
-                                
+                                    
                                     s = find(monoms);
-                                    dp = r*prod((x(s)').^monoms(s));                                    
+                                    dp = r*prod((x(s)').^monoms(s));
                                     dX(j,variable) = real(dp);
                                 end
                             end
