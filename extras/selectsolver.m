@@ -1,4 +1,4 @@
-function [solver,problem] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
+function [solver,problem,forced_choice] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
 %SELECTSOLVER Internal function to select solver based on problem category
 
 % Author Johan Löfberg
@@ -14,8 +14,13 @@ end
 % ***************************************************
 % Maybe the user is stubborn and wants to pick solver
 % ***************************************************
+forced_choice = 0;
 if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
     
+    if strfind(options.solver,'+')
+        forced_choice = 1;
+        options.solver = strrep(options.solver,'+','');
+    end
     % Create tags with version also        
     temp = solvers;
     for i = 1:length(temp)
@@ -52,6 +57,11 @@ if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
     end    
 end
 
+if forced_choice
+    solver = solvers(end);
+    problem = 0;
+    return
+end
 % ************************************************
 % Prune based on objective
 % ************************************************
