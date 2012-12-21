@@ -1,7 +1,17 @@
 function output = call_cplexibm_miqcp(interfacedata)
 
 % Author Johan Löfberg
-% $Id: call_cplexibm_miqcp.m,v 1.21 2009-11-03 11:08:47 joloef Exp $
+
+% Gateway to all CPLEX interfaces
+if isempty(interfacedata.K.q) | interfacedata.K.q(1)==0
+    % Obviously no SOCP
+    if nnz(interfacedata.Q)==0
+        % and not QP either
+        output = call_cplexibm_milp(interfacedata);
+    else
+        output = call_cplexibm_miqp(interfacedata);
+    end
+end
 
 % Retrieve needed data
 options = interfacedata.options;
