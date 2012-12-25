@@ -89,13 +89,19 @@ y.extra.opname='';
 y = unfactor(y);
 
 % Update the factors
-doublehere = [];
+% But first, check to see that factors exist in all terms, if not simply
+% exit
 for i = 1:length(varargin)
     if isa(varargin{i},'sdpvar')
         if length(varargin{i}.leftfactors)==0
             y = flush(y);
             return
         end
+    end
+end
+doublehere = [];
+for i = 1:length(varargin)
+    if isa(varargin{i},'sdpvar')      
         for j = 1:length(varargin{i}.leftfactors)
             w = size(varargin{i}.leftfactors{j},2);
             y.leftfactors{end+1} = [spalloc(sum(n(1:1:i-1)),w,0); varargin{i}.leftfactors{j}; spalloc(sum(n(i+1:1:end)),w,0)];

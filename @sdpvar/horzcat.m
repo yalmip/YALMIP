@@ -114,13 +114,19 @@ y.conicinfo = [0 0];
 y.extra.opname='';
 y = unfactor(y);
 % Update the factors
-doublehere = [];
+% But first, check to see that factors exist in all terms, if not simply
+% exit
 for i = 1:length(varargin)
     if isa(varargin{i},'sdpvar')
         if length(varargin{i}.leftfactors)==0
             y = flush(y);
             return
         end
+    end
+end
+doublehere = [];
+for i = 1:length(varargin)
+    if isa(varargin{i},'sdpvar')       
         for j = 1:length(varargin{i}.leftfactors)
             h = size(varargin{i}.rightfactors{j},1);
             y.rightfactors{end+1} = [zeros(h,sum(m(1:1:i-1))) varargin{i}.rightfactors{j} zeros(h,sum(m(i+1:1:end)))];
