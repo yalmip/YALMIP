@@ -111,9 +111,9 @@ for i = 1:length(varargin)
     elseif isa(varargin{i},'double')       
         here = length(y.midfactors)+1;
         doublehere = [doublehere here];      
-        y.leftfactors{here} = [zeros(sum(n(1:1:i-1)),size(varargin{i},1)); eye(size(varargin{i},1)); zeros(sum(n(i+1:1:end)),size(varargin{i},1))];
+        y.leftfactors{here} = [spalloc(sum(n(1:1:i-1)),size(varargin{i},1),0); speye(size(varargin{i},1)); spalloc(sum(n(i+1:1:end)),size(varargin{i},1),0)];
         y.midfactors{here}  = varargin{i};
-        y.rightfactors{here}  = eye(size(varargin{i},2));
+        y.rightfactors{here}  = speye(size(varargin{i},2));
     end
 end
 y = cleandoublefactors(y);

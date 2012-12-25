@@ -129,7 +129,7 @@ for i = 1:length(varargin)
     if isa(varargin{i},'sdpvar')       
         for j = 1:length(varargin{i}.leftfactors)
             h = size(varargin{i}.rightfactors{j},1);
-            y.rightfactors{end+1} = [zeros(h,sum(m(1:1:i-1))) varargin{i}.rightfactors{j} zeros(h,sum(m(i+1:1:end)))];
+            y.rightfactors{end+1} = [spalloc(h,sum(m(1:1:i-1)),0) varargin{i}.rightfactors{j} spalloc(h,sum(m(i+1:1:end)),0)];
             y.midfactors{end+1} = varargin{i}.midfactors{j};
             y.leftfactors{end+1} = varargin{i}.leftfactors{j};
         end
@@ -139,9 +139,9 @@ for i = 1:length(varargin)
             here = length(y.midfactors)+1;
             % doublehere = [doublehere here];
             %  end
-            y.rightfactors{here} = [zeros(m(i),sum(m(1:1:i-1))) eye(m(i)) zeros(m(i),sum(m(i+1:1:end)))];
+            y.rightfactors{here} = [spalloc(m(i),sum(m(1:1:i-1)),0) speye(m(i)) spalloc(m(i),sum(m(i+1:1:end)),0)];
             y.midfactors{here}  = varargin{i};
-            y.leftfactors{here}  = eye(size(varargin{i},1));
+            y.leftfactors{here}  = speye(size(varargin{i},1));
         end
     end
 end
