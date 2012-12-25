@@ -102,36 +102,12 @@ for i = 1:length(varargin)
             y.midfactors{end+1} = varargin{i}.midfactors{j};
             y.rightfactors{end+1} = varargin{i}.rightfactors{j};
         end
-    elseif isa(varargin{i},'double')
-        %if ~doublehere
+    elseif isa(varargin{i},'double')       
         here = length(y.midfactors)+1;
-        doublehere = [doublehere here];
-        %end
+        doublehere = [doublehere here];      
         y.leftfactors{here} = [zeros(sum(n(1:1:i-1)),size(varargin{i},1)); eye(size(varargin{i},1)); zeros(sum(n(i+1:1:end)),size(varargin{i},1))];
         y.midfactors{here}  = varargin{i};
         y.rightfactors{here}  = eye(size(varargin{i},2));
     end
 end
 y = cleandoublefactors(y);
-
-% 
-% if length(y.midfactors)>1
-%     keep = ones(1,length(y.midfactors));
-%     for i = 1:length(y.midfactors)-1
-%         for j = 2:length(y.midfactors)
-%             if keep(j)
-%                 if isequal(y.midfactors{j},y.midfactors{i})
-%                     if isequal(y.rightfactors{j},y.rightfactors{i})
-%                         keep(j) = 0;
-%                         y.leftfactors{i} = y.leftfactors{i}+y.leftfactors{j};
-%                     end
-%                 end
-%             end
-%         end
-%     end
-%     if ~all(keep)
-%         y.leftfactors = {y.leftfactors{find(keep)}};
-%         y.midfactors = {y.midfactors{find(keep)}};
-%         y.rightfactors = {y.rightfactors{find(keep)}};
-%     end
-% end
