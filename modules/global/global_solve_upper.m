@@ -1,4 +1,4 @@
-function output = global_solve_upper(p,p_original,x,options,uppersolver)
+function [output,timing] = global_solve_upper(p,p_original,x,options,uppersolver,timing)
 
 if ~isempty(p.binary_variables)
     local_gave_good = find(abs(x(p_original.binary_variables)-fix(x(p_original.binary_variables)))< options.bnb.inttol);
@@ -50,7 +50,9 @@ p_upper.options.saveduals = 0;
 
 % Solve upper bounding problem
 p_upper.options.usex0 = 1;
+tstart = tic;
 output = feval(uppersolver,p_upper);
+timing.uppersolve = timing.uppersolve + toc(tstart);
 
 % Project into the box (numerical issue)
 output.Primal(output.Primal<p_upper.lb) = p_upper.lb(output.Primal<p_upper.lb);

@@ -1,4 +1,4 @@
-function [output,cost,psave] = solvelower(p,options,lowersolver,xmin,upper)
+function [output,cost,psave,timing] = solvelower(p,options,lowersolver,xmin,upper,timing)
 
 psave = p;
 removeThese = find(p.InequalityConstraintState==inf);
@@ -164,7 +164,9 @@ else
             p_cut.monomials = [];
             p_cut.evaluation_scheme = [];
             
+            tstart = tic;                                             
             output = feval(lowersolver,p_cut);
+            timing.lowersolve = timing.lowersolve + toc(tstart);
             cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
             % Minor clean-up
             pp=p;
@@ -232,7 +234,9 @@ else
                 end
             else
                 try
+                    tstart = tic;
                     output = feval(lowersolver,p_cut);
+                    timing.lowersolver = timing.lowersolver + toc(tstart);
                 catch
                     1
                 end

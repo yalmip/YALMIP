@@ -1,4 +1,4 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist] = branch_and_bound(p,x_min,upper)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing] = branch_and_bound(p,x_min,upper,timing)
 
 % *************************************************************************
 % Create handles to solvers
@@ -57,7 +57,7 @@ p.getsolvertime = 0;
 
 if options.bmibnb.verbose>0
     disp('* Starting YALMIP bilinear branch & bound.');
-    disp(['* Branch-variables : ' num2str(length(p.branch_variables))]);;
+    disp(['* Branch-variables : ' num2str(length(p.branch_variables))]);
     disp(['* Upper solver     : ' p.solver.uppersolver.tag]);
     disp(['* Lower solver     : ' p.solver.lowersolver.tag]);
     if p.options.bmibnb.lpreduce
@@ -103,7 +103,9 @@ while go_on
             case 4
                 p = propagate_bounds_from_complementary(p);
             case 5
+                tstart = tic;
                 p = domain_reduction(p,upper,lower,lpsolver,x_min);
+                timing.domainreduce = timing.domainreduce + toc(tstart);
             case 6
                 p = propagate_bounds_from_equalities(p);
             otherwise
@@ -120,7 +122,7 @@ while go_on
     % *********************************************************************
     if p.feasible
 
-        [output,cost,p] = solvelower(p,options,lowersolver,x_min,upper);
+        [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 
         % Cplex sucks...
         if output.problem == 12
@@ -195,7 +197,7 @@ while go_on
                         if ~isequal(p.solver.uppersolver.tag,'none')
                             if upper > p.options.bmibnb.target
                                 if options.bmibnb.lowertarget > lower                                    
-                                    [upper,x_min,info_text,numGlobalSolutions] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions);
+                                    [upper,x_min,info_text,numGlobalSolutions,timing] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing);
                                 end
                             end
                         end
@@ -339,7 +341,7 @@ while go_on
     upper_hist = [upper_hist upper];
 end
 if options.bmibnb.verbose>0
-    if options.bmibnb.verbose;showprogress([num2str(solved_nodes)  ' Finishing.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '%'],options.bnb.verbose);end
+    fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '\n']);
 end
 
 %save dummy x_min

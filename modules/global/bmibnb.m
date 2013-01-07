@@ -50,6 +50,10 @@ otherwise
     p.options.verbose = 0;
 end
 
+timing.total = tic;
+timing.uppersolve = 0;
+timing.lowersolve = 0;
+timing.domainreduce = 0;
 if ~isempty(p.F_struc)
     if any(isnan(p.F_struc) | isinf(p.F_struc))
         output = yalmip_default_output;
@@ -138,7 +142,7 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
     p = updatemonomialbounds(p);   
     p = updatemonomialbounds(p);    
     p = update_eval_bounds(p);    
-    [upper,p.x0,info_text,numglobals] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0);
+    [upper,p.x0,info_text,numglobals,timing] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing);
     if numglobals > 0
         x_min = p.x0;
     end
@@ -316,7 +320,7 @@ if p.feasible
     % *******************************
     % RUN BILINEAR BRANCH & BOUND
     % *******************************
-    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist] = branch_and_bound(p,x_min,upper);
+    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing] = branch_and_bound(p,x_min,upper,timing);
     
     % ********************************
     % CREATE SOLUTION AND DIAGNOSTICS
@@ -343,6 +347,13 @@ else
     upper_hist = [];
 end
 
+timing.total = toc(timing.total);
+if p.options.bmibnb.verbose
+    disp(['* Timing: ' num2str(ceil(100*timing.uppersolve/timing.total)) '% spent in upper solver']);
+    disp(['*         ' num2str(ceil(100*timing.lowersolve/timing.total)) '% spent in lower solver']);
+    disp(['*         ' num2str(ceil(100*timing.domainreduce/timing.total)) '% spent in LP-based domain reduction']);
+end
+
 x_min = dediagonalize(p,x_min);
 
 output = yalmip_default_output;
@@ -352,6 +363,7 @@ output.Primal        = zeros(length(p.kept),1);
 output.Primal(p.kept(1:n_in))= x_min(1:n_in);
 output.infostr      = yalmiperror(output.problem,'BMIBNB');
 output.solvertime   = etime(clock,bnbsolvertime);
+output.timing = timing;
 output.lower = lower;
 output.solveroutput.lower = lower;
 output.solveroutput.lower_hist = lower_hist;
