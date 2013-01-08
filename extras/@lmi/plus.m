@@ -29,8 +29,6 @@ if ~((isa(X,'lmi')) & (isa(Y,'lmi')))
     error('Both arguments must be SET objects')
 end
 
-%nX = length(X.clauses);
-%nY = length(Y.clauses);
 nX = length(X.LMIid);
 nY = length(Y.LMIid);
 if nX==0
