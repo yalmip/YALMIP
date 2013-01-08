@@ -65,6 +65,10 @@ Y = varargin{2};
 %     end
 % end
 
+if isempty(varargin{1})
+    varargout{1} = [];
+end
+
 switch class(varargin{1})
 
     case {'sdpvar','constraint','lmi'}      
