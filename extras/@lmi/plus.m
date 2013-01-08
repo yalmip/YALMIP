@@ -41,7 +41,11 @@ if nY == 0
     return;
 end
 
-X.clauses = {X.clauses{:},Y.clauses{:}};
+if length(Y.clauses)==1
+    X.clauses{end+1} = Y.clauses{1};
+else
+    X.clauses = {X.clauses{:},Y.clauses{:}};
+end
 X.LMIid = [X.LMIid Y.LMIid];
 
 % VERY FAST UNIQUE BECAUSE THIS IS CALLED A LOT OF TIMES....
