@@ -22,15 +22,9 @@ function X=sos(X,r)
 %   F = set(sos(p,3))
 %
 %  Note that his feature requires the solver LMIRANK.   
-%
-% See also SOSEX 
+
 
 % Author Johan Löfberg 
-% $Id: sos.m,v 1.8 2009-10-08 11:11:06 joloef Exp $  
-
-%if ~issymmetric(X)% X.n>1 | X.m>1
-%    error('SOS can only be applied to symmetric polynomial matrices');
-%end
 if nargin<2
     r = inf;
 end
