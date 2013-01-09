@@ -40,9 +40,7 @@ if nY == 0
 end
 
 if length(Y.clauses)==1
-    Z = Y.clauses{1};
-    X.clauses{end+1} = Y.clauses{1};
-    X.clauses{end} = Y.clauses{1};
+    X.clauses{end + 1} = Y.clauses{1};
 else
     X.clauses = {X.clauses{:},Y.clauses{:}};
 end

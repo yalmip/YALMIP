@@ -8,9 +8,9 @@ nvars = yalmip('nvars'); %Needed lot'sa times...
 
 % We first browse to see what we have got and the
 % dimension of F_struc (massive speed improvement)
-type_of_constraint = zeros(size(F.clauses,2),1);
+type_of_constraint = zeros(length(F.LMIid),1);%zeros(size(F.clauses,2),1);
 any_cuts = 0;
-for i = 1:size(F.clauses,2)
+for i = 1:length(F.LMIid)%size(F.clauses,2)
     type_of_constraint(i) = F.clauses{i}.type;
     if F.clauses{i}.cut
         any_cuts = 1;
