@@ -1,7 +1,6 @@
 function output = callbonmin(model)
 
 % Author Johan Löfberg
-% $Id: callbonmin.m,v 1.6 2009-09-29 10:30:15 joloef Exp $
 
 model = yalmip2nonlinearsolver(model);
 options = model.options.bonmin;

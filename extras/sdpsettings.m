@@ -901,18 +901,25 @@ else
     
     options.quadprogbb.max_time = inf;
   
-      
     try
-        options.bonmin.ipopt = bonminset;        
+        options.ipopt = ipoptset;    
+        options.ipopt.hessian_approximation = 'limited-memory';
+    catch
+        options.ipopt.mu_strategy = 'adaptive';
+        options.ipopt.tol = 1e-7;
+        options.ipopt.hessian_approximation = 'limited-memory';    
+    end
+      
+    try   
+        options.bonmin = bonminset;
+        options.bonmin.ipopt = ipoptset;
         options.bonmin.ipopt.hessian_approximation = 'limited-memory';
-        options.bonmin.algorithm = options.bonmin.ipopt.algorithm;
-        options.bonmin.ipopt = rmfield(options.bonmin.ipopt,'var_lin');
-        options.bonmin.ipopt = rmfield(options.bonmin.ipopt,'cons_lin');
-        options.bonmin.ipopt = rmfield(options.bonmin.ipopt,'algorithm');
+        options.bonmin = rmfield(options.bonmin,'var_lin');
+        options.bonmin = rmfield(options.bonmin,'cons_lin');
         
         cNames = recursivefieldnames(options.bonmin);
         for i = 1:length(cNames)
-            Names{end+1} = ['bonmin.' cNames{i}];          
+            Names{end+1} = ['bonmin.' cNames{i}];
         end
         [m,n] = size(Names);
         names = lower(Names);
@@ -1172,10 +1179,10 @@ else
     options.gurobi.ResultFile = '';
     options.gurobi.Threads = 0;
     
-    options.ipopt.mu_strategy = 'adaptive';
-    options.ipopt.tol = 1e-7;
-    options.ipopt.hessian_approximation = 'limited-memory';
-    
+%     options.ipopt.mu_strategy = 'adaptive';
+%     options.ipopt.tol = 1e-7;
+%     options.ipopt.hessian_approximation = 'limited-memory';
+%     
     options.kypd.solver = '';
     options.kypd.lyapunovsolver = 'schur';
     options.kypd.reduce = 0;
