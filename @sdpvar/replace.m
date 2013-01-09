@@ -168,6 +168,7 @@ if isa(Z,'sdpvar')
     Z.dim(1) = n;
     Z.dim(2) = m;
     Z.typeflag = X.typeflag;
+    Z.extra = X.extra;
     % Reset info about conic terms
     Z.conicinfo = [0 0];
 else
