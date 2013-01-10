@@ -117,7 +117,7 @@ for j = 1:nlmi
             res(j,1) = -full(max(max(abs(F0-round(F0)))));            
         case 8
             res(j,1) = -full(max(max(abs(F0-round(F0)))));
-            res(j,1) = min(res(j,1),-full(max(max(abs(F0-1)))));
+            res(j,1) = min(res(j,1),-(any(F0>1) | any(F0<0)));
         case 11
             if 0
                 p = F.clauses{j}.data;          
