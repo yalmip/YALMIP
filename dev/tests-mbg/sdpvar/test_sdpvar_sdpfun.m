@@ -1,4 +1,4 @@
-function test_sdpvar_cumsum
+function test_sdpvar_sdpfun
 
 yalmip('clear');
 sdpvar x
