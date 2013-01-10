@@ -236,7 +236,7 @@ else
                 try
                     tstart = tic;
                     output = feval(lowersolver,p_cut);
-                    timing.lowersolver = timing.lowersolver + toc(tstart);
+                    timing.lowersolve = timing.lowersolve + toc(tstart);
                 catch
                     1
                 end
