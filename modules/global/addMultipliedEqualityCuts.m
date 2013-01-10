@@ -4,8 +4,8 @@ if ~p.options.bmibnb.cut.multipliedequality
     return;
 end
 
+newRows = [];
 for i =  p.linears
-    newRows = [];
     for j = 1:p.K.f
         row = p.F_struc(j,:);
         used = find(row(2:end));
@@ -32,8 +32,8 @@ for i =  p.linears
             end
         end                    
     end
-    if ~isempty(newRows)
-        p.F_struc = [newRows;p.F_struc];
-        p.K.f = p.K.f + size(newRows,1);
-    end
+end
+if ~isempty(newRows)
+    p.F_struc = [newRows;p.F_struc];
+    p.K.f = p.K.f + size(newRows,1);
 end
