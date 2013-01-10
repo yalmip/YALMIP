@@ -36,7 +36,7 @@ elseif isequal(subs.type,'{}')
 
     % This is not really supported yet...
     if isa(subs.subs{1},'sdpvar')
-        u = yalmip('addextendedvariable','optimizer_operator',self,subs.subs{1});
+        varargout{1} = yalmip('definemulti','optimizer_operator',subs(1).subs{1},self,self.dimout);
         return
     end
 
