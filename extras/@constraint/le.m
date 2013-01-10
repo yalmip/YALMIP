@@ -13,7 +13,7 @@ try
         % (z > w) < y
         Z = Y - X.List{end};
         F = X;
-        F.List{end+1} = '<';
+        F.List{end+1} = '<=';
         F.List{end+1} = Y;
         F.Evaluated{end+1} = Z;
         F.ConstraintID(end+1) = yalmip('ConstraintID');
@@ -22,7 +22,7 @@ try
         % x < (w > y)
         Z = Y.List{1} - X;
         F = Y;
-        F.List = {X,'<',F.List{:}};
+        F.List = {X,'<=',F.List{:}};
         F.Evaluated = {Z,F.Evaluated{:}};
         F.ConstraintID = [yalmip('ConstraintID') F.ConstraintID];
         F.strict = [1 F.strict];
