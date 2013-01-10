@@ -2,7 +2,6 @@ function F = gt(X,Y)
 % Internal class for constraint lists
 
 % Author Johan Löfberg
-% $Id: ge.m,v 1.2 2007-09-12 14:28:29 joloef Exp $
 
 superiorto('sdpvar');
 superiorto('double');
