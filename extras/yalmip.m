@@ -162,8 +162,9 @@ switch varargin{1}
             i = 1;
             correct_operator = strcmp(varargin{2},{internal_sdpvarstate.ExtendedMap(:).fcn});
             arg1 = varargin{2};
-            arg2 = {varargin{3:end}};
-            this_hash = create_trivial_hash(varargin{3});            
+            arg2 = {varargin{3:end}};            
+            %this_hash = create_trivial_hash(varargin{3}); 
+            this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end-1}})); 
             for i = find(correct_operator)
                 if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
                     if isequal(arg2, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
@@ -178,7 +179,8 @@ switch varargin{1}
                 end
             end
         else
-             this_hash = create_trivial_hash(varargin{3});
+             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end-1}})); 
+             %this_hash = create_trivial_hash(varargin{3});
         end
 
         switch varargin{2}
@@ -999,3 +1001,10 @@ catch
     h = 0;
 end
 
+function X = firstSDPVAR(List)
+X = [];
+for i = 1:length(List)
+    if isa(List{i},'sdpvar')
+        X = List{i};
+    end
+end

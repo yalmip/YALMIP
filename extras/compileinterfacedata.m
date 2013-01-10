@@ -881,6 +881,16 @@ if ~isempty(evalMap)
             evalMap{i}.computes(j) = find(evalMap{i}.computes(j) == used_variables);
         end
     end
+    
+    % Add information about which argument is the variable
+    for i = 1:length(evalMap)
+        for j = 1:length(evalMap{i}.arg)-1
+            if isa(evalMap{i}.arg{j},'sdpvar')
+                evalMap{i}.argumentIndex = j;
+                break
+            end
+        end
+    end
 end
 
 % *************************************************************************
@@ -1199,8 +1209,16 @@ if ~isempty(evalVariables)
         % Find all variables used in the arguments of these functions
         hidden = [];
         for i = 1:length(evalMap)
-            n = length(evalMap{i}.arg{1});
-            if isequal(getbase(evalMap{i}.arg{1}),[zeros(n,1) eye(n)])% & is(evalMap{i}.arg{1},'linear')
+            % Find main main argument (typically first argument, but this
+            % could be different in a user-specified sdpfun object) 
+            for aux = 1:length(evalMap{i}.arg)-1
+                if isa(evalMap{i}.arg{aux},'sdpvar')
+                    X = evalMap{i}.arg{aux};
+                    break
+                end
+            end
+            n = length(X);
+            if isequal(getbase(X),[zeros(n,1) eye(n)])% & is(evalMap{i}.arg{1},'linear')
                 for j = 1:length(evalMap{i}.arg)-1
                     % The last argument is the help variable z in the
                     % transformation from f(ax+b) to f(z),z==ax+b. We should not
@@ -1243,9 +1261,15 @@ if ~isempty(evalVariables)
         evalVariables = usedEvalVariables;
 
         for i = 1:length(evalMap)
-            n = length(evalMap{i}.arg{1});
-            if isequal(getbase(evalMap{i}.arg{1}),[zeros(n,1) eye(n)])
-                index = ismember(used_variables,getvariables(evalMap{i}.arg{1}));
+            for aux = 1:length(evalMap{i}.arg)-1
+                if isa(evalMap{i}.arg{aux},'sdpvar')
+                    X = evalMap{i}.arg{aux};
+                    break
+                end
+            end
+            n = length(X);
+            if isequal(getbase(X),[zeros(n,1) eye(n)])
+                index = ismember(used_variables,getvariables(X));
                 evalMap{i}.variableIndex = find(index);
             else
                 index = ismember(used_variables,getvariables(evalMap{i}.arg{end}));

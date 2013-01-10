@@ -2,7 +2,45 @@ function varargout = sdpfun(varargin)
 %SDPFUN Gateway to general (elementwise) functions on SDPVAR variables (overloaded)
 
 % Author Johan Löfberg
-% $Id: sdpfun.m,v 1.12 2007-08-02 19:17:36 joloef Exp $
+
+if ~isa(varargin{1},'char')
+    for i = 1:length(varargin)
+        % we don't know in which order arguments are applied. If some argument
+        % is an sdpvar, it means the user is defining the operator
+        if isa(varargin{i},'sdpvar')
+            % Overloaded operator for SDPVAR objects. Pass on args and save them.
+            % try to figure out size of expected output (many->1 or many->many
+            if isequal(varargin{end}(1),'@')
+                fun = eval(varargin{end});
+                varargin{end} = fun;
+            end
+            varargin_copy = varargin;
+            for j = 1:length(varargin)-1
+                % Create zero arguments
+                if isa(varargin_copy{j},'sdpvar')
+                    varargin_copy{j} = zeros(size(varargin_copy{j},1),size(varargin_copy{j},2));
+                end
+            end
+            output = feval(varargin_copy{end},varargin_copy{1:end-1});
+            if prod(size(output)) == 1
+                % MANY -> 1
+                varargout{1} = yalmip('define',mfilename,varargin{:});
+            else
+                % MANY -> MANY
+                y = [];
+                [n,m] = size(varargin{1});
+                varargin{1} = varargin{1}(:);
+                for i = 1:length(varargin{1})
+                    varargin_copy = varargin;
+                    varargin_copy{1} = varargin_copy{1}(i);
+                    y = [y;yalmip('define',mfilename,varargin_copy{:})];
+                end
+                varargout{1} = reshape(y,n,m);
+            end
+            return
+        end
+    end
+end
 
 switch class(varargin{1})
 
@@ -13,31 +51,10 @@ switch class(varargin{1})
         end
         varargout{1} = feval(varargin{end},varargin{1:end-1});
 
-    case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
-        % try to figure out size of expected output (many->1 or many->many
-        if isequal(varargin{end}(1),'@')
-            fun = eval(varargin{end});
-            varargin{end} = fun;
-        end
-        varargin_copy = varargin;
-        varargin_copy{1} = zeros(size(varargin_copy{1},1),size(varargin_copy{1},2));
-        output = feval(varargin_copy{end},varargin_copy{1:end-1});
-        if prod(size(output)) == 1
-            % MANY -> 1
-            varargout{1} = yalmip('define',mfilename,varargin{:});
-        else
-            % MANY -> MANY
-            y = [];
-            [n,m] = size(varargin{1});
-            varargin{1} = varargin{1}(:);
-            for i = 1:length(varargin{1})
-                varargin_copy = varargin;
-                varargin_copy{1} = varargin_copy{1}(i);
-                y = [y;yalmip('define',mfilename,varargin_copy{:})];
-            end
-            varargout{1} = reshape(y,n,m);
-        end
-
+    case 'sdpvar' 
+       % Should not happen
+       error('Report bug. Call to SDPFUN with SDPVAR object');
+       
     case 'char' % YALMIP sends 'model' when it wants the epigraph or hypograph
       
         operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
@@ -46,7 +63,16 @@ switch class(varargin{1})
 
         varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = varargin{3};
+        % Figure out which argument actually is the SDPVAR object (not
+        % necessarily the first argument
+        for i = 3:length(varargin)
+            if isa(varargin{i},'sdpvar')
+                varargout{3} = varargin{i};
+                return
+            end
+        end
+        error('SDPFUN arguments seem weird. Could not find any SDPVAR object');
+        
 
     otherwise
         error('SDPVAR/SDPFUN called with CHAR argument?');

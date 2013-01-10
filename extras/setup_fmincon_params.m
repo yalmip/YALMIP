@@ -18,7 +18,9 @@ if ~isempty(model.evalMap)
     % Speed up callbacks by removing last marker argument (only used in
     % expandmodel etc) and figuring out what R^m -> R^n operators computes
     for i = 1:length(model.evalMap)
-        model.evalMap{i}.prearg = {model.evalMap{i}.fcn,[],model.evalMap{i}.arg{2:end-1}};
+        %model.evalMap{i}.prearg = {model.evalMap{i}.fcn,[],model.evalMap{i}.arg{2:end-1}};
+        model.evalMap{i}.prearg = {model.evalMap{i}.fcn,model.evalMap{i}.arg{1:end-1}};
+        model.evalMap{i}.prearg{1+model.evalMap{i}.argumentIndex} = [];
         if isfield(model.evalMap{i},'computes')
 %             temp = zeros(1,length(model.evalMap{i}.computes));
 %             for j = 1:length(model.evalMap{i}.computes)

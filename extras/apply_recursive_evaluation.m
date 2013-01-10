@@ -60,8 +60,8 @@ function x = process_evals(p,x,indicies)
 if isfield(p.evalMap{1},'prearg')
     for i = indicies
         arguments = p.evalMap{i}.prearg;
-        arguments{2} = x(p.evalMap{i}.variableIndex);
-        if isequal(arguments{1},'log') & (arguments{2}<=0)
+        arguments{1+p.evalMap{i}.argumentIndex} = x(p.evalMap{i}.variableIndex);
+        if isequal(arguments{1},'log') & (arguments{1+p.evalMap{i}.argumentIndex}<=0)
             x(p.evalVariables(i)) = -1e4;
         else
             x(p.evalMap{i}.computes(:)) = feval(arguments{:});
@@ -69,9 +69,13 @@ if isfield(p.evalMap{1},'prearg')
     end
 else
     for i = indicies
-        arguments = {p.evalMap{i}.fcn,x(p.evalMap{i}.variableIndex)};
-        arguments = {arguments{:},p.evalMap{i}.arg{2:end-1}};
-        if isequal(arguments{1},'log') & (arguments{2}<=0)
+        %arguments = {p.evalMap{i}.fcn,x(p.evalMap{i}.variableIndex)};
+        %arguments = {arguments{:},p.evalMap{i}.arg{2:end-1}};
+        % Append argument with function name, and remove trailing
+        % artificial argument
+        arguments =  {p.evalMap{i}.fcn,p.evalMap{i}.arg{1:end-1}};
+        arguments{1+p.evalMap{i}.argumentIndex} = x(p.evalMap{i}.variableIndex);
+        if isequal(arguments{1},'log') & (arguments{1+p.evalMap{i}.argumentIndex}<=0)
             x(p.evalVariables(i)) = -1e4;  %FIXME DOES NOT WORK
             if length(arguments{2})>1
                 disp('Report bug in apply_recursive_evaluation')
