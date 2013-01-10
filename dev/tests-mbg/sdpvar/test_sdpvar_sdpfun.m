@@ -1,8 +1,15 @@
 function test_sdpvar_cumsum
 
-dx = sdpvar(1,2);
+yalmip('clear');
+sdpvar x
+assign(x,0.1);
+ops = sdpsettings('debug',1,'fmincon.algorithm','sqp','usex0',1);
+sol = solvesdp(sdpfun(x,1,'mytestOLD') >= 0,x,ops)
+mbg_asserttrue(sol.problem == 0);
 
-cs1 = [0 cumsum(dx) 1];
-cs2 = [0 dx(1) dx(1)+dx(2) 1];
-
-mbg_asserttrue(isequal(cs1-cs2,[0 0 0 0]))
+yalmip('clear');
+sdpvar x
+assign(x,0.1);
+ops = sdpsettings('debug',1,'fmincon.algorithm','sqp','usex0',1);
+sol = solvesdp(sdpfun(1,x,'mytestNEW') >= 0,x,ops)
+mbg_asserttrue(sol.problem == 0);
