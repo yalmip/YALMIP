@@ -47,7 +47,7 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %     z = sdpvar(3,1);
 %     sdpvar UB LB
 %
-%     Constraints = [A*z < b, LB < z < UB];
+%     Constraints = [A*z <= b, LB <= z <= UB];
 %     Objective = c'*z
 %     % We want the optimal z as a function of [LB;UB]
 %     optZ = optimizer(Constraints,Objective,[],[LB; UB],z);
