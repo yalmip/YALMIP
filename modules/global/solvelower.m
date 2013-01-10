@@ -16,6 +16,7 @@ if ~isempty(p.evalMap)
     psave.evalMap = p_cut.evalMap;
 end
 p_cut = addMonomialCuts(p_cut);
+p_cut = addMultipliedEqualityCuts(p_cut);
 
 % if p_cut.solver.lowersolver.constraint.inequalities.secondordercone
 %     if length(p_cut.bilinears) > 0

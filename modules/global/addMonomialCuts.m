@@ -1,5 +1,9 @@
 function p = addMonomialCuts(p)
 
+if ~p.options.bmibnb.cut.monomial
+    return;
+end
+
 if any(p.originalModel.variabletype==3)
     p_cut = emptyNumericalModel;
     monomials = find(p.originalModel.variabletype==3);
