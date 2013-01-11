@@ -8,7 +8,7 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %   OPTIMIZER typically only works efficiently if the varying data x enters
 %   the optmization problem affinely. If not, the precompiled problems will
 %   be nonconvex, despite the problem being simple for a fixed value of the
-%   parameter.
+%   parameter (see Wiki for beta support of a more general optimizer)
 %
 %   In principle, if an optimization problem has a parameter x, and we
 %   repeatedly want to solve the problem for varying x to compute a
