@@ -23,24 +23,6 @@ if p.options.bmibnb.cut.multipliedequality
     p_cut = addMultipliedEqualityCuts(p_cut);
 end
 
-% if p_cut.solver.lowersolver.constraint.inequalities.secondordercone
-%     if length(p_cut.bilinears) > 0
-%         for i = 1:length(p_cut.bilinears)
-%             if p_cut.bilinears(i,2) == p_cut.bilinears(i,3)
-%                 q = p_cut.bilinears(i,1);
-%                 xi = p_cut.bilinears(i,2);
-%                 p_cut.K.q = [p_cut.K.q 3];
-%                 p_cut.F_struc(end+1,1)=1;
-%                 p_cut.F_struc(end,1+q)=1;
-%                 p_cut.F_struc(end+1,1+xi)=2;
-%                 p_cut.F_struc(end+1,1)=1;
-%                 p_cut.F_struc(end,1+q)=-1;
-%             end
-%         end
-%         p_cut.K.q =  p_cut.K.q(p_cut.K.q>0);
-%     end
-% end
-
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
