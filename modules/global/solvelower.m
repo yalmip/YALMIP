@@ -9,14 +9,19 @@ removeThese = find(p.EqualityConstraintState==inf);
 p.F_struc(removeThese,:) = [];
 p.K.f = p.K.f - length(removeThese);
 
-
-p_cut = addBilinearVariableCuts(p);
-if ~isempty(p.evalMap)
+if p.options.bmibnb.cut.bilinear
+    p_cut = addBilinearVariableCuts(p);
+end
+if p.options.bmibnb.cut.evalvariable
     p_cut = addEvalVariableCuts(p_cut);
     psave.evalMap = p_cut.evalMap;
 end
-p_cut = addMonomialCuts(p_cut);
-p_cut = addMultipliedEqualityCuts(p_cut);
+if p.options.bmibnb.cut.monomial
+    p_cut = addMonomialCuts(p_cut);
+end
+if p.options.bmibnb.cut.multipliedequality
+    p_cut = addMultipliedEqualityCuts(p_cut);
+end
 
 % if p_cut.solver.lowersolver.constraint.inequalities.secondordercone
 %     if length(p_cut.bilinears) > 0

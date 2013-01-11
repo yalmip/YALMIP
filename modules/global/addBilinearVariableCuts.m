@@ -1,10 +1,5 @@
 function pcut = addBilinearVariableCuts(p)
 
-if ~p.options.bmibnb.cut.bilinear
-    p_cut = p;
-    return;
-end
-
 if isempty(p.bilinears)
     pcut = p;
 else

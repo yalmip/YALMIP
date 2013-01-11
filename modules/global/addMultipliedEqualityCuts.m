@@ -1,9 +1,5 @@
 function p = addMultipliedEqualityCuts(p)
 
-if ~p.options.bmibnb.cut.multipliedequality
-    return;
-end
-
 newRows = [];
 for i =  p.linears
     for j = 1:p.K.f

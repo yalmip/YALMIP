@@ -49,13 +49,14 @@ if upper < inf & ~(nnz(p.c)==0 &  nnz(p.Q)==0)
     p_test.K.l = p_test.K.l + 1;
 end
 
-if ~isempty(p.bilinears) & p.options.bmibnb.cut.evalvariable
+
+if p.options.bmibnb.cut.evalvariable
     p_test = addBilinearVariableCuts(p_test);
 end
-if ~isempty(p.evalMap)
+if p.options.bmibnb.cut.evalvariable
     p_test = addEvalVariableCuts(p_test);
 end
-if  p.options.bmibnb.cut.multipliedequality
+if p.options.bmibnb.cut.multipliedequality
     p_test = addMultipliedEqualityCuts(p_test);
 end
 
