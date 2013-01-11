@@ -56,12 +56,12 @@ numGlobalSolutions = 0;
 p.getsolvertime = 0;
 
 if options.bmibnb.verbose>0
-    disp('* Starting YALMIP bilinear branch & bound.');
+    disp('* Starting YALMIP global branch & bound.');
     disp(['* Branch-variables : ' num2str(length(p.branch_variables))]);
     disp(['* Upper solver     : ' p.solver.uppersolver.tag]);
     disp(['* Lower solver     : ' p.solver.lowersolver.tag]);
     if p.options.bmibnb.lpreduce
-        disp(['* LP solver      : ' p.solver.lpsolver.tag]);
+        disp(['* LP solver        : ' p.solver.lpsolver.tag]);
     end
     disp(' Node       Upper      Gap(%)       Lower    Open');
 end
