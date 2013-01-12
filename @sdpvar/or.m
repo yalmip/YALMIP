@@ -11,7 +11,7 @@ function varargout = or(varargin)
 % constraints add constraints to ensure that z,x and y satisfy the
 % truth-table for OR. 
 %
-% The model for OR is set(z>x) + set(z>y) + set(z<x+y) + set(binary(z))
+% The model for OR is [z>=x, z>=y, z<=x+y, binary(z)]
 %
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
