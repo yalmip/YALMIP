@@ -2,7 +2,6 @@ function F = constraint(X,quantifier,Y)
 % Internal class for constraint list
 
 % Author Johan Löfberg
-% $Id: constraint.m,v 1.8 2009-04-29 07:48:12 joloef Exp $
 
 superiorto('sdpvar');
 superiorto('double');
@@ -41,7 +40,7 @@ if isa(Z,'double')
     
     if checkSDP
         if min(eig(Z))>=0
-            warning('Constraint evaluated to trivial true.')
+            warning('SDP constraint evaluated to trivial true.')
             F = [];
             return
         else
@@ -52,7 +51,7 @@ if isa(Z,'double')
         switch quantifier
             case '=='
                 if all(Z)==0
-                    warning('Constraint evaluated to trivial true.')
+                    warning('Equality constraint evaluated to trivial true.')
                     F = [];
                     return
                 else
@@ -60,7 +59,7 @@ if isa(Z,'double')
                 end
             case {'<=','>='}
                 if all(Z>=0)
-                    warning('Constraint evaluated to trivial true.')
+                    warning('Inequality constraint evaluated to trivial true.')
                     F = [];
                     return
                 else
@@ -68,7 +67,7 @@ if isa(Z,'double')
                 end
             case {'<','>'}
                 if all(Z>0)
-                    warning('Constraint evaluated to trivial true.')
+                    warning('Inequality constraint evaluated to trivial true.')
                     F = [];
                     return
                 else
@@ -79,12 +78,12 @@ if isa(Z,'double')
 end
 
 switch quantifier
-case {'>','<'}
-    F.strict(1) = 1;
-case {'>=','<=','=='}
-    F.strict(1) = 0;
-otherwise
-    error('Quantifier not supported')
+    case {'>','<'}
+        F.strict(1) = 1;
+    case {'>=','<=','=='}
+        F.strict(1) = 0;
+    otherwise
+        error('Quantifier not supported')
 end
 
 F.List={X,quantifier,Y};
