@@ -13,3 +13,12 @@ assign(x,0.1);
 ops = sdpsettings('debug',1,'fmincon.algorithm','sqp','usex0',1);
 sol = solvesdp(sdpfun(1,x,'mytestNEW') >= 0,x,ops)
 mbg_asserttrue(sol.problem == 0);
+
+function y = mytestNEW(B,X)
+
+y = B - X*X;
+
+function y = mytestOLD(X,B)
+
+y = B - X*X;
+
