@@ -43,6 +43,7 @@ if isempty(internal_sdpvarstate)
     internal_sdpvarstate.complexpair = [];
     internal_sdpvarstate.internalconstraints = [];
     internal_sdpvarstate.ExtendedMap = [];
+    internal_sdpvarstate.ExtendedMapHashes = [];
     internal_sdpvarstate.DependencyMap = sparse(0);
     internal_sdpvarstate.DependencyMapUser = sparse(0);
     internal_sdpvarstate.sosid = 0;
@@ -160,18 +161,40 @@ switch varargin{1}
         correct_operator = [];
         if ~isempty(internal_sdpvarstate.ExtendedMap)
             i = 1;
-            correct_operator = strcmp(varargin{2},{internal_sdpvarstate.ExtendedMap(:).fcn});
-            arg1 = varargin{2};
-            arg2 = {varargin{3:end}};
-            %this_hash = create_trivial_hash(varargin{3});
-            this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
-            correct_operator = find(correct_operator);
-            correct_hash = correct_operator(find([[internal_sdpvarstate.ExtendedMap(correct_operator).Hash] == this_hash]));
             
-            for i = correct_hash
+            if 0
+                correct_operator = strcmp(varargin{2},{internal_sdpvarstate.ExtendedMap(:).fcn});
+                arg1 = varargin{2};
+                arg2 = {varargin{3:end}};
+                %this_hash = create_trivial_hash(varargin{3});
+                this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
+                correct_operator = find(correct_operator);
+                %temp = [internal_sdpvarstate.ExtendedMap(correct_operator).Hash];
+                %correct_hash = correct_operator(find([temp == this_hash]));
+                correct_hash = correct_operator(find([internal_sdpvarstate.ExtendedMapHashes == this_hash]));
+                
+            else
+                
+                OperatorName = varargin{2};
+                Arguments = {varargin{3:end}};               
+                this_hash = create_trivial_hash(firstSDPVAR(Arguments));
+                correct_operator = find([internal_sdpvarstate.ExtendedMapHashes == this_hash]);
+                
+                if ~isempty(correct_operator)
+                    correct_operator = correct_operator(strcmp(OperatorName,{internal_sdpvarstate.ExtendedMap(correct_operator).fcn}));
+                else
+                    
+                end
+                
+                
+            end
+            
+            
+            
+            for i = correct_operator
                 % for i = find(correct_operator)
                 if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
-                    if isequal(arg2, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                    if isequal(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
                             varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
                         else
@@ -204,6 +227,7 @@ switch varargin{1}
                     internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);
                     internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(y)];
                     internal_sdpvarstate.ExtendedMap(end).Hash = this_hash;
+                    internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes this_hash];
                 else
                     y = sdpvar(1,m);
                     for i = 1:m
@@ -211,7 +235,9 @@ switch varargin{1}
                         internal_sdpvarstate.ExtendedMap(end).arg = {X(:,i),[]};
                         internal_sdpvarstate.ExtendedMap(end).var = y(i);
                         internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y(i));
-                        internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X(:,i));
+                        new_hash = create_trivial_hash(X(:,i));
+                        internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
+                        internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
                     end
                     internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(y)];
                 end
@@ -226,11 +252,14 @@ switch varargin{1}
                 allNewExtendedIndex = [];
                 allPreviouslyDefinedExtendedToIndex = [];
                 allPreviouslyDefinedExtendedFromIndex = [];
+                if ~isempty(internal_sdpvarstate.ExtendedMap)
+                    correct_operator = find(strcmp(varargin{2},{internal_sdpvarstate.ExtendedMap(:).fcn}));
+                end
                 if numel(X)==1
                     found = 0;
                     if ~isempty(correct_operator)
                         this_hash = create_trivial_hash(X);
-                        for j = find(correct_operator)
+                        for j = correct_operator;% find(correct_operator)
                             if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
                                 if isequal(X,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
                                     %  y = internal_sdpvarstate.ExtendedMap(j).var;
@@ -247,25 +276,30 @@ switch varargin{1}
                         internal_sdpvarstate.ExtendedMap(end).arg = {X,binvar(1),[]};
                         internal_sdpvarstate.ExtendedMap(end).var = y;
                         internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);
-                        internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(X);
+                        new_hash = create_trivial_hash(X);
+                        internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
+                        internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
                         allNewExtended = y;
                         allNewExtendedIndex = 1;
                     end
                 else
                     aux_bin = binvar(numel(X),1);
+                    vec_hashes = create_trivial_vechash(X);
+                    vec_isdoubles = create_vecisdouble(X);
                     for i = 1:numel(X)
                         % This is a bummer. If we scalarize the abs-operator,
                         % we have to search through all scalar abs-operators
                         % to find this single element
                         found = 0;
                         Xi = X(i);
-                        if isa(Xi,'double')
+                        if vec_isdoubles(i)%isa(Xi,'double')
                             found = 1;
-                            y(i) = Xi;
+                            y(i) = X(i);
                         else
                             if ~isempty(correct_operator)
-                                this_hash = create_trivial_hash(Xi);
-                                for j = find(correct_operator)
+                                this_hash = vec_hashes(i);
+                                %this_hash = create_trivial_hash(Xi);
+                                for j = correct_operator%find(correct_operator)
                                     if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
                                         if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
                                             %  y(i) = internal_sdpvarstate.ExtendedMap(j).var;
@@ -284,7 +318,9 @@ switch varargin{1}
                             internal_sdpvarstate.ExtendedMap(end).arg = {Xi,aux_bin(i),[]};
                             internal_sdpvarstate.ExtendedMap(end).var = yi;
                             internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
-                            internal_sdpvarstate.ExtendedMap(end).Hash = create_trivial_hash(Xi);
+                            new_hash = create_trivial_hash(Xi);
+                            internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
+                            internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
                             %allNewExtended = [allNewExtended yi];
                             allNewExtendedIndex = [allNewExtendedIndex i];
                         end
@@ -322,6 +358,7 @@ switch varargin{1}
                     internal_sdpvarstate.ExtendedMap(end).var = y(i);
                     internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);
                     internal_sdpvarstate.ExtendedMap(end).Hash = this_hash;
+                    internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes this_hash];
                     internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(y(i))];
                 end
                 y = setoperatorname(y,varargin{2});
@@ -501,6 +538,7 @@ switch varargin{1}
         ;internal_sdpvarstate.complexpair = [];
         internal_sdpvarstate.internalconstraints = [];
         internal_sdpvarstate.ExtendedMap = [];
+        internal_sdpvarstate.ExtendedMapHashes = [];
         internal_sdpvarstate.DependencyMap = sparse(0);
         internal_sdpvarstate.DependencyMapUser = sparse(0);
         internal_sdpvarstate.optSolution{1}.info = 'Initialized by YALMIP';
@@ -739,6 +777,9 @@ switch varargin{1}
         if ~isfield(internal_sdpvarstate,'ExtendedMap')
             internal_sdpvarstate.ExtendedMap = [];
         end
+        if ~isfield(internal_sdpvarstate,'ExtendedMapHashes')
+            internal_sdpvarstate.ExtendedMapHashes = [];
+        end  
         if ~isfield(internal_sdpvarstate,'variabletype')
             internal_sdpvarstate.variabletype = ~(sum(internal_sdpvarstate.monomtable,2)==1 & sum(internal_sdpvarstate.monomtable~=0,2)==1);
         end
@@ -998,9 +1039,22 @@ catch
     rand('state',s);
 end
 
+
+function h = create_vecisdouble(x)
+B = getbase(x);
+h = ~any(B(:,2:end),2);
+
 function h = create_trivial_hash(x)
 try
     h = sum(getvariables(x)) + sum(sum(getbase(x)));
+catch
+    h = 0;
+end
+
+function h = create_trivial_vechash(x)
+try
+    B = getbase(x);
+    h = sum(B')'+(B | B)*[0;getvariables(x)'];    
 catch
     h = 0;
 end
