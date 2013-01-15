@@ -164,8 +164,12 @@ switch varargin{1}
             arg1 = varargin{2};
             arg2 = {varargin{3:end}};            
             %this_hash = create_trivial_hash(varargin{3}); 
-            this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end-1}})); 
-            for i = find(correct_operator)
+            this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}})); 
+            correct_operator = find(correct_operator);
+            correct_hash = correct_operator(find([[internal_sdpvarstate.ExtendedMap(correct_operator).Hash] == this_hash]));
+            
+            for i = correct_hash
+          % for i = find(correct_operator)
                 if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
                     if isequal(arg2, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
@@ -179,7 +183,7 @@ switch varargin{1}
                 end
             end
         else
-             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end-1}})); 
+             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}})); 
              %this_hash = create_trivial_hash(varargin{3});
         end
 
