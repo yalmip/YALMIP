@@ -3,6 +3,7 @@ function test_sdpvar_sdpfun
 yalmip('clear');
 sdpvar x
 assign(x,0.1);
+mytestOLD=@(X,B)(B-X*X);
 ops = sdpsettings('debug',1,'fmincon.algorithm','sqp','usex0',1);
 sol = solvesdp(sdpfun(x,1,'mytestOLD') >= 0,x,ops)
 mbg_asserttrue(sol.problem == 0);
@@ -10,15 +11,8 @@ mbg_asserttrue(sol.problem == 0);
 yalmip('clear');
 sdpvar x
 assign(x,0.1);
+mytestNEW=@(B,X)(B-X*X);
 ops = sdpsettings('debug',1,'fmincon.algorithm','sqp','usex0',1);
 sol = solvesdp(sdpfun(1,x,'mytestNEW') >= 0,x,ops)
 mbg_asserttrue(sol.problem == 0);
-
-function y = mytestNEW(B,X)
-
-y = B - X*X;
-
-function y = mytestOLD(X,B)
-
-y = B - X*X;
 
