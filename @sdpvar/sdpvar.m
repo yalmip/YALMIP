@@ -467,7 +467,7 @@ for blk = 1:length(n)
 
         case 'symmetric'
             if n(blk)==1
-               basis{blk} = sparse([0 1]);
+                basis{blk} = sparse([0 1]);
             else
                 % Hrm...fast but completely f*d up
                 Y = reshape(1:n(blk)^2,n(blk),n(blk));
@@ -578,14 +578,6 @@ for blk = 1:length(n)
 
         case 'toeplitz'
             basis = [spalloc(n(blk)*1,1,0) speye(n(blk)*1)];
-%            basis = spalloc(n^2,1+nvar,2);
-%            an_empty = spalloc(n,1,1);
-%            for i=1:n,
-%                v = an_empty;
-%                v(i)=1;
-%                temp = sparse(toeplitz(v));
-%                basis(:,i+1) = temp(:);
-%            end
 
             % Notice, complex Toeplitz not Hermitian
         case 'toeplitz complex'
@@ -770,20 +762,12 @@ else
     end
 end
 
-% Typeflags
-% 0 Standard variable
-% 1 Inequality (LMI)
-% 2 Inequality (element)
-% 3 Equality
-% 4 Cone
-% 5 norm object (osbolete)
-% 6 logdet object
-% 8 KYP object
-
 function r = rand_hash(k,n,m);
 
 % Calling rng is pretty slow, to speed up massive amount of scalar
-% definitions of sdpvars, we preallocate random number in batches
+% definitions of sdpvars, we preallocate random number in batches of at
+% least 10000 numbers at a time. We use rng since it is safer in parallell
+% architechtures according to earlier user issues
 persistent PredefinedRands
 persistent PredefinedPointer
 try
@@ -791,7 +775,7 @@ try
         PredefinedPointer = 1;
         s = rng;
         rng(k);
-        PredefinedRands = rand(max(10000,n*m),1);
+        PredefinedRands = rand(max(10000,2*n*m),1);
         rng(s);
     end
     if n*m > length(PredefinedRands)-PredefinedPointer+1
@@ -803,11 +787,8 @@ try
     end
     r = reshape(PredefinedRands(PredefinedPointer:PredefinedPointer+n*m-1),n,m);
     PredefinedPointer = PredefinedPointer + n*m;
-    %s = rng;
-    %rng(k); 
-    %r = rand(n,m);
-    %rng(s);
 catch
+    % Old versions of MATLAB
     s = rand('state');
     rand('state',k)
     r = rand(n,m);
