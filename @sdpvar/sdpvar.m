@@ -466,26 +466,10 @@ for blk = 1:length(n)
             basis = [spalloc(n*m,1,0) speye(nvar/2) speye(nvar/2)*sqrt(-1)];
 
         case 'symmetric'
-            if 0
-                basis = spalloc(n^2,1+nvar,n^2);
-                l = 2;
-                an_empty = spalloc(n,n,2);
-                for i=1:n
-                    temp = an_empty;
-                    temp(i,i)=1;
-                    basis(:,l)=temp(:);
-                    l = l+1;
-                    for j=i+1:n,
-                        temp = an_empty;
-                        temp(i,j)=1;
-                        temp(j,i)=1;
-                        basis(:,l)=temp(:);
-                        l = l+1;
-                    end
-                end
+            if n(blk)==1
+               basis{blk} = sparse([0 1]);
             else
                 % Hrm...fast but completely f*d up
-
                 Y = reshape(1:n(blk)^2,n(blk),n(blk));
                 Y = tril(Y);
                 Y = (Y+Y')-diag(sparse(diag(Y)));
@@ -495,7 +479,6 @@ for blk = 1:length(n)
                 else
                     basis{blk} = lazybasis(n^2,1+(n*(n+1)/2),1:n(blk)^2,pp+1,ones(n(blk)^2,1));
                 end
-
             end
 
         case 'symm complex'
@@ -798,12 +781,32 @@ end
 % 8 KYP object
 
 function r = rand_hash(k,n,m);
+
+% Calling rng is pretty slow, to speed up massive amount of scalar
+% definitions of sdpvars, we preallocate random number in batches
+persistent PredefinedRands
+persistent PredefinedPointer
 try
-    s = rng;
-    rng(k);
-   % rand('state',k)
-    r = rand(n,m);
-    rng(s);
+    if isempty(PredefinedPointer)
+        PredefinedPointer = 1;
+        s = rng;
+        rng(k);
+        PredefinedRands = rand(max(10000,n*m),1);
+        rng(s);
+    end
+    if n*m > length(PredefinedRands)-PredefinedPointer+1
+        PredefinedPointer = 1;
+        s = rng;
+        rng(k);
+        PredefinedRands = rand(max(10000,2*n*m),1);
+        rng(s);
+    end
+    r = reshape(PredefinedRands(PredefinedPointer:PredefinedPointer+n*m-1),n,m);
+    PredefinedPointer = PredefinedPointer + n*m;
+    %s = rng;
+    %rng(k); 
+    %r = rand(n,m);
+    %rng(s);
 catch
     s = rand('state');
     rand('state',k)
