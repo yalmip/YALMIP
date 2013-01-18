@@ -298,12 +298,11 @@ ybar = (yL + yU)/2;
 
 sdpvar x y z
 
-C = [z > x*(2*(xbar + sqrt(xL*xU)))/((sqrt(xL)+sqrt(xU))^2*ybar) - y*(2*(xbar + sqrt(xL*xU))^2)/((sqrt(xL)+sqrt(xU))^2*ybar^2) + 2*(xbar + sqrt(xL*xU))*sqrt(xL*xU)/(ybar*(sqrt(xL) + sqrt(xU))^2)];
-C = [C, z> xbar/yL - xU/ybar^2*y - (ybar-2*yL)*xU/(ybar*yL)];
-C = [C, z> xbar/yU - xL/ybar^2*y - (ybar-2*yU)*xL/(ybar*yU)];
-C = [C, xL<x<xU,yL < y < yU, z < xU/yL]
-
-C = [z > (x*yU - y*xL + xL*yU)/yU^2, z > (x*yL-y*xU+xU*yL)/yL^2]
+C = [z >= x*(2*(xbar + sqrt(xL*xU)))/((sqrt(xL)+sqrt(xU))^2*ybar) - y*(2*(xbar + sqrt(xL*xU))^2)/((sqrt(xL)+sqrt(xU))^2*ybar^2) + 2*(xbar + sqrt(xL*xU))*sqrt(xL*xU)/(ybar*(sqrt(xL) + sqrt(xU))^2)];
+C = [C, z>= xbar/yL - xU/ybar^2*y - (ybar-2*yL)*xU/(ybar*yL)];
+C = [C, z>= xbar/yU - xL/ybar^2*y - (ybar-2*yU)*xL/(ybar*yU)];
+C = [C, xL<=x<=xU,yL <= y <= yU, z <= xU/yL]
+C = [z >= (x*yU - y*xL + xL*yU)/yU^2, z >= (x*yL-y*xU+xU*yL)/yL^2]
 
 
 for i = 1:100
@@ -313,8 +312,6 @@ for i = 1:100
         zz(i,j) = xx(i,j)/yy(i,j);
     end
 end
-
-
 Ax = [];
 Ay = [];
 b = [];
