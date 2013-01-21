@@ -169,31 +169,25 @@ else
 end
 
 function [L,U] = inverse_bound(xL,xU)
-power = -1;
 if xL >= 0
-    % This is the easy case
-    % we use abs since 0 sometimes actually is -0 but still passes the test
-    % above
-    if power > 0
-        L = abs(xL)^power;
-        U = abs(xU)^power;
-    else
-        L = abs(xU)^power;
-        U = abs(xL)^power;
-    end
+    % This is the easy case. We use abs since 0 sometimes actually is -0
+    % but still passes the test above
+    L = abs(xU)^-1;
+    U = abs(xL)^-1;
 else
-    if power < 0 & xU > 0
+    if xU > 0
         % Nasty crossing around zero
         U = inf;
         L = -inf;
     elseif xU < 0
-        L = xU^power;
-        U = xL^power;
+        L = xU^-1;
+        U = xL^-1;
     else
         disp('Not implemented yet')
         error
     end
 end
+
 function [Ax, Ay, b] = power_convexhull(xL,xU,power)
 fL = xL^power;
 fU = xU^power;
@@ -228,11 +222,10 @@ if ~isempty(Ax)
     end
 end
 function [Ax, Ay, b] = inverse_convexhull(xL,xU)
-power = -1;
-fL = xL^power;
-fU = xU^power;
-dfL = power*xL^(power-1);
-dfU = power*xU^(power-1);
+fL = xL^-1;
+fU = xU^-1;
+dfL = -1*xL^(-2);
+dfU = -1*xU^(-2);
 if xL<0 & xU>0
     % Nasty crossing
     Ax = [];
@@ -241,12 +234,12 @@ if xL<0 & xU>0
     return
 end
 average_derivative = (fU-fL)/(xU-xL);
-xM = (average_derivative/power).^(1/(power-1));
+xM = (average_derivative/(-1)).^(1/(-1-1));
 if xU < 0
     xM = -xM;
 end
-fM = xM^power;
-dfM = power*xM^(power-1);
+fM = xM^(-1);
+dfM = (-1)*xM^(-2);
 
 if xL >= 0
     [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
