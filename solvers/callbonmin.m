@@ -110,22 +110,6 @@ end
 
 showprogress('Calling BONMIN',model.options.showprogress);
 solvertime = clock;
-switch lower(options.algorithm)
-    case 'bb'
-        options.algorithm = 0;
-    case 'oa'
-        options.algorithm = 1;
-    case 'qg'
-        options.algorithm = 2;
-    case 'hyb'
-        options.algorithm = 3;
-    case 'ecp'
-        options.algorithm = 4;
-    case 'ifp'
-        options.algorithm = 5;
-    otherwise
-        error('algorithm in BONBMI should be BB, OA, QG, Hyb, Ecp or iFP!');
-end
 
 [xout,info] = bonmin(model.x0,funcs,options);
 solvertime = etime(clock,solvertime);

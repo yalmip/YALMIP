@@ -919,8 +919,7 @@ else
     end
       
     try   
-        options.bonmin = bonminset;
-        options.bonmin.ipopt = ipoptset;
+        options.bonmin = bonminset;   
         options.bonmin.ipopt.hessian_approximation = 'limited-memory';
         options.bonmin = rmfield(options.bonmin,'var_lin');
         options.bonmin = rmfield(options.bonmin,'cons_lin');
