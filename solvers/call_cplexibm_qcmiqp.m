@@ -134,7 +134,7 @@ end
 if nnz(Q)==0
     H = [];
 else
-    H = full(2*Q);
+    H = 2*Q;
 end
 
 NegativeSemiVar = [];
