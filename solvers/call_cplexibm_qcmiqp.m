@@ -60,8 +60,15 @@ if K.q(1)>0
         iCone = n_original+1;
         ri = zeros(1,length(K.q));
         Li = spalloc(n_original+nNEW,length(K.q),0);
+        n_TOT = n_original+nNEW;
         for i = 1:length(K.q);
-            Qi{i} = sparse(iCone:iCone+K.q(i)-1,iCone:iCone+K.q(i)-1,[-1 ones(1,K.q(i)-1)],n_original+nNEW,n_original+nNEW);
+            ind = iCone:iCone+K.q(i)-1;
+            vals = [-1 ones(1,K.q(i)-1)];
+            aux = sparse(ind,1,vals,n_TOT,1);
+            aux = diag(aux);
+            
+         %   aux = sparse(ind,ind,vals,n_TOT,n_TOT);
+            Qi{i} = aux;
             LB = [LB;0;-inf(K.q(i)-1,1)];
             iCone = iCone + K.q(i);
         end
