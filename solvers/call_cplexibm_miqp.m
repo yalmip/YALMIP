@@ -17,8 +17,6 @@ lb      = interfacedata.lb;
 
 [F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
 
-showprogress('Calling CPLEX-IBM',options.showprogress);
-
 % Notation used
 H = 2*interfacedata.Q;
 f = c;
@@ -154,6 +152,7 @@ if length(x) == length(f)
     end
 end
 
+showprogress('Calling CPLEX-IBM',options.showprogress);
 % Check, currently not exhaustive...
 switch output.cplexstatus
     case {1,101,102}
@@ -171,8 +170,7 @@ switch output.cplexstatus
             else
                 [x,fval,exitflag,output] = cplexmilp(f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
                 lambda = [];
-            end
-            
+            end            
         else
             if isempty(integer_variables) & isempty(binary_variables)
                 if isempty(Aineq) & isempty(Aeq) & isempty(lb) & isempty(ub)
@@ -196,8 +194,7 @@ switch output.cplexstatus
             problem = 1;
         else
             problem = 2;
-        end
-        %     problem = 15;
+        end       
     case {10,11,104,105,107,108,111,112}
         problem = 3; % Iteration/time
     case 119

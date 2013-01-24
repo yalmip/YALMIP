@@ -30,11 +30,8 @@ semicont_variables = interfacedata.semicont_variables;
 ub      = interfacedata.ub;
 lb      = interfacedata.lb;
 
-showprogress('Calling CPLEX',options.showprogress);
-
-[F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
-
 n_original = length(c);
+[F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
 [F_struc,K,c,Q,ub,lb,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,Q,ub,lb);
 
 if nnz(Q)==0
@@ -103,7 +100,8 @@ if options.savedebug
     save cplexdebug H c Aineq bineq Aeq beq Li Qi ri lb ub ctype
 end
 
-% Call mex-interface
+% Call mex-interfac
+showprogress('Calling CPLEX',options.showprogress);
 solvertime = clock;
 if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_variables) & isempty(K.sos.type)
     [x,fval,exitflag,output] = cplexqcp(H, c(:), Aineq,bineq,Aeq,beq,Li,Qi,ri,lb,ub,x0,options.cplex);    
