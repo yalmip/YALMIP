@@ -63,10 +63,7 @@ if K.q(1)>0
     for i = 1:length(K.q);
         ind = iCone:iCone+K.q(i)-1;
         vals = [-1 ones(1,K.q(i)-1)];
-        aux = sparse(ind,1,vals,n_TOT,1);
-        aux = diag(aux);
-        
-        %   aux = sparse(ind,ind,vals,n_TOT,n_TOT);
+        aux = diag(sparse(ind,1,vals,n_TOT,1));                 
         Qi{i} = aux;
         LB = [LB;0;-inf(K.q(i)-1,1)];
         iCone = iCone + K.q(i);
