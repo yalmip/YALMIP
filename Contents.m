@@ -1,5 +1,5 @@
 % YALMIP
-% Version 3 (R2012a) 26-Nov-2012
+% Version 24-Jan-2013
 %
 % Information
 %
