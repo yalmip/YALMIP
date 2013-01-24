@@ -20,6 +20,7 @@ options = interfacedata.options;
 F_struc = interfacedata.F_struc;
 c       = interfacedata.c;
 Q       = interfacedata.Q;
+Q       = interfacedata.f;
 K       = interfacedata.K;
 x0      = interfacedata.x0;
 integer_variables = interfacedata.integer_variables;
@@ -63,28 +64,32 @@ else
     H = 2*Q;
 end
 
-NegativeSemiVar = [];
-if ~isempty(semicont_variables)
-    NegativeSemiVar = find(lb(semicont_variables) < 0);
-    if ~isempty(NegativeSemiVar)
-        temp = ub(semicont_variables(NegativeSemiVar));
-        ub(semicont_variables(NegativeSemiVar)) = -lb(semicont_variables(NegativeSemiVar));
-        lb(semicont_variables(NegativeSemiVar)) = -temp;
-        if ~isempty(Aineq)
-            Aineq(:,semicont_variables(NegativeSemiVar)) = -Aineq(:,semicont_variables(NegativeSemiVar));
-        end
-        if ~isempty(Aeq)
-            Aeq(:,semicont_variables(NegativeSemiVar)) = -Aeq(:,semicont_variables(NegativeSemiVar));
-        end
-        H(:,semicont_variables(NegativeSemiVar)) = -H(:,semicont_variables(NegativeSemiVar));
-        H(semicont_variables(NegativeSemiVar),:) = -H(semicont_variables(NegativeSemiVar),:);
-        for i = 1:length(Qi)
-            Qi{i}(:,semicont_variables(NegativeSemiVar)) = -Qi{i}(:,semicont_variables(NegativeSemiVar));
-            Qi{i}(semicont_variables(NegativeSemiVar),:) = -Qi{i}(semicont_variables(NegativeSemiVar),:);
-        end
-        c(semicont_variables(NegativeSemiVar)) = -c(semicont_variables(NegativeSemiVar));
-    end
-end
+% CPLEX assumes semi-continuous variables only can take negative values so
+% we negate semi-continuous violating this
+[NegativeSemiVar,H,c,Aineq,Aeq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,c,Aineq,Aeq,lb,ub,semicont_variables,Qi);
+
+% NegativeSemiVar = [];
+% if ~isempty(semicont_variables)
+%     NegativeSemiVar = find(lb(semicont_variables) < 0);
+%     if ~isempty(NegativeSemiVar)
+%         temp = ub(semicont_variables(NegativeSemiVar));
+%         ub(semicont_variables(NegativeSemiVar)) = -lb(semicont_variables(NegativeSemiVar));
+%         lb(semicont_variables(NegativeSemiVar)) = -temp;
+%         if ~isempty(Aineq)
+%             Aineq(:,semicont_variables(NegativeSemiVar)) = -Aineq(:,semicont_variables(NegativeSemiVar));
+%         end
+%         if ~isempty(Aeq)
+%             Aeq(:,semicont_variables(NegativeSemiVar)) = -Aeq(:,semicont_variables(NegativeSemiVar));
+%         end
+%         H(:,semicont_variables(NegativeSemiVar)) = -H(:,semicont_variables(NegativeSemiVar));
+%         H(semicont_variables(NegativeSemiVar),:) = -H(semicont_variables(NegativeSemiVar),:);
+%         for i = 1:length(Qi)
+%             Qi{i}(:,semicont_variables(NegativeSemiVar)) = -Qi{i}(:,semicont_variables(NegativeSemiVar));
+%             Qi{i}(semicont_variables(NegativeSemiVar),:) = -Qi{i}(semicont_variables(NegativeSemiVar),:);
+%         end
+%         c(semicont_variables(NegativeSemiVar)) = -c(semicont_variables(NegativeSemiVar));
+%     end
+% end
 
 % Bug in cplex 12.1
 if length(K.q) == 1

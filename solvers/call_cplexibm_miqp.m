@@ -32,7 +32,7 @@ end
 
 if K.f > 0
     Aeq = Aineq(1:K.f,:);
-    beq = bineq(1:K.f);    
+    beq = bineq(1:K.f);
     % Code around performance bugs in older version of MATLAB
     [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
     Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
@@ -52,26 +52,7 @@ end
 
 % CPLEX assumes semi-continuous variables only can take negative values so
 % we negate semi-continuous violating this
-NegativeSemiVar = [];
-if ~isempty(semicont_variables)
-    NegativeSemiVar = find(lb(semicont_variables) < 0);
-    if ~isempty(NegativeSemiVar)
-        temp = ub(semicont_variables(NegativeSemiVar));
-        ub(semicont_variables(NegativeSemiVar)) = -lb(semicont_variables(NegativeSemiVar));
-        lb(semicont_variables(NegativeSemiVar)) = -temp;
-        if ~isempty(Aineq)
-            Aineq(:,semicont_variables(NegativeSemiVar)) = -Aineq(:,semicont_variables(NegativeSemiVar));
-        end
-        if ~isempty(Aeq)
-            Aeq(:,semicont_variables(NegativeSemiVar)) = -Aeq(:,semicont_variables(NegativeSemiVar));
-        end
-        f(semicont_variables(NegativeSemiVar)) = -f(semicont_variables(NegativeSemiVar));
-        if ~isempty(H)
-            H(:,semicont_variables(NegativeSemiVar)) = -H(:,semicont_variables(NegativeSemiVar));
-            H(semicont_variables(NegativeSemiVar),:) = -H(semicont_variables(NegativeSemiVar),:);        
-        end
-    end
-end
+[NegativeSemiVar,H,f,Aineq,Aeq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,f,Aineq,Aeq,lb,ub,semicont_variables,[]);
 
 ctype = char(ones(length(f),1)*67);
 ctype(setdiff(integer_variables,semicont_variables)) = 'I';
@@ -183,33 +164,33 @@ switch output.cplexstatus
         problem = 2; % Unbounded
     case 4
         if isempty(H)
-                    options.cplex.Diagnostics = 'off';
-        options.cplex.Display = 'off';
-        if isempty(integer_variables) & isempty(binary_variables)
-            [x,fval,exitflag,output,lambda] = cplexlp(f*0,Aineq,bineq,Aeq,beq,lb,ub,[],options.cplex);
+            options.cplex.Diagnostics = 'off';
+            options.cplex.Display = 'off';
+            if isempty(integer_variables) & isempty(binary_variables)
+                [x,fval,exitflag,output,lambda] = cplexlp(f*0,Aineq,bineq,Aeq,beq,lb,ub,[],options.cplex);
+            else
+                [x,fval,exitflag,output] = cplexmilp(f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
+                lambda = [];
+            end
+            
         else
-            [x,fval,exitflag,output] = cplexmilp(f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
-            lambda = [];
-        end
-       
-        else
-        if isempty(integer_variables) & isempty(binary_variables)
-            if isempty(Aineq) & isempty(Aeq) & isempty(lb) & isempty(ub)
-                [x,fval,exitflag,output,lambda] = cplexqp(H*0,f*0,zeros(1,length(f)),1,Aeq,beq,lb,ub,[],options.cplex);
-                if ~isempty(lambda)
-                    lambda.ineqlin = [];
+            if isempty(integer_variables) & isempty(binary_variables)
+                if isempty(Aineq) & isempty(Aeq) & isempty(lb) & isempty(ub)
+                    [x,fval,exitflag,output,lambda] = cplexqp(H*0,f*0,zeros(1,length(f)),1,Aeq,beq,lb,ub,[],options.cplex);
+                    if ~isempty(lambda)
+                        lambda.ineqlin = [];
+                    end
+                else
+                    [x,fval,exitflag,output,lambda] = cplexqp(H*0,f*0,Aineq,bineq,Aeq,beq,lb,ub,[],options.cplex);
                 end
             else
-                [x,fval,exitflag,output,lambda] = cplexqp(H*0,f*0,Aineq,bineq,Aeq,beq,lb,ub,[],options.cplex);
+                if isempty(Aineq) & isempty(Aeq) & isempty(lb) & isempty(ub)
+                    [x,fval,exitflag,output] = cplexmiqp(H*0,f*0,zeros(1,length(f)),1,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
+                else
+                    [x,fval,exitflag,output] = cplexmiqp(H*0,f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
+                end
+                lambda = [];
             end
-        else
-            if isempty(Aineq) & isempty(Aeq) & isempty(lb) & isempty(ub)
-                [x,fval,exitflag,output] = cplexmiqp(H*0,f*0,zeros(1,length(f)),1,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
-            else
-                [x,fval,exitflag,output] = cplexmiqp(H*0,f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
-            end
-            lambda = [];
-        end
         end
         if output.cplexstatus == 3
             problem = 1;
