@@ -33,16 +33,10 @@ if K.f > 0
     Aeq = Aineq(1:K.f,:);
     beq = bineq(1:K.f);
     
-    if 0
-        Aineq(1:K.f,:)=[];
-        bineq(1:K.f)=[];
-    else
-        [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
-        Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
-        [ii,jj,ss] = find(bineq);keeps = ii>K.f;
-        bineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),length(bineq)-K.f,1);
-    end   
-        
+    [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
+    Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
+    [ii,jj,ss] = find(bineq);keeps = ii>K.f;
+    bineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),length(bineq)-K.f,1);
 else
     Aeq = [];
     beq = [];
