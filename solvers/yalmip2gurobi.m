@@ -16,13 +16,13 @@ n = length(c);
 if ~isempty(ub)
     LB = lb;
     UB = ub;
-   if ~isempty(binary_variables)
-    LB(binary_variables)  = round(LB(binary_variables));
-    UB(binary_variables)  = round(UB(binary_variables));
+    if ~isempty(binary_variables)
+        LB(binary_variables)  = round(LB(binary_variables));
+        UB(binary_variables)  = round(UB(binary_variables));
     end
     if ~isempty(integer_variables)
-    LB(integer_variables) = round(LB(integer_variables));
-    UB(integer_variables) = round(UB(integer_variables));
+        LB(integer_variables) = round(LB(integer_variables));
+        UB(integer_variables) = round(UB(integer_variables));
     end
 else
     LB = -repmat(inf,n,1);
@@ -44,8 +44,7 @@ n_original = length(c);
 [F_struc,K,c,Q,UB,LB] = append_normalized_socp(F_struc,K,c,Q,UB,LB);
 
 if size(F_struc,1)>0
-    B = full(F_struc(:,1));         % Must be full
-    %A =-F_struc(:,2:end);
+    B = full(F_struc(:,1));         % Must be full  
     A =-F_struc;
     A(:,1)=[];
 else
@@ -55,7 +54,6 @@ end
 
 % Optimized code, make a lot of difference when you make this call 10000
 % times in a branch and bound setting...
-%CTYPE = [char(ones(K.f,1)*61); char(ones(K.l,1)*60)];
 CTYPE = char([ones(K.f,1)*61; ones(K.l,1)*60]);
 VARTYPE = char(ones(length(c),1)*67);
 if isempty(semicont_variables)
