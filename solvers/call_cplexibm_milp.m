@@ -1,7 +1,6 @@
 function output = call_cplex_milp(interfacedata)
 
 % Author Johan Löfberg
-% $Id: call_cplexibm_milp.m,v 1.3 2010-02-08 13:06:11 joloef Exp $
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -31,8 +30,7 @@ end
 
 if K.f > 0
     Aeq = Aineq(1:K.f,:);
-    beq = bineq(1:K.f);
-    
+    beq = bineq(1:K.f);    
     [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
     Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
     [ii,jj,ss] = find(bineq);keeps = ii>K.f;

@@ -1,7 +1,6 @@
 function output = call_cplexibm_miqp(interfacedata)
 
 % Author Johan Löfberg
-% $Id: call_cplexibm_miqp.m,v 1.4 2010-03-24 19:49:16 joloef Exp $
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -33,18 +32,12 @@ end
 
 if K.f > 0
     Aeq = Aineq(1:K.f,:);
-    beq = bineq(1:K.f);
-    
-    % Code around performance bugs in older version of MATLAB       
-    if 0
-        Aineq(1:K.f,:)=[];
-        bineq(1:K.f)=[];
-    else
-        [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
-        Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
-        [ii,jj,ss] = find(bineq);keeps = ii>K.f;
-        bineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),length(bineq)-K.f,1);
-    end   
+    beq = bineq(1:K.f);    
+    % Code around performance bugs in older version of MATLAB
+    [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
+    Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
+    [ii,jj,ss] = find(bineq);keeps = ii>K.f;
+    bineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),length(bineq)-K.f,1);
 else
     Aeq = [];
     beq = [];
@@ -72,9 +65,11 @@ if ~isempty(semicont_variables)
         if ~isempty(Aeq)
             Aeq(:,semicont_variables(NegativeSemiVar)) = -Aeq(:,semicont_variables(NegativeSemiVar));
         end
-        H(:,semicont_variables(NegativeSemiVar)) = -H(:,semicont_variables(NegativeSemiVar));
-        H(semicont_variables(NegativeSemiVar),:) = -H(semicont_variables(NegativeSemiVar),:);
         f(semicont_variables(NegativeSemiVar)) = -f(semicont_variables(NegativeSemiVar));
+        if ~isempty(H)
+            H(:,semicont_variables(NegativeSemiVar)) = -H(:,semicont_variables(NegativeSemiVar));
+            H(semicont_variables(NegativeSemiVar),:) = -H(semicont_variables(NegativeSemiVar),:);        
+        end
     end
 end
 
@@ -116,33 +111,42 @@ if options.savedebug
     save cplexdebug
 end
 
+% Bug in older versions of CPLEX
+fixedAineqBug = 0;
+if isempty(Aineq) & isempty(Aeq)
+    Aineq = zeros(1,length(f)) ;
+    bineq = 1;
+    fixedAineqBug = 1;
+end
+
 if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_variables) & isempty(K.sos.type)
-    if isempty(Aineq) & isempty(Aeq)
-        if options.verbose
-            [x,fval,exitflag,output,lambda] = cplexqp(H,f,zeros(1,length(f)),1,Aeq,beq,lb,ub,x0,options.cplex);
+    if options.verbose
+        if isempty(H)
+            [x,fval,exitflag,output,lambda] = cplexlp(f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);
         else
-            evalc('[x,fval,exitflag,output,lambda] = cplexqp(H,f,zeros(1,length(f)),1,Aeq,beq,lb,ub,x0,options.cplex);');
-        end
-        if ~isempty(lambda)
-            lambda.ineqlin = [];
+            [x,fval,exitflag,output,lambda] = cplexqp(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);
         end
     else
-        if options.verbose
-            [x,fval,exitflag,output,lambda] = cplexqp(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);
-        else
+        if isempty(H)
             evalc('[x,fval,exitflag,output,lambda] = cplexqp(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);');
+        else
+            evalc('[x,fval,exitflag,output,lambda] = cplexlp(f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);');
         end
     end
+    if ~isempty(lambda) & fixedAineqBug
+        lambda.ineqlin = [];
+    end
 else
-    if isempty(Aineq) & isempty(Aeq)
-        if options.verbose
-            [x,fval,exitflag,output] = cplexmiqp(H,f,zeros(1,length(f)),1,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
+    if options.verbose
+        if isempty(H)
+            [x,fval,exitflag,output] = cplexmilp(f,zeros(1,length(f)),1,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
         else
-            evalc('[x,fval,exitflag,output] = cplexmiqp(H,f,zeros(1,length(f)),1,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype'',x0,options.cplex);');
+            [x,fval,exitflag,output] = cplexmiqp(H,f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
         end
     else
-        if options.verbose
-            [x,fval,exitflag,output] = cplexmiqp(H,f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
+        if isempty(H)
+            evalc('[x,fval,exitflag,output] = cplexmilp(f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype'',x0,options.cplex);');
+            
         else
             evalc('[x,fval,exitflag,output] = cplexmiqp(H,f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype'',x0,options.cplex);');
         end
@@ -178,7 +182,17 @@ switch output.cplexstatus
     case {2,20,21,118}
         problem = 2; % Unbounded
     case 4
-        
+        if isempty(H)
+                    options.cplex.Diagnostics = 'off';
+        options.cplex.Display = 'off';
+        if isempty(integer_variables) & isempty(binary_variables)
+            [x,fval,exitflag,output,lambda] = cplexlp(f*0,Aineq,bineq,Aeq,beq,lb,ub,[],options.cplex);
+        else
+            [x,fval,exitflag,output] = cplexmilp(f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
+            lambda = [];
+        end
+       
+        else
         if isempty(integer_variables) & isempty(binary_variables)
             if isempty(Aineq) & isempty(Aeq) & isempty(lb) & isempty(ub)
                 [x,fval,exitflag,output,lambda] = cplexqp(H*0,f*0,zeros(1,length(f)),1,Aeq,beq,lb,ub,[],options.cplex);
@@ -195,6 +209,7 @@ switch output.cplexstatus
                 [x,fval,exitflag,output] = cplexmiqp(H*0,f*0,Aineq,bineq,Aeq,beq,[],[],[],lb,ub,ctype',[],options.cplex);
             end
             lambda = [];
+        end
         end
         if output.cplexstatus == 3
             problem = 1;

@@ -5,14 +5,14 @@ function output = call_cplexibm_qcmiqp(interfacedata)
 % Gateway to all CPLEX interfaces
 if isempty(interfacedata.K.q) | interfacedata.K.q(1)==0
     % Obviously no SOCP
-    if nnz(interfacedata.Q)==0
-        % and not QP either
-        output = call_cplexibm_milp(interfacedata);
-        return
-    else
+%     if nnz(interfacedata.Q)==0
+%         % and not QP either
+%         output = call_cplexibm_milp(interfacedata);
+%         return
+%     else
         output = call_cplexibm_miqp(interfacedata);
         return
-    end
+%    end
 end
 
 % Retrieve needed data
@@ -121,7 +121,7 @@ if ~isempty(K.sos.type)
 end
 
 if options.savedebug
-    save cplexintdebug H c Aineq bineq Aeq beq Li Qi ri lb ub ctype
+    save cplexdebug H c Aineq bineq Aeq beq Li Qi ri lb ub ctype
 end
 
 % Call mex-interface
