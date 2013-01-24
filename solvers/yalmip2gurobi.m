@@ -70,6 +70,7 @@ end
 
 % Gurobi assumes semi-continuous variables only can take negative values so
 % we negate semi-continuous violating this
+%[NegativeSemiVar,Q,c,A,lb,ub,semicont_variables] = negateNegativeSemiContVariables(Q,c,A,lb,ub,semicont_variables,[]);
 NegativeSemiVar = [];
 if ~isempty(semicont_variables)
     NegativeSemiVar = find(UB(semicont_variables) < 0);
@@ -78,7 +79,7 @@ if ~isempty(semicont_variables)
         UB(semicont_variables(NegativeSemiVar)) = -LB(semicont_variables(NegativeSemiVar));
         LB(semicont_variables(NegativeSemiVar)) = -temp;
         A(:,semicont_variables(NegativeSemiVar)) = -A(:,semicont_variables(NegativeSemiVar));
-        C(semicont_variables(NegativeSemiVar)) = -C(semicont_variables(NegativeSemiVar));
+        c(semicont_variables(NegativeSemiVar)) = -c(semicont_variables(NegativeSemiVar));
         if ~isempty(x0)
             x0(NegativeSemiVar) = -NegativeSemiVar;
         end

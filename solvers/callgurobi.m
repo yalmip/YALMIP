@@ -15,19 +15,18 @@ solvertime = clock;
 result = gurobi(model,model.params);
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
+% Gurobi assumes semi-continuous variables only can take negative values so
+% we negate semi-continuous violating this
 if isfield(result,'x')
     x = result.x;
+    if length(x) == length(model.obj)
+        if ~isempty(model.NegativeSemiVar)
+            x(model.NegativeSemiVar) = -x(model.NegativeSemiVar);
+        end
+    end
     x = x(1:nOriginal);
 else
     x = zeros(nOriginal,1);
-end
-
-% Gurobi assumes semi-continuous variables only can take negative values so
-% we negate semi-continuous violating this
-if length(x) == length(model.obj)
-     if ~isempty(model.NegativeSemiVar)
-        x(model.NegativeSemiVar) = -x(model.NegativeSemiVar);
-     end
 end
 
 problem = 0;

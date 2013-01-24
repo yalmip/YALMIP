@@ -30,6 +30,10 @@ else
     bineq = [];
 end
 
+% CPLEX assumes semi-continuous variables only can take negative values so
+% we negate semi-continuous violating this
+[NegativeSemiVar,H,f,Aineq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,f,Aineq,lb,ub,semicont_variables,[]);
+
 if K.f > 0
     Aeq = Aineq(1:K.f,:);
     beq = bineq(1:K.f);
@@ -49,10 +53,6 @@ end
 if all(isinf(ub))
     ub = [];
 end
-
-% CPLEX assumes semi-continuous variables only can take negative values so
-% we negate semi-continuous violating this
-[NegativeSemiVar,H,f,Aineq,Aeq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,f,Aineq,Aeq,lb,ub,semicont_variables,[]);
 
 ctype = char(ones(length(f),1)*67);
 ctype(setdiff(integer_variables,semicont_variables)) = 'I';

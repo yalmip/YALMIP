@@ -37,10 +37,18 @@ showprogress('Calling CPLEX',options.showprogress);
 n_original = length(c);
 [F_struc,K,c,Q,ub,lb,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,Q,ub,lb);
 
+if nnz(Q)==0
+    H = [];
+else
+    H = 2*Q;
+end
+
 if K.l+K.f>0
     A =-(F_struc(1:K.f+K.l,2:end));
     B = full(F_struc(1:K.f+K.l,1));
 end
+
+[NegativeSemiVar,H,c,A,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,c,A,lb,ub,semicont_variables,Qi);
 
 if K.f > 0
     Aeq = A(1:K.f,:);
@@ -56,40 +64,6 @@ else
     Aineq = [];
     bineq = [];
 end
-
-
-if nnz(Q)==0
-    H = [];
-else
-    H = 2*Q;
-end
-
-% CPLEX assumes semi-continuous variables only can take negative values so
-% we negate semi-continuous violating this
-[NegativeSemiVar,H,c,Aineq,Aeq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,c,Aineq,Aeq,lb,ub,semicont_variables,Qi);
-
-% NegativeSemiVar = [];
-% if ~isempty(semicont_variables)
-%     NegativeSemiVar = find(lb(semicont_variables) < 0);
-%     if ~isempty(NegativeSemiVar)
-%         temp = ub(semicont_variables(NegativeSemiVar));
-%         ub(semicont_variables(NegativeSemiVar)) = -lb(semicont_variables(NegativeSemiVar));
-%         lb(semicont_variables(NegativeSemiVar)) = -temp;
-%         if ~isempty(Aineq)
-%             Aineq(:,semicont_variables(NegativeSemiVar)) = -Aineq(:,semicont_variables(NegativeSemiVar));
-%         end
-%         if ~isempty(Aeq)
-%             Aeq(:,semicont_variables(NegativeSemiVar)) = -Aeq(:,semicont_variables(NegativeSemiVar));
-%         end
-%         H(:,semicont_variables(NegativeSemiVar)) = -H(:,semicont_variables(NegativeSemiVar));
-%         H(semicont_variables(NegativeSemiVar),:) = -H(semicont_variables(NegativeSemiVar),:);
-%         for i = 1:length(Qi)
-%             Qi{i}(:,semicont_variables(NegativeSemiVar)) = -Qi{i}(:,semicont_variables(NegativeSemiVar));
-%             Qi{i}(semicont_variables(NegativeSemiVar),:) = -Qi{i}(semicont_variables(NegativeSemiVar),:);
-%         end
-%         c(semicont_variables(NegativeSemiVar)) = -c(semicont_variables(NegativeSemiVar));
-%     end
-% end
 
 % Bug in cplex 12.1
 if length(K.q) == 1
