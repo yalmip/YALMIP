@@ -44,66 +44,35 @@ end
 n_original = length(c);
 if K.q(1)>0
     % To simplify code, we currently normalize everything to z'*z<x0^2
-    if 1
-        nNEW = sum(K.q);
-        if ~isempty(x0)
-            x0 = [x0;full(F_struc(1+K.f+K.l:end,:))*[1;x0]];
-        end
-        
-        Ftemp = F_struc(1+K.f+K.l:end,:);
-        F_strucSOCP = [Ftemp -speye(nNEW)];
-        F_struc = [F_struc(1:K.f+K.l,:) spalloc(K.f+K.l,nNEW,0)];
-        UB = [UB;inf(nNEW,1)];
-        c = [c;spalloc(nNEW,1,0)];
-        Q = blkdiag(Q,spalloc(nNEW,nNEW,0));
-        
-        iCone = n_original+1;
-        ri = zeros(1,length(K.q));
-        Li = spalloc(n_original+nNEW,length(K.q),0);
-        n_TOT = n_original+nNEW;
-        for i = 1:length(K.q);
-            ind = iCone:iCone+K.q(i)-1;
-            vals = [-1 ones(1,K.q(i)-1)];
-            aux = sparse(ind,1,vals,n_TOT,1);
-            aux = diag(aux);
-            
-         %   aux = sparse(ind,ind,vals,n_TOT,n_TOT);
-            Qi{i} = aux;
-            LB = [LB;0;-inf(K.q(i)-1,1)];
-            iCone = iCone + K.q(i);
-        end
-        F_struc = [F_strucSOCP;F_struc];
-        K.f = K.f + nNEW;
-    else
-        rhsROWS = K.f + K.l + [1 1+cumsum([K.q(1:end-1)])];
-        nNEW = length(K.q);
-        rhsDATA = F_struc(rhsROWS,:);
-        F_struc(rhsROWS,:) = 0;
-        F_struc = [rhsDATA -speye(nNEW);
-        F_struc [spalloc(K.f+K.l,nNEW,0);spalloc(sum(K.q),nNEW,0)]];
-        K.f = K.f + nNEW;
-        UB = [UB;inf(nNEW,1)];
-        LB = [LB;zeros(nNEW,1)];
-        c = [c;spalloc(nNEW,1,0)];
-        Q = blkdiag(Q,spalloc(nNEW,nNEW,0));
-        
-        iCone = n_original+1;
-        ri = zeros(1,length(K.q));
-        top = K.l+K.f + 1;
-        Li = [];
-        for i = 1:length(K.q);
-            data = F_struc(top:top + K.q(i)-1,:);
-            b = data(:,1);
-            A = data(:,2:end);
-            ri(i) = -b'*b;
-            Li = [Li 2*A'*b];
-            Qtemp = A'*A;Qtemp(n_original + i,n_original+i)=-1;
-            Qi{i} = Qtemp;
-            iCone = iCone + K.q(i);
-            top = top + K.q(i);
-        end
-        
+    nNEW = sum(K.q);
+    if ~isempty(x0)
+        x0 = [x0;full(F_struc(1+K.f+K.l:end,:))*[1;x0]];
     end
+    
+    Ftemp = F_struc(1+K.f+K.l:end,:);
+    F_strucSOCP = [Ftemp -speye(nNEW)];
+    F_struc = [F_struc(1:K.f+K.l,:) spalloc(K.f+K.l,nNEW,0)];
+    UB = [UB;inf(nNEW,1)];
+    c = [c;spalloc(nNEW,1,0)];
+    Q = blkdiag(Q,spalloc(nNEW,nNEW,0));
+    
+    iCone = n_original+1;
+    ri = zeros(1,length(K.q));
+    Li = spalloc(n_original+nNEW,length(K.q),0);
+    n_TOT = n_original+nNEW;
+    for i = 1:length(K.q);
+        ind = iCone:iCone+K.q(i)-1;
+        vals = [-1 ones(1,K.q(i)-1)];
+        aux = sparse(ind,1,vals,n_TOT,1);
+        aux = diag(aux);
+        
+        %   aux = sparse(ind,ind,vals,n_TOT,n_TOT);
+        Qi{i} = aux;
+        LB = [LB;0;-inf(K.q(i)-1,1)];
+        iCone = iCone + K.q(i);
+    end
+    F_struc = [F_strucSOCP;F_struc];
+    K.f = K.f + nNEW;
 else
     Qi = [];
     ri = [];
