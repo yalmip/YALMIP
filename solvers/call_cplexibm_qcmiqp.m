@@ -190,6 +190,9 @@ if options.savesolverinput
     solverinput.LB = LB;
     solverinput.UB = UB;
     solverinput.x0 = [];
+    solverinput.Qi = Qi;
+    solverinput.Li = Li;
+    solverinput.ri = ri;
     solverinput.options = options.cplex;
 else
     solverinput = [];
