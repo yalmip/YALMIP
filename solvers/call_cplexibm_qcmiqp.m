@@ -1,4 +1,4 @@
-function output = call_cplexibm_miqcp(interfacedata)
+function output = call_cplexibm_qcmiqp(interfacedata)
 
 % Author Johan Löfberg
 
@@ -8,8 +8,10 @@ if isempty(interfacedata.K.q) | interfacedata.K.q(1)==0
     if nnz(interfacedata.Q)==0
         % and not QP either
         output = call_cplexibm_milp(interfacedata);
+        return
     else
         output = call_cplexibm_miqp(interfacedata);
+        return
     end
 end
 
@@ -24,25 +26,15 @@ integer_variables = interfacedata.integer_variables;
 binary_variables = interfacedata.binary_variables;
 semicont_variables = interfacedata.semicont_variables;
 
-UB      = interfacedata.ub;
-LB      = interfacedata.lb;
+ub      = interfacedata.ub;
+lb      = interfacedata.lb;
 
 showprogress('Calling CPLEX',options.showprogress);
 
-if ~isempty(semicont_variables)
-    % Bounds must be placed in LB/UB
-    [LB,UB,cand_rows_eq,cand_rows_lp] = findulb(F_struc,K,LB,UB);
-    F_struc(K.f+cand_rows_lp,:)=[];
-    F_struc(cand_rows_eq,:)=[];
-    K.l = K.l-length(cand_rows_lp);
-    K.f = K.f-length(cand_rows_eq);
-    
-    redundant = find(LB<=0 & UB>=0);
-    semicont_variables = setdiff(semicont_variables,redundant);
-end
+[F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
 
 n_original = length(c);
-[F_struc,K,c,Q,UB,LB,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,Q,UB,LB);
+[F_struc,K,c,Q,ub,lb,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,Q,ub,lb);
 
 if K.l+K.f>0
     A =-(F_struc(1:K.f+K.l,2:end));
@@ -73,11 +65,11 @@ end
 
 NegativeSemiVar = [];
 if ~isempty(semicont_variables)
-    NegativeSemiVar = find(LB(semicont_variables) < 0);
+    NegativeSemiVar = find(lb(semicont_variables) < 0);
     if ~isempty(NegativeSemiVar)
-        temp = UB(semicont_variables(NegativeSemiVar));
-        UB(semicont_variables(NegativeSemiVar)) = -LB(semicont_variables(NegativeSemiVar));
-        LB(semicont_variables(NegativeSemiVar)) = -temp;
+        temp = ub(semicont_variables(NegativeSemiVar));
+        ub(semicont_variables(NegativeSemiVar)) = -lb(semicont_variables(NegativeSemiVar));
+        lb(semicont_variables(NegativeSemiVar)) = -temp;
         if ~isempty(Aineq)
             Aineq(:,semicont_variables(NegativeSemiVar)) = -Aineq(:,semicont_variables(NegativeSemiVar));
         end
@@ -129,15 +121,15 @@ if ~isempty(K.sos.type)
 end
 
 if options.savedebug
-    save cplexintdebug H c Aineq bineq Aeq beq Li Qi ri LB UB ctype
+    save cplexintdebug H c Aineq bineq Aeq beq Li Qi ri lb ub ctype
 end
 
 % Call mex-interface
 solvertime = clock;
 if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_variables) & isempty(K.sos.type)
-    [x,fval,exitflag,output] = cplexqcp(H, c(:), Aineq,bineq,Aeq,beq,Li,Qi,ri,LB,UB,x0,options.cplex);    
+    [x,fval,exitflag,output] = cplexqcp(H, c(:), Aineq,bineq,Aeq,beq,Li,Qi,ri,lb,ub,x0,options.cplex);    
 else   
-    [x,fval,exitflag,output] = cplexmiqcp(H, c(:), Aineq,bineq,Aeq,beq,Li,Qi,ri,K.sos.type,K.sos.variables,K.sos.weight,LB,UB,ctype',x0,options.cplex);   
+    [x,fval,exitflag,output] = cplexmiqcp(H, c(:), Aineq,bineq,Aeq,beq,Li,Qi,ri,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);   
 end
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
@@ -187,8 +179,8 @@ if options.savesolverinput
     solverinput.Aeq = Aeq;
     solverinput.beq = beq;
     solverinput.ctype = ctype;
-    solverinput.LB = LB;
-    solverinput.UB = UB;
+    solverinput.LB = lb;
+    solverinput.UB = ub;
     solverinput.x0 = [];
     solverinput.Qi = Qi;
     solverinput.Li = Li;

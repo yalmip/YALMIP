@@ -29,6 +29,8 @@ else
     UB = repmat(inf,n,1);
 end
 
+%[F_struc,K,LB,UB,semicont_variables] = extractSemiContBounds(F_struc,K,LB,UB,semicont_variables);
+
 if ~isempty(semicont_variables)
     % Bounds must be placed in LB/UB
     [LB,UB,cand_rows_eq,cand_rows_lp] = findulb(F_struc,K,LB,UB);
