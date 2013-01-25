@@ -2,17 +2,11 @@ function output = call_cplexibm_qcmiqp(interfacedata)
 
 % Author Johan Löfberg
 
-% Gateway to all CPLEX interfaces
+% This is a gateway to all CPLEX interfaces
+% Call LP/QP solver if sufficient
 if isempty(interfacedata.K.q) | interfacedata.K.q(1)==0
-    % Obviously no SOCP
-%     if nnz(interfacedata.Q)==0
-%         % and not QP either
-%         output = call_cplexibm_milp(interfacedata);
-%         return
-%     else
-        output = call_cplexibm_miqp(interfacedata);
-        return
-%    end
+    output = call_cplexibm_miqp(interfacedata);
+    return
 end
 
 % Retrieve needed data
