@@ -144,6 +144,7 @@ if ~isempty(lambda)
     D_struc = [the_sign*lambda.eqlin;the_sign*lambda.ineqlin];
 else
     D_struc = [];
+    lambda = [];
 end
 
 if length(x) == length(f)

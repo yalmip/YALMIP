@@ -164,9 +164,9 @@ end
 % Save all data from the solver?
 if options.savesolveroutput
     solveroutput.x = x;
-    solveroutput.FMIN = FMIN;
-    solveroutput.SOLSTAT = SOLSTAT;
-    solveroutput.DETAILS=DETAILS;
+    solveroutput.fval = fval;
+    solveroutput.exitflag = exitflag;
+    solveroutput.output=output;
 else
     solveroutput = [];
 end
