@@ -1,5 +1,5 @@
 function output = bmibnb(p)
-%BMIBNB Branch-and-bound scheme for bilinear programs
+%BMIBNB Global solver based on branch-and-bound
 %
 % BMIBNB is never called by the user directly, but is called by YALMIP from
 % SOLVESDP, by choosing the solver tag 'bmibnb' in sdpsettings
@@ -25,7 +25,6 @@ function output = bmibnb(p)
 % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]
 
 % Author Johan Löfberg
-% $Id: bmibnb.m,v 1.83 2010-04-28 07:45:44 joloef Exp $
 
 bnbsolvertime = clock;
 showprogress('Branch and bound started',p.options.showprogress);
