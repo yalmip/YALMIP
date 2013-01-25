@@ -153,6 +153,7 @@ if ops.kkt.dualbounds
         disp('Starting derivation of dual bounds (can be turned off using option kkt.dualbounds)');
     end
     [U,pL] = derivedualBounds(2*Q,c,A,b,E,f,ops,parametricDomain);
+    %[U,pL] = derivedualBoundsParameterFree(2*Q,c,A,b,E,f,ops,parametricDomain);
 else
     U = [];
 end

@@ -80,10 +80,16 @@ Lf = find(~isinf(L));
 Uf = find(~isinf(U));
 B = [];
 if ~isempty(Lf)
-    B = [B, (x(Lf) >= L(Lf)):'Finite lower bounds'];
+    xLf = x(Lf);
+    if isa(xLf,'sdpvar')
+        B = [B, (xLf >= L(Lf)):'Finite lower bounds'];
+    end
 end
 if ~isempty(Uf)
-    B = [B, (x(Uf) >= L(Uf)):'Finite upper bounds'];
+    xUf = x(Uf);
+    if isa(xUf,'sdpvar')
+        B = [B, (xUf >= L(Uf)):'Finite upper bounds'];
+    end
 end
 %B = [L <= x <= U];
 switch nargout
