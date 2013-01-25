@@ -48,22 +48,6 @@ end
 
 [dummy,L,U] = boundingbox([F,parametricDomain,H*x + c + rhs==0,Lambda>=0],ops2,xz);
 
-% sol = solvesdp([F,parametricDomain,H*x + c + rhs==0,Lambda>0],[xz;-xz],ops2);
-% for i = 1:nTOT
-%     if sol.problem(i)==0
-%         selectsolution(i);
-%         L(i,1) = double(xz(i));
-%     else
-%         L(i,1) = -inf;
-%     end
-%     if sol.problem(nTOT+i)==0
-%         selectsolution(nTOT+i);
-%         U(i,1) = double(xz(i));
-%     else
-%         U(i,1) = inf;
-%     end
-% end
-
 c0C = full(getbase(c));
 c0 = c0C(:,1);
 C = c0C(:,2:end);
@@ -92,9 +76,6 @@ else
     end
 end
     
-
-
-
 if isa(b,'sdpvar')
     if ops.verbose
         disp(['*Computing ' num2str(length(b)) ' bounds on parameterized RHS (required for dual bounds)']);

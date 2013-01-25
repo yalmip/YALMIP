@@ -4,7 +4,6 @@ function [KKTConstraints, details] = kkt(F,h,parametricVariables,ops);
 % [KKTConstraints, details] = kkt(Constraints,Objective,parameters,options)
 
 % Author Johan Löfberg
-% $Id: kkt.m,v 1.2 2010-02-08 13:06:11 joloef Exp $
 
 [aux1,aux2,aux3,model] = export(F,h,sdpsettings('solver','quadprog','relax',2));
 if isempty(model)
@@ -16,7 +15,6 @@ model.problemclass.constraint.semicont = 0;
 model.problemclass.constraint.sos1 = 0;
 model.problemclass.constraint.sos2 = 0;
 if ~ismember(problemclass(model), {'LP', 'Convex QP', 'Nonconvex QP'})
-%if ~(strcmp(problemclass(model),'LP') | strcmp(problemclass(model),'Convex QP') | strcmp(problemclass(model),'Nonconvex QP'))
     error('KKT system can only be derived for LPs or QPs');
 end
 if ~isempty(model.binary_variables) | ~isempty(model.integer_variables) | ~isempty(model.semicont_variables)
@@ -30,8 +28,7 @@ if nargin < 3
     x = recover(model.used_variables);
     parameters = [];
 else
-    % Make sure they are sorted
-    % parameters = decisionvariables;
+    % Make sure they are sorted    
     parameters = getvariables(parametricVariables);
     x = recover(setdiff(model.used_variables,parameters));
     notparameters = find(ismember(model.used_variables,getvariables(x)));%parameters);
@@ -39,17 +36,6 @@ else
     if ~isempty(parameters)
         y = recover(model.used_variables(parameters));
     end
-    
-    % x = recover(depends(decisionvariables));
-    
-    % parameters = find(~ismember(model.used_variables,getvariables(x)));
-    % if ~isempty(parameters)
-    %     y = recover(model.used_variables(parameters));
-    % end
-    % notparameters = setdiff(1:length(model.used_variables),parameters);
-    
-    
-    
 end
 
 if nargin < 4
