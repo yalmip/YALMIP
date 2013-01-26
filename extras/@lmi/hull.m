@@ -13,8 +13,6 @@ function [Fhull,t,y] = hull(varargin)
 % (introduction of auxially variables). Hence, if you have many set of
 % constraints, your problem rapidly grows large.
 
-% $Id: hull.m,v 1.9 2010-03-09 14:51:21 joloef Exp $   
-
 if nargin==1
     Fhull = varargin{1};
     t = [];

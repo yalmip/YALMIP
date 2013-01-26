@@ -1,10 +1,9 @@
 function p_homo = homogenize(p,y);
 %HOMOGENIZE Homogenize polynomial
 %
-% f = homogenize(p,x)
+% f = homogenize(p,t)
 
-% Author Johan Löfberg 
-% $Id: homogenize.m,v 1.5 2006-01-26 13:44:13 joloef Exp $  
+% Author Johan Löfberg
 
 deg   = degree(p);
 deg_y = degree(y);
@@ -24,8 +23,8 @@ for i = 1:length(p_variables);
         power = (deg-(degree(monom)))/deg_y;
         p_homo = p_homo + getbasematrix(p,p_variables(i))*monom*y^power;
     else
-       p_homo = p_homo + getbasematrix(p,p_variables(i))*monom;
-   end;
+        p_homo = p_homo + getbasematrix(p,p_variables(i))*monom;
+    end;
 end
 % Reset info about conic terms
-p_homo.conicinfo = [0 0];  
+p_homo.conicinfo = [0 0];
