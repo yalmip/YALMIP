@@ -156,6 +156,7 @@ switch lower(solver.tag)
                     interfacedata.options.cplex = rmfield(interfacedata.options.cplex,n{i});
                 end
             end
+            model = yalmip2cplex(interfacedata);
         catch
         end
 

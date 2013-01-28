@@ -2,100 +2,21 @@ function output = call_cplexibm_miqp(interfacedata)
 
 % Author Johan Löfberg
 
-% Retrieve needed data
 options = interfacedata.options;
-F_struc = interfacedata.F_struc;
-c       = interfacedata.c;
-K       = interfacedata.K;
-x0      = interfacedata.x0;
-integer_variables = interfacedata.integer_variables;
-binary_variables = interfacedata.binary_variables;
-semicont_variables = interfacedata.semicont_variables;
+model = yalmip2cplex(interfacedata);
 
-ub      = interfacedata.ub;
-lb      = interfacedata.lb;
-
-[F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
-
-% Notation used
-H = 2*interfacedata.Q;
-f = c;
-if ~isempty(F_struc)
-    Aineq = -F_struc(:,2:end);
-    bineq = F_struc(:,1);
-else
-    Aineq = [];
-    bineq = [];
+if interfacedata.options.savedebug
+    save cplexdebug model
 end
 
-% CPLEX assumes semi-continuous variables only can take negative values so
-% we negate semi-continuous violating this
-[NegativeSemiVar,H,f,Aineq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,f,Aineq,lb,ub,semicont_variables,[]);
-
-if K.f > 0
-    Aeq = Aineq(1:K.f,:);
-    beq = bineq(1:K.f);
-    % Code around performance bugs in older version of MATLAB
-    [ii,jj,ss] = find(Aineq);keeps = ii>K.f;
-    Aineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),size(Aineq,1)-K.f,size(Aineq,2));
-    [ii,jj,ss] = find(bineq);keeps = ii>K.f;
-    bineq = sparse(ii(keeps)-K.f,jj(keeps),ss(keeps),length(bineq)-K.f,1);
-else
-    Aeq = [];
-    beq = [];
-end
-
-if all(isinf(lb))
-    lb = [];
-end
-if all(isinf(ub))
-    ub = [];
-end
-
-ctype = char(ones(length(f),1)*67);
-ctype(setdiff(integer_variables,semicont_variables)) = 'I';
-ctype(binary_variables)  = 'B';  % Should not happen except from bmibnb
-ctype(setdiff(semicont_variables,integer_variables)) = 'S';  % Should not happen except from bmibnb
-ctype(intersect(semicont_variables,integer_variables)) = 'N';
-
-options.cplex.simplex.display = options.verbose;
-options.cplex.mip.display = options.verbose;
-options.cplex.barrier.display = options.verbose;
-if str2num(interfacedata.solver.subversion)>=12.3
-    if options.verbose
-        options.cplex.diagnostics = 'on';
-    else
-        options.cplex.diagnostics = 'off';
-    end
-end
-
-if ~isempty(K.sos.type)
-    for i = 1:length(K.sos.weight)
-        K.sos.weight{i} = full(K.sos.weight{i}(:));
-    end
-    if length(K.sos.weight)==1
-        K.sos.weight = K.sos.weight{1};
-        K.sos.variables = K.sos.variables{1};
-    end
-end
-
-% Shift the objective (constant term can not be set in CPLEX?)
-if isfield(options.cplex,'mip.tolerances.lowercutoff')
-    options.cplex.mip.tolerances.lowercutoff = options.cplex.mip.tolerances.lowercutoff-interfacedata.f;
-    options.cplex.mip.tolerances.uppercutoff = options.cplex.mip.tolerances.uppercutoff-interfacedata.f;
-end
-
-if options.savedebug
-    save cplexdebug
-end
 solvertime = clock;
-[x,fval,exitflag,output,lambda] = localSolverCall(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options,integer_variables,binary_variables,semicont_variables,K,ctype);
+[x,fval,exitflag,output,lambda] = localSolverCall(model);
 if output.cplexstatus == 4 | output.cplexstatus == 119
     % CPLEX reports infeasible OR unbounded
     % Remove objective and resolve
-    H = H*0;
-    f = f*0;
-    [x,fval,exitflag,output,lambda] = localSolverCall(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options,integer_variables,binary_variables,semicont_variables,K,ctype);
+    model.H = model.H*0;
+    model.f = model.f*0;
+    [x,fval,exitflag,output,lambda] = localSolverCall(model);
     switch output.cplexstatus
         case {1,101,102} % It was ok, hence it must have been unbounded
             output.cplexstatus = 2;
@@ -119,9 +40,9 @@ else
     D_struc = [];    
 end
 
-if length(x) == length(f)
-    if ~isempty(NegativeSemiVar)
-        x(NegativeSemiVar) = -x(NegativeSemiVar);
+if length(x) == length(model.f)
+    if ~isempty(model.NegativeSemiVar)
+        x(model.NegativeSemiVar) = -x(model.NegativeSemiVar);
     end
 end
 
@@ -150,17 +71,7 @@ infostr = yalmiperror(problem,'CPLEX-IBM');
 
 % Save all data sent to solver?
 if options.savesolverinput
-    solverinput.H = H;
-    solverinput.f = f;
-    solverinput.Aineq = Aineq;
-    solverinput.Aineq = Aeq;
-    solverinput.bineq = bineq;
-    solverinput.beq = beq;
-    solverinput.LB = lb;
-    solverinput.UB = ub;
-    solverinput.x0 = x0;
-    solverinput.ctype = ctype;
-    solverinput.options = options.cplex;
+    solverinput.model = model;
 else
     solverinput = [];
 end
@@ -176,7 +87,7 @@ else
 end
 
 if isempty(x)
-    x = zeros(length(f),1);
+    x = zeros(length(model.f),1);
 end
 % Standard interface
 output.Primal      = x(:);
@@ -190,7 +101,25 @@ output.solvertime  = solvertime;
 
 
 
-function [x,fval,exitflag,output,lambda] = localSolverCall(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options,integer_variables,binary_variables,semicont_variables,K,ctype);
+function [x,fval,exitflag,output,lambda] = localSolverCall(model)
+
+H = model.H;
+f = model.f;
+Aineq = model.Aineq;
+bineq = model.bineq;
+Aeq = model.Aeq;
+beq = model.beq;
+lb = model.lb;
+ub = model.ub;
+x0 = model.x0;
+options.cplex = model.options;
+options.verbose = options.cplex.verbose;
+integer_variables = model.integer_variables;
+binary_variables = model.binary_variables;
+semicont_variables = model.semicont_variables;
+K = model.K;
+ctype = model.ctype;
+
 fixedAineqBug = 0;
 if isempty(Aineq) & isempty(Aeq)
     Aineq = zeros(1,length(f)) ;
@@ -206,9 +135,9 @@ if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_var
         end
     else
         if isempty(H)
-            evalc('[x,fval,exitflag,output,lambda] = cplexqp(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);');
+            evalc('[x,fval,exitflag,output,lambda] = cplexlp(f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);');            
         else
-            evalc('[x,fval,exitflag,output,lambda] = cplexlp(f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);');
+            evalc('[x,fval,exitflag,output,lambda] = cplexqp(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);');
         end
     end
     if ~isempty(lambda) & fixedAineqBug
