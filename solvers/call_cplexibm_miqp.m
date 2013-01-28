@@ -146,7 +146,7 @@ if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_var
 else
     if options.verbose
         if isempty(H)
-            [x,fval,exitflag,output] = cplexmilp(f,zeros(1,length(f)),1,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
+            [x,fval,exitflag,output] = cplexmilp(f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
         else
             [x,fval,exitflag,output] = cplexmiqp(H,f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
         end
