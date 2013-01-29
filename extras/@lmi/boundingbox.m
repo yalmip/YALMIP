@@ -88,7 +88,7 @@ end
 if ~isempty(Uf)
     xUf = x(Uf);
     if isa(xUf,'sdpvar')
-        B = [B, (xUf >= L(Uf)):'Finite upper bounds'];
+        B = [B, (xUf <= U(Uf)):'Finite upper bounds'];
     end
 end
 %B = [L <= x <= U];
