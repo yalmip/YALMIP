@@ -1,13 +1,22 @@
 function varargout = boundingbox(F,ops,x)
-%BOUNDINGBOX Computes bounding box of a constraint object
+%BOUNDINGBOX Computes bounding box of a constraint
 %
-% If three outputs are requrested, the numerical bounds are returned
-% [C,L,U] = boundingbox(F)
+% If only one output is requested, only the symbolic model is returned
+%  B = boundingbox(F)
 %
-% If only one output is requested, only the symbolic model is requested
-% C = boundingbox(F)
-
-% $Id: boundingbox.m,v 1.2 2008-02-14 14:53:36 joloef Exp $
+% If three outputs are requested, numerical values are returned too
+%  [B,L,U] = boundingbox(F)
+%
+% A second argument can be used to specificy solver settings
+%  B = boundingbox(F,sdpsettings('solver','cplex'))
+%
+% A third argument can (should!) be used to obtain a bounding box in a
+% particular set of variables, i.e. the bounding box of a projection.
+% Unless you specify which variables you are computing the bounding box
+% w.r.t, it will be very hard for you to understand which variables the
+% values in L and U relate to
+%  [B,L,U] = boundingbox(F,[],x)
+% B will now be the box [L <= x <= U] (infinite bounds not included)
 
 if nargin < 2
     ops = sdpsettings('verbose',0);
