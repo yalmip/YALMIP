@@ -54,13 +54,35 @@ end
 delta = binvar(length(b),1);
 UpperBound = .1;
 parametricDomainH = homogenize(sdpvar(parametricDomain),alpha) >= 0;
-Model = [parametricDomainH,H*x + alpha*c0 + C*z + rhs==0,delta >= Lambda >= 0, 1-delta >= b0*alpha+B*z-A*x>=0, sum(Lambda) >= alpha*UpperBound];
+
+w1 = binvar(length(Lambda),1);
+w2 = binvar(length(Lambda),1);
+eta1 = sdpvar(length(Lambda),1);
+eta2 = sdpvar(length(Lambda),1);
+v = sdpvar(size(A,2),1);
+Model = [parametricDomainH,H*x + alpha*c0 + C*z + rhs==0,
+                           delta >= Lambda >= 0,
+                         1-delta >= b0*alpha+B*z-A*x>=0, 
+                         sum(Lambda) >= alpha*UpperBound,
+                       %  sum(delta)<=1,
+                         ];
+Model = [Model, Lambda + A*v + eta2-eta1 == 0,
+                 0 <= eta1 <= w1, 0 <= delta - Lambda <= 1-w1,
+                 0 <= eta2 <= w2, 0 <= Lambda <= 1-w2];
+                               
 solvesdp(Model,-alpha)
 while double(alpha) >= 1e-5
-    UpperBound = UpperBound*2;
-    Model = [parametricDomainH,H*x + alpha*c0 + C*z + rhs==0,delta >= Lambda >= 0, 1-delta >= b0*alpha+B*z-A*x>=0, sum(Lambda) >= alpha*UpperBound];
+    UpperBound = UpperBound*1.1;
+    Model = [parametricDomainH,H*x + alpha*c0 + C*z + rhs==0,
+             delta >= Lambda >= 0,
+             1-delta >= b0*alpha+B*z-A*x>=0,
+             sum(Lambda) >= alpha*UpperBound];
+          Model = [Model, Lambda + A*v + eta2-eta1 == 0,
+                  0 <= eta1 <= w1, 0 <= delta - Lambda <= 1-w1,
+                  0 <= eta2 <= w2, 0 <= Lambda <= 1-w2];
     solvesdp(Model,-alpha);
-end    
+end  
+
 dualUpper = min(U,UpperBound);    
 
 
@@ -79,4 +101,8 @@ else
             C = [C getbasematrix(c,getvariables(z(i)))];
         end  
     end
+end
+
+if isempty(C)
+    C = zeros(length(C),length(z));
 end
