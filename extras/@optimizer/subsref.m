@@ -39,10 +39,38 @@ elseif isequal(subs.type,'{}')
         varargout{1} = yalmip('definemulti','optimizer_operator',subs(1).subs{1},self,self.dimout);
         return
     end
+    
+    % Cell based declaration of inputs
+    realDimIn = self.dimin;
+    
+    if size(self.dimin,1) > 1
+        % Concatenate inputs?
+        if isa(subs.subs{1},'cell')
+            if length(subs.subs{1})~=size(self.dimin,1)
+                error('The number of cell elements in input does not match OPTIMIZER declaration');
+            end
+            vecIn = [];
+            for i = 1:length(subs.subs{1})
+                arg = subs.subs{1}{i};
+                if ~isequal(size(arg),self.dimin(i,:))
+                    error('Size mismatch on argument in cell');
+                end
+                vecIn = [vecIn;arg(:)];
+            end
+            self.dimin = [length(vecIn) 1];
+            subs.subs{1} = vecIn;
+        else
+            error('OPTIMIZER defined with cell input format, but you sent a vector');
+        end
+    end
+        
+    realDimOut = self.dimout;
+    self.dimout = [sum(self.dimout(:,1).*self.dimout(:,2)) 1];
 
     % Input is given as [x1 x2 ... xn]
+    % Note: this is not supported in cell based arguments
     if size(subs.subs{1},1) == self.dimin(1)
-        % Check that width is an multiple of parameter width
+        % Check that wP2idth is an multiple of parameter width
         if mod(size(subs.subs{1},2),self.dimin(2))>0
             error('Input argument has wrong size (The width is not a multiple of parameter width');
         end
@@ -111,6 +139,18 @@ elseif isequal(subs.type,'{}')
         varargout{4}{i} = output.Dual;       
         start = start + self.dimin(2);
     end
-    varargout{1} = u;
+    if size(realDimOut,1)>1    
+        top = 1;
+        allu = {};
+        for i = 1:size(realDimOut,1)
+            allu{i} = reshape(u(top:top+realDimOut(i,1)*realDimOut(i,2)-1),realDimOut(i,1),realDimOut(i,2));
+            top = top + realDimOut(i,1)*realDimOut(i,2);
+        end
+        varargout{1} = allu;
+    else
+        varargout{1} = u;
+    end
+    self.dimin = realDimIn;
+    self.dimout = realDimOut;
     varargout{5} = self;
 end

@@ -65,8 +65,33 @@ if nargin < 5
     error('OPTIMIZER requires 5 inputs');
 end
 
-[n,m] = size(x);
-x = x(:);
+if isa(x,'cell')
+    xvec = [];
+    n = zeros(length(x),1);
+    m = zeros(length(x),1);
+    for i = 1:length(x)
+        [n(i),m(i)] = size(x{i});
+        xvec = [xvec;x{i}(:)];
+    end
+    x = xvec;
+else
+    [n,m] = size(x);
+    x = x(:);
+end
+
+if isa(u,'cell')
+    uvec = [];
+    nout = zeros(length(u),1);
+    mout = zeros(length(u),1);
+    for i = 1:length(u)
+        [nout(i),mout(i)] = size(u{i});
+        uvec = [uvec;u{i}(:)];
+    end
+    u = uvec;
+else
+    [nout,mout] = size(u);
+    u = u(:);
+end
 
 if isempty(options)
     options = sdpsettings;
@@ -90,9 +115,9 @@ end
 
 if any(is(Constraints,'uncertain'))
     [Constraints,Objective,failure] = robustify(Constraints,Objective,options);
-    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,n*m,1))+Constraints,Objective,options,[],[],0);
+    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,sum(n.*m),1))+Constraints,Objective,options,[],[],0);
 else
-    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,n*m,1))+Constraints,Objective,options,[],[],0);    
+    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,sum(n.*m),1))+Constraints,Objective,options,[],[],0);    
 end
 
 if ~isempty(aux3)
@@ -103,7 +128,7 @@ if ~isempty(aux3)
     end
 end
 
-if norm(model.F_struc(1:n,1)-repmat(pi,length(x),1),inf) > 1e-10
+if norm(model.F_struc(1:sum(n.*m),1)-repmat(pi,length(x),1),inf) > 1e-10
     error('Failed exporting the model (try to specify another solver)')    
 end
 
@@ -139,7 +164,7 @@ model.solver.callhandle = str2func(model.solver.call);
 sys.recover = aux2;
 sys.model = model;
 sys.dimin = [n m];
-sys.dimout = size(u);
+sys.dimout = [nout mout];
 sys.map = map;
 sys.input.expression = x;
 sys.output.expression = u;
@@ -151,7 +176,7 @@ sys.output.z = z;
 % [b,a,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end)');
 % but let us be safe
 b = [];
-for i = 1:prod(sys.dimin)
+for i = 1:sum(n.*m)%prod(sys.dimin)
     b = [b;find(sys.model.F_struc(i,2:end))];
 end
 sys.parameters = b;
