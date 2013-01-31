@@ -27,3 +27,6 @@ else
     end
     G = sparse(G);
 end
+if model.dense
+    G = full(G);
+end

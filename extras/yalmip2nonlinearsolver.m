@@ -1,5 +1,6 @@
 function model = yalmip2nonlinearsolver(model)
 
+model.dense = 0;
 if ~model.equalitypresolved
     model = propagate_bounds_from_equalities(model);
 end
