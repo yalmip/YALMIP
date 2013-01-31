@@ -233,12 +233,18 @@ end
 entropies = zeros(length(Y),1);
 if is(X,'linear')
     argst = yalmip('getarguments',Y);
+    if length(argst)~=length(X)
+        return
+    end
     if length(argst) == 1
         args{1} = argst;
     else
         args = argst;
     end
     for i = 1:length(args)
+        if isempty(args{i})
+            return
+        end
         if isequal(args{i}.fcn,'log')
             S(1).subs={i};
             S(1).type='()';
@@ -253,7 +259,6 @@ if is(X,'linear')
 end
 if all(entropies)
     y = -ventropy(X);
-
 end
 
 
