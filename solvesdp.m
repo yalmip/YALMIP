@@ -396,7 +396,9 @@ catch
     diagnostic.info = yalmiperror(output.problem,solver.tag);
 end
 diagnostic.problem = output.problem;
-diagnostic.dimacs = dimacs;
+if options.dimacs
+    diagnostic.dimacs = dimacs;
+end
 
 % Some more info is saved internally
 solution_internal = diagnostic;
