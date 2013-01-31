@@ -198,6 +198,7 @@ do_not_convert = do_not_convert | strcmpi(options.solver,'bonmin');
 do_not_convert = do_not_convert | strcmpi(options.solver,'nomad');
 do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-geometric');
 do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-standard');
+do_not_convert = do_not_convert | strcmpi(options.solver,'filtersd');
 do_not_convert = do_not_convert | strcmpi(options.solver,'pennon');
 do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-geometric');
 do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-standard');

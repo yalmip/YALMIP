@@ -287,6 +287,13 @@ Names = {'solver'
     'gurobi.ResultFile'
     'gurobi.Threads'
     
+    'filtersd.maxiter'
+    'filtersd.maxtime'
+    'filtersd.maxfeval'        
+    'filtersd.rho'
+    'filtersd.htol'
+    'filtersd.rgtol'
+         
     'mpcvx.solver'
     'mpcvx.relgaptol'
     'mpcvx.absgaptol'
@@ -1063,6 +1070,11 @@ else
     options.dsdp.max_infeasible_mu_reduction = 2;
     options.dsdp.max_mu_reduction = 1e8;
     options.dsdp.maxlanczos = 20;
+    
+    
+    options.filtersd.maxiter = 1500;
+    options.filtersd.maxtime = 1000;
+    options.filtersd.maxfeval = 10000;         
     
     % Options for GLPK
     options.glpk.lpsolver = 1;
