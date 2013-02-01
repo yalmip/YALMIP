@@ -61,11 +61,6 @@ end
 lb  = model.lb(:)';
 ub = model.ub(:)';
 
-if ~isempty(cu)
- %   Z = jacobiansparsityfromnonlinear(model);
- %   funcs.jacobianstructure = @() Z;
-end
-
 if ~model.options.usex0
     model.x0 = (lb+ub)/2;
     model.x0(isinf(ub)) = lb(isinf(ub))+1;
