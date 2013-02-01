@@ -1,20 +1,25 @@
-function test_optimizer4
+function test_optimizer5
 sdpvar x y u z 
 A = sdpvar(2,3);
 
 P1 = optimizer([x <= u,y <= z], -x-y,[],[u;z],[x;y]);
-
 sol1 = P1{[2;3]};
-
 mbg_asserttolequal(sol1,[2;3], 1e-4);
 
-P2 = optimizer([x <= u,y <= z], -x-y,[],{u,z},[x;y]);
+P1 = optimizer([x <= u,y <= z], -x-y,[],[u z],[x;y]);
+sol1 = P1{[2 3]};
+mbg_asserttolequal(sol1,[2;3], 1e-4);
 
-%sol2 = P2{[2;3]};
+P2 = P1(1);
+sol1 = P2{[2 3]};
+mbg_asserttolequal(sol1,[2], 1e-4);
+P2 = P1(2);
+sol1 = P2{[2 3]};
+mbg_asserttolequal(sol1,[3], 1e-4);
 
 P3 = optimizer([x <= u,y <= z], -x-y,[],{u,z},{x,y});
 sol3 = P3{{4,5}};
-mbg_asserttrue(isa(sol3,'cell') & length(sol3)==2);
+mbg_asserttrue(isa(sol3,'cell') && length(sol3)==2 && sol3{2}==5);
 
 P4 = optimizer([x <= u,y <= z],norm(A-x)-y,[],{u,z,A},{x,y,A});
 sol4 = P4{{4,5,ones(2,3)}};
