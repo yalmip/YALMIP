@@ -32,6 +32,10 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %
 %   Example
 %
+%    NOTE: The examples below treat the simple case with one vector
+%    parameter and one decision variable to return. For the more complex
+%    case, please see the article on the Wiki 
+%
 %    The following problem creates an LP with varying upper and lower
 %    bounds on the decision variable.
 %
@@ -65,33 +69,41 @@ if nargin < 5
     error('OPTIMIZER requires 5 inputs');
 end
 
+% With the new optinal cell-based format, the internal format is always a
+% vector with all information stacked, both in and out. Hence, we need to
+% save original sizes before stacking things up
+
 if isa(x,'cell')
     xvec = [];
-    n = zeros(length(x),1);
-    m = zeros(length(x),1);
+    nOrigIn = zeros(length(x),1);
+    mOrigIn = zeros(length(x),1);
     for i = 1:length(x)
-        [n(i),m(i)] = size(x{i});
+        [nOrigIn(i),mOrigIn(i)] = size(x{i});
         xvec = [xvec;x{i}(:)];
     end
     x = xvec;
 else
-    [n,m] = size(x);
+    [nOrigIn,mOrigIn] = size(x);
     x = x(:);
 end
+nIn = length(x);
+mIn = 1;
 
 if isa(u,'cell')
     uvec = [];
-    nout = zeros(length(u),1);
-    mout = zeros(length(u),1);
+    nOrigOut = zeros(length(u),1);
+    mOrigOut = zeros(length(u),1);
     for i = 1:length(u)
-        [nout(i),mout(i)] = size(u{i});
+        [nOrigOut(i),mOrigOut(i)] = size(u{i});
         uvec = [uvec;u{i}(:)];
     end
     u = uvec;
 else
-    [nout,mout] = size(u);
+    [nOrigOut,mOrigOut] = size(u);
     u = u(:);
 end
+nOut = length(u);
+mOut = 1;
 
 if isempty(options)
     options = sdpsettings;
@@ -115,9 +127,9 @@ end
 
 if any(is(Constraints,'uncertain'))
     [Constraints,Objective,failure] = robustify(Constraints,Objective,options);
-    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,sum(n.*m),1))+Constraints,Objective,options,[],[],0);
+    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);
 else
-    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,sum(n.*m),1))+Constraints,Objective,options,[],[],0);    
+    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);    
 end
 
 if ~isempty(aux3)
@@ -128,7 +140,7 @@ if ~isempty(aux3)
     end
 end
 
-if norm(model.F_struc(1:sum(n.*m),1)-repmat(pi,length(x),1),inf) > 1e-10
+if norm(model.F_struc(1:nIn*mIn,1)-repmat(pi,length(x),1),inf) > 1e-10
     error('Failed exporting the model (try to specify another solver)')    
 end
 
@@ -163,8 +175,10 @@ model.solver.callhandle = str2func(model.solver.call);
 
 sys.recover = aux2;
 sys.model = model;
-sys.dimin = [n m];
-sys.dimout = [nout mout];
+sys.dimin = [nIn mIn];
+sys.dimout = [nOut mOut];
+sys.diminOrig = [nOrigIn mOrigIn];
+sys.dimoutOrig = [nOrigOut mOrigOut];
 sys.map = map;
 sys.input.expression = x;
 sys.output.expression = u;
@@ -176,7 +190,7 @@ sys.output.z = z;
 % [b,a,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end)');
 % but let us be safe
 b = [];
-for i = 1:sum(n.*m)%prod(sys.dimin)
+for i = 1:prod(sys.dimin)
     b = [b;find(sys.model.F_struc(i,2:end))];
 end
 sys.parameters = b;

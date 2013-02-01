@@ -2,7 +2,9 @@ function varargout = subsref(self,subs)
 
 if isequal(subs.type,'()')
     
-    % New syntax. () used to be replacement/computation
+    if size(self.diminOrig,1) > 1
+        error('Can index in cell-based OPTIMIZER. Perhaps you mean {}');
+    end
     if isempty(self.output.z)
         output_length = length(self.output.expression);
     else
@@ -20,7 +22,8 @@ if isequal(subs.type,'()')
         self.map = self.map(subs.subs{1});
         self.output.expression = self.output.expression(subs.subs{1});
     end
-    self.dimout = size(self.output.expression);
+    self.dimoutOrig = size(self.output.expression);
+    self.dimout = [prod(size(self.output.expression)) 1];
     varargout{1} = self;
     
 elseif isequal(subs.type,'.')
@@ -39,36 +42,44 @@ elseif isequal(subs.type,'{}')
         varargout{1} = yalmip('definemulti','optimizer_operator',subs(1).subs{1},self,self.dimout);
         return
     end
-    
-    % Cell based declaration of inputs
-    realDimIn = self.dimin;
-    
-    if size(self.dimin,1) > 1
+        
+    if size(self.diminOrig,1) > 1
         % Concatenate inputs?
         if isa(subs.subs{1},'cell')
-            if length(subs.subs{1})~=size(self.dimin,1)
+            if length(subs.subs{1})~=size(self.diminOrig,1)
                 error('The number of cell elements in input does not match OPTIMIZER declaration');
             end
             vecIn = [];
             for i = 1:length(subs.subs{1})
                 arg = subs.subs{1}{i};
-                if ~isequal(size(arg),self.dimin(i,:))
+                if ~isequal(size(arg),self.diminOrig(i,:))
                     error('Size mismatch on argument in cell');
                 end
                 vecIn = [vecIn;arg(:)];
-            end
-            self.dimin = [length(vecIn) 1];
+            end    
             subs.subs{1} = vecIn;
         else
             error('OPTIMIZER defined with cell input format, but you sent a vector');
         end
+    else
+        if isa(subs.subs{1},'cell')
+            if length(subs.subs{1})>1
+                error('You are sending multiple cells, but OPTIMIZER was defined with only one argument');
+            else
+                subs.subs{1} = subs.subs{1}{1};
+            end
+        end 
+        if ~isequal(size(subs.subs{1},1),self.diminOrig(1))
+            error('Size mismatch. The parameter does match the size used in definition of OPTIMIZER object')
+        end
+        subs.subs{1} =  subs.subs{1}(:);
+        subs.subs{1} = reshape(subs.subs{1},prod(self.diminOrig),[]);
     end
-        
-    realDimOut = self.dimout;
-    self.dimout = [sum(self.dimout(:,1).*self.dimout(:,2)) 1];
 
-    % Input is given as [x1 x2 ... xn]
+    % Input is now given as [x1 x2 ... xn]
     % Note: this is not supported in cell based arguments
+    % If cell-based argument was used, only one call can be made at once
+    % i.e., n=1
     if size(subs.subs{1},1) == self.dimin(1)
         % Check that wP2idth is an multiple of parameter width
         if mod(size(subs.subs{1},2),self.dimin(2))>0
@@ -84,9 +95,13 @@ elseif isequal(subs.type,'{}')
     if isnan(nBlocks)
         nBlocks = 1;
     end
+    
+    if nBlocks>1 && (size(self.dimoutOrig,1)>1 || size(self.diminOrig,1)>1)
+        error('Multiple calls not supported in OPTIMIZER when using cell format');
+    end
+    
     for i = 1:nBlocks
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
-        %        if self.nonlinear & isempty(self.model.evalMap) & isempty(self.model.bilinear_variables) & isempty(self.model.integer_variables)
         if self.nonlinear & isempty(self.model.evalMap)
             originalModel = self.model;
             try
@@ -109,15 +124,11 @@ elseif isequal(subs.type,'{}')
             originalModel.precalc.skipped = self.model.precalc.skipped;
             originalModel.precalc.newmonomtable = self.model.precalc.newmonomtable;
             self.model = originalModel;
-        else
-            
-            %[ii,jj,kk] = find(self.model.F_struc(1:prod(self.dimin),2:end))
-            
+        else                                  
             if ~isempty(thisData)
                 self.model.F_struc(1:prod(self.dimin),1) = thisData(:);
             end         
-            output = self.model.solver.callhandle(self.model);
-           % eval(['output = ' self.model.solver.call '(self.model);']);
+            output = self.model.solver.callhandle(self.model);           
         end
         if output.problem==1
             output.Primal = output.Primal+nan;
@@ -139,8 +150,9 @@ elseif isequal(subs.type,'{}')
         varargout{4}{i} = output.Dual;       
         start = start + self.dimin(2);
     end
-    if size(realDimOut,1)>1    
+    if size(self.dimoutOrig,1)>1    
         top = 1;
+        realDimOut = self.dimoutOrig;
         allu = {};
         for i = 1:size(realDimOut,1)
             allu{i} = reshape(u(top:top+realDimOut(i,1)*realDimOut(i,2)-1),realDimOut(i,1),realDimOut(i,2));
@@ -149,8 +161,6 @@ elseif isequal(subs.type,'{}')
         varargout{1} = allu;
     else
         varargout{1} = u;
-    end
-    self.dimin = realDimIn;
-    self.dimout = realDimOut;
+    end  
     varargout{5} = self;
 end
