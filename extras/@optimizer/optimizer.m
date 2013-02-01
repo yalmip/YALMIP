@@ -32,10 +32,6 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %
 %   Example
 %
-%    NOTE: The examples below treat the simple case with one vector
-%    parameter and one decision variable to return. For the more complex
-%    case, please see the article on the Wiki 
-%
 %    The following problem creates an LP with varying upper and lower
 %    bounds on the decision variable.
 %
@@ -62,14 +58,24 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %     % Compute two solutions, one for (LB,UB) [1;3] and one for (LB,UB) [2;6]
 %     zopt = optZ{[[1; 3], [2;6]]}
 %
-%     A second output argument can be used to catch infeasibility
+%     % A second output argument can be used to catch infeasibility
 %     [zopt,infeasible] = optZ{[1; 3]}
+%
+%     % To avoid the need to vectorize in order to handle multiple
+%       parameters, a cell-based format can be used, both for inputs and
+%       outputs. Note that the optimizer object now is called with a cell
+%       and returns a cell
+%
+%     optZ = optimizer(Constraints,Objective,[],{LB,UB},{z,sum(z)})
+%     [zopt,infeasible] = optZ{{1,3}};
+%     zopt{1}
+%     zopt{2}
 
 if nargin < 5
     error('OPTIMIZER requires 5 inputs');
 end
 
-% With the new optinal cell-based format, the internal format is always a
+% With the new optional cell-based format, the internal format is always a
 % vector with all information stacked, both in and out. Hence, we need to
 % save original sizes before stacking things up
 
