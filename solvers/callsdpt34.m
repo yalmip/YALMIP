@@ -1,8 +1,5 @@
 function output = callsdpt34(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsdpt34.m,v 1.21 2010-01-13 13:49:21 joloef Exp $ 
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -17,23 +14,11 @@ if ~isempty(ub)
     [F_struc,K] = addbounds(F_struc,K,ub,lb);
 end
 
-% % if options.removethem
-%  [F_struc,K,c,variables] = preproc2(F_struc,K,c);
- % [F_struc,K,c,variables] = preproc1(F_struc,K,c);
-%  [F_struc,K,c,variables] = preproc2(F_struc,K,c);
-% % end
-
 if any(K.m > 0)
     % Messy to keep track of
     options.sdpt3.smallblkdim = 0;
 end
 
-% Convert from internal (sedumi-like) format
-if ~isempty(K.schur_funs)
-  %  if length(length([(K.schur_funs{:})]))>0
-   %     options.sdpt3.smallblkdim = 1;
-    %end
-end
 if ~isempty(interfacedata.lowrankdetails)
     options.sdpt3.smallblkdim = 1;
 end
@@ -165,12 +150,6 @@ else
     [obj,X,y,Z,info,runhist] =  sdpt3(blk,A,C,b,options.sdpt3,[],x0,[]);            
 end
 
-% if options.removethem
-% temp = y;
-% y = nan(length(interfacedata.c),1);
-% y(variables) = temp;
-% end
-
 % Create YALMIP dual variable and slack
 Dual = [];
 Slack = [];
@@ -214,10 +193,6 @@ end
 if any(K.m > 0)
    % Dual = [];
 end
-
-% if options.removethem
-% Dual = [];
-% end
 
 solvertime = etime(clock,solvertime);
 Primal = -y;  % Primal variable in YALMIP
