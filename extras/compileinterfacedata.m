@@ -754,7 +754,7 @@ end
 % *************************************************************************
 if ~isempty(logdetStruct) & solver.objective.maxdet.convex==1 & solver.constraint.inequalities.semidefinite.linear
     for i = 1:length(logdetStruct.P)
-        F = F + set(logdetStruct.P{i} > 0);
+        F = F + set(logdetStruct.P{i} >= 0);
         if ~isreal(logdetStruct.P{i})
             logdetStruct.gain(i) = logdetStruct.gain(i)/2;
             ProblemClass.complex = 1;
