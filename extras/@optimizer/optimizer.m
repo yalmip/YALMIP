@@ -131,7 +131,7 @@ if isa(Constraints,'constraint')
     Constraints = set(Constraints);
 end
 
-if any(is(Constraints,'uncertain'))
+if ~isempty(Constraints) & any(is(Constraints,'uncertain'))
     [Constraints,Objective,failure] = robustify(Constraints,Objective,options);
     [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);
 else
