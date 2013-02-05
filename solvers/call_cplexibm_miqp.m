@@ -113,7 +113,7 @@ lb = model.lb;
 ub = model.ub;
 x0 = model.x0;
 options.cplex = model.options;
-options.verbose = options.cplex.verbose;
+options.verbose = model.verbose;
 integer_variables = model.integer_variables;
 binary_variables = model.binary_variables;
 semicont_variables = model.semicont_variables;
@@ -127,7 +127,7 @@ if isempty(Aineq) & isempty(Aeq)
     fixedAineqBug = 1;
 end
 if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_variables) & isempty(K.sos.type)
-    if options.verbose
+    if options.verbose 
         if isempty(H)
             [x,fval,exitflag,output,lambda] = cplexlp(f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);
         else
@@ -144,7 +144,7 @@ if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_var
         lambda.ineqlin = [];
     end
 else
-    if options.verbose
+    if options.verbose 
         if isempty(H)
             [x,fval,exitflag,output] = cplexmilp(f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype',x0,options.cplex);
         else

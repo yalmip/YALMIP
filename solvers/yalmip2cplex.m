@@ -84,7 +84,6 @@ if isfield(options.cplex,'mip.tolerances.lowercutoff')
     options.cplex.mip.tolerances.lowercutoff = options.cplex.mip.tolerances.lowercutoff-interfacedata.f;
     options.cplex.mip.tolerances.uppercutoff = options.cplex.mip.tolerances.uppercutoff-interfacedata.f;
 end
-options.cplex.verbose = options.verbose;
 
 if nnz(H)==0
     H = [];
@@ -107,6 +106,7 @@ model.lb = lb;
 model.ub = ub;
 model.x0 = x0;
 model.options = options.cplex;
+model.verbose = options.verbose;
 model.integer_variables = integer_variables;
 model.binary_variables = binary_variables;
 model.semicont_variables = semicont_variables;
