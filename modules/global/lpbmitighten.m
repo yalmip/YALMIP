@@ -89,7 +89,7 @@ while feasible & j<=length(jj)
     i = p_test.linears(jj(j));
     if abs(p.ub(i)-p.lb(i)>0.1) & improvethese(i)
         p_test.c = eyev(length(p_test.c),i);
-        output = feval(lpsolver,p_test);
+        output = feval(lpsolver,removenonlinearity(p_test));
 
         if output.problem == 0 | output.problem == 2 | output.problem == 12
             if output.problem == 0
@@ -99,7 +99,7 @@ while feasible & j<=length(jj)
                 end
             end
             p_test.c = -p_test.c;
-            output = feval(lpsolver,p_test);
+            output = feval(lpsolver,removenonlinearity(p_test));
             if output.problem == 0
                 if p_test.ub(i) > output.Primal(i)+1e-5
                     p_test.ub(i) = output.Primal(i);

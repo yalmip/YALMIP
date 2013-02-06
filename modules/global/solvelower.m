@@ -153,7 +153,7 @@ else
             p_cut.evaluation_scheme = [];
             
             tstart = tic;                                             
-            output = feval(lowersolver,p_cut);
+            output = feval(lowersolver,removenonlinearity(p_cut));
             timing.lowersolve = timing.lowersolve + toc(tstart);
             cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
             % Minor clean-up
@@ -223,7 +223,7 @@ else
             else
                 try
                     tstart = tic;
-                    output = feval(lowersolver,p_cut);
+                    output = feval(lowersolver,removenonlinearity(p_cut));
                     timing.lowersolve = timing.lowersolve + toc(tstart);
                 catch
                     1
