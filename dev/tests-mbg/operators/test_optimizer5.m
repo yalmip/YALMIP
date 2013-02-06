@@ -29,7 +29,7 @@ mbg_asserttolequal(sol1,[20;3], 1e-4);
 
 P2 = P1(1);
 sol1 = P2{[2 3]};
-mbg_asserttolequal(sol1,[2], 1e-4);
+mbg_asserttolequal(sol1,[20], 1e-4);
 P2 = P1(2);
 sol1 = P2{[2 3]};
 mbg_asserttolequal(sol1,[3], 1e-4);
