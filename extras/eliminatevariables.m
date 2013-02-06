@@ -58,27 +58,34 @@ if model.K.l > 0
     end
 end
 if model.K.q(1) > 0
-    top = model.K.f + model.K.l + 1;
     removeqs = [];
     removeRows = [];
-    for i = 1:length(model.K.q)
-        rows = top:top+model.K.q(i)-1;
-        v = model.F_struc(rows,:);
-        if nnz(v(:,2:end))==0
-            if norm(v(2:end,1)) > v(1,1)
-                infeasible = 1;
-                return
-            else
-                removeqs = [removeqs;i];
-                removeRows = [removeRows;rows];
+    top = model.K.f + model.K.l + 1;  
+    F_struc = model.F_struc(top:top+sum(model.K.q)-1,:);   
+    top = 1;
+    if all(any(F_struc(:,2:end),2))
+        % There is still something on every row in all SOCPs, we don't have
+        % to search for silly SOCPS ||0|| <= constant
+    else
+        for i = 1:length(model.K.q)
+            rows = top:top+model.K.q(i)-1;
+            v = F_struc(rows,:);
+            if nnz(v(:,2:end))==0
+                if norm(v(2:end,1)) > v(1,1)
+                    infeasible = 1;
+                    return
+                else
+                    removeqs = [removeqs;i];
+                    removeRows = [removeRows;model.K.f+model.K.l+rows];
+                end
             end
+            top = top + model.K.q(i);
         end
-        top = top + model.K.q(i);
-    end
-    model.K.q(removeqs)=[];
-    model.F_struc(removeRows,:)=[];
-    if isempty(model.K.q)
-        model.K.q = 0;
+        model.K.q(removeqs)=[];
+        model.F_struc(removeRows,:)=[];
+        if isempty(model.K.q)
+            model.K.q = 0;
+        end
     end
 end
 if model.K.s(1) > 0
@@ -130,7 +137,9 @@ if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
     alreadyAdded = zeros(1,size(newmonomtable,1));
     % R2012b
-    [ii,jj,kk] = unique(newmonomtable,'rows','stable');  
+   % [ii,jj,kk] = unique(newmonomtable,'rows','stable');
+    [ii,jj,kk] = unique(newmonomtable*rand_hash(0,size(newmonomtable,2),1),'rows','stable');
+   % [ii1,jj1,kk1] = unique(newmonomtable,'rows','stable');
     S = sparse(kk,1:length(kk),1);
     skipped = setdiff(1:length(kk),jj);
     model.precalc.S = S;
@@ -230,3 +239,18 @@ end
 [~,model.integer_variables]=ismember(model.integer_variables,keptvariables);
 [~,model.binary_variables]=ismember(model.binary_variables,keptvariables);
 [~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
+
+function r = rand_hash(k,n,m);
+try
+    % Previous approach does not work with parallell toolbox!
+    s = rng;
+    rng(k);
+    r = rand(n,m);
+    rng(s);
+catch
+    % but rng is not available in all versions...
+    s = rand('state');
+    rand('state',k)
+    r = rand(n,m);
+    rand('state',s);
+end
