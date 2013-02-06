@@ -18,6 +18,10 @@ H       = 2*interfacedata.Q;
 [F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
 [F_struc,K,c,H,ub,lb,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,H,ub,lb);
 
+if any(interfacedata.variabletype)
+    error('Nonlinear monomials remain when calling CPLEX. If you are using OPTIMIZER, please report this and ask for a feature improvement.');
+end
+
 % Notation used
 f = c;
 if ~isempty(F_struc)
