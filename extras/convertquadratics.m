@@ -29,6 +29,7 @@ for i = 1:1:length(F)
     if is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'sigmonial')
         % f-c'*x-x'*Q*x>0
         fi = sdpvar(F(i));fi = fi(:);
+        %[Qs,cs,fs,x,info] = vecquaddecomp(fi);
         for j = 1:length(fi)
             fij = fi(j);
             if isa(fij,'double')
@@ -38,6 +39,7 @@ for i = 1:1:length(F)
                     return
                 end
             end
+           % Q = Qs{j};c = cs{j};f = fs{j};
             [Q,c,f,x,info] = quaddecomp(fij);
             if info==0
                 if nnz(Q)==0
