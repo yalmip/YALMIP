@@ -86,7 +86,7 @@ switch varargin{1}
             varargout{1}(n,n) = 0;
             internal_sdpvarstate.monomtable = varargout{1};
             need_new = size(internal_sdpvarstate.monomtable,1) - length(internal_sdpvarstate.hash);
-            internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
+            internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*gen_rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
             internal_sdpvarstate.hashedmonomtable = internal_sdpvarstate.monomtable*internal_sdpvarstate.hash;
         end
         if nargout == 2
@@ -107,7 +107,7 @@ switch varargin{1}
         end
         if size(internal_sdpvarstate.monomtable,2)>length(internal_sdpvarstate.hash)
             need_new = size(internal_sdpvarstate.monomtable,1) - length(internal_sdpvarstate.hash);
-            internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
+            internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*gen_rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
         end
         if size(internal_sdpvarstate.monomtable,1)>size(internal_sdpvarstate.hashedmonomtable,1)
             % Need to add some hash values
@@ -810,7 +810,7 @@ switch varargin{1}
         
         if size(internal_sdpvarstate.monomtable,2)>length(internal_sdpvarstate.hash)
             % Need new hash-keys
-            internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
+            internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*gen_rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
         end
         if size(internal_sdpvarstate.monomtable,1)>size(internal_sdpvarstate.hashedmonomtable,1)
             % Need to add some hash values
@@ -1023,22 +1023,6 @@ switch varargin{1}
             disp('The first argument should be a string');
         end
 end
-
-function r = rand_hash(k,n,m);
-try
-    % Previous approach does not work with parallell toolbox!
-    s = rng;
-    rng(k);
-    r = rand(n,m);
-    rng(s);
-catch
-    % but rng is not available in all versions...
-    s = rand('state');
-    rand('state',k)
-    r = rand(n,m);
-    rand('state',s);
-end
-
 
 function h = create_vecisdouble(x)
 B = getbase(x);

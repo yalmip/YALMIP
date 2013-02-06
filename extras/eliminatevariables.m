@@ -138,7 +138,7 @@ if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     alreadyAdded = zeros(1,size(newmonomtable,1));
     % R2012b
    % [ii,jj,kk] = unique(newmonomtable,'rows','stable');
-    [ii,jj,kk] = unique(newmonomtable*rand_hash(0,size(newmonomtable,2),1),'rows','stable');
+    [ii,jj,kk] = unique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1),'rows','stable');
    % [ii1,jj1,kk1] = unique(newmonomtable,'rows','stable');
     S = sparse(kk,1:length(kk),1);
     skipped = setdiff(1:length(kk),jj);
@@ -239,18 +239,3 @@ end
 [~,model.integer_variables]=ismember(model.integer_variables,keptvariables);
 [~,model.binary_variables]=ismember(model.binary_variables,keptvariables);
 [~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
-
-function r = rand_hash(k,n,m);
-try
-    % Previous approach does not work with parallell toolbox!
-    s = rng;
-    rng(k);
-    r = rand(n,m);
-    rng(s);
-catch
-    % but rng is not available in all versions...
-    s = rand('state');
-    rand('state',k)
-    r = rand(n,m);
-    rand('state',s);
-end
