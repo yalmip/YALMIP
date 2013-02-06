@@ -109,8 +109,7 @@ elseif isequal(subs.type,'{}')
             catch
                 error('Nonlinear replacement in optimizer object only supported in MATLAB R2012A or later');
             end
-            if ~infeasible           
-                %self.model.solver.call ='callgurobi';
+            if ~infeasible                          
                 eval(['output = ' self.model.solver.call '(self.model);']);
                 x = originalModel.c*0;
                 x(keptvariables) = output.Primal;
