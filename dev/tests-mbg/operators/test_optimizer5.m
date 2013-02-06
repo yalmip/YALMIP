@@ -23,6 +23,10 @@ sol1 = P1{[2 3]};
 mbg_asserttolequal(sol1,[4;3], 1e-4);
 
 
+P1 = optimizer([x <= u,y <= z], -x-y,[],[u z],[x^2+4*y+4 y]);
+sol1 = P1{[2 3]};
+mbg_asserttolequal(sol1,[20 3], 1e-4);
+
 P1 = optimizer([x <= u,y <= z], -x-y,[],[u z],[x^2+4*y+4;y]);
 sol1 = P1{[2 3]};
 mbg_asserttolequal(sol1,[20;3], 1e-4);
