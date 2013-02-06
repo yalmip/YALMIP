@@ -19,7 +19,7 @@ if isequal(subs.type,'()')
         self.map = self.map(subs.subs{1});
         self.output.expression = self.output.expression(subs.subs{1});
     else
-        self.map = self.map(subs.subs{1});
+     %   self.map = self.map(subs.subs{1});
         self.output.expression = self.output.expression(subs.subs{1});
     end
     self.dimoutOrig = size(self.output.expression);
@@ -158,6 +158,8 @@ elseif isequal(subs.type,'{}')
             top = top + realDimOut(i,1)*realDimOut(i,2);
         end
         varargout{1} = allu;
+    elseif nBlocks==1
+        varargout{1} = reshape(u(:),self.dimoutOrig);
     else
         varargout{1} = u;
     end  
