@@ -163,10 +163,12 @@ if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2))==1 & all(bas
     end
 else
     % Some expression which we will use assign and double to evaluate
-    z = recover(depends(u));
+    vars = depends(u);
+    z = recover(vars);    
     map = [];
     for i = 1:length(z)
-        var = getvariables(z(i));
+        %var = getvariables(z(i));
+        var = vars(i);
         map = [map;find(var == model.used_variables)];
     end        
 end
