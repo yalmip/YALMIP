@@ -153,7 +153,7 @@ switch lower(solver.tag)
             n = fieldnames(o1);
             for i = 1:length(n)
                 if isequal(o1.(n{i}),o2.(n{i}))
-                    interfacedata.options.cplex = rmfield(interfacedata.options.cplex,n{i});
+                    interfacedata.options.cplex = rmfield(interfacedata.options.cplex,n{i});                    
                 end
             end
             model = yalmip2cplex(interfacedata);
