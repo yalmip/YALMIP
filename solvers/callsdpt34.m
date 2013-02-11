@@ -48,8 +48,12 @@ options.sdpt3.expon=options.sdpt3.expon(1);
 % Setup the logarithmic barrier cost. We exploit the fact that we know that
 % the only logaritmic cost is in the last SDP constraint
 if abs(K.m) > 0
+    lpLogsStart = 1;
     for i = 1:size(blk,1)
         if isequal(blk{i,1},'l')
+            options.sdpt3.parbarrier{i,1} = zeros(1,blk{i,2});
+        elseif isequal(blk{i,1},'u')
+            lpLogsStart = 2;
             options.sdpt3.parbarrier{i,1} = zeros(1,blk{i,2});
         else
             options.sdpt3.parbarrier{i,1} = 0*blk{i,2};
@@ -66,7 +70,7 @@ if abs(K.m) > 0
     for i = 1:length(K.m)
         if K.m(i) == 1
             % We placed it in the linear cone
-            options.sdpt3.parbarrier{1,1}(end-lp_count+1) = -K.maxdetgain(i);
+            options.sdpt3.parbarrier{lpLogsStart,1}(end-lp_count+1) = -K.maxdetgain(i);
             lp_count = lp_count-1;
         elseif K.m(i) > 1
             % We placed it in the SDP cone
