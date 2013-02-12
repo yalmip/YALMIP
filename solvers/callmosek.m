@@ -24,7 +24,9 @@ linear_variables = find((sum(abs(mt),2)==1) & (any(mt==1,2)));
 nonlinear_variables = setdiff((1:size(mt,1))',linear_variables);
 sigmonial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
 
-if ~isempty(sigmonial_variables) | isequal(interfacedata.solver.version,'GEOMETRIC')
+if K.s(1)>0
+    [x,D_struc,problem,res,solvertime,prob] = call_mosek_sdp(interfacedata);
+elseif ~isempty(sigmonial_variables) | isequal(interfacedata.solver.version,'GEOMETRIC')
     [x,D_struc,problem,res,solvertime,prob] = call_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);          
 else
     [x,D_struc,problem,res,solvertime,prob] = call_mosek_lpqp(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);        
@@ -151,9 +153,9 @@ if ~isempty(integer_variables)
 end
 
 param = options.mosek;
-if isfield(param,'param')
-    param = rmfield(param,'param');
-end
+% if isfield(param,'param')
+%     param = rmfield(param,'param');
+% end
 
 if ~isempty(x0)
     if options.usex0
@@ -273,9 +275,9 @@ prob.a = A;
 prob.buc = u_c;
 
 param = options.mosek;
-if isfield(param,'param')
-    param = rmfield(param,'param');
-end
+% if isfield(param,'param')
+%     param = rmfield(param,'param');
+% end
 
 % For debugging
 if options.savedebug
@@ -331,9 +333,9 @@ if problem == 0
     end
 
     param = options.mosek;
-    if isfield(param,'param')
-        param = rmfield(param,'param');
-    end
+%     if isfield(param,'param')
+%         param = rmfield(param,'param');
+%     end
 
     % Call MOSEK
     solvertime = clock;
@@ -365,3 +367,37 @@ if problem == 0
             problem = -1;
     end
 end
+
+function [x,D_struc,problem,res,solvertime,prob] = call_mosek_sdp(model)
+
+param = model.options.mosek;
+% if isfield(param,'param')
+%     param = rmfield(param,'param');
+% end
+
+% Convert
+prob = yalmip2SDPmosek(model);
+solvertime = clock;
+if model.options.verbose == 0
+    [r,res] = mosekopt('minimize echo(0)',prob,param);    
+else
+    [r,res] = mosekopt('minimize info',prob,param);
+end
+
+solvertime = etime(clock,solvertime);
+
+x = res.sol.itr.y;
+D_struc = [];
+switch res.sol.itr.prosta
+    case 'PRIMAL_AND_DUAL_FEASIBLE'
+        problem = 0;
+    case 'PRIMAL_INFEASIBLE'
+        problem = 1;
+    case 'DUAL_INFEASIBLE'
+        problem = 2;
+    case 'UNKNOWN'
+        problem = 9;
+    otherwise
+        problem = -1;
+end
+

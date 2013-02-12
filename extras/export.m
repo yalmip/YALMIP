@@ -172,7 +172,10 @@ switch lower(solver.tag)
         
     case {'mosek-socp','mosek-lp/qp','mosek-geometric'}
         model.prob = yalmip2mosek(interfacedata);
-                
+        
+    case 'mosek-sdp'
+        model.prob = yalmip2SDPmosek(interfacedata);
+                       
     case 'quadprog'
         model = yalmip2quadprog(interfacedata);
         

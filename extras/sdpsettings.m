@@ -592,7 +592,7 @@ Names = {'solver'
     'lindo.METHOD'
     
     
-    'mosek.param'
+    %'mosek.param'
     'sos.model'
     'sos.newton'
     'sos.congruence'
@@ -1041,7 +1041,7 @@ else
     options.csdp.usexzgap = 1;
     options.csdp.tweakgap = 0;
     
-    options.mosek.param = [];
+  %  options.mosek.param = [];
     
     % Options for DSDP 5.6
     options.dsdp.r0 = -1;

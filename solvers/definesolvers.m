@@ -347,6 +347,14 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.inequalities.secondordercone = 1;
 i = i+1;
 
+solver(i) = sdpsolver;
+solver(i).tag     = 'MOSEK';
+solver(i).version = 'SDP';
+solver(i).checkfor= {'mosekopt'};
+solver(i).call    = 'callmosek';
+solver(i).constraint.inequalities.secondordercone = 1;
+i = i+1;
+
 solver(i) = lpsolver;
 solver(i).tag     = 'MOSEK';
 solver(i).version = 'GEOMETRIC';
