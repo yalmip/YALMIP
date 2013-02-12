@@ -236,6 +236,12 @@ if x0wasempty
 end
 
 % Remap indicies
-[~,model.integer_variables]=ismember(model.integer_variables,keptvariables);
-[~,model.binary_variables]=ismember(model.binary_variables,keptvariables);
-[~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
+if ~isempty(model.integer_variables)
+    [~,model.integer_variables]=ismember(model.integer_variables,keptvariables);
+end
+if ~isempty(model.binary_variables)
+    [~,model.binary_variables]=ismember(model.binary_variables,keptvariables);
+end
+if ~isempty(model.semicont_variables)
+    [~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
+end
