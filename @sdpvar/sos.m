@@ -28,6 +28,14 @@ function X=sos(X,r)
 if nargin<2
     r = inf;
 end
+
+if any(isinf(getbase(X)))
+    error('You have infinite elements in the polynomial');
+end
+if any(isnan(getbase(X)))
+    error('You have NaN elements in the polynomial');
+end
+
 if ~is(X,'symmetric')
     % User supplied a vector
     X = reshape(X,prod(size(X)),1);
