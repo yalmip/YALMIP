@@ -322,7 +322,7 @@ end
 function [x_min,solved_nodes,lower,upper,profile,diagnostics] = branch_and_bound(p,pss)
 
 % *******************************
-%% We don't need this
+% We don't need this
 % *******************************
 p.options.savesolveroutput = 0;
 p.options.saveduals = 0;
@@ -332,29 +332,6 @@ diagnostics = 0;
 % Tracking performance etc
 % *******************************
 profile.local_solver_time = 0;
-
-% Musts = [];
-% if p.K.s(1)>0
-%     top = 1+p.K.f+p.K.l;
-%     for j = 1:length(p.K.s)
-%
-%         n = p.K.s(j);
-%         for i = 1:n
-%             thisdiag = p.F_struc(top,:);
-%             vars = find(thisdiag(2:end));
-%             if all(ismember(vars,p.binary_variables))
-%                 if all(thisdiag(2:end)>=0) & thisdiag(1)<=0
-%                     Musts = [Musts;thisdiag(2:end) | thisdiag(2:end)];
-%                 end
-%             end
-%             if i==n
-%                 top = top+1;
-%             else
-%                 top = top+n+1;
-%             end
-%         end
-%     end
-% end
 
 % *************************************************************************
 % We save this to re-use some stuff in fmincon
@@ -718,16 +695,8 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     end
     if output.problem==0 | output.problem==3 | output.problem==4
         cost = computecost(f,c,Q,x,p);
-        %
-        %         if output.problem == 0
-        %             if cost < lower-1e-3
-        %                 if ~checkfeasiblefast(relaxed_p,x)
-        %                     output.problem = 1;
-        %                 end
-        %             end
-        %         end
+        
         if output.problem~=1
-            %  [num2str(p.fixedvariable) ' ' p.fixdir ' ' num2str((cost-p.lower)/cost)]
             if isnan(lower)
                 lower = cost;
             end
