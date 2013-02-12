@@ -23,8 +23,6 @@ function X=sos(X,r)
 %
 %  Note that his feature requires the solver LMIRANK.   
 
-
-% Author Johan Löfberg 
 if nargin<2
     r = inf;
 end
