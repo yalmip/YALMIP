@@ -383,11 +383,24 @@ if model.options.verbose == 0
 else
     [r,res] = mosekopt('minimize info',prob,param);
 end
-
 solvertime = etime(clock,solvertime);
 
 x = res.sol.itr.y;
-D_struc = [];
+if model.options.saveduals
+    D_struc = [res.sol.itr.xx];    
+    top = 1;
+    for i = 1:length(model.K.s)
+        X = zeros(model.K.s(i));
+        n = model.K.s(i);
+        I = find(tril(ones(n)));
+        X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
+        X = X + tril(X,-1)';
+        D_struc = [D_struc;X(:)];
+    end
+else
+    D_struc = [];
+end
+
 switch res.sol.itr.prosta
     case 'PRIMAL_AND_DUAL_FEASIBLE'
         problem = 0;
@@ -400,4 +413,3 @@ switch res.sol.itr.prosta
     otherwise
         problem = -1;
 end
-
