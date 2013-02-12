@@ -333,9 +333,6 @@ if problem == 0
     end
 
     param = options.mosek;
-%     if isfield(param,'param')
-%         param = rmfield(param,'param');
-%     end
 
     % Call MOSEK
     solvertime = clock;
@@ -371,11 +368,9 @@ end
 function [x,D_struc,problem,res,solvertime,prob] = call_mosek_sdp(model)
 
 param = model.options.mosek;
-% if isfield(param,'param')
-%     param = rmfield(param,'param');
-% end
 
 % Convert
+[model.F_struc,model.K] = addbounds(model.F_struc,model.K,model.ub,model.lb);
 prob = yalmip2SDPmosek(model);
 solvertime = clock;
 if model.options.verbose == 0
@@ -405,12 +400,25 @@ end
 switch res.sol.itr.prosta
     case 'PRIMAL_AND_DUAL_FEASIBLE'
         problem = 0;
-    case 'PRIMAL_INFEASIBLE'
-        problem = 1;
     case 'DUAL_INFEASIBLE'
+        problem = 1;
+    case 'PRIMAL_INFEASIBLE'
         problem = 2;
     case 'UNKNOWN'
         problem = 9;
     otherwise
         problem = -1;
 end
+
+function model = appendBounds(model);
+
+FstrucNew = [];
+if ~isempty(model.lb)
+    ii = find(~isinf(model.lb));
+    FstrucNew = [-model.lb(ii) sparse(1:length(ii),ii,size(model.F_struc,2)-1,length(ii))];
+end
+if ~isempty(model.ub)
+    ii = find(~isinf(model.ub));
+    FstrucNew = [model.lb(ii) -sparse(1:length(ii),ii,size(model.F_struc,2)-1,length(ii))];
+end
+
