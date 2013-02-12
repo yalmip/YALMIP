@@ -214,11 +214,11 @@ end
 % *******************************
 p.corig = p.c;
 if nnz(p.Q)==0 & isequal(p.K.m,0)
-    g = randn('seed');
-    randn('state',1253); %For my testing, I keep this the same...
-    % This perturbation has to be better. Crucial for many real LP problems
-    p.c = (p.c).*(1+randn(length(p.c),1)*1e-4);
-    randn('seed',g);
+%     g = randn('seed');
+%     randn('state',1253); %For my testing, I keep this the same...
+%     % This perturbation has to be better. Crucial for many real LP problems
+%     p.c = (p.c).*(1+randn(length(p.c),1)*1e-4);
+%     randn('seed',g);
 end
 
 % *******************************
