@@ -396,6 +396,7 @@ if model.options.saveduals
         X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
         X = X + tril(X,-1)';
         D_struc = [D_struc;X(:)];
+        top = top + n*(n+1)/2;
     end
 else
     D_struc = [];
