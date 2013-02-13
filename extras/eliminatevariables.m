@@ -12,7 +12,8 @@ rmvmonoms = newmonomtable(:,varindex);
 newmonomtable(:,varindex) = 0;
 
 ss = repmat(value(:)',size(rmvmonoms,1),1);
-monomvalue = prod(ss.^rmvmonoms,2);
+aux = ss.^rmvmonoms;
+monomvalue = prod(aux,2);
 
 removethese = find(~any(newmonomtable,2));
 keepingthese = find(any(newmonomtable,2));
