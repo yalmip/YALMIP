@@ -144,6 +144,14 @@ if any(is(Constraints,'sos'))
     [Constraints,Objective] = compilesos([Constraints,parametric(x)],Objective,tempOps);    
 end
 
+if ~isequal(options.solver,'')
+    % User has specified solver. Let us impose this solver forcefully to
+    % the compilation code, in order to handle nonlinear parameterizations
+    if ~strcmp(options.solver(1),'+')
+        options.solver = ['+' options.solver];
+    end
+end
+
 if ~isempty(Constraints) & any(is(Constraints,'uncertain'))
     [Constraints,Objective,failure] = robustify(Constraints,Objective,options);
     [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);
