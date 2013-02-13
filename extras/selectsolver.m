@@ -178,10 +178,18 @@ end
 
 % If user has specified a, e.g., LP solver for an SDP when using OPTIMIZER,
 % we must bail out, as there is no chance this model instantiates as an LP.
-if forced_choice &  (ProblemClass.constraint.inequalities.semidefinite.linear | ProblemClass.constraint.inequalities.semidefinite.quadratic | ProblemClass.constraint.inequalities.semidefinite.Polynomial | ProblemClass.constraint.inequalities.semidefinite.sigmonial)
+if forced_choice &  (ProblemClass.constraint.inequalities.semidefinite.linear | ProblemClass.constraint.inequalities.semidefinite.quadratic | ProblemClass.constraint.inequalities.semidefinite.polynomial | ProblemClass.constraint.inequalities.semidefinite.sigmonial)
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
         keep(i) = solvers(i).constraint.inequalities.semidefinite.sigmonial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.semidefinite.linear;
+    end        
+    solvers = solvers(find(keep));
+end
+% Similarily, we have a SOCP by definition. We must support that
+if forced_choice & ~socp_are_really_qc & ProblemClass.constraint.inequalities.secondordercone
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)                      
+        keep(i) = solvers(i).constraint.inequalities.secondordercone;
     end        
     solvers = solvers(find(keep));
 end
