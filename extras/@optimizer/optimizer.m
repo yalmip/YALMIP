@@ -131,6 +131,12 @@ if isa(Constraints,'constraint')
     Constraints = set(Constraints);
 end
 
+if ~isempty(Constraints)
+if ~isa(Constraints,'constraint') &  ~isa(Constraints,'lmi') 
+    error('The first argument in OPTIMIZER should be a set of constraints');
+end
+end
+
 if any(is(Constraints,'sos'))
     tempOps = options;
     tempOps.sos.model = 2;
