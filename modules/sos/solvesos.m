@@ -182,6 +182,13 @@ end
 % *************************************************************************
 ParametricVariables = uniquestripped([depends(obj) depends(F_parametric) depends(params) ParametricBefore]);
 
+if any(find(is(F_parametric,'parametric')))
+    F_parametric(find(is(F_parametric,'parametric')))=[];
+end
+if any(find(is(F,'parametric')))
+    F(find(is(F,'parametric')))=[];
+end
+
 if options.verbose>0;
     disp('-------------------------------------------------------------------------');
     disp('YALMIP SOS module started...');
@@ -270,7 +277,7 @@ noRANK = all(isinf(ranks));
 switch options.sos.model
     case 0
         constraint_classes = constraintclass(F);
-        noCOMPLICATING = ~any(ismember([7 8 9 10 12 13 14 15],constraint_classes));
+        noCOMPLICATING = ~any(ismember([7 8 9 10 12 14 15],constraint_classes));
         if noCOMPLICATING & ~NonLinearParameterization & noRANK & ~IntegerData & ~IntervalData
             options.sos.model = 1;
             if options.verbose>0;disp('Using kernel representation (options.sos.model=1).');end

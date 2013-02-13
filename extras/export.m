@@ -116,6 +116,16 @@ if any(is(F,'uncertain'))
 end
 
 % ******************************************
+% Export SOS problem to SOS first
+% ******************************************
+ if any(is(F,'sos'))   
+     old =  options.verbose;
+     options.verbose = max(options.verbose - 1,0);
+     [F,h] = compilesos(F,h,options);
+     options.verbose = old;
+ end
+ 
+% ******************************************
 % COMPILE IN GENERALIZED YALMIP FORMAT
 % ******************************************
 if ~isempty(F) & any(is(F,'parametric'))

@@ -384,7 +384,6 @@ if length(F)>0
     error('DUALIZE can only treat standard SDPs (and LPs) at the moment.')
 end
 
-
 % Sort the SDP cone variables X according to YALMIP
 % This is just to simplify some indexing later
 ns = [];

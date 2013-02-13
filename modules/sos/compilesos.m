@@ -112,6 +112,13 @@ end
 % *************************************************************************
 ParametricVariables = uniquestripped([depends(obj) depends(F_parametric) depends(params)]);
 
+if any(find(is(F_parametric,'parametric')))
+    F_parametric(find(is(F_parametric,'parametric')))=[];
+end
+if any(find(is(F,'parametric')))
+    F(find(is(F,'parametric')))=[];
+end
+
 if options.verbose>0;
     disp('-------------------------------------------------------------------------');
     disp('YALMIP SOS module started...');
