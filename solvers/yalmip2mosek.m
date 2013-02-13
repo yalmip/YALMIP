@@ -77,7 +77,7 @@ if ~isempty(integer_variables)
     prob.ints.sub = integer_variables;
 end
 
-prob.param = options.mosek.param;
+prob.param = options.mosek;
 
 function prob = create_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);
 
