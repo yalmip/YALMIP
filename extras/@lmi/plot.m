@@ -224,43 +224,7 @@ else
     camlight('headlight','infinite');
     camlight('headlight','infinite');
     camlight('right','local');
-    camlight('left','local');
-   
-%     if ~(isequal(options.plot.wirestyle,'') | isequal(options.plot.wirestyle,'none'))
-%         for i = 1:size(K,1) 
-%             p1 = K(i,1);p2 = K(i,2);p3 = K(i,3);
-%             x1 = x_opt(:,p1);
-%             x2 = x_opt(:,p2);
-%             x3 = x_opt(:,p3);
-%             n = cross(x2-x1,x3-x1);n = n/norm(n);
-%             normals(:,i)=n;
-%         end
-%         for i = 1:size(K,1)    
-%             p1 = K(i,1);p2 = K(i,2);p3 = K(i,3);
-%             x1 = x_opt(:,p1);
-%             x2 = x_opt(:,p2);
-%             x3 = x_opt(:,p3);
-%             n = cross(x2-x1,x3-x1);n = n/norm(n);
-%             cand1 =  setdiff(find(sum((sort(K')' == p1) | (sort(K')' == p2),2)==2),i);
-%             cand2 =  setdiff(find(sum((sort(K')' == p1) | (sort(K')' == p3),2)==2),i);
-%             cand3 =  setdiff(find(sum((sort(K')' == p2) | (sort(K')' == p3),2)==2),i);
-%             cand = [cand1(:);cand2(:);cand3(:)];
-%             doplot = 1;
-%             if length(cand)>0
-%                for j = 1:length(cand)
-%                    if norm(n-normals(:,cand(j)))<1e-8
-%                        doplot = 0;
-%                    end
-%                end
-%             end
-%             if doplot
-%            l = line(x_opt(1,K(i,:)),x_opt(2,K(i,:)),x_opt(3,K(i,:)));
-%            set(l,'LineStyle',options.plot.wirestyle);
-%            set(l,'LineWidth',options.plot.linewidth);
-%            set(l,'Color',options.plot.wirecolor);
-%             end
-%         end
-%     end
+    camlight('left','local');   
 end
 
 
