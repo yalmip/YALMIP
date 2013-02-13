@@ -308,7 +308,6 @@ if strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.ta
                 temp = [temp;getvariables(varargin{4}(i))];
             end
             interfacedata.parametric_variables = find(ismember(recoverdata.used_variables,temp));
-%            interfacedata.parametric_variables = find(ismember(recoverdata.used_variables,getvariables(varargin{4})));
             if isempty(varargin{5})
                 interfacedata.requested_variables = [];
             else
