@@ -55,7 +55,9 @@ elseif isequal(subs.type,'{}')
                 if ~isequal(size(arg),self.diminOrig(i,:))
                     error('Size mismatch on argument in cell');
                 end
-                vecIn = [vecIn;arg(:)];
+                temp = arg(:);
+                temp = temp(self.mask{i});
+                vecIn = [vecIn;temp];
             end    
             subs.subs{1} = vecIn;
         else
@@ -74,6 +76,7 @@ elseif isequal(subs.type,'{}')
         end
         subs.subs{1} =  subs.subs{1}(:);
         subs.subs{1} = reshape(subs.subs{1},prod(self.diminOrig),[]);
+        subs.subs{1} = subs.subs{1}(self.mask{1},:);
     end
 
     % Input is now given as [x1 x2 ... xn]

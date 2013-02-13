@@ -7,13 +7,9 @@ keptvariables = 1:length(model.c);
 model.F_struc(1:length(varindex),:) = [];
 model.K.f = model.K.f - length(varindex);
 
-
 newmonomtable = model.monomtable;
 rmvmonoms = newmonomtable(:,varindex);
 newmonomtable(:,varindex) = 0;
-
-%newmonomtable = model.precalc.newmonomtable;
-%rmvmonoms = model.precalc.rmvmonoms;
 
 ss = repmat(value(:)',size(rmvmonoms,1),1);
 monomvalue = prod(ss.^rmvmonoms,2);

@@ -85,12 +85,17 @@ if isa(x,'cell')
     mOrigIn = zeros(length(x),1);
     for i = 1:length(x)
         [nOrigIn(i),mOrigIn(i)] = size(x{i});
-        xvec = [xvec;x{i}(:)];
+        z = x{i}(:);
+        mask{i} = uniqueRows(z);        
+        %xvec = [xvec;x{i}(:)];
+        xvec = [xvec;z(mask{i})];
     end
     x = xvec;
-else
+else   
     [nOrigIn,mOrigIn] = size(x);
     x = x(:);
+    mask{1} = uniqueRows(x);
+    x = x(mask{1});
 end
 nIn = length(x);
 mIn = 1;
@@ -208,6 +213,7 @@ sys.dimin = [nIn mIn];
 sys.dimout = [nOut mOut];
 sys.diminOrig = [nOrigIn mOrigIn];
 sys.dimoutOrig = [nOrigOut mOrigOut];
+sys.mask = mask;
 sys.map = map;
 sys.input.expression = x;
 sys.output.expression = u;
@@ -260,3 +266,7 @@ end
 
 sys = class(sys,'optimizer');
 
+function i = uniqueRows(x);
+B = getbase(x);
+[~,i,j] = unique(B,'rows');
+i = i(:);
