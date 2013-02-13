@@ -24,7 +24,6 @@ monomgain = monomvalue;monomgain(removethese) = [];
 if ~isempty(model.F_struc)
     model.F_struc(:,1) = model.F_struc(:,1)+model.F_struc(:,1+removethese)*value;
     model.F_struc(:,1+removethese) = [];
-   % model.F_struc = model.F_struc*sparse(diag([1;monomgain]));
     model.F_struc = model.F_struc*diag(sparse([1;monomgain]));
 end
 infeasible = 0;
