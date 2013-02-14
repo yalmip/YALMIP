@@ -22,6 +22,9 @@ if model.SimpleLinearObjective
     f = model.f + model.c'*xevaled;
 else
     f = model.f + (model.c'+xevaled'*model.Q)*xevaled;
+    if isnan(f)
+        f = inf;
+    end
 end
 f=full(f);
 df = [];
