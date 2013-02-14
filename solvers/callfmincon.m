@@ -27,9 +27,6 @@ end
 if model.derivative_available
     model.options.fmincon.GradObj = 'on';    
 end
-if model.derivative_available
-    model.options.fmincon.GradConstr = 'on';   
-end
 
 if model.options.savedebug
     ops = model.options.fmincon;
