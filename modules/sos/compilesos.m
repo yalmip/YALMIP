@@ -1,13 +1,10 @@
-function [F,obj,m] = compilesos(F,obj,options,params,candidateMonomials)
+function [F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomials)
 %COMPILESOS Sum of squares decomposition
 %
-%    [F,obj,m] = compilesos(F,h,options,params,monomials) derives the SOS
-%    problem without actually solving it
+%    [F,obj] = compilesos(F,h,options,params,monomials) compiles the SOS
+%    problem (i.e., derives the SDP model) without actually solving it
 % 
 % See also SOLVESOS
-
-%% Time YALMIP
-yalmip_time = clock;
 
 % ************************************************
 %% Check #inputs
@@ -29,8 +26,19 @@ if nargin<5
     end
 end
 
+if isa(obj,'double')
+    obj = [];
+end
+
 if isempty(options)
     options = sdpsettings;
+end
+
+if ~isempty(options)
+    if options.sos.numblkdg
+        error('Does not make sense to ask for numerical block diagonalization when compiling model');
+        return
+    end
 end
 
 % Lazy syntax (not official...)
@@ -38,12 +46,20 @@ if nargin==1 & isa(F,'sdpvar')
     F = set(sos(F));
 end
 
-if ~isempty(options)
-    if options.sos.numblkdg
-        [sol,m,Q,residuals,everything] = solvesos_find_blocks(F,obj,options,params,candidateMonomials);
-        return
-    end
-end
+% Default return structure
+everything.p = [];
+everything.sizep = [];
+everything.normp = [];
+everything.BlockedA = [];
+everything.Blockedb = [];
+everything.BlockedN = [];
+everything.Blockedx = [];
+everything.Blockedvarchange = [];
+everything.BlockedQ = [];
+everything.ranks = [];
+everything.ParametricVariables = [];
+everything.UncertainData = [];
+everything.sol.problem = 0;
 
 % *************************************************************************
 %% Extract all SOS constraints and candidate monomials
@@ -93,11 +109,7 @@ if ~isempty(yalmip('extvariables'))
     F_parametric = expanded(F_parametric,1);
     obj = expanded(obj,1);    
     if failure
-        Q{1} = [];m{1} = [];residuals = [];everything = [];
-        sol.yalmiptime = etime(clock,yalmip_time);
-        sol.solvertime = 0;
-        sol.info = yalmiperror(14,'YALMIP');
-        sol.problem = 14;
+        error('Could not expand the model');
     end
 end
 
@@ -196,43 +208,7 @@ end
 %% IMAGE OR KERNEL REPRESENTATION?
 % ************************************************
 noRANK = all(isinf(ranks));
-switch options.sos.model
-    case 0
-        constraint_classes = constraintclass(F);
-        noCOMPLICATING = ~any(ismember([7 8 9 10 12 13 14 15],constraint_classes));
-        if noCOMPLICATING & ~NonLinearParameterization & noRANK & ~IntegerData
-            options.sos.model = 1;
-            if options.verbose>0;disp('Using kernel representation (options.sos.model=1).');end
-        else
-            if NonLinearParameterization
-                if options.verbose>0;disp('Using image representation (options.sos.model=2). Nonlinear parameterization found');end
-            elseif ~noRANK
-                if options.verbose>0;disp('Using image representation (options.sos.model=2). SOS-rank constraint was found.');end
-            elseif IntegerData
-                if options.verbose>0;disp('Using image representation (options.sos.model=2). Integrality constraint was found.');end
-            elseif UncertainData
-                if options.verbose>0;disp('Using image representation (options.sos.model=2). Uncertain data was found.');end                
-            else
-                if options.verbose>0;disp('Using image representation (options.sos.model=2). Integer data, KYPs or similar was found.');end
-            end
-            options.sos.model = 2;
-        end
-    case 1
-        if NonLinearParameterization
-            if options.verbose>0;disp('Switching to image model due to nonlinear parameterization (not supported in kernel model).');end
-            options.sos.model = 2;
-        end
-        if ~noRANK
-            if options.verbose>0;disp('Switching to image model due to SOS-rank constraints (not supported in kernel model).');end
-            options.sos.model = 2;
-        end
-        if IntegerData
-            if options.verbose>0;disp('Switching to image model due to integrality constraints (not supported in kernel model).');end
-            options.sos.model = 2;
-        end        
-    case 3
-    otherwise
-end
+options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData);
 
 if ~isempty(yalmip('extvariables')) & options.sos.model == 2 & nargin<4
     disp(' ')
@@ -380,10 +356,11 @@ for constraint = 1:length(p)
             end
             residuals=[];
             everything = [];
-            sol.yalmiptime = etime(clock,yalmip_time);
+            sol.yalmiptime = 0;
             sol.solvertime = 0;
             sol.info = yalmiperror(1,'YALMIP');
             sol.problem = 2;
+            everything.sol = sol;
             return
         end
     end
@@ -501,6 +478,7 @@ end
 % We use these to generate kernel or image models
 % *********************************************
 sol.problem = 0;
+BlockedQ = [];
 switch options.sos.model
     case 1
         % Kernel model
@@ -543,3 +521,16 @@ for constraint = 1:length(p)
 
 end
 m = monoms;
+
+everything.p = p;
+everything.sizep = sizep;
+everything.normp = normp;
+everything.BlockedA = BlockedA;
+everything.Blockedb = Blockedb;
+everything.BlockedN = BlockedN;
+everything.Blockedx = Blockedx;
+everything.Blockedvarchange = Blockedvarchange;
+everything.BlockedQ = BlockedQ;
+everything.ranks = ranks;
+everything.ParametricVariables = ParametricVariables;
+everything.UncertainData = UncertainData;
