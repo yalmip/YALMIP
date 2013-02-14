@@ -39,11 +39,8 @@ for i = 1:nargin
                 all_linear = 0;
             end
             n_var = n_var + 1;
-        case 'lmi'  
+        case 'lmi'
             Foriginal = Foriginal + varargin{i};
-          %  LU = getbounds(varargin{i});
-          %  LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),yalmip('extvariables'));    
-          %  yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
         otherwise
             error('Arguments should be SDPVAR or SET objects')
     end
@@ -70,6 +67,7 @@ vars  = getvariables(p);
 basis = getbase(p);
 [mt,vt] = yalmip('monomtable');
 allbinary = yalmip('binvariables');
+allinteger = yalmip('intvariables');
 
 % Fix data (monom table not guaranteed to be square)
 if size(mt,1) > size(mt,2)
@@ -77,7 +75,7 @@ if size(mt,1) > size(mt,2)
 end
 
 non_binary = setdiff(1:size(mt,2),allbinary);
-if any(sum(mt(vars,non_binary),2) >1)
+if any(sum(mt(vars,non_binary),2) > 1)
     error('Expression has to be linear in the continuous variables')
 end
 
@@ -87,7 +85,7 @@ vecvar = recover(vars);
 linear = find(vt(vars) == 0);
 quadratic = find(vt(vars) == 2);
 bilinear  = find(vt(vars) == 1);
-polynomial  = find(vt(vars) == 3);
+polynomial = find(vt(vars) == 3);
 
 % replace x^2 with x (can only be binary expression, since we check for
 % continuous nonlinearities above)
@@ -107,7 +105,7 @@ if ~isempty(bilinear)
     yi = jj(2:2:end);
     x = recover(xi);
     y = recover(yi);
-
+    
     if all(ismember(xi,allbinary)) & all(ismember(yi,allbinary))
         % fast case for binary*binary
         F = F + set(binary(z_bilinear)) + set(x >= z_bilinear) + set(y >= z_bilinear) + set(1+z_bilinear >= x + y) + set(0 <= z_bilinear <= 1);
@@ -159,11 +157,6 @@ else
     z_polynomial = [];
     polynomial = [];
 end
-
-% ii = [linear quadratic bilinear polynomial];
-% jj = ones(length(ii),1);
-% kk = [recover(vars(linear));z_quadratic;z_bilinear;z_polynomial];
-% sparse([linear quadratic bilinear polynomial],1,[recover(vars(linear));z_quadratic;z_bilinear;z_polynomial])
 
 ii = [linear quadratic bilinear polynomial];
 jj = ones(length(ii),1);
