@@ -8,9 +8,9 @@ switch class(varargin{1})
     case 'double'
         x = varargin{1}(:);
         O = varargin{2};
-        [varargout{1},problem] = O{x};
+        [varargout{1},problem] = O{x}
         if problem
-            varargout{1} = inf;
+            varargout{1} = inf(struct(O).dimout);
         end
 
     case {'sdpvar','optimizer'} % Overloaded operator for SDPVAR objects.
