@@ -28,9 +28,10 @@ else
             lmi_variables = getvariables(xvar);
             c = zeros(nvars,1);
             Q = spalloc(nvars,nvars,0); 
-            for i=1:length(lmi_variables)
-                c(lmi_variables(i))=ch(i);
-            end
+            c(lmi_variables)=ch;
+%             for i=1:length(lmi_variables)
+%                 c(lmi_variables(i))=ch(i);
+%             end
             if nnz(Qh)>0
                 [i,j,k] = find(Qh);
                 i = lmi_variables(i);
