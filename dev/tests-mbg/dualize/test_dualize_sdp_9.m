@@ -18,6 +18,6 @@ p2   = checkset(F);
 
 mbg_asserttolequal(sol1.problem,0);
 mbg_asserttolequal(sol2.problem,0);
-mbg_asserttolequal(obj1,obj2, 1e-5);
-mbg_asserttolequal(min(p1),0, 1e-5);
-mbg_asserttolequal(min(p2),0, 1e-5);
+mbg_asserttolequal(obj1,obj2, 1e-4);
+mbg_asserttolequal(min(p1),0, 1e-4);
+mbg_asserttolequal(min(p2),0, 1e-4);
