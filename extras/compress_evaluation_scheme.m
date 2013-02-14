@@ -22,6 +22,29 @@ for i = 1:length(model.evaluation_scheme)
                 model.evaluation_scheme{i}.variables(fun_i(2:end)) = nan;
             end
         end
-        model.evaluation_scheme{i}.variables(isnan(model.evaluation_scheme{i}.variables)) = [];
+        model.evaluation_scheme{i}.variables(isnan(model.evaluation_scheme{i}.variables)) = [];    
+                
+        [model,vars] = removeDuplicates(model,model.evaluation_scheme{i}.variables);
+        model.evaluation_scheme{i}.variables = vars;
     end
+end
+
+function [model,variables] = removeDuplicates(model,variables)
+% optimizer_ evaluation objects leads to multiple copies of similiar
+% evaluations which can be performed in one shot
+remove = zeros(1,length(model.evalMap));
+for i = 1:length(variables)
+    for j = i+1:length(variables)
+        if ~remove(j)
+            if isequal(model.evalMap{variables(i)}.computes,model.evalMap{variables(j)}.computes)
+                if  isequal(model.evalMap{variables(i)}.variableIndex,model.evalMap{variables(j)}.variableIndex)
+                    remove(j) = 1;
+                end
+            end
+        end
+    end
+end
+if any(remove)
+    model.evalMap = {model.evalMap{find(~remove)}};
+    variables = variables(find(~remove));
 end
