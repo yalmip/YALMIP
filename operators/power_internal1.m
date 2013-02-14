@@ -33,6 +33,7 @@ switch class(varargin{1})
 
         operator.bounds = @bounds_power;
         operator.convexhull = @convexhull_power;
+        operator.derivative = @(x)derivative(x,Y);
 
         varargout{1} = F;
         varargout{2} = operator;
@@ -53,6 +54,13 @@ else
     disp('Not implemented yet. Report bug if you need this')
     error
 end
+
+function df = derivative(x,base)
+if length(base)~=length(x)
+    base = base*ones(size(x));
+end
+f = base.^x;
+df = log(base)*f;
 
 function [Ax, Ay, b] = convexhull_power(xL,xU,base)
 fL = base^xL;
