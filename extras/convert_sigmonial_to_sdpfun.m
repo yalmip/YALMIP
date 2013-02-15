@@ -81,6 +81,7 @@ if any(model.variabletype > 3)
                 model.evalMap{end}.argumentIndex = 1;
                 model.evalMap{end}.properties.bounds = @power_bound;
                 model.evalMap{end}.properties.convexhull = @power_convexhull;
+                model.evalMap{end}.computes = sigmonials(i);
                 model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(powers(j)) '*x^(' num2str(powers(j)) '-1);']);
                 if even(powers(j))
                     model.evalMap{end}.properties.range = [0 inf];
@@ -127,6 +128,7 @@ else
     model.evalMap{end}.arg{1} = recover(variable);
     model.evalMap{end}.arg{2} = power;
     model.evalMap{end}.arg{3} = [];
+    model.evalMap{end}.computes = monosig;
     model.evalMap{end}.variableIndex = find(model.monomtable(monosig,:));
     model.evalMap{end}.argumentIndex = 1;
     model.evalMap{end}.properties.bounds = @power_bound;
