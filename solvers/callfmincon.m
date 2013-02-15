@@ -25,7 +25,8 @@ if isfield(model.options.fmincon,'LargeScale')
 end
 
 if model.derivative_available
-    model.options.fmincon.GradObj = 'on';    
+    model.options.fmincon.GradObj = 'on';  
+    model.options.fmincon.GradConstr = 'on';
 end
 
 if model.options.savedebug
