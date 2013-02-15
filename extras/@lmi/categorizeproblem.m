@@ -150,12 +150,12 @@ for i = 1:Counter
     end
     
     % Check for equalities violating GP definition
-    problem.constraint.equalities.multiterm = 0;
-    if Fi.type==3
-        if multipletermsInEquality(Fi)
-             problem.constraint.equalities.multiterm = 1;
-        end
-    end
+%     problem.constraint.equalities.multiterm = 0;
+%     if Fi.type==3
+%         if multipletermsInEquality(Fi)
+%              problem.constraint.equalities.multiterm = 1;
+%         end
+%     end
     
     if ~any_nonlinear_variables % No nonlinearly parameterized constraints
         
