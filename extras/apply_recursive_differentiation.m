@@ -5,7 +5,7 @@ dxi = [];
 dxj = [];
 dxs = [];
 for i = 1:length(model.evaluation_scheme)
-    if isequal(model.evaluation_scheme{i}.group,'eval')
+    if isequal(model.evaluation_scheme{i}.group,'eval')        
         for j = model.evaluation_scheme{i}.variables
             k = model.evalMap{j}.variableIndex;
             if any(requested(model.evalMap{j}.computes))
