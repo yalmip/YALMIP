@@ -26,6 +26,7 @@ emptysolver.constraint.equalities.linear     = 0;
 emptysolver.constraint.equalities.quadratic  = 0;
 emptysolver.constraint.equalities.polynomial = 0;
 emptysolver.constraint.equalities.sigmonial  = 0;
+emptysolver.constraint.equalities.multiterm  = 1;
 
 emptysolver.constraint.inequalities.elementwise.linear = 0;
 emptysolver.constraint.inequalities.elementwise.quadratic.convex = 0;
@@ -362,7 +363,11 @@ solver(i).checkfor= {'mosekopt'};
 solver(i).call    = 'callmosek';
 solver(i).objective.sigmonial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
-solver(i).constraint.equalities.elementwise.nonlinear = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.equalities.quadratic = 1;
+solver(i).constraint.equalities.polynomial = 1;
+solver(i).constraint.equalities.sigmonial = 1;
+solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -782,6 +787,7 @@ solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
+solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -847,6 +853,7 @@ solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
+solver(i).constraint.equalities.multiterm  = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1030,6 +1037,7 @@ solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
+solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -1042,6 +1050,7 @@ solver(i).objective.quadratic.convex = 1;
 solver(i).objective.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).constraint.equalities.elementwise.nonlinear = 1;
+solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
 
 solver(i) = emptysolver;

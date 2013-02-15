@@ -149,6 +149,14 @@ for i = 1:Counter
         rank_constraint = rank_constraint | any(ismember(getvariables(Fi.data),rank_variables));
     end
     
+    % Check for equalities violating GP definition
+    problem.constraint.equalities.multiterm = 0;
+    if Fi.type==3
+        if multipletermsInEquality(Fi)
+             problem.constraint.equalities.multiterm = 1;
+        end
+    end
+    
     if ~any_nonlinear_variables % No nonlinearly parameterized constraints
         
         switch Fi.type
@@ -437,4 +445,13 @@ if (~isempty(h)) & ~is(h,'linear') &~(relax==1) &~(relax==3)
     end
 else
     problem.objective.linear = ~isempty(h);
+end
+
+function p = multipletermsInEquality(Fi);
+p = 0;
+Fi = sdpvar(Fi.data);
+if length(getvariables(Fi))>1
+    B = getbase(Fi);
+    B(:,1)=0;
+    p = any(sum(B | B,2)>1);
 end

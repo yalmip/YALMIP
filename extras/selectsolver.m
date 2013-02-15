@@ -340,6 +340,17 @@ if ProblemClass.constraint.semicont
 end  
 
 % ******************************************************
+% Equalities with multiple monomoials (rule out GP)
+% ******************************************************
+if ProblemClass.constraint.equalities.multiterm
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)                      
+         keep(i) = solvers(i).constraint.equalities.multiterm;
+    end
+    solvers = solvers(find(keep));
+end  
+
+% ******************************************************
 % Complementarity constraints
 % ******************************************************
 if ProblemClass.constraint.complementarity.linear
