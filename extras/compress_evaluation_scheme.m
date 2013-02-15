@@ -1,5 +1,5 @@
 function model = compress_evaluation_scheme(model);
-scalars = {'exp','log','sin','cos','log2','log10','slog','inverse_internal2','sqrtm_internal'};
+scalars = {'erf','exp','log','sin','cos','log2','log10','slog','inverse_internal2','sqrtm_internal'};
 for i = 1:length(model.evaluation_scheme)
     if strcmp(model.evaluation_scheme{i}.group,'eval')
         clear fun
@@ -24,8 +24,11 @@ for i = 1:length(model.evaluation_scheme)
         end
         model.evaluation_scheme{i}.variables(isnan(model.evaluation_scheme{i}.variables)) = [];    
                 
+        try
         [model,vars] = removeDuplicates(model,model.evaluation_scheme{i}.variables);
         model.evaluation_scheme{i}.variables = vars;
+        catch
+        end
     end
 end
 
