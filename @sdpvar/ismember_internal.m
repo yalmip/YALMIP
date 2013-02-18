@@ -66,10 +66,28 @@ if isa(x,'sdpvar') & isa(p,'double')
         if size(p,1)==length(x) & size(p,2)>1
             Delta = binvar(size(p,2),1);
             F = [sum(Delta) == 1, x == p*Delta];
+            if all(all(p == fix(p)))
+                % Check if x implicitly is constrained to be integer
+                B = getbase(x);
+                if all(all(B == fix(B)))
+                    if all(sum(B | B,2)<= 1)
+                    F = [F, integer(x)];
+                    end
+                end
+            end
         else
             p = p(:);
             Delta = binvar(length(x),length(p),'full');
             F = [sum(Delta,2) == 1, x == Delta*p];
+            if all(all(p == fix(p)))
+                % Check if x implicitly is constrained to be integer
+                B = getbase(x);
+                if all(all(B == fix(B)))
+                    if all(sum(B | B,2)<= 1)
+                    F = [F, integer(x)];
+                    end
+                end
+            end
         end
     end
 
