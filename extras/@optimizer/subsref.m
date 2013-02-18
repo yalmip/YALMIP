@@ -175,8 +175,13 @@ elseif isequal(subs.type,'{}')
         varargout{1} = allu;
     elseif nBlocks==1
         varargout{1} = reshape(u(:),self.dimoutOrig{1});
-        if self.complexOutput(1)
-            varargout{1} = varargout{1}(1:self.dimoutOrig{1}(1)/2,:) + sqrt(-1)*varargout{1}(self.dimoutOrig{1}(1)/2+1:end,:);
+        if self.complexOutput(1)         
+            if length(self.dimoutOrig{1})==2
+                varargout{1} = varargout{1}(1:self.dimoutOrig{1}(1)/2,:) + sqrt(-1)*varargout{1}(self.dimoutOrig{1}(1)/2+1:end,:);
+            else
+                % FIXME: This only works for 3D...
+                varargout{1} = varargout{1}(1:self.dimoutOrig{1}(1)/2,:,:) + sqrt(-1)*varargout{1}(self.dimoutOrig{1}(1)/2+1:end,:,:);
+            end
         end
     else
         varargout{1} = u;
