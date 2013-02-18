@@ -81,18 +81,27 @@ end
 
 if isa(x,'cell')
     xvec = [];
-    nOrigIn = zeros(length(x),1);
-    mOrigIn = zeros(length(x),1);
-    for i = 1:length(x)
-        [nOrigIn(i),mOrigIn(i)] = size(x{i});
-        z = x{i}(:);
-        mask{i} = uniqueRows(z);        
-        %xvec = [xvec;x{i}(:)];
-        xvec = [xvec;z(mask{i})];
-    end
-    x = xvec;
+  for i = 1:length(x)
+      if is(x{i},'complex')
+          x{i} = [real(x{i});imag(x{i})];
+          complexInput(i) = 1;
+      else
+          complexInput(i) = 0;
+      end
+      sizeOrigIn{i} = size(x{i});
+      z = x{i}(:);
+      mask{i} = uniqueRows(z);      
+      xvec = [xvec;z(mask{i})];
+  end
+  x = xvec;
 else   
-    [nOrigIn,mOrigIn] = size(x);
+    if is(x,'complex')
+        complexInput(1) = 1;
+        x = [real(x);imag(x)];
+    else
+        complexInput(1) = 0;
+    end
+    sizeOrigIn{1} = size(x);
     x = x(:);
     mask{1} = uniqueRows(x);
     x = x(mask{1});
@@ -101,16 +110,26 @@ nIn = length(x);
 mIn = 1;
 
 if isa(u,'cell')
-    uvec = [];
-    nOrigOut = zeros(length(u),1);
-    mOrigOut = zeros(length(u),1);
-    for i = 1:length(u)
-        [nOrigOut(i),mOrigOut(i)] = size(u{i});
+    uvec = []; 
+    for i = 1:length(u)        
+        if is(u{i},'complex')
+            complexOutput(i) = 1;
+            u{i} = [real(u{i});imag(u{i})];
+        else
+            complexOutput(i) = 0;
+        end        
+        sizeOrigOut{i} = size(u{i});
         uvec = [uvec;u{i}(:)];
     end
     u = uvec;
 else
-    [nOrigOut,mOrigOut] = size(u);
+    if is(u,'complex')
+        complexOutput(1) = 1;
+        u = [real(u);imag(u)];
+    else
+        complexOutput(1) = 0;
+    end
+    sizeOrigOut{1} = size(u);
     u = u(:);
 end
 nOut = length(u);
@@ -180,7 +199,7 @@ end
 
 % Try to set up an optimal way to compute the output
 base = getbase(u);
-if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2))==1 & all(base(:,1)==0)
+if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2)==1) & all(base(:,1)==0)
     % This is just a vecotr of variables
     z = [];
     map = [];
@@ -213,8 +232,10 @@ sys.recover = aux2;
 sys.model = model;
 sys.dimin = [nIn mIn];
 sys.dimout = [nOut mOut];
-sys.diminOrig = [nOrigIn mOrigIn];
-sys.dimoutOrig = [nOrigOut mOrigOut];
+sys.diminOrig = sizeOrigIn;
+sys.dimoutOrig = sizeOrigOut;
+sys.complexInput = complexInput;
+sys.complexOutput = complexOutput;
 sys.mask = mask;
 sys.map = map;
 sys.input.expression = x;

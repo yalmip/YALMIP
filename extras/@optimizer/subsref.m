@@ -2,8 +2,8 @@ function varargout = subsref(self,subs)
 
 if isequal(subs.type,'()')
     
-    if size(self.diminOrig,1) > 1
-        error('Can index in cell-based OPTIMIZER. Perhaps you mean {}');
+    if length(self.diminOrig) > 1
+        error('Cannot index in cell-based OPTIMIZER. Perhaps you mean {}');
     end
     if isempty(self.output.z)
         output_length = length(self.output.expression);
@@ -43,22 +43,25 @@ elseif isequal(subs.type,'{}')
         return
     end
         
-    if size(self.diminOrig,1) > 1
+    if length(self.diminOrig) > 1
         % Concatenate inputs?
         if isa(subs.subs{1},'cell')
-            if length(subs.subs{1})~=size(self.diminOrig,1)
+            if length(subs.subs{1})~=length(self.diminOrig)
                 error('The number of cell elements in input does not match OPTIMIZER declaration');
             end
             vecIn = [];
             for i = 1:length(subs.subs{1})
+                if self.complexInput(i)
+                    subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
+                end
                 arg = subs.subs{1}{i};
-                if ~isequal(size(arg),self.diminOrig(i,:))
+                if ~isequal(size(arg),self.diminOrig{i})
                     error('Size mismatch on argument in cell');
                 end
                 temp = arg(:);
                 temp = temp(self.mask{i});
                 vecIn = [vecIn;temp];
-            end    
+            end
             subs.subs{1} = vecIn;
         else
             error('OPTIMIZER defined with cell input format, but you sent a vector');
@@ -71,11 +74,19 @@ elseif isequal(subs.type,'{}')
                 subs.subs{1} = subs.subs{1}{1};
             end
         end 
-        if ~isequal(size(subs.subs{1},1),self.diminOrig(1))
+        
+        if self.complexInput(1)
+            subs.subs{1} = [real(subs.subs{1});imag(subs.subs{1})];
+        else
+            if nnz(imag(subs.subs{1}))>0
+                error('You have declared a model with a real input argument, but now you send a complex argument');
+            end
+        end
+        
+        if ~isequal(size(subs.subs{1},1),self.diminOrig{1}(1))            
             error('Size mismatch. The parameter does match the size used in definition of OPTIMIZER object')
         end
-        subs.subs{1} =  subs.subs{1}(:);
-        subs.subs{1} = reshape(subs.subs{1},prod(self.diminOrig),[]);
+        subs.subs{1} = subs.subs{1}(:);       
         subs.subs{1} = subs.subs{1}(self.mask{1},:);
     end
 
@@ -99,7 +110,7 @@ elseif isequal(subs.type,'{}')
         nBlocks = 1;
     end
     
-    if nBlocks>1 && (size(self.dimoutOrig,1)>1 || size(self.diminOrig,1)>1)
+    if nBlocks>1 && (length(self.dimoutOrig)>1 || length(self.diminOrig)>1)
         error('Multiple calls not supported in OPTIMIZER when using cell format');
     end
     
@@ -152,17 +163,21 @@ elseif isequal(subs.type,'{}')
         varargout{4}{i} = output.Dual;       
         start = start + self.dimin(2);
     end
-    if size(self.dimoutOrig,1)>1    
+    if length(self.dimoutOrig)>1                   
         top = 1;
         realDimOut = self.dimoutOrig;
         allu = {};
-        for i = 1:size(realDimOut,1)
-            allu{i} = reshape(u(top:top+realDimOut(i,1)*realDimOut(i,2)-1),realDimOut(i,1),realDimOut(i,2));
-            top = top + realDimOut(i,1)*realDimOut(i,2);
+        for i = 1:length(self.dimoutOrig)            
+            n = prod(self.dimoutOrig{i});
+            allu{i} = reshape(u(top:top+n-1),self.dimoutOrig{i});
+            top = top + n;
         end
         varargout{1} = allu;
     elseif nBlocks==1
-        varargout{1} = reshape(u(:),self.dimoutOrig);
+        varargout{1} = reshape(u(:),self.dimoutOrig{1});
+        if self.complexOutput(1)
+            varargout{1} = varargout{1}(1:self.dimoutOrig{1}(1)/2,:) + sqrt(-1)*varargout{1}(self.dimoutOrig{1}(1)/2+1:end,:);
+        end
     else
         varargout{1} = u;
     end  
