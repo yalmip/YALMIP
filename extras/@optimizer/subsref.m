@@ -22,7 +22,7 @@ if isequal(subs.type,'()')
      %   self.map = self.map(subs.subs{1});
         self.output.expression = self.output.expression(subs.subs{1});
     end
-    self.dimoutOrig = size(self.output.expression);
+    self.dimoutOrig{1} = size(self.output.expression);
     self.dimout = [prod(size(self.output.expression)) 1];
     varargout{1} = self;
     
