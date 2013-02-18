@@ -137,16 +137,18 @@ if isa(Constraints,'constraint')
 end
 
 if ~isempty(Constraints)
-if ~isa(Constraints,'constraint') &  ~isa(Constraints,'lmi') 
-    error('The first argument in OPTIMIZER should be a set of constraints');
-end
+    if ~isa(Constraints,'constraint') &  ~isa(Constraints,'lmi')
+        error('The first argument in OPTIMIZER should be a set of constraints');
+    end
 end
 
-if any(is(Constraints,'sos'))
-    tempOps = options;
-    tempOps.sos.model = 2;
-    tempOps.verbose = max(0,tempOps.verbose-1);
-    [Constraints,Objective] = compilesos([Constraints,parametric(x)],Objective,tempOps);    
+if ~isempty(Constraints)
+    if any(is(Constraints,'sos'))
+        tempOps = options;
+        tempOps.sos.model = 2;
+        tempOps.verbose = max(0,tempOps.verbose-1);
+        [Constraints,Objective] = compilesos([Constraints,parametric(x)],Objective,tempOps);
+    end
 end
 
 if ~isequal(options.solver,'')
