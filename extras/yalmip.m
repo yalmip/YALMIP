@@ -588,6 +588,9 @@ switch varargin{1}
     case 'setvalues'
         internal_sdpvarstate.optSolution{internal_sdpvarstate.activeSolution}.values = varargin{2};
         
+    case 'numbersolutions'
+        varargout{1} = length(internal_sdpvarstate.optSolution);
+            
     case 'selectsolution'
         if length(internal_sdpvarstate.optSolution)>=varargin{2}
             internal_sdpvarstate.activeSolution = varargin{2};
@@ -596,6 +599,7 @@ switch varargin{1}
         end
         
     case 'setsolution'
+                           
         if nargin < 3
             solutionIndex = 1;
         else
