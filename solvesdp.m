@@ -467,7 +467,7 @@ if strcmp(solver.tag,'GUROBI-GUROBI')
                 Ktemp.q = 0;
                 Ktemp.s = 0;
                 Ktemp.r = 0;
-                setduals(ForiginalQuadratics,output.qcDual,Ktemp);
+                setduals(ForiginalQuadratics,-output.qcDual,Ktemp);
             end
         end
     end
