@@ -31,10 +31,17 @@ end
 
 problem = 0;
 if isfield(result,'pi')
-    if length(model.obj) == nOriginal
-        D_struc = -result.pi;
-    else
-    D_struc = [];
+    % Gurobi has reversed sign-convention
+    D_struc = -result.pi;
+    if sum(interfacedata.K.q) > 0
+        % YALMIP has appended equalities to model normalized SOCP variables
+        % These duals should be moved to the assumed SOCP dual position
+        % order: socp, equality, linear element
+        % order: equality, linear element, socp
+        m = sum(interfacedata.K.q);
+        socpDuals = D_struc(1:m);
+        D_struc(1:m)=[];
+        D_struc = [D_struc(1:interfacedata.K.f+interfacedata.K.l);socpDuals];        
     end
 else
     D_struc = [];
