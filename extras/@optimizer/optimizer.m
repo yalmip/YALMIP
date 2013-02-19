@@ -95,7 +95,7 @@ if isa(x,'cell')
   end
   x = xvec;
 else   
-    if is(x,'complex')
+    if ~isreal(x)%,'complex')
         complexInput(1) = 1;
         x = [real(x);imag(x)];
     else
