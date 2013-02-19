@@ -16,18 +16,20 @@ P = optimizer([],obj,[],Y,X);
 U = reshape(1:6,2,3);
 Z = P{U};
 mbg_asserttrue(isequal(U,Z(:,:,1)));
-mbg_asserttrue(isequal(2*U*sqrt(-1),Z(:,:,2)));
+mbg_asserttrue(isequal(2*(U),imag(Z(:,:,2))));
 
 U = reshape(1:6,2,3) + sqrt(-1)*reshape(7:12,2,3);
 Z = P{U};
-mbg_asserttrue(isequal(U,Z));
+mbg_asserttolequal(U,Z(:,:,1),1e-5);
+mbg_asserttolequal(2*real(U),imag(Z(:,:,2)),1e-5);
+mbg_asserttolequal(2*imag(U),real(Z(:,:,2)),1e-5);
 
 X = sdpvar(2,3,'full','complex');
 Y = sdpvar(2,3,'full');
 P = optimizer([],sum(sum(abs(real(X)-Y))) + 2*sum(sum(abs(imag(X)-Y))),[],X,Y);
 U = reshape(1:6,2,3) + sqrt(-1)*reshape(7:12,2,3);
 Z = P{U};
-mbg_asserttrue(isequal(Z,reshape(7:12,2,3)));
+mbg_asserttrue(isequal(Z(:,:,1),reshape(7:12,2,3)));
 
 X1 = sdpvar(2,3,'full','complex');
 X2 = sdpvar(2,3,'full');
