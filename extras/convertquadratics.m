@@ -1,4 +1,4 @@
-function [Fconv,no_changed,infeasible] = convertquadratics(F)
+function [Fconv,no_changed,infeasible,Forigquad] = convertquadratics(F)
 %CONVERTQUADRATICS Internal function to extract quadratic constraints
 
 % Author Johan Löfberg
@@ -9,22 +9,21 @@ function [Fconv,no_changed,infeasible] = convertquadratics(F)
 % ******************************
 
 infeasible = 0;
-itslinear = islinear(F);
-if itslinear
-    Fconv = F;
-    no_changed = 0;
+Fconv = F;
+no_changed = 0;
+Forigquad = [];
+
+if islinear(F)
     return
 end
 
-itssigmonial = issigmonial(F);
-if itssigmonial
-    Fconv = F;
-    no_changed = 0;
+if issigmonial(F)
     return
 end
 
 Fconv = lmi;
 no_changed = 0;
+i_changed = [];
 for i = 1:1:length(F)
     if is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'sigmonial')
         % f-c'*x-x'*Q*x>0
@@ -87,6 +86,7 @@ for i = 1:1:length(F)
                             end
                         end
                         no_changed = no_changed + 1;
+                        i_changed = [i_changed i];                        
                     else
                         Fconv = Fconv + set(fi(j));
                     end
@@ -98,4 +98,7 @@ for i = 1:1:length(F)
     else
         Fconv = Fconv + F(i);
     end
+end
+if ~isempty(i_changed)
+    Forigquad = F(i_changed);
 end

@@ -238,7 +238,7 @@ end
 % ******************************************
 % COMPILE IN GENERALIZED YALMIP FORMAT
 % ******************************************
-[interfacedata,recoverdata,solver,diagnostic,F,Fremoved] = compileinterfacedata(F,[],logdetStruct,h,options,0,solving_parametric);
+[interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,[],logdetStruct,h,options,0,solving_parametric);
 
 % ******************************************
 % FAILURE?
@@ -454,6 +454,21 @@ if interfacedata.options.saveduals & solver.dual
         catch
              % this is a new feature...
             disp('Dual recovery failed. Please report this issue.');
+        end
+    end
+end
+% Hack to recover original QCQP duals from gurobi
+if strcmp(solver.tag,'GUROBI-GUROBI')
+    if length(ForiginalQuadratics) > 0
+        if isfield(output,'qcDual')
+            if length(output.qcDual) == length(ForiginalQuadratics)
+                Ktemp.l = length(output.qcDual);
+                Ktemp.f = 0;
+                Ktemp.q = 0;
+                Ktemp.s = 0;
+                Ktemp.r = 0;
+                setduals(ForiginalQuadratics,output.qcDual,Ktemp);
+            end
         end
     end
 end

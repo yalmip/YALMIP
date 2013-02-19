@@ -1,4 +1,4 @@
-function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric)
+function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric)
 
 persistent CACHED_SOLVERS
 persistent EXISTTIME
@@ -10,7 +10,8 @@ interfacedata = [];
 recoverdata = [];
 solver = [];
 Fremoved  = [];
-        
+ForiginalQuadratics = [];
+
 %% Did we make the call from SOLVEMP
 if nargin<7
     parametric = 0;
@@ -217,7 +218,7 @@ do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
 do_not_convert = do_not_convert | (options.convertconvexquad == 0);
 do_not_convert = do_not_convert | (options.relax == 1);
 if ~do_not_convert & any(variabletype(F_vars))
-    [F,socp_changed,infeasible] = convertquadratics(F);
+    [F,socp_changed,infeasible,ForiginalQuadratics] = convertquadratics(F);
     if infeasible
         diagnostic.solvertime = 0;
         diagnostic.problem = 1;

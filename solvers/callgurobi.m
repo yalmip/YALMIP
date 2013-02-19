@@ -30,6 +30,7 @@ else
 end
 
 problem = 0;
+qcDual = [];
 if isfield(result,'pi')
     % Gurobi has reversed sign-convention
     D_struc = -result.pi;
@@ -45,6 +46,9 @@ if isfield(result,'pi')
     end
 else
     D_struc = [];
+end
+if isfield(result,'qcpi')
+    qcDual = result.qcpi;
 end
 
 switch result.status
@@ -81,6 +85,7 @@ end
 % Standard interface 
 output.Primal      = x;
 output.Dual        = D_struc;
+output.qcDual      = qcDual;
 output.Slack       = [];
 output.problem     = problem;
 output.solverinput = solverinput;
