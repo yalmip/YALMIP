@@ -432,7 +432,15 @@ end
 
 % And we are done! Save the result
 if ~isempty(output.Primal)
-    yalmip('setsolution',solution_internal);
+    if size(output.Primal,2)>1
+        for j = 1:size(output.Primal,2)
+            temp = solution_internal;
+            temp.optvar = temp.optvar(:,j);
+            yalmip('setsolution',temp,j);
+        end
+    else
+        yalmip('setsolution',solution_internal);
+    end
 end
 if interfacedata.options.saveduals & solver.dual
     if isempty(interfacedata.Fremoved) | (nnz(interfacedata.Q)>0)
