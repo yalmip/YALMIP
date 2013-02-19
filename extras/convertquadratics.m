@@ -71,7 +71,7 @@ for i = 1:1:length(F)
                         % Write as second order cone
                         d = -c'*x-f;
                         if isa(d,'double') & d==1
-                            Fconv=Fconv + lmi(cone([2*R*xred],1+d));
+                            Fconv=Fconv + lmi(cone([R*xred],(1+d)/2));
                         else
                             if length(c) == length(xred)%size(R,1)==size(R,2)
                                 ctilde = -(R')\(c/2);
@@ -79,10 +79,10 @@ for i = 1:1:length(F)
                                     % simple form norm(Rx-c) < r
                                     Fconv=Fconv + lmi(cone([R*xred-ctilde],sqrt(ctilde'*ctilde-f)));
                                 else
-                                    Fconv=Fconv + lmi(cone([2*R*xred;1-d],1+d));
+                                    Fconv=Fconv + lmi(cone([R*xred;.5*(1-d)],.5*(1+d)));
                                 end
                             else
-                                Fconv=Fconv + lmi(cone([2*R*xred;1-d],1+d));
+                                Fconv=Fconv + lmi(cone([R*xred;.5*(1-d)],.5*(1+d)));
                             end
                         end
                         no_changed = no_changed + 1;
