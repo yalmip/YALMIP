@@ -50,8 +50,8 @@ infeasible = 0;
 if model.K.f > 0
     candidates = find(sum(abs(model.F_struc(1:model.K.f,2:end)),2) == 0);
     if ~isempty(candidates)
-        infeasibles = find(model.F_struc(candidates,1)~=0);
-        if ~isempty(infeasibles)
+        % infeasibles = find(model.F_struc(candidates,1)~=0);
+        if find(model.F_struc(candidates,1)~=0,1)%;~isempty(infeasibles)
             infeasible = 1;
             return
         else
@@ -63,14 +63,23 @@ end
 if model.K.l > 0
     candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);  
     if ~isempty(candidates)
-        infeasibles = find(model.F_struc(model.K.f + candidates,1)<0);
-        if ~isempty(infeasibles)
-            infeasible = 1;
-            return
-        else
-            model.F_struc(model.K.f + candidates,:) = [];
-            model.K.l = model.K.l - length(candidates);
-        end
+       %infeasibles = find(model.F_struc(model.K.f + candidates,1)<0);
+         if find(model.F_struc(model.K.f + candidates,1)<0,1) 
+             infeasible = 1;
+             return
+         else
+             model.F_struc(model.K.f + candidates,:) = [];
+             model.K.l = model.K.l - length(candidates);
+         end
+
+%         infeasibles = find(model.F_struc(model.K.f + candidates,1)<0);
+%         if ~isempty(infeasibles)          
+%             infeasible = 1;
+%             return
+%         else
+%             model.F_struc(model.K.f + candidates,:) = [];
+%             model.K.l = model.K.l - length(candidates);
+%         end
     end
 end
 if model.K.q(1) > 0
