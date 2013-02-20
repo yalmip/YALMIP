@@ -92,7 +92,7 @@ elseif isequal(subs.type,'{}')
         % instances which should be vectorized and then concatenated in
         % columns
          nBlocks = prod(size(subs.subs{1}))/prod(self.diminOrig{1});
-         if fix(nBlocks) ~= nBlocks
+         if ~isnan(nBlocks) & (fix(nBlocks) ~= nBlocks)
              error('Weird inputs detected.');
          end
          if nBlocks > 1
