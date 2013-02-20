@@ -15,8 +15,11 @@ semicont_variables = interfacedata.semicont_variables;
 ub      = interfacedata.ub;
 lb      = interfacedata.lb;
 H       = 2*interfacedata.Q;
-[F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
+if ~isempty(semicont_variables)
+    [F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
+end
 [F_struc,K,c,H,ub,lb,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,H,ub,lb);
+
 
 if any(interfacedata.variabletype)
     error('Nonlinear monomials remain when calling CPLEX. If you are using OPTIMIZER, please report this and ask for a feature improvement.');
@@ -34,7 +37,11 @@ end
 
 % CPLEX assumes semi-continuous variables only can take negative values so
 % we negate semi-continuous violating this
-[NegativeSemiVar,H,f,Aineq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,f,Aineq,lb,ub,semicont_variables,[]);
+if ~isempty(semicont_variables)
+    [NegativeSemiVar,H,f,Aineq,lb,ub,semicont_variables] = negateNegativeSemiContVariables(H,f,Aineq,lb,ub,semicont_variables,[]);
+else
+    NegativeSemiVar = [];
+end
 
 if K.f > 0
     Aeq = Aineq(1:K.f,:);
@@ -57,10 +64,14 @@ if all(isinf(ub))
 end
 
 ctype = char(ones(length(f),1)*67);
-ctype(setdiff(integer_variables,semicont_variables)) = 'I';
+if ~isempty(integer_variables)
+    ctype(setdiff(integer_variables,semicont_variables)) = 'I';
+end
 ctype(binary_variables)  = 'B';  % Should not happen except from bmibnb
-ctype(setdiff(semicont_variables,integer_variables)) = 'S';  % Should not happen except from bmibnb
-ctype(intersect(semicont_variables,integer_variables)) = 'N';
+if ~isempty(semicont_variables)
+    ctype(setdiff(semicont_variables,integer_variables)) = 'S';  % Should not happen except from bmibnb
+    ctype(intersect(semicont_variables,integer_variables)) = 'N';
+end
 
 options.cplex.simplex.display = options.verbose;
 options.cplex.mip.display = options.verbose;

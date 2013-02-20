@@ -4,8 +4,8 @@ keptvariables = 1:length(model.c);
 
 % The first set of equalities are just used when the model is linear in the
 % parametric variables, hence we delete them 
-model.F_struc(1:length(varindex),:) = [];
-model.K.f = model.K.f - length(varindex);
+%model.F_struc(1:length(varindex),:) = [];
+%model.K.f = model.K.f - length(varindex);
 
 newmonomtable = model.monomtable;
 rmvmonoms = newmonomtable(:,varindex);
@@ -14,6 +14,10 @@ newmonomtable(:,varindex) = 0;
 ss = repmat(value(:)',size(rmvmonoms,1),1);
 aux = ss.^rmvmonoms;
 monomvalue = prod(aux,2);
+%[ii,jj] = find(rmvmonoms);
+%temp = rmvmonoms*0+1;
+%indexx = sub2ind(size(rmvmonoms),ii,jj);
+%temp(indexx) = value(jj).^rmvmonoms(indexx);
 
 removethese = find(~any(newmonomtable,2));
 keepingthese = find(any(newmonomtable,2));
@@ -41,7 +45,7 @@ if model.K.f > 0
     end
 end
 if model.K.l > 0
-    candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);
+    candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);  
     if ~isempty(candidates)
         infeasibles = find(model.F_struc(model.K.f + candidates,1)<0);
         if ~isempty(infeasibles)
@@ -116,7 +120,9 @@ end
 model.f = model.f + model.c(removethese)'*value;
 
 model.c(removethese)=[];
-model.c = model.c + 2*model.Q(keepingthese,removethese)*value;
+if nnz(model.Q)>0
+    model.c = model.c + 2*model.Q(keepingthese,removethese)*value;
+end
 model.Q(removethese,:) = [];
 model.Q(:,removethese) = [];
 
