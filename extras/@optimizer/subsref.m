@@ -83,28 +83,54 @@ elseif isequal(subs.type,'{}')
             end
         end
         
+        % Check height of data
         if ~isequal(size(subs.subs{1},1),self.diminOrig{1}(1))            
             error('Size mismatch. The parameter does match the size used in definition of OPTIMIZER object')
         end
-        subs.subs{1} = subs.subs{1}(:);       
-        subs.subs{1} = subs.subs{1}(self.mask{1},:);
+        
+        % If width is a multiple of input width, then we have several input
+        % instances which should be vectorized and then concatenated in
+        % columns
+         nBlocks = prod(size(subs.subs{1}))/prod(self.diminOrig{1});
+         if fix(nBlocks) ~= nBlocks
+             error('Weird inputs detected.');
+         end
+         if nBlocks > 1
+             if length(self.diminOrig)>2
+                 error('Blocked inputs not allowed on n-D data');
+             end
+             left = 1;
+             aux = [];
+             for i = 1:nBlocks
+                 temp = subs.subs{1}(:,left:self.diminOrig{1}(2)+left-1);
+                 temp = temp(:);
+                 temp = temp(self.mask{1});
+                 aux = [aux temp];
+                 left = left + self.diminOrig{1}(2);
+             end
+             subs.subs{1} = aux;
+         else
+            subs.subs{1} = subs.subs{1}(:);       
+            subs.subs{1} = subs.subs{1}(self.mask{1},:);
+         end
     end
 
     % Input is now given as [x1 x2 ... xn]
     % Note: this is not supported in cell based arguments
     % If cell-based argument was used, only one call can be made at once
     % i.e., n=1
-    if size(subs.subs{1},1) == self.dimin(1)
-        % Check that wP2idth is an multiple of parameter width
-        if mod(size(subs.subs{1},2),self.dimin(2))>0
-            error('Input argument has wrong size (The width is not a multiple of parameter width');
-        end
-    else
-        error('Input argument has wrong size (The height does not match with you original argument)');
-    end
+%     if size(subs.subs{1},1) == self.dimin(1)
+%         % Check that wP2idth is an multiple of parameter width
+%         if mod(size(subs.subs{1},2),self.dimin(2))>0
+%             error('Input argument has wrong size (The width is not a multiple of parameter width');
+%         end
+%     else
+%         error('Input argument has wrong size (The height does not match with you original argument)');
+%     end
 
     u = [];
-    nBlocks = size(subs.subs{1},2)/self.dimin(2);
+    nBlocks = size(subs.subs{1},2);
+    %nBlocks = size(subs.subs{1},2)/self.dimin(2);
     start = 1;
     if isnan(nBlocks)
         nBlocks = 1;
