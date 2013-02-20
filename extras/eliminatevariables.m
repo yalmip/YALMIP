@@ -7,23 +7,39 @@ keptvariables = 1:length(model.c);
 %model.F_struc(1:length(varindex),:) = [];
 %model.K.f = model.K.f - length(varindex);
 
-newmonomtable = model.monomtable;
-rmvmonoms = newmonomtable(:,varindex);
-newmonomtable(:,varindex) = 0;
+%newmonomtable = model.monomtable;
+%rmvmonoms = newmonomtable(:,varindex);
+%newmonomtable(:,varindex) = 0;
 
-ss = repmat(value(:)',size(rmvmonoms,1),1);
-aux = ss.^rmvmonoms;
-monomvalue = prod(aux,2);
+rmvmonoms = model.rmvmonoms;
+newmonomtable = model.newmonomtable;
+
+%ss = repmat(value(:)',size(rmvmonoms,1),1);
+%aux = ss.^rmvmonoms;
+%monomvalue = prod(aux,2);
+
 %[ii,jj] = find(rmvmonoms);
-%temp = rmvmonoms*0+1;
+%aux = rmvmonoms*0+1;
 %indexx = sub2ind(size(rmvmonoms),ii,jj);
-%temp(indexx) = value(jj).^rmvmonoms(indexx);
+aux = model.precalc.aux;
+if ~isempty(model.precalc.jj1)
+    z = value(model.precalc.jj1).^rmvmonoms(model.precalc.index1);
+    aux(model.precalc.index1) = z;
+end
+if ~isempty(model.precalc.jj2)
+    aux(model.precalc.index2) = value(model.precalc.jj2);
+end
+monomvalue = prod(aux,2);
 
-removethese = find(~any(newmonomtable,2));
-keepingthese = find(any(newmonomtable,2));
+%removethese = find(~any(newmonomtable,2));
+%keepingthese = find(any(newmonomtable,2));
+
+removethese = model.removethese;
+keepingthese = model.keepingthese;
 
 value = monomvalue(removethese);
-monomgain = monomvalue;monomgain(removethese) = [];
+%monomgain = monomvalue;monomgain(removethese) = [];
+monomgain = monomvalue(keepingthese);
 
 if ~isempty(model.F_struc)
     model.F_struc(:,1) = model.F_struc(:,1)+model.F_struc(:,1+removethese)*value;

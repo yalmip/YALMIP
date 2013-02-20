@@ -290,6 +290,27 @@ end
 if sys.nonlinear & isempty(sys.model.evalMap)
     sys.model.F_struc(1:length(sys.parameters),:) = [];
     sys.model.K.f = sys.model.K.f - length(sys.parameters);
+    
+    % Precompute some structures
+    newmonomtable = sys.model.monomtable;
+    rmvmonoms = newmonomtable(:,sys.parameters);
+    [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
+    sys.model.precalc.aux = rmvmonoms*0+1;
+    sys.model.precalc.index1 = sub2ind(size(rmvmonoms),ii1,jj1);    
+    sys.model.precalc.jj1 = jj1;    
+    
+    [ii2,jj2] = find(rmvmonoms == 1);
+    sys.model.precalc.aux = rmvmonoms*0+1;
+    sys.model.precalc.index2 = sub2ind(size(rmvmonoms),ii2,jj2);    
+    sys.model.precalc.jj2 = jj2;    
+    
+    sys.model.newmonomtable = model.monomtable;
+    sys.model.rmvmonoms =  sys.model.newmonomtable(:,sys.parameters);
+    sys.model.newmonomtable(:,sys.parameters) = 0;
+   
+    sys.model.removethese = find(~any(sys.model.newmonomtable,2));
+    sys.model.keepingthese = find(any(sys.model.newmonomtable,2));
+
 end
 
 sys = class(sys,'optimizer');
