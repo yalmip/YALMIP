@@ -40,9 +40,9 @@ else
     D_struc = [];    
 end
 
-if length(x) == length(model.f)
+if size(x,1) == length(model.f)
     if ~isempty(model.NegativeSemiVar)
-        x(model.NegativeSemiVar) = -x(model.NegativeSemiVar);
+        x(model.NegativeSemiVar,:) = -x(model.NegativeSemiVar,:);
     end
 end
 
@@ -90,7 +90,7 @@ if isempty(x)
     x = zeros(length(model.f),1);
 end
 % Standard interface
-output.Primal      = x(:);
+output.Primal      = x;
 output.Dual        = D_struc;
 output.Slack       = [];
 output.problem     = problem;
@@ -128,7 +128,7 @@ if isempty(Aineq) & isempty(Aeq)
 end
 if isempty(integer_variables) & isempty(binary_variables) & isempty(semicont_variables) & isempty(K.sos.type)
     if options.verbose 
-        if isempty(H)
+        if isempty(H)           
             [x,fval,exitflag,output,lambda] = cplexlp(f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);
         else
             [x,fval,exitflag,output,lambda] = cplexqp(H,f,Aineq,bineq,Aeq,beq,lb,ub,x0,options.cplex);
@@ -160,3 +160,32 @@ else
     end
     lambda = [];
 end
+
+function [x,fval,exitflag,output] = cplexmilpInternal(f,Aineq,bineq,Aeq,beq,sostype,sosvariables,sosweight,lb,ub,ctype,x0,options)
+
+cplex = Cplex;
+cplex.Model.sense = 'minimize';
+cplex.Model.obj = f;
+cplex.Model.lb = lb;
+cplex.Model.ub = ub;
+cplex.Model.ctype = ctype;
+cplex.Model.A = [Aeq;Aineq];
+cplex.Model.lhs = [beq;-inf(length(bineq),1)];
+cplex.Model.rhs = [beq;bineq];
+if options.mip.pool.intensity
+    cplex.Param.mip.pool.intensity.Cur =  options.mip.pool.intensity;
+    cplex.Param.mip.pool.capacity.Cur = options.mip.pool.capacity;
+    cplex.Param.mip.pool.absgap.Cur = options.mip.pool.absgap;
+    cplex.Param.mip.pool.relgap.Cur = options.mip.pool.relgap;
+    cplex.Param.mip.pool.replace.Cur = options.mip.pool.replace;  
+end
+temp = cplex.solve();
+output.cplexstatus = temp.status;
+fval = cplex.Solution.objval;
+x = cplex.Solution.x;
+if options.mip.pool.intensity
+    for i = 2:1:length(temp.pool.solution)
+        x = [x temp.pool.solution(i).x];
+    end            
+end
+exitflag = temp.statusstring;
