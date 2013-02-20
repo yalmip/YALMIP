@@ -172,13 +172,14 @@ if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     model.precalc.S = S;
     model.precalc.skipped = skipped;
     model.precalc.newmonomtable = newmonomtable;
+    model.precalc.blkOneS = blkdiag(1,S');
 else
     S = model.precalc.S;
     skipped = model.precalc.skipped;
 end
 model.c = S*model.c;
 %model.F_struc2 = [model.F_struc(:,1) (S*model.F_struc(:,2:end)')'];
-model.F_struc = model.F_struc*blkdiag(1,S');
+model.F_struc = model.F_struc*model.precalc.blkOneS;%blkdiag(1,S');
 %norm(model.F_struc-model.F_struc2)
 if 0
     for i  = 1:size(newmonomtable,1)
@@ -226,7 +227,7 @@ x0wasempty = isempty(model.x0);
 model.x0 = zeros(length(model.c),1);
 
 % Try to reduce to QP
-if all(model.variabletype) <= 2 & any(model.variabletype)
+if any(model.variabletype) & all(model.variabletype <= 2)
     monomials = find(model.variabletype);
     if nnz(model.F_struc(:,1+monomials))==0
         if all(isinf(model.lb(monomials)))

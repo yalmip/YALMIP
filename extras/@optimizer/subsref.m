@@ -159,9 +159,11 @@ elseif isequal(subs.type,'{}')
                 output.Primal = originalModel.c*0;
                 output.Dual = [];
             end
-            originalModel.precalc.S = self.model.precalc.S;
-            originalModel.precalc.skipped = self.model.precalc.skipped;
-            originalModel.precalc.newmonomtable = self.model.precalc.newmonomtable;
+            originalModel.precalc = self.model.precalc;
+            %originalModel.precalc.S = self.model.precalc.S;
+            %originalModel.precalc.blkOneS = self.model.precalc.blkOneS;
+            %originalModel.precalc.skipped = self.model.precalc.skipped;
+            %originalModel.precalc.newmonomtable = self.model.precalc.newmonomtable;
             self.model = originalModel;
         else                                  
             if ~isempty(thisData)
