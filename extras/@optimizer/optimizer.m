@@ -311,7 +311,22 @@ if sys.nonlinear & isempty(sys.model.evalMap)
    
     sys.model.removethese = find(~any(sys.model.newmonomtable,2));
     sys.model.keepingthese = find(any(sys.model.newmonomtable,2));
-
+    
+ %   sys.model.newmonomtable(:, sys.model.removethese)=[];
+ %   sys.model.newmonomtable(sys.model.removethese,:)=[];
+    
+%     variabletype = zeros(size(sys.model.newmonomtable,1),1)';
+%     nonlinear = ~(sum(sys.model.newmonomtable,2)==1 & sum(sys.model.newmonomtable~=0,2)==1);
+%     if ~isempty(nonlinear)
+%         variabletype(nonlinear) = 3;
+%         quadratic = sum(sys.model.newmonomtable,2)==2;
+%         variabletype(quadratic) = 2;
+%         bilinear = max(sys.model.newmonomtable,[],2)<=1;
+%         variabletype(bilinear & quadratic) = 1;
+%         sigmonial = any(0>sys.model.newmonomtable,2) | any(sys.model.newmonomtable-fix(sys.model.newmonomtable),2);
+%         variabletype(sigmonial) = 4;
+%     end
+%     sys.model.precalc.variabletype = variabletype;
 end
 
 sys = class(sys,'optimizer');

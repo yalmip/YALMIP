@@ -209,19 +209,22 @@ model.Q(:,skipped)=[];
 model.Q(skipped,:)=[];
 keptvariables(skipped) = [];
 
-model.monomtable = newmonomtable;
 
-model.variabletype = zeros(size(model.monomtable,1),1)';
-nonlinear = ~(sum(model.monomtable,2)==1 & sum(model.monomtable~=0,2)==1);
-if ~isempty(nonlinear)
-    model.variabletype(nonlinear) = 3;
-    quadratic = sum(model.monomtable,2)==2;
-    model.variabletype(quadratic) = 2;
-    bilinear = max(model.monomtable,[],2)<=1;
-    model.variabletype(bilinear & quadratic) = 1;
-    sigmonial = any(0>model.monomtable,2) | any(model.monomtable-fix(model.monomtable),2);
-    model.variabletype(sigmonial) = 4;
-end
+model.monomtable = newmonomtable;
+%model.variabletype = model.precalc.variabletype;
+model = compressModel(model);
+
+% model.variabletype = zeros(size(model.monomtable,1),1)';
+% nonlinear = ~(sum(model.monomtable,2)==1 & sum(model.monomtable~=0,2)==1);
+% if ~isempty(nonlinear)
+%     model.variabletype(nonlinear) = 3;
+%     quadratic = sum(model.monomtable,2)==2;
+%     model.variabletype(quadratic) = 2;
+%     bilinear = max(model.monomtable,[],2)<=1;
+%     model.variabletype(bilinear & quadratic) = 1;
+%     sigmonial = any(0>model.monomtable,2) | any(model.monomtable-fix(model.monomtable),2);
+%     model.variabletype(sigmonial) = 4;
+% end
 
 x0wasempty = isempty(model.x0);
 model.x0 = zeros(length(model.c),1);
@@ -272,4 +275,17 @@ if ~isempty(model.binary_variables)
 end
 if ~isempty(model.semicont_variables)
     [~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
+end
+
+function model = compressModel(model)
+model.variabletype = zeros(size(model.monomtable,1),1)';
+nonlinear = sum(model.monomtable,2)~=1 | sum(model.monomtable~=0,2)~=1;
+if ~isempty(nonlinear)
+    model.variabletype(nonlinear) = 3;
+    quadratic = sum(model.monomtable,2)==2;
+    model.variabletype(quadratic) = 2;
+    bilinear = max(model.monomtable,[],2)<=1;
+    model.variabletype(bilinear & quadratic) = 1;
+    sigmonial = any(0>model.monomtable,2) | any(model.monomtable-fix(model.monomtable),2);
+    model.variabletype(sigmonial) = 4;
 end
