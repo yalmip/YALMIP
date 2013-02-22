@@ -41,92 +41,58 @@ elseif isequal(subs.type,'{}')
         varargout{1} = yalmip('definemulti','optimizer_operator',subs(1).subs{1},self,self.dimout);
         return
     end
-        
-    if length(self.diminOrig) > 1
-        % Concatenate inputs?
-        if isa(subs.subs{1},'cell')
-            if length(subs.subs{1})~=length(self.diminOrig)
-                error('The number of cell elements in input does not match OPTIMIZER declaration');
-            end
-            vecIn = [];
-            for i = 1:length(subs.subs{1})
-                if self.complexInput(i)
-                    subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
-                end
-                arg = subs.subs{1}{i};
-                if ~isequal(size(arg),self.diminOrig{i})
-                    error('Size mismatch on argument in cell');
-                end
-                temp = arg(:);
-                temp = temp(self.mask{i});
-                vecIn = [vecIn;temp];
-            end
-            subs.subs{1} = vecIn;
-        else
-            error('OPTIMIZER defined with cell input format, but you sent a vector');
-        end
-    else
-        if isa(subs.subs{1},'cell')
-            if length(subs.subs{1})>1
-                error('You are sending multiple cells, but OPTIMIZER was defined with only one argument');
-            else
-                subs.subs{1} = subs.subs{1}{1};
-            end
-        end 
-        
-        if self.complexInput(1)
-            subs.subs{1} = [real(subs.subs{1});imag(subs.subs{1})];
-        else
-            if nnz(imag(subs.subs{1}))>0
-                error('You have declared a model with a real input argument, but now you send a complex argument');
-            end
-        end
-        
-        % Check height of data
-        if ~isequal(size(subs.subs{1},1),self.diminOrig{1}(1))            
-            error('Size mismatch. The parameter does match the size used in definition of OPTIMIZER object')
-        end
-        
-        % If width is a multiple of input width, then we have several input
-        % instances which should be vectorized and then concatenated in
-        % columns
-         nBlocks = prod(size(subs.subs{1}))/prod(self.diminOrig{1});
-         if ~isnan(nBlocks) & (fix(nBlocks) ~= nBlocks)
-             error('Weird inputs detected.');
-         end
-         if nBlocks > 1
-             if length(self.diminOrig)>2
-                 error('Blocked inputs not allowed on n-D data');
-             end
-             left = 1;
-             aux = [];
-             for i = 1:nBlocks
-                 temp = subs.subs{1}(:,left:self.diminOrig{1}(2)+left-1);
-                 temp = temp(:);
-                 temp = temp(self.mask{1});
-                 aux = [aux temp];
-                 left = left + self.diminOrig{1}(2);
-             end
-             subs.subs{1} = aux;
-         else
-            subs.subs{1} = subs.subs{1}(:);       
-            subs.subs{1} = subs.subs{1}(self.mask{1},:);
-         end
+    
+    % Normalize to a cell-format
+    if ~isa(subs.subs{1},'cell')
+        subs.subs{1} = {subs.subs{1}};
     end
-
+    
+    % Check number of cells
+    if length(subs.subs{1})~=length(self.diminOrig)
+        error('The number of cell elements in input does not match OPTIMIZER declaration');
+    end
+          
+    % Realify...
+    for i = 1:length(subs.subs{1})
+        if self.complexInput(i)
+            subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
+        end
+    end
+    
+    % If blocked call, check so that there are as many blocks for every
+    % argument
+    for i = 1:length(subs.subs{1})
+        dimBlocks(i) = prod(size(subs.subs{1}{i})) / prod(self.diminOrig{i});
+    end    
+    if ~all(dimBlocks == dimBlocks(i))
+        error('Dimension mismatch on the input arguments compared to definition');
+    end
+    
+    
+    left = 1;
+    aux = [];
+    aux2 = [];
+    for i = 1:dimBlocks(1)
+        aux2 = [];
+        for j = 1:length(subs.subs{1})
+            temp = subs.subs{1}{j}(:,left:self.diminOrig{j}(2)+left-1,:);
+            temp = temp(:);
+            temp = temp(self.mask{j});
+            aux2 = [aux2;temp];
+        end
+        left = left + self.diminOrig{1}(2);
+        aux = [aux aux2];
+    end
+    subs.subs{1} = aux;
+    
     % Input is now given as [x1 x2 ... xn]   
-
     u = [];
-    nBlocks = size(subs.subs{1},2);
+    nBlocks = dimBlocks(1);
     start = 1;
     if isnan(nBlocks)
         nBlocks = 1;
     end
-    
-    if nBlocks>1 && (length(self.dimoutOrig)>1 || length(self.diminOrig)>1)
-        error('Multiple calls not supported in OPTIMIZER when using cell format');
-    end
-    
+        
     for i = 1:nBlocks
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
         if self.nonlinear & isempty(self.model.evalMap)
