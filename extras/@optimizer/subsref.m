@@ -69,18 +69,19 @@ elseif isequal(subs.type,'{}')
     end
     
     
-    left = 1;
+    left = ones(1,length(subs.subs{1}));
     aux = [];
     aux2 = [];
     for i = 1:dimBlocks(1)
         aux2 = [];
         for j = 1:length(subs.subs{1})
-            temp = subs.subs{1}{j}(:,left:self.diminOrig{j}(2)+left-1,:);
+            temp = subs.subs{1}{j}(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
             temp = temp(:);
             temp = temp(self.mask{j});
             aux2 = [aux2;temp];
+             left(j) = left(j) + self.diminOrig{j}(2);
         end
-        left = left + self.diminOrig{1}(2);
+        %left = left + self.diminOrig{1}(2);
         aux = [aux aux2];
     end
     subs.subs{1} = aux;
