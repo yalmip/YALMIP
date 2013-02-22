@@ -64,7 +64,7 @@ elseif isequal(subs.type,'{}')
     for i = 1:length(subs.subs{1})
         dimBlocks(i) = prod(size(subs.subs{1}{i})) / prod(self.diminOrig{i});
     end    
-    if ~all(dimBlocks == dimBlocks(i))
+    if ~isnan(dimBlocks) & ~all(dimBlocks == dimBlocks(i))
         error('Dimension mismatch on the input arguments compared to definition');
     end
     
