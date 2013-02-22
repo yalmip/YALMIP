@@ -23,9 +23,9 @@ for k = 1:N
     constraints = [constraints, -1 <= u{k}<= 1, -5<=x{k}<=5];
 end
 
-controller = optimizer(constraints, objective,sdpsettings('verbose',1,'solver','+cplex'),{A;x{1}},u{1});
+controller = optimizer(constraints, objective,sdpsettings('verbose',1,'solver','+bnb'),{A;x{1}},u{1});
 x0 = [3;1]*.25;
-m = 100;
+m = 2;
 all = {repmat(A0,1,m)+repmat(.5*[0 1;.3 1],1,m).*randn(2,2*m)*.02, repmat(x0,1,m)+randn(2,m)*0};
 U = controller{all};
-mbg_asserttrue(isequal(size(U),[1 100]));
+mbg_asserttrue(isequal(size(U),[1 2]));
