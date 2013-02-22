@@ -19,7 +19,6 @@ if isequal(subs.type,'()')
         self.map = self.map(subs.subs{1});
         self.output.expression = self.output.expression(subs.subs{1});
     else
-     %   self.map = self.map(subs.subs{1});
         self.output.expression = self.output.expression(subs.subs{1});
     end
     self.dimoutOrig{1} = size(self.output.expression);
@@ -115,22 +114,10 @@ elseif isequal(subs.type,'{}')
          end
     end
 
-    % Input is now given as [x1 x2 ... xn]
-    % Note: this is not supported in cell based arguments
-    % If cell-based argument was used, only one call can be made at once
-    % i.e., n=1
-%     if size(subs.subs{1},1) == self.dimin(1)
-%         % Check that wP2idth is an multiple of parameter width
-%         if mod(size(subs.subs{1},2),self.dimin(2))>0
-%             error('Input argument has wrong size (The width is not a multiple of parameter width');
-%         end
-%     else
-%         error('Input argument has wrong size (The height does not match with you original argument)');
-%     end
+    % Input is now given as [x1 x2 ... xn]   
 
     u = [];
     nBlocks = size(subs.subs{1},2);
-    %nBlocks = size(subs.subs{1},2)/self.dimin(2);
     start = 1;
     if isnan(nBlocks)
         nBlocks = 1;
@@ -159,11 +146,7 @@ elseif isequal(subs.type,'{}')
                 output.Primal = originalModel.c*0;
                 output.Dual = [];
             end
-            originalModel.precalc = self.model.precalc;
-            %originalModel.precalc.S = self.model.precalc.S;
-            %originalModel.precalc.blkOneS = self.model.precalc.blkOneS;
-            %originalModel.precalc.skipped = self.model.precalc.skipped;
-            %originalModel.precalc.newmonomtable = self.model.precalc.newmonomtable;
+            originalModel.precalc = self.model.precalc;           
             self.model = originalModel;
         else                                  
             if ~isempty(thisData)
