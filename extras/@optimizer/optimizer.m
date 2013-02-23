@@ -333,5 +333,5 @@ sys = class(sys,'optimizer');
 
 function i = uniqueRows(x);
 B = getbase(x);
-[~,i,j] = unique(B,'rows');
+[temp,i,j] = unique(B,'rows');
 i = i(:);
