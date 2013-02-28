@@ -439,7 +439,7 @@ if any(is(F_CONE,'complexsdpcone'))
         end
         F_NEWCONES = [F_NEWCONES, X{i} >= 0];
     end  
-    F_reformulated = [F_NEWCONES, F_AXb, F_SOC, x>=0]
+    F_reformulated = [F_NEWCONES, F_AXb, F_SOC, x>=0];
     complexInfo.replaced = Xreplace;
     complexInfo.new = Xnew;
     [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend);
