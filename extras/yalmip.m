@@ -576,6 +576,7 @@ switch varargin{1}
         internal_sdpvarstate.complexpair = [internal_sdpvarstate.complexpair;varargin{2}];
         
     case 'getcomplexpair'
+        error('Please report this error!')
         varargout{1} = internal_sdpvarstate.complexpair;
         return
         
