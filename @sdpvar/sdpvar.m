@@ -518,28 +518,39 @@ for blk = 1:length(n)
             basis = spalloc(n^2,1+nvar,2);
             l = 2;
             an_empty = spalloc(n,n,2);
+            %             for i=1:n
+            %                 temp = an_empty;
+            %                 temp(i,i)=1;
+            %                 basis(:,l)=temp(:);
+            %                 l = l+1;
+            %                 for j=i+1:n,
+            %                     temp = an_empty;
+            %                     temp(i,j)=1;
+            %                     temp(j,i)=1;
+            %                     basis(:,l)=temp(:);
+            %                     l = l+1;
+            %                 end
+            %             end
+            Y = reshape(1:n^2,n,n);
+            Y = tril(Y);
+            Y = (Y+Y')-diag(sparse(diag(Y)));
+            [uu,oo,pp] = unique(Y(:));
+            BasisReal = sparse(1:n(blk)^2,pp+1,1);
+                        
+            BasisImag = [spalloc(n^2,n*(n-1)/2,n)];
+            l = 1;
             for i=1:n
-                temp = an_empty;
-                temp(i,i)=1;
-                basis(:,l)=temp(:);
-                l = l+1;
-                for j=i+1:n,
-                    temp = an_empty;
-                    temp(i,j)=1;
-                    temp(j,i)=1;
-                    basis(:,l)=temp(:);
+                for j=i+1:n,                                                               
+                   % temp = an_empty;
+                   % temp(i,j)=sqrt(-1);
+                   % temp(j,i)=-sqrt(-1);
+                   % BasisImag(:,l)=temp(:);
+                    BasisImag(i+(j-1)*n,l)=sqrt(-1);
+                    BasisImag(j+(i-1)*n,l)=-sqrt(-1);
                     l = l+1;
                 end
             end
-            for i=1:n
-                for j=i+1:n,
-                    temp = an_empty;
-                    temp(i,j)=sqrt(-1);
-                    temp(j,i)=-sqrt(-1);
-                    basis(:,l)=temp(:);
-                    l = l+1;
-                end
-            end
+            basis = [BasisReal BasisImag];
 
         case 'skew'
             basis = spalloc(n^2,1+nvar,2);
@@ -737,16 +748,16 @@ else
     sys.midfactors{1} = [];
     sys = class(sys,'sdpvar');
     sys.midfactors{1} = sys;
-    if ~isreal(basis)
-        % Add internal information about complex pairs
-        complex_elements = find(any(imag(basis),2));
-        complex_pairs = [];
-        for i = 1:length(complex_elements)
-            complex_pairs = [complex_pairs;lmi_variables(find(basis(complex_elements(i),:))-1)];
-        end
-        complex_pairs = uniquesafe(complex_pairs,'rows');
-        yalmip('addcomplexpair',complex_pairs);
-    end
+%     if ~isreal(basis)
+%         % Add internal information about complex pairs
+%         complex_elements = find(any(imag(basis),2));
+%         complex_pairs = [];
+%         for i = 1:length(complex_elements)
+%             complex_pairs = [complex_pairs;lmi_variables(find(basis(complex_elements(i),:))-1)];
+%         end
+%         complex_pairs = uniquesafe(complex_pairs,'rows');
+%         yalmip('addcomplexpair',complex_pairs);
+%     end
     if isequal(matrix_type,'hankel')
         % To speed up generation, we have just created a vector, and now
         % hankelize it
