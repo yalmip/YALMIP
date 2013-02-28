@@ -215,9 +215,18 @@ end
 
 % Dualize the problem?
 if options.dualize
-    [Fd,objd] = dualize(F,varargin{2});
+    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,varargin{2});
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
+    if ~isempty(complexInfo)
+        for i = 1:length(complexInfo.replaced)
+            n = size(complexInfo.replaced{i},1);
+            re = 2*double(complexInfo.new{i}(1:n,1:n));            
+            im = 2*double(complexInfo.new{i}(1:n,n+1:end));
+            im = im-diag(diag(im));
+            assign(complexInfo.replaced{i},re + sqrt(-1)*im);
+        end
+    end
     return
 end
 

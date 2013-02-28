@@ -82,9 +82,25 @@ switch property
           YESNO = YESNO & all(sum(base~=0,2)==1);
           YESNO = YESNO & all(sum(base~=0,1)==1);
           YESNO = full(YESNO);
-                    
-    case 'sdpcone'
+
+    case 'complexsdpcone'
+        if isequal(X.conicinfo,[sqrt(-1) 0])
+            YESNO = 1;
+            return
+        else
+            YESNO = 0;
+        end
+        
+    case 'realsdpcone'
         if isequal(X.conicinfo,[1 0])
+            YESNO = 1;
+            return
+        else
+            YESNO = 0;
+        end
+        
+    case 'sdpcone'
+        if isequal(X.conicinfo,[1 0]) | isequal(X.conicinfo,[sqrt(-1) 0])
             YESNO = 1;
             return
         end
@@ -103,6 +119,12 @@ switch property
     case 'shiftsdpcone'
         
         if isequal(X.conicinfo,[1 0])
+            YESNO = 1;
+            return
+        elseif isequal(X.conicinfo,[1 1])
+            YESNO = 1;
+            return
+        elseif  isequal(X.conicinfo,[sqrt(-1) 0])
             YESNO = 1;
             return
         elseif isequal(X.conicinfo,[1 1])

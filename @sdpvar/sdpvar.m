@@ -69,6 +69,7 @@ end
 % To speed up dualization, we keep track of primal SDP cones
 % [0 0] :  Nothing known (cleared in some operator, or none-cone to start with)
 % [1 0] :  Primal cone
+% [i 0] :  Hermitian cone
 % [1 1] :  Primal cone + DOUBLE
 % [1 2 x] :  Primal cone + SDPVAR
 % [-1 1] : -Primal cone + DOUBLE
@@ -346,6 +347,7 @@ switch nargin
                     else
                         matrix_type = 'hermitian complex';
                         nvar = n*(n+1)/2+(n*(n+1)/2-n);
+                        conicinfo = [sqrt(-1) 0];
                     end
 
                 otherwise

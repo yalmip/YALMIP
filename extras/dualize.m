@@ -1,4 +1,4 @@
-function [Fdual,objdual,X,t,err] = dualize(F,obj,auto,extlp,extend)
+function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend)
 % DUALIZE Create the dual of an SDP given in primal form
 %
 % [Fd,objd,X,t,err] = dualize(F,obj,auto)
@@ -33,6 +33,8 @@ if isempty(F)
     F = set([]);
 end
 
+complexInfo = [];
+
 LogDetTerm = 0;
 if nargin < 2
     obj = [];
@@ -60,7 +62,7 @@ elseif isa(obj,'logdet')
 end
 
 err = 0;
-p1 = ~(isreal(F) & isreal(obj));
+p1 = ~isreal(obj);%~(isreal(F) & isreal(obj));
 p2 = ~(islinear(F) & islinear(obj));
 p3 = any(is(F,'integer')) | any(is(F,'binary'));
 if p1 | p2 | p3
@@ -110,6 +112,7 @@ X={};
 % when we add simple LP constraints (as in P>0, P(1,3)>0)
 varSDP = [];
 SDPset = zeros(length(F),1);
+ComplexSDPset = zeros(length(F),1);
 isSDP = is(F,'sdp');
 for i = 1:length(F)
     if isSDP(i);
@@ -121,6 +124,9 @@ for i = 1:length(F)
                 varSDP = [varSDP;vars(1) vars(end)];
                 shiftMatrix{end+1} = getbasematrix(Fi,0);
                 X{end+1}=Fi;
+                if is(Fi,'complex')
+                    ComplexSDPset(i) = 1;
+                end
             end
         end
     end
@@ -382,6 +388,62 @@ end
 % Is thee something we missed in our tests?
 if length(F)>0
     error('DUALIZE can only treat standard SDPs (and LPs) at the moment.')
+end
+
+% If complex SDP cone, we make reformulate and call again on a real
+% problem. This leads to twice the amount of work, but it is a quick fix
+% for the moment
+if any(is(F_CONE,'complexsdpcone'))
+    F_NEWCONES = [];
+    top = 1;
+    for i = 1:length(X)      
+        if is(X{i},'complexsdpcone')
+            Xreplace{top} = X{i};
+            n = length(X{i});
+            Xnew{top} = sdpvar(2*n);
+            
+            
+            rQ = real(Xreplace{top});
+            iQ = imag( Xreplace{top});
+            L1 = Xnew{top}(1:n,1:n);
+            L3 = Xnew{top}(n+1:end,n+1:end);
+            L2 = Xnew{top}(1:n,n + 1:end);
+                        
+            s0r = getvariables(rQ);
+            s1r = getvariables(L1);
+            s2r = getvariables(L3);
+            r0 = recover(s0r);
+            r1 = recover(s1r);
+            r2 = recover(s2r);
+            
+            s0i = getvariables(iQ);
+            s1i = getvariables(triu(L2,1))';
+            s2i = getvectorvariables(L2(find(tril(ones(length(L2)),-1))));
+            i0 = recover(s0i);
+            i1 = recover(s1i);
+            i2 = recover(s2i);
+           
+            replacement = [r1+r2;i1-i2];
+            if ~isempty(F_AXb)
+                F_AXb = remap(F_AXb,[s0r s0i],replacement);
+            end
+            if ~isempty(F_SOC)
+                F_SOC = remap(F_AXb,[s0r s0i],replacement);
+            end
+            if ~isempty(obj)
+                obj = remap(obj,[s0r s0i],replacement);
+            end
+                                   
+            X{i} = Xnew{top};
+            top = top + 1;
+        end
+        F_NEWCONES = [F_NEWCONES, X{i} >= 0];
+    end  
+    F_reformulated = [F_NEWCONES, F_AXb, F_SOC, x>=0]
+    complexInfo.replaced = Xreplace;
+    complexInfo.new = Xnew;
+    [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend);
+    return
 end
 
 % Sort the SDP cone variables X according to YALMIP

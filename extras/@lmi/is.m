@@ -45,12 +45,30 @@ else
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
                 YESNO(i,1) = (Fi.type==20);
-            end            
+            end    
+        
+        case 'sdpcone'
+            for i = 1:length(F.clauses)
+                Fi = F.clauses{i};
+                YESNO(i,1) = is(Fi.data,'sdpcone');
+            end
+            
+        case 'realsdpcone'
+            for i = 1:length(F.clauses)
+                Fi = F.clauses{i};
+                YESNO(i,1) = is(Fi.data,'realsdpcone');
+            end
+        
+        case 'complexsdpcone'
+            for i = 1:length(F.clauses)
+                Fi = F.clauses{i};
+                YESNO(i,1) = is(Fi.data,'complexsdpcone');
+            end                
         case 'sdp'
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
                 YESNO(i,1) = Fi.type==1;
-            end
+            end    
         case 'lmi'
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
