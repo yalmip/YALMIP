@@ -214,7 +214,17 @@ if length(F) == 0 & isempty(h) & isempty(logdetStruct)
 end
 
 % Dualize the problem?
-if options.dualize
+if ~isempty(F)
+    if options.dualize == -1
+        sdp = find(is(F,'sdp'));
+        if ~isempty(sdp)
+            if all(is(F(sdp),'sdpcone'))
+                options.dualize = 1;
+            end
+        end
+    end
+end
+if options.dualize == 1
     [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,varargin{2});
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
