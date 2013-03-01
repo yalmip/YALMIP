@@ -224,8 +224,8 @@ if ~isempty(F)
         end
     end
 end
-if options.dualize == 1
-    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,varargin{2});
+if options.dualize == 1   
+    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h);
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
     if ~isempty(complexInfo)
