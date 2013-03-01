@@ -8,8 +8,12 @@ model.deppattern = model.monomtable | model.monomtable;
 model.monomials = find(model.variabletype);
 model.monomialMap = cell(length(model.monomials),1);
 model.evaluation_scheme = [];
+%M = model.monomtable(model.monomials,:);
+MM= model.monomtable(model.monomials,:)';
 for i = 1:length(model.monomials)
-    model.monomialMap{i}.variableIndex = find(model.monomtable(model.monomials(i),:));
+ %   model.monomialMap{i}.variableIndex = find(model.monomtable(model.monomials(i),:));
+ %   model.monomialMap{i}.variableIndex = find(M(i,:));
+    model.monomialMap{i}.variableIndex = find(MM(:,i));
 end
 
 if ~isempty(model.evalMap)
