@@ -52,10 +52,11 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     allDerivemt = model.fastdiff.allDerivemt;
     c = model.fastdiff.c;
     
-    X = repmat(x(:)',length(c),1);
+   % X = repmat(x(:)',length(c),1);
     O = ones(length(c),length(x));    
-    nz = find(allDerivemt);
-    O(nz) = X(nz).^allDerivemt(nz);
+    nz = find(allDerivemt);    
+    %O(nz) = X(nz).^allDerivemt(nz);
+    O(nz) = x(mod(nz,length(x))).^allDerivemt(nz);
     zzz = c.*prod(O,2);
    
     if 1
