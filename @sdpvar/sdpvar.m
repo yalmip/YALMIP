@@ -787,14 +787,14 @@ try
     if isempty(PredefinedPointer)
         PredefinedPointer = 1;
         s = rng;
-        rng(k);
+        rng(k,'twister');
         PredefinedRands = rand(max(10000,2*n*m),1);
         rng(s);
     end
     if n*m > length(PredefinedRands)-PredefinedPointer+1
         PredefinedPointer = 1;
         s = rng;
-        rng(k);
+        rng(k,'twister');
         PredefinedRands = rand(max(10000,2*n*m),1);
         rng(s);
     end
