@@ -5,11 +5,12 @@ precompute = cell(length(model.linearindicies),length(model.evaluation_scheme));
 %if any(model.deppattern(requested,model.linearindicies(variable)))
 M = model.deppattern(requested,:);
 active = any(M(:,model.linearindicies),1);
-for variable = 1:length(model.linearindicies)
+range = 1:length(model.linearindicies);
+for variable = range(find(active(range)))% = range
     %dx = dx0;%zeros(length(model.c),1);
     %dx(model.linearindicies(variable)) = 1;
     %if any(model.deppattern(requested,model.linearindicies(variable)))
-    if active(variable)%any(M(:,model.linearindicies(variable)))
+  %  if active(variable)%any(M(:,model.linearindicies(variable)))
         dx = full(sparse(model.linearindicies(variable),1,1,length(model.c),1));
         for i = 1:length(model.evaluation_scheme)
             precompute{variable,i}=0;
@@ -40,5 +41,5 @@ for variable = 1:length(model.linearindicies)
             end
             precompute{variable,i} = find(precompute{variable,i});
         end
-    end
+  %  end
 end
