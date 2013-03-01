@@ -131,6 +131,13 @@ model.nonlinearequalities = ~isempty(model.Anonlineq);
     model.fastdiff.news = news;
     model.fastdiff.allDerivemt = allDerivemt;
     model.fastdiff.c = c;
+    model.fastdiff.univariateDifferentiates = 0;
+    if all(sum(allDerivemt | allDerivemt,2)==1)
+        model.fastdiff.univariateDifferentiates = 1;
+        [i,j,k] = find(allDerivemt);
+        model.fastdiff.univariateDiffMonom = j(:);
+        model.fastdiff.univariateDiffPower = k(:);
+    end
  end
     
     

@@ -52,13 +52,17 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     allDerivemt = model.fastdiff.allDerivemt;
     c = model.fastdiff.c;
     
-   % X = repmat(x(:)',length(c),1);
-    O = ones(length(c),length(x));    
-    nz = find(allDerivemt);    
-    %O(nz) = X(nz).^allDerivemt(nz);
-    O(nz) = x(mod(nz,length(x))).^allDerivemt(nz);
-    zzz = c.*prod(O,2);
-   
+    if model.fastdiff.univariateDifferentiates
+        zzz = c.*(x(model.fastdiff.univariateDiffMonom).^model.fastdiff.univariateDiffPower);
+    else
+        % X = repmat(x(:)',length(c),1);
+        O = ones(length(c),length(x));
+        nz = find(allDerivemt);
+        %O(nz) = X(nz).^allDerivemt(nz);
+        O(nz) = x(mod(nz,length(x))).^allDerivemt(nz);
+        zzz = c.*prod(O,2);
+    end
+    
     if 1
         a1 = news(1:length(c),2);
         a2 = model.nonlinearindicies(news(1:length(c),1))';
