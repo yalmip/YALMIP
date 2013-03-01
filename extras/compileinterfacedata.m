@@ -1173,7 +1173,11 @@ interfacedata.Fremoved = Fremoved;
 interfacedata.evalMap = evalMap;
 interfacedata.evalVariables = evalVariables;
 interfacedata.evaluation_scheme = [];
-interfacedata.equalitypresolved = 0;
+if strcmpi(solver.tag,'bmibnb')
+    interfacedata.equalitypresolved = 0;
+else
+    interfacedata.equalitypresolved = 1;
+end
 interfacedata.ProblemClass = ProblemClass;
 
 % *************************************************************************

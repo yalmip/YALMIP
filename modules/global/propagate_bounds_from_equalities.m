@@ -21,21 +21,23 @@ else
 end
 
 if p.K.f >0
-    
-    for j = 1:p.K.f
-        thisrow = p_F_struc(j,:);
-        if thisrow(1)<0
-            thisrow = -thisrow;
-        end
-        if thisrow(1)>0
-            [row,col,val] = find(thisrow);
-            % Find bounds from sum(xi) = 1, xi>0
-            if all(val(2:end) < 0)
-                usedVars = col(2:end)-1;
-                if all(p.lb(usedVars)>=0)
-                    p.ub(usedVars) = min( p.ub(usedVars) , val(1)./abs(val(2:end)'));
+    interestingRows = find(p_F_struc(:,1));
+    if ~isempty(interestingRows)
+        for j = interestingRows%1:p.K.f     
+            thisrow = p_F_struc(j,:);
+            if thisrow(1)<0
+                thisrow = -thisrow;
+            end
+            if thisrow(1)>0
+                [row,col,val] = find(thisrow);
+                % Find bounds from sum(xi) = 1, xi>0
+                if all(val(2:end) < 0)
+                    usedVars = col(2:end)-1;
+                    if all(p.lb(usedVars)>=0)
+                        p.ub(usedVars) = min( p.ub(usedVars) , val(1)./abs(val(2:end)'));
+                    end
                 end
-            end            
+            end
         end
     end
     
