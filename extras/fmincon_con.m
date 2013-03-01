@@ -69,9 +69,9 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         %   newdxx(iii) = zzz;
         
         % Moved from the for-loop below*
-       a1 = [a1;(1:length(linearindicies))'];
-       a2 = [a2;linearindicies(:)];
-       zzz = [zzz;repmat(1,length(linearindicies),1)];
+        a1 = [a1(:);(1:length(linearindicies))'];
+        a2 = [a2(:);linearindicies(:)];
+        zzz = [zzz;repmat(1,length(linearindicies),1)];
         newdxx = sparse(a1,a2,zzz,nn,mm);
         
         %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
@@ -87,7 +87,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
 
     % * moved up
     %ii = sub2ind(size(newdxx),1:length(linearindicies),linearindicies);
-    %newdxx(ii) = 1;
+%     %newdxx(ii) = 1;
 %     for i = 1:length(linearindicies)
 %        newdxx(i,linearindicies(i)) = 1;
 %     end
