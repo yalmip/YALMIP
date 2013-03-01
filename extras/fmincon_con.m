@@ -59,7 +59,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         O = ones(length(c),length(x));
         nz = find(allDerivemt);
         %  O(nz) = X(nz).^allDerivemt(nz);
-        O(nz) = x(ceil(nz/length(c))).^allDerivemt(nz);
+        O(nz) = x(ceil(nz/length(c))).^allDerivemt(nz);        
         zzz = c.*prod(O,2);               
     end
     
