@@ -134,8 +134,11 @@ model.nonlinearequalities = ~isempty(model.Anonlineq);
     model.fastdiff.univariateDifferentiates = 0;
     if all(sum(allDerivemt | allDerivemt,2)==1)
         model.fastdiff.univariateDifferentiates = 1;
-        [i,j,k] = find(allDerivemt);
-        model.fastdiff.univariateDiffMonom = j(:);
+        [i,j,k] = find(allDerivemt');
+        if any(diff(j)<0)
+            error;
+        end
+        model.fastdiff.univariateDiffMonom = i(:);
         model.fastdiff.univariateDiffPower = k(:);
     end
  end
