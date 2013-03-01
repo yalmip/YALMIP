@@ -46,6 +46,57 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
             return
         end
         
+        % Check for the case x.*y where x and y are unit variables
+        if length(X.lmi_variables)==numel(X)
+            if length(Y.lmi_variables) == numel(Y)
+                if numel(X)==numel(Y)
+                    if nnz(X.basis)==numel(X)
+                        if nnz(Y.basis)==numel(Y)
+                            D = [spalloc(numel(Y),1,0) speye(numel(Y))];
+                            if isequal(X.basis,D)
+                                if isequal(Y.basis,D)
+                                    % Pew.
+                                    Z = X;
+                                    [mt,variable_type,hashedMT,hash] = yalmip('monomtable');
+                                    generated_monoms = mt(X.lmi_variables,:) +  mt(Y.lmi_variables,:);
+                                    generated_hash = generated_monoms*hash;
+                                    keep = zeros(1,numel(X));
+                                    for i = 1:numel(X)
+                                        before = find(abs(hashedMT-generated_hash(i))<eps);
+                                        if isempty(before)
+                                          %  mt = [mt;generated_monoms(i,:)];
+                                            keep(i) = 1;
+                                            Z.lmi_variables(i) = size(mt,1)+nnz(keep);
+                                        else
+                                            Z.lmi_variables(i) = before;
+                                        end
+                                    end
+                                    
+                                    if any(keep)
+                                        keep = find(keep);
+                                        mt = [mt;generated_monoms(keep,:)];
+                                        yalmip('setmonomtable',mt);
+                                    end
+                                     
+                                    if any(diff(Z.lmi_variables)<0)
+                                        [i,j]=sort(Z.lmi_variables);
+                                        Z.lmi_variables = Z.lmi_variables(j);
+                                        Z.basis(:,2:end) = Z.basis(:,j+1);
+                                    end
+                                    
+                                    Z.conicinfo = [0 0];
+                                    Z.extra.opname='';
+                                    y = clean(Z);
+                                    y = flush(y);
+                                    return
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
         
         x_isscalar =  (X.dim(1)*X.dim(2)==1);
         y_isscalar =  (Y.dim(1)*Y.dim(2)==1);
