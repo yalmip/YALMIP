@@ -142,7 +142,7 @@ switch varargin{1}
         varargin{2}
         disp('Obsolete use of the terms addextendedvariable and addEvalVariable');
         error('Obsolete use of the terms addextendedvariable and addEvalVariable');
-        
+                
     case {'define','definemulti'}
         
         if strcmpi(varargin{1},'define')
@@ -151,8 +151,7 @@ switch varargin{1}
         else
             multioutput = 1;
             nout = varargin{end};
-            varargin = {varargin{1:end-1}};
-            %nargin = length(varargin);%nargin - 1;
+            varargin = {varargin{1:end-1}};            
         end
         
         varargin{2} = strrep(varargin{2},'sdpvar/',''); % Clean due to different behaviour of the function mfilename in ML 5,6 and 7
@@ -160,39 +159,17 @@ switch varargin{1}
         % Is this operator variable already defined
         correct_operator = [];
         if ~isempty(internal_sdpvarstate.ExtendedMap)
-            i = 1;
+                                              
+            OperatorName = varargin{2};
+            Arguments = {varargin{3:end}};
+            this_hash = create_trivial_hash(firstSDPVAR(Arguments));
+            correct_operator = find([internal_sdpvarstate.ExtendedMapHashes == this_hash]);
             
-            if 0
-                correct_operator = strcmp(varargin{2},{internal_sdpvarstate.ExtendedMap(:).fcn});
-                arg1 = varargin{2};
-                arg2 = {varargin{3:end}};
-                %this_hash = create_trivial_hash(varargin{3});
-                this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
-                correct_operator = find(correct_operator);
-                %temp = [internal_sdpvarstate.ExtendedMap(correct_operator).Hash];
-                %correct_hash = correct_operator(find([temp == this_hash]));
-                correct_hash = correct_operator(find([internal_sdpvarstate.ExtendedMapHashes == this_hash]));
-                
-            else
-                
-                OperatorName = varargin{2};
-                Arguments = {varargin{3:end}};               
-                this_hash = create_trivial_hash(firstSDPVAR(Arguments));
-                correct_operator = find([internal_sdpvarstate.ExtendedMapHashes == this_hash]);
-                
-                if ~isempty(correct_operator)
-                    correct_operator = correct_operator(strcmp(OperatorName,{internal_sdpvarstate.ExtendedMap(correct_operator).fcn}));
-                else
-                    
-                end
-                
-                
+            if ~isempty(correct_operator)
+                correct_operator = correct_operator(strcmp(OperatorName,{internal_sdpvarstate.ExtendedMap(correct_operator).fcn}));
             end
-            
-            
-            
-            for i = correct_operator
-                % for i = find(correct_operator)
+                                                                         
+            for i = correct_operator                
                 if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
                     if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
@@ -207,7 +184,6 @@ switch varargin{1}
             end
         else
             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
-            %this_hash = create_trivial_hash(varargin{3});
         end
         
         switch varargin{2}
@@ -297,12 +273,10 @@ switch varargin{1}
                             y(i) = X(i);
                         else
                             if ~isempty(correct_operator)
-                                this_hash = vec_hashes(i);
-                                %this_hash = create_trivial_hash(Xi);
-                                for j = correct_operator%find(correct_operator)
+                                this_hash = vec_hashes(i);                                
+                                for j = correct_operator
                                     if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
-                                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
-                                            %  y(i) = internal_sdpvarstate.ExtendedMap(j).var;
+                                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)                                           
                                             allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
                                             allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
                                             found = 1;
@@ -320,8 +294,7 @@ switch varargin{1}
                             internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
                             new_hash = create_trivial_hash(Xi);
                             internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
-                            internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
-                            %allNewExtended = [allNewExtended yi];
+                            internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];                           
                             allNewExtendedIndex = [allNewExtendedIndex i];
                         end
                     end
@@ -332,8 +305,7 @@ switch varargin{1}
                 internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables y_vars];
                 y = reshape(y,size(X,1),size(X,2));
                 y = setoperatorname(y,varargin{2});
-                
-                
+                                
             otherwise
                 % This is the standard operators. INPUTS -> 1 scalar output
                 if isequal(varargin{2},'or') | isequal(varargin{2},'xor') | isequal(varargin{2},'and')
@@ -363,7 +335,7 @@ switch varargin{1}
                 end
                 y = setoperatorname(y,varargin{2});
         end
-        for i = 3:length(varargin)%nargin
+        for i = 3:length(varargin)
             if isa(varargin{i},'sdpvar')
                 yalmip('setdependence',getvariables(y),getvariables(varargin{i}));
             end

@@ -10,7 +10,7 @@ for variable = 1:length(model.linearindicies)
     %dx(model.linearindicies(variable)) = 1;
     %if any(model.deppattern(requested,model.linearindicies(variable)))
     if active(variable)%any(M(:,model.linearindicies(variable)))
-        dx = sparse(model.linearindicies(variable),1,1,length(model.c),1);
+        dx = full(sparse(model.linearindicies(variable),1,1,length(model.c),1));
         for i = 1:length(model.evaluation_scheme)
             precompute{variable,i}=0;
             switch model.evaluation_scheme{i}.group
@@ -21,7 +21,8 @@ for variable = 1:length(model.linearindicies)
                             if any(requested(model.evalMap{j}.computes))
                                 precompute{variable,i}(j)=1;
                                 if any(requested(model.evalMap{j}.computes))
-                                    dx(model.evalMap{j}.computes) = 1;
+                                    these = model.evalMap{j}.computes;
+                                    dx(these) = 1;
                                 end
                             end
                         end

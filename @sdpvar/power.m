@@ -118,20 +118,38 @@ d = d(1);
 var = getvariables(x);
 %  hash = randn(size(mt,2),1);
 %  hashM = mt*hash;
-hashV = (mt(var,:)*d)*hash;
-y = [];
-for i = 1:length(hashV)
-    previous_var = find(abs(hashM - hashV(i)) < 1e-20);
-    if isempty(previous_var)
-        newmt =  mt(var(i),:)*d;
-        mt(end+1,:) = newmt;
-        variabletype = [variabletype newvariabletypegen(newmt)];
-        %yalmip('setmonomtable',mt,[variabletype newvariabletypegen(newmt)]);
-        y = [y size(mt,1)];
-    else
-        y = [y previous_var];
+
+usedmt = mt(var,:);
+hashV = (usedmt*d)*hash;
+if ~any(ismember(hashV,hashM))
+    newmt =  usedmt*d;
+    variabletype = [variabletype newvariabletypegen(newmt)];
+    y = size(mt,1) + (1:length(var));
+    mt = [mt;newmt];
+else
+    y = [];
+    allnewmt = [];
+    newvariables = 0;
+    keep = zeros(size(usedmt,1),1);
+    for i = 1:length(hashV)
+        previous_var = find(abs(hashM - hashV(i)) < 1e-20);
+        if isempty(previous_var)
+            newmt =  usedmt(i,:)*d;
+            %newmt =  mt(var(i),:)*d;
+            %allnewmt = [allnewmt;newmt];
+            %mt(end+1,:) = newmt;
+            variabletype = [variabletype newvariabletypegen(newmt)];
+            %yalmip('setmonomtable',mt,[variabletype newvariabletypegen(newmt)]);
+            newvariables = newvariables + 1;
+            keep(i) = 1;
+            y = [y size(mt,1)+newvariables];
+        else
+            y = [y previous_var];
+        end
     end
+    mt = [mt;usedmt(find(keep),:)*d];
 end
+%mt = [mt;allnewmt];
 yalmip('setmonomtable',mt,variabletype);
 y = reshape(recover(y),x.dim);
 
