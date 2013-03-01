@@ -143,6 +143,125 @@ switch varargin{1}
         disp('Obsolete use of the terms addextendedvariable and addEvalVariable');
         error('Obsolete use of the terms addextendedvariable and addEvalVariable');
                 
+    case 'defineVectorizedUnitary'
+             
+        varargin{2} = strrep(varargin{2},'sdpvar/',''); % Clean due to different behaviour of the function mfilename in ML 5,6 and 7
+        
+        % Is this operator variable already defined
+        correct_operator = [];
+        if ~isempty(internal_sdpvarstate.ExtendedMap)
+                                              
+            OperatorName = varargin{2};
+            Arguments = {varargin{3:end}};
+            this_hash = create_trivial_hash(firstSDPVAR(Arguments));
+            correct_operator = find([internal_sdpvarstate.ExtendedMapHashes == this_hash]);
+            
+            if ~isempty(correct_operator)
+                correct_operator = correct_operator(strcmp(OperatorName,{internal_sdpvarstate.ExtendedMap(correct_operator).fcn}));
+            end
+                                                                         
+            for i = correct_operator                
+                if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
+                    if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                        if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
+                            varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
+                        else
+                            varargout{1} =  internal_sdpvarstate.ExtendedMap(i).var;
+                        end
+                        varargout{1} = setoperatorname(varargout{1},varargin{2});
+                        return
+                    end
+                end
+            end
+        else
+            this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
+        end
+        
+        X = varargin{3:end};
+        y = sdpvar(numel(X),1);
+        allNewExtended = [];
+        allNewExtendedIndex = [];
+        allPreviouslyDefinedExtendedToIndex = [];
+        allPreviouslyDefinedExtendedFromIndex = [];
+        if ~isempty(internal_sdpvarstate.ExtendedMap)
+            correct_operator = find(strcmp(varargin{2},{internal_sdpvarstate.ExtendedMap(:).fcn}));
+        end
+                
+        z = sdpvar(numel(X),1); % Standard format     y=f(z),z==arg
+        
+        internal_sdpvarstate.auxVariables = [ internal_sdpvarstate.auxVariables  getvariables(z)];
+        internal_sdpvarstate.auxVariables = [ internal_sdpvarstate.auxVariables  getvariables(y)];
+        
+        vec_hashes = create_trivial_vechash(X);
+        vec_isdoubles = create_vecisdouble(X);
+        
+        if isempty(correct_operator)
+            availableHashes  = [];
+        else
+            availableHashes = [internal_sdpvarstate.ExtendedMap(correct_operator).Hash];
+        end
+        
+        for i = 1:numel(X)
+            % we have to search through all scalar operators
+            % to find this single element
+            found = 0;
+         %   Xi = X(i);
+            Xi = [];
+            if vec_isdoubles(i)%isa(Xi,'double')
+                found = 1;
+                y(i) = X(i);
+            else
+                if ~isempty(correct_operator)
+                    this_hash = vec_hashes(i);
+                    correct_hash = correct_operator(find(this_hash == availableHashes));
+                    %   for j = correct_operator
+                    if ~isempty(correct_hash)
+                         Xi = X(i);
+                    end
+                    for j = correct_hash(:)'
+                        % if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
+                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
+                            allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
+                            allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
+                            found = 1;
+                            break
+                        end
+                        % end
+                    end
+                end
+            end
+            
+            if ~found
+                yi = y(i);
+                if isempty(Xi)
+                     Xi = X(i);
+                end
+                internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
+                internal_sdpvarstate.ExtendedMap(end).arg = {Xi,z(i)};
+                internal_sdpvarstate.ExtendedMap(end).var = yi;
+                internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
+                new_hash = create_trivial_hash(Xi);
+                internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
+                internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
+                allNewExtendedIndex = [allNewExtendedIndex i];
+                availableHashes = [availableHashes new_hash];
+                correct_operator = [correct_operator length( internal_sdpvarstate.ExtendedMap)];
+                
+            end
+        end
+    
+        y(allPreviouslyDefinedExtendedToIndex) = [internal_sdpvarstate.ExtendedMap(allPreviouslyDefinedExtendedFromIndex).var];
+        allNewExtended = y(allNewExtendedIndex);
+        y_vars = getvariables(allNewExtended);
+        internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables y_vars];
+        y = reshape(y,size(X,1),size(X,2));
+        y = setoperatorname(y,varargin{2});
+        varargout{1} = y;     
+
+        yalmip('setdependence',getvariables(y),getvariables(X));
+        return
+        
+        
     case {'define','definemulti'}
         
         if strcmpi(varargin{1},'define')

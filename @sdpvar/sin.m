@@ -9,7 +9,8 @@ switch class(varargin{1})
         error('Overloaded SDPVAR/SIN CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
-        varargout{1} = InstantiateElementWise(mfilename,varargin{:});
+        varargout{1} = InstantiateElementWiseUnitary(mfilename,varargin{:});
+        %varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
 
