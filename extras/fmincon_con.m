@@ -63,16 +63,21 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         a2 = model.nonlinearindicies(news(1:length(c),1))';
         nn = max(max(length(linearindicies)),max(news(:,2)));
         mm = max(max(linearindicies),max(model.nonlinearindicies(news(:,1))));
-      %  newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
-     %   newdxx = spalloc(nn,mm,length(linearindicies));
-     %   iii = sub2ind(size(newdxx),a1(:),a2(:));
-     %   newdxx(iii) = zzz;
+        %  newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
+        %   newdxx = spalloc(nn,mm,length(linearindicies));
+        %   iii = sub2ind(size(newdxx),a1(:),a2(:));
+        %   newdxx(iii) = zzz;
+        
+        % Moved from the for-loop below*
+       a1 = [a1;(1:length(linearindicies))'];
+       a2 = [a2;linearindicies(:)];
+       zzz = [zzz;repmat(1,length(linearindicies),1)];
         newdxx = sparse(a1,a2,zzz,nn,mm);
-
-    %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
-    %    iii = sub2ind(size(newdxx),a1,a2);
-    %    newdxx(iii) = zzz;
-    %    newdxx = sparse(a1,a2,zzz);
+        
+        %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
+        %    iii = sub2ind(size(newdxx),a1,a2);
+        %    newdxx(iii) = zzz;
+        %    newdxx = sparse(a1,a2,zzz);
     else
         newdxx = spalloc(length(linearindicies),max(linearindicies),length(linearindicies));
         for i = 1:length(c)
@@ -80,9 +85,12 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         end
     end
 
-    for i = 1:length(linearindicies)
-        newdxx(i,linearindicies(i)) = 1;
-    end
+    % * moved up
+    %ii = sub2ind(size(newdxx),1:length(linearindicies),linearindicies);
+    %newdxx(ii) = 1;
+%     for i = 1:length(linearindicies)
+%        newdxx(i,linearindicies(i)) = 1;
+%     end
     
     if ~isempty(model.Anonlineq)
         dgAll = model.Anonlineq*newdxx';
