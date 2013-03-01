@@ -6,7 +6,7 @@ function y = power(x,d)
 
 
 % Vectorize x if d is vector
-if prod(size(x))==1 & (prod(size(d))>1)
+if numel(x)==1 & (numel(d)>1)
     x = x.*ones(size(d));
 end
 
@@ -49,12 +49,21 @@ negative = any(any(d<0));
 different = ~all(all(d==d(1)));
 if fractional | negative | different
     if x.dim(1)>1 | x.dim(2)>1
+        if isequal(x.basis,[spalloc(prod(x.dim),1,0) speye(prod(x.dim))]) & all(d==d(1))
+            % Simple case x.^d
+            y = vectorizedUnitPower(x,d);
+            return
+        end
         [n,m] = size(x);        
         y = [];
         for i = 1:n % FIX : Vectorize!
-            temp = [];
-            for j = 1:m
-                temp = [temp extsubsref(x,i,j).^d(i,j)];
+            if m == 1
+                temp = extsubsref(x,i,1).^d(i,1);
+            else
+                temp = [];
+                for j = 1:m
+                    temp = [temp extsubsref(x,i,j).^d(i,j)];
+                end
             end
             y = [y;temp];
         end
@@ -82,6 +91,12 @@ if fractional | negative | different
     return
 end
 
+if isequal(x.basis,[spalloc(prod(x.dim),1,0) speye(prod(x.dim))]) & all(d==d(1))
+     % Simple case x.^d
+     y = vectorizedUnitPower(x,d);
+     return
+ end
+        
 % Back to scalar power...
 d = d(1,1);
 if x.dim(1)>1 | x.dim(2)>1
@@ -96,3 +111,28 @@ if x.dim(1)>1 | x.dim(2)>1
 else
     error('This should not appen. Report bug (power does not use mpower)')
 end
+
+function y = vectorizedUnitPower(x,d)
+d = d(1);
+[mt,variabletype,hashM,hash] = yalmip('monomtable');
+var = getvariables(x);
+%  hash = randn(size(mt,2),1);
+%  hashM = mt*hash;
+hashV = (mt(var,:)*d)*hash;
+y = [];
+for i = 1:length(hashV)
+    previous_var = find(abs(hashM - hashV(i)) < 1e-20);
+    if isempty(previous_var)
+        newmt =  mt(var(i),:)*d;
+        mt(end+1,:) = newmt;
+        variabletype = [variabletype newvariabletypegen(newmt)];
+        %yalmip('setmonomtable',mt,[variabletype newvariabletypegen(newmt)]);
+        y = [y size(mt,1)];
+    else
+        y = [y previous_var];
+    end
+end
+yalmip('setmonomtable',mt,variabletype);
+y = reshape(recover(y),x.dim);
+
+            
