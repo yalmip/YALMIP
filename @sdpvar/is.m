@@ -202,6 +202,9 @@ switch property
     case 'gkyp'
         YESNO = (X.typeflag==40);
         
+    case 'unitary'
+        n = size(X.basis,1);
+        YESNO = isequal(X.basis,[sparse(n,1,0) speye(n)]);
         
     otherwise
         error('Wrong input argument.');
