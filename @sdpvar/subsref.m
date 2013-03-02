@@ -274,12 +274,12 @@ lind1 = length(ind1);
 if lind2 == 1
     ind1_ext = ind1(:);
 else
-    ind1_ext = kron(repmat(1,lind2,1),ind1(:));
+    ind1_ext = kron(ones(lind2,1),ind1(:));
 end
 if lind1 == 1
     ind2_ext = ind2(:);
 else
-    ind2_ext = kron(ind2(:),repmat(1,lind1,1));
+    ind2_ext = kron(ind2(:),ones(lind1,1));
 end
 
 if prod(size(ind1_ext))==0 | prod(size(ind2_ext))==0
@@ -300,8 +300,10 @@ Z = X.basis(linear_index,:);
 % Find non-zero basematrices
 %nzZ = find(any(Z(:,2:end),1));
 nzZ = find(any(Z,1))-1;
-if nzZ(1)==0
+if numel(nzZ)>0
+    if nzZ(1)==0
     nzZ = nzZ(2:end);
+    end
 end
 if ~isempty(nzZ)
     X.dim(1) = nnew;
