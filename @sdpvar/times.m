@@ -47,8 +47,9 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
         end
         
         % Check for the case x.*y where x and y are unit variables
-        if length(X.lmi_variables)==numel(X)
-            if length(Y.lmi_variables) == numel(Y)
+        [mt,variable_type,hashedMT,hash] = yalmip('monomtable');
+        if length(X.lmi_variables)==numel(X) 
+            if length(Y.lmi_variables) == numel(Y) 
                 if numel(X)==numel(Y)
                     if nnz(X.basis)==numel(X)
                         if nnz(Y.basis)==numel(Y)
@@ -56,19 +57,22 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
                             if isequal(X.basis,D)
                                 if isequal(Y.basis,D)
                                     % Pew.
-                                    Z = X;
-                                    [mt,variable_type,hashedMT,hash] = yalmip('monomtable');
+                                    Z = X;                                    
                                     generated_monoms = mt(X.lmi_variables,:) +  mt(Y.lmi_variables,:);
                                     generated_hash = generated_monoms*hash;
                                     keep = zeros(1,numel(X));
                                     for i = 1:numel(X)
-                                        before = find(abs(hashedMT-generated_hash(i))<eps);
-                                        if isempty(before)
-                                          %  mt = [mt;generated_monoms(i,:)];
-                                            keep(i) = 1;
-                                            Z.lmi_variables(i) = size(mt,1)+nnz(keep);
+                                        if generated_hash(i)
+                                            before = find(abs(hashedMT-generated_hash(i))<eps);
+                                            if isempty(before)
+                                                %  mt = [mt;generated_monoms(i,:)];
+                                                keep(i) = 1;
+                                                Z.lmi_variables(i) = size(mt,1)+nnz(keep);
+                                            else
+                                                Z.lmi_variables(i) = before;
+                                            end
                                         else
-                                            Z.lmi_variables(i) = before;
+                                            Z.lmi_variables(i) = 0;
                                         end
                                     end
                                     
@@ -77,17 +81,23 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
                                         mt = [mt;generated_monoms(keep,:)];
                                         yalmip('setmonomtable',mt);
                                     end
-                                     
+                                                                                                             
                                     if any(diff(Z.lmi_variables)<0)
                                         [i,j]=sort(Z.lmi_variables);
                                         Z.lmi_variables = Z.lmi_variables(j);
                                         Z.basis(:,2:end) = Z.basis(:,j+1);
                                     end
                                     
+                                    if Z.lmi_variables(1)==0
+                                        i = find(Z.lmi_variables == 0);
+                                        Z.basis(:,1) = sum(Z.basis(:,1+i),2);
+                                        Z.basis(:,1+i)=[];
+                                    end
+                                    
                                     Z.conicinfo = [0 0];
                                     Z.extra.opname='';
+                                    Z = flush(Z);
                                     y = clean(Z);
-                                    y = flush(y);
                                     return
                                 end
                             end
@@ -154,7 +164,7 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
         ix=1;
 
         new_mt = [];
-        mt = yalmip('monomtable');
+        %mt = yalmip('monomtable');
         nvar = length(all_lmi_variables);
         local_mt = mt(all_lmi_variables,:);
         theyvars = find(index_Y);
@@ -243,8 +253,8 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
     % Reset info about conic terms
     Z.conicinfo = [0 0];
     Z.extra.opname='';
+    Z = flush(Z);
     y = clean(Z);
-    y = flush(y);
     return
 end
 
