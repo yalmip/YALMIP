@@ -178,6 +178,11 @@ switch varargin{1}
         end
         
         X = varargin{3:end};
+        if is(X,'unitary')
+            allXunitary = 1;
+        else
+            allXunitary = 0;
+        end
         y = sdpvar(numel(X),1);
         allNewExtended = [];
         allNewExtendedIndex = [];
@@ -237,7 +242,15 @@ switch varargin{1}
                      Xi = X(i);
                 end
                 internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
-                internal_sdpvarstate.ExtendedMap(end).arg = {Xi,z(i)};
+                if allXunitary
+                     internal_sdpvarstate.ExtendedMap(end).arg = {Xi,[]};
+                else
+                    if is(Xi,'unitary')
+                    internal_sdpvarstate.ExtendedMap(end).arg = {Xi,[]};
+                else
+                    internal_sdpvarstate.ExtendedMap(end).arg = {Xi,z(i)};
+                    end
+                end
                 internal_sdpvarstate.ExtendedMap(end).var = yi;
                 internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
                 new_hash = create_trivial_hash(Xi);
