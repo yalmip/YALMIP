@@ -22,7 +22,7 @@ else
     if ~isempty(model.A)
         G = [G;model.A];
     end
-    if ~isempty(model.Aeq)
+    if ~isempty(model.Aeq)     
         G = [G;model.Aeq];
     end
     G = sparse(G);
