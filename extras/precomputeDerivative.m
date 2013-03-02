@@ -21,10 +21,10 @@ for variable = range(find(active(range)))% = range
                         if any(dx(k))
                             if any(requested(model.evalMap{j}.computes))
                                 precompute{variable,i}(j)=1;
-                                if any(requested(model.evalMap{j}.computes))
+                              %  if any(requested(model.evalMap{j}.computes))
                                     these = model.evalMap{j}.computes;
                                     dx(these) = 1;
-                                end
+                             %   end
                             end
                         end
                     end
