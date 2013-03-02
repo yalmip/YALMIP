@@ -166,7 +166,11 @@ allA = [model.Anonlineq;model.Anonlinineq];
 requested = any(allA',2);
 [i,j] = find((model.deppattern(find(requested),:)));
 requested(j) = 1;
-model.Crecursivederivativeprecompute = precomputeDerivative(model,requested);
+if ~isempty(model.evalMap)
+    % Recursive stuff is only possible if we have avaluation-based
+    % operators
+    model.Crecursivederivativeprecompute = precomputeDerivative(model,requested);
+end
 
 % Some precomputation of computational scheme for gradient
 requested = model.c | any(model.Q,2);
