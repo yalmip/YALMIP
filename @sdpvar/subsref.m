@@ -298,7 +298,11 @@ mnew = length(ind2);
 % Put all matrices in vectors and extract sub matrix
 Z = X.basis(linear_index,:);
 % Find non-zero basematrices
-nzZ = find(any(Z(:,2:end),1));
+%nzZ = find(any(Z(:,2:end),1));
+nzZ = find(any(Z,1))-1;
+if nzZ(1)==0
+    nzZ = nzZ(2:end);
+end
 if ~isempty(nzZ)
     X.dim(1) = nnew;
     X.dim(2) = mnew;
