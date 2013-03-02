@@ -171,7 +171,14 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         end
 
-        all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
+        if Y.lmi_variables(end) < X.lmi_variables(1)
+            all_lmi_variables = [Y.lmi_variables X.lmi_variables];
+        elseif X.lmi_variables(end) < Y.lmi_variables(1)
+            all_lmi_variables = [X.lmi_variables Y.lmi_variables];
+        else
+            all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
+        end
+        
         y = X;
         %X.basis = []; % Returns memory?
         y.lmi_variables = all_lmi_variables;
