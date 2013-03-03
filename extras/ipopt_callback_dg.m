@@ -4,11 +4,6 @@ global latest_x_g
 global latest_G
 global latest_g
 
-% if returnStructOnly
-%     G = sparse(ones(length(model.beq)+length(model.b)+length(model.bnonlineq)+length(model.bnonlinineq),length(model.linearindicies)));
-%     return
-% end
-
 x = x(:);
 if isequal(x,latest_x_g)
     % Jacobian was computed already in the call for constraints
