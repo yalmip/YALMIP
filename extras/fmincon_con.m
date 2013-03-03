@@ -43,7 +43,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
    % dgAll = [];
     n = length(model.c);
     linearindicies = model.linearindicies;
-    mtNonlinear = model.monomtable(model.nonlinearindicies,:);
+    %mtNonlinear = model.monomtable(model.nonlinearindicies,:);
     xevaled = zeros(1,n);
     xevaled(linearindicies) = x;
     % FIXME: This should be vectorized
@@ -76,7 +76,8 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         % Moved from the for-loop below*
         a1 = [a1(:);(1:length(linearindicies))'];
         a2 = [a2(:);linearindicies(:)];
-        zzz = [zzz;repmat(1,length(linearindicies),1)];
+        %zzz = [zzz;repmat(1,length(linearindicies),1)];
+        zzz = [zzz;ones(length(linearindicies),1)];
         newdxx = sparse(a1,a2,zzz,nn,mm);
         
         %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
