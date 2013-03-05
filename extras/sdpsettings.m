@@ -734,7 +734,7 @@ else
     options.convertconvexquad = 1;
     options.radius = inf;
     options.relax = 0;
-    options.dualize = -1;
+    options.dualize = 0;
     options.usex0 = 0;
     options.savedebug = 0;
     options.debug = 0;
