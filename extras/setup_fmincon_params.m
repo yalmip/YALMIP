@@ -132,6 +132,19 @@ model.nonlinearequalities = ~isempty(model.Anonlineq);
     model.fastdiff.allDerivemt = allDerivemt;
     model.fastdiff.c = c;
     model.fastdiff.univariateDifferentiates = 0;
+    
+    
+    a1 =  model.fastdiff.news(1:length(model.fastdiff.c),2); 
+    a2 =  model.nonlinearindicies(model.fastdiff.news(1:length(model.fastdiff.c),1))'; 
+    zzz = [ones(length(a1),1)]; 
+    nn = max(max(length(model.linearindicies)),max(news(:,2))); 
+    mm = max(max(linearindicies),max(model.nonlinearindicies(news(:,1))));
+    a1f = [a1(:);(1:length(model.linearindicies))']; 
+    a2f = [a2(:);model.linearindicies(:)];    
+    zzzf = [zzz;ones(length(linearindicies),1)]; 
+    model.fastdiff.newdxx = sparse(a1f,a2f,zzzf,nn,mm); 
+    model.fastdiff.linear_in_newdxx = sub2ind([nn mm],a1,a2);
+    
     if all(sum(allDerivemt | allDerivemt,2)==1)
         model.fastdiff.univariateDifferentiates = 1;
         [i,j,k] = find(allDerivemt');
@@ -141,6 +154,12 @@ model.nonlinearequalities = ~isempty(model.Anonlineq);
         model.fastdiff.univariateDiffMonom = i(:);
         model.fastdiff.univariateDiffPower = k(:);
     end
+ else
+      allA = [model.Anonlineq;model.Anonlinineq]; 
+      requested = any(allA',2); 
+      [i,j,k] = find((model.deppattern(find(requested),:))); 
+      requested(j) = 1; 
+      model.fastdiff.requested = requested;     
  end
     
     

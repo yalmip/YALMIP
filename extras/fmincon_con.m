@@ -64,6 +64,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     end
     
     if 1
+        if 0
         a1 = news(1:length(c),2);
         a2 = model.nonlinearindicies(news(1:length(c),1))';
         nn = max(max(length(linearindicies)),max(news(:,2)));
@@ -79,6 +80,10 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         %zzz = [zzz;repmat(1,length(linearindicies),1)];
         zzz = [zzz;ones(length(linearindicies),1)];
         newdxx = sparse(a1,a2,zzz,nn,mm);
+        else
+            newdxx = model.fastdiff.newdxx;
+            newdxx(model.fastdiff.linear_in_newdxx) = zzz;
+        end
         
         %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
         %    iii = sub2ind(size(newdxx),a1,a2);
@@ -111,9 +116,10 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     
 else
     allA = [model.Anonlineq;model.Anonlinineq];
-    requested = any(allA',2);
-    [i,j,k] = find((model.deppattern(find(requested),:)));
-    requested(j) = 1;
+  %  requested = any(allA',2);
+  %  [i,j,k] = find((model.deppattern(find(requested),:)));
+  %  requested(j) = 1;
+    requested = model.fastdiff.requested;
     dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);
     dgAll = allA*dx;
 end
