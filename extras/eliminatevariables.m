@@ -268,13 +268,16 @@ end
 
 % Remap indicies
 if ~isempty(model.integer_variables)
-    [~,model.integer_variables]=ismember(model.integer_variables,keptvariables);
+    temp=ismember(keptvariables,model.integer_variables);
+    model.integer_variables = find(temp);  
 end
 if ~isempty(model.binary_variables)
-    [~,model.binary_variables]=ismember(model.binary_variables,keptvariables);
+    temp=ismember(keptvariables,model.binary_variables);
+    model.binary_variables = find(temp);    
 end
 if ~isempty(model.semicont_variables)
-    [~,model.semicont_variables]=ismember(model.semicont_variables,keptvariables);
+   temp=ismember(keptvariables,model.semicont_variables);
+    model.semicont_variables = find(temp);  
 end
 
 function model = compressModel(model)
