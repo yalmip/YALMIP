@@ -5,9 +5,9 @@ function y = plus(X,Y)
 % $Id: plus.m,v 1.2 2006-08-11 11:48:15 joloef Exp $
 
 if isa(X,'sdpvar')
-    X = ncvar(struct(X));
+    X = ncvar(X);
 elseif isa(Y,'sdpvar')
-    Y = ncvar(struct(Y));
+    Y = ncvar(Y);
 end
 
 X_is_ncvar = isa(X,'ncvar');
