@@ -131,8 +131,9 @@ elseif isequal(subs.type,'{}')
                 u = [u reshape(0*self.map+nan,self.dimout)];
             end
         else
-            if ~isempty(output.Primal)
+            if ~isempty(output.Primal)              
                 assign(self.output.z,output.Primal(self.map));
+                assign(self.input.expression,thisData);
                 u = [u reshape(double(self.output.expression),self.dimout)];
             end
         end
