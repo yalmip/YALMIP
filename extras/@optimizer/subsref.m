@@ -142,13 +142,16 @@ elseif isequal(subs.type,'{}')
         start = start + self.dimin(2);
     end
     if length(self.dimoutOrig)>1                   
-        top = 1;
+       % top = 1;
         realDimOut = self.dimoutOrig;
-        allu = {};
-        for i = 1:length(self.dimoutOrig)            
-            n = prod(self.dimoutOrig{i});
-            allu{i} = reshape(u(top:top+n-1),self.dimoutOrig{i});
-            top = top + n;
+        allu = cell(1, length(self.dimoutOrig));
+        for k = 1:nBlocks
+            top = 1;
+            for i = 1:length(self.dimoutOrig)
+                n = prod(self.dimoutOrig{i});
+                allu{i} = [allu{i} reshape(u(top:top+n-1,k),self.dimoutOrig{i})];
+                top = top + n;
+            end
         end
         varargout{1} = allu;
     elseif nBlocks==1
