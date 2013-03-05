@@ -143,7 +143,7 @@ model.nonlinearequalities = ~isempty(model.Anonlineq);
     a2f = [a2(:);model.linearindicies(:)];    
     zzzf = [zzz;ones(length(linearindicies),1)]; 
     model.fastdiff.newdxx = sparse(a1f,a2f,zzzf,nn,mm); 
-    model.fastdiff.linear_in_newdxx = sub2ind([nn mm],a1,a2);
+    model.fastdiff.linear_in_newdxx = sub2ind([nn mm],a1(:),a2(:));
     
     if all(sum(allDerivemt | allDerivemt,2)==1)
         model.fastdiff.univariateDifferentiates = 1;
