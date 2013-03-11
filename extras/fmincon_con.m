@@ -103,14 +103,15 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
 %        newdxx(i,linearindicies(i)) = 1;
 %     end
     
+    newdxx = newdxx';
     if ~isempty(model.Anonlineq)
-        newdxx = newdxx';
+    %    newdxx = newdxx';
         dgAll = model.Anonlineq*newdxx;
     else
         dgAll = [];
     end
     if ~isempty(model.Anonlinineq)
-        newdxx = newdxx';
+    %    newdxx = newdxx';
         aux = model.Anonlinineq*newdxx;
         dgAll = [dgAll;aux];
     end    
