@@ -104,7 +104,8 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
 %     end
     
     if ~isempty(model.Anonlineq)
-        dgAll = model.Anonlineq*newdxx';
+        newdxx = newdxx';
+        dgAll = model.Anonlineq*newdxx;
     else
         dgAll = [];
     end
