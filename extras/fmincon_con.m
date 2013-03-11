@@ -111,7 +111,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     end
     if ~isempty(model.Anonlinineq)
         newdxx = newdxx';
-        aux = model.Anonlinineq*newdxx';
+        aux = model.Anonlinineq*newdxx;
         dgAll = [dgAll;aux];
     end    
   %  dgAll = allA*newdxx';
