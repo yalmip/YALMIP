@@ -17,9 +17,9 @@ function varargout = implies(varargin)
 %
 % Examples
 %
-%  binvar X,Y; F = implies(X,Y);
+%  binvar X Y; F = implies(X,Y);
 %  binvar X;sdpvar Y; F = implies(X,Y>=5);
-%  binvar X;Y=sdpvar(3,1); F = set(implies(X,[sum(Y);Y(2)]>=[5;0]));
+%  binvar X;Y=sdpvar(3,1); F = implies(X,[sum(Y);Y(2)]>=[5;0]);
 %
 % Note
 %  Using implies with X non-binary is highly sensitive numerically.

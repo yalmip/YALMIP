@@ -271,7 +271,15 @@ switch varargin{1}
         y = setoperatorname(y,varargin{2});
         varargout{1} = y;     
 
-        yalmip('setdependence',getvariables(y),getvariables(X));
+        yV = getvariables(y);
+        yB = getbase(y);yB = yB(:,2:end);
+        xV = getvariables(X);
+        xB = getbase(X);xB = xB(:,2:end);
+        internal_sdpvarstate.DependencyMap(max(yV),max(xV))=sparse(0);
+        for i = 1:length(yV)
+            internal_sdpvarstate.DependencyMap(yV(find(yB(i,:))),xV(find(xB(i,:))))=1;
+        end
+        %yalmip('setdependence',getvariables(y),getvariables(X));
         return
         
         
@@ -491,7 +499,7 @@ switch varargin{1}
             % if size(internal_sdpvarstate.DependencyMap,1) < nx | size(internal_sdpvarstate.DependencyMap,2) < ny
             %     internal_sdpvarstate.DependencyMap(nx,ny) = 0;
             % end
-            % internal_sdpvarstate.DependencyMap(index) = 1;
+            % internal_sdpvarstate.DependencyMap(index) = 1;            
             internal_sdpvarstate.DependencyMap(varargin{2},varargin{3}) = 1;
             n = size(internal_sdpvarstate.monomtable,1);
             if size(internal_sdpvarstate.DependencyMap,1) < n
