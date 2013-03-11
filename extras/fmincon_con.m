@@ -110,6 +110,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         dgAll = [];
     end
     if ~isempty(model.Anonlinineq)
+        newdxx = newdxx';
         aux = model.Anonlinineq*newdxx';
         dgAll = [dgAll;aux];
     end    
