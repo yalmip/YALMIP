@@ -74,7 +74,7 @@ for i = 1:length(equ_con)
         data = [real(data);imag(data)];
     end
     mapX = [1 1+lmi_variables];
-    [ix,jx,sx] = find(data);
+    [ix,jx,sx] = find(data);    
     F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);
     
     F_struc = [F_struc F_structemp];
