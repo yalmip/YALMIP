@@ -590,6 +590,14 @@ i = i+1;
 
 solver(i) = sdpsolver;
 solver(i).tag     = 'DSDP';
+solver(i).version = 'OPTI';
+solver(i).checkfor= {'dsdp','opti'};
+solver(i).call    = 'calloptidsdp';
+solver(i).constraint.equalities.linear = 0;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag     = 'DSDP';
 solver(i).version = '4';
 solver(i).checkfor= {'dsdp'};
 solver(i).call    = 'calldsdp';

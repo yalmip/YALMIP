@@ -1009,6 +1009,28 @@ else
     end
     
     try
+        % OPTI Toolbox interface
+        options.dsdp = dsdpset();
+    catch
+        % Options for DSDP 5.6 classical interface
+        options.dsdp.r0 = -1;
+        options.dsdp.zbar = 0;
+        options.dsdp.penalty  = 1e8;
+        options.dsdp.boundy  = 1e6;
+        options.dsdp.gaptol = 1e-7;
+        options.dsdp.maxit  = 500;
+        options.dsdp.steptol=5e-2;
+        options.dsdp.inftol=1e-8;
+        options.dsdp.dual_bound = 1e20;
+        options.dsdp.rho = 3;
+        options.dsdp.dynamicrho = 1;
+        options.dsdp.bigM = 0;
+        options.dsdp.mu0 = -1;
+        options.dsdp.reuse = 4;
+        options.dsdp.lp_barrier = 1;
+    end
+    
+    try
         evalc('[r,res]=mosekopt(''param'');');
         options.mosek = res.param;
         remove = zeros(length(Names),1);
@@ -1043,22 +1065,22 @@ else
     
   %  options.mosek.param = [];
     
-    % Options for DSDP 5.6
-    options.dsdp.r0 = -1;
-    options.dsdp.zbar = 0;
-    options.dsdp.penalty  = 1e8;
-    options.dsdp.boundy  = 1e6;
-    options.dsdp.gaptol = 1e-7;
-    options.dsdp.maxit  = 500;
-    options.dsdp.steptol=5e-2;
-    options.dsdp.inftol=1e-8;
-    options.dsdp.dual_bound = 1e20;
-    options.dsdp.rho = 3;
-    options.dsdp.dynamicrho = 1;
-    options.dsdp.bigM = 0;
-    options.dsdp.mu0 = -1;
-    options.dsdp.reuse = 4;
-    options.dsdp.lp_barrier = 1;
+%     % Options for DSDP 5.6
+%     options.dsdp.r0 = -1;
+%     options.dsdp.zbar = 0;
+%     options.dsdp.penalty  = 1e8;
+%     options.dsdp.boundy  = 1e6;
+%     options.dsdp.gaptol = 1e-7;
+%     options.dsdp.maxit  = 500;
+%     options.dsdp.steptol=5e-2;
+%     options.dsdp.inftol=1e-8;
+%     options.dsdp.dual_bound = 1e20;
+%     options.dsdp.rho = 3;
+%     options.dsdp.dynamicrho = 1;
+%     options.dsdp.bigM = 0;
+%     options.dsdp.mu0 = -1;
+%     options.dsdp.reuse = 4;
+%     options.dsdp.lp_barrier = 1;
     
     % Older versions
     options.dsdp.objectiveconstant = 0;
