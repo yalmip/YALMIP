@@ -46,8 +46,23 @@ end
 x = y;  % Our notation do not coincide ...
 switch exitflag
     case 1
-        problem = 0;
-    case -27
+        switch stats.pdflag
+            case 1
+                problem = 0;
+            case 3
+                problem = 2;
+            case 4
+                problem = 1;
+            otherwise
+                problem = 4;
+        end
+    case -6
+        problem = 6;
+    case {-2,-8,-9}
+        problem = 4;
+    case 7
+        problem = 16;
+    case {-3,-27}
         problem = 3;
     otherwise
         problem = -1;
