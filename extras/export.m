@@ -170,6 +170,8 @@ switch lower(solver.tag)
         catch
         end
 
+    case 'dsdp-opti'
+        model = yalmip2optidsdp(interfacedata);       
         
     case 'gurobi-gurobi'        
         model = yalmip2gurobi(interfacedata);       
