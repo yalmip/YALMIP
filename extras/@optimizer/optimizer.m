@@ -273,6 +273,7 @@ sys.ops = options;
 sys.model.precalc.newmonomtable = sys.model.monomtable;
 sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
 sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
+sys.model.precalc.Qmap = [];
 % R2012b...
 try
     [ii,jj,kk] = unique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1),'rows','stable');

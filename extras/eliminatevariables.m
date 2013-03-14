@@ -257,15 +257,35 @@ if any(model.variabletype) & all(model.variabletype <= 2)
     monomials = find(model.variabletype);
     if nnz(model.F_struc(:,1+monomials))==0
         if all(isinf(model.lb(monomials)))
-            if all(isinf(model.ub(monomials)))
+            if all(isinf(model.ub(monomials)))     
+                % OK, the quadratic/bilinear terms only enter in objective,
+                % so let us try to construct Q
+                if isempty(model.precalc.Qmap)
+                ii = [];
+                jj = [];
+                kk = [];
                 for k = monomials(:)'
                     i = find(model.monomtable(k,:));
                     if model.variabletype(k)==1
                         model.Q(i(1),i(2)) = model.Q(i(1),i(2)) + model.c(k)/2;
                         model.Q(i(2),i(1)) = model.Q(i(1),i(2));
+                        ii = [ii;i(1)];
+                        jj = [jj;i(2)];                        
+                        kk = [kk;k];
                     else
                         model.Q(i,i) = model.Q(i,i) + model.c(k);
+                        ii = [ii;i];
+                        jj = [jj;i];
+                        kk = [kk;k];
                     end
+                end
+                model.precalc.Qmap.M = sparse(sub2ind(size(model.Q),ii,jj),kk,1,prod(size(model.Q)),length(model.c));
+                model.precalc.Qmap.monomials = monomials;
+                model.precalc.Qmap.monomtable = model.monomtable;
+                else
+                    m =  model.precalc.Qmap.M*sparse(model.c);
+                    m = reshape(m,sqrt(length(m)),[]);
+                    model.Q = (m+m')/2;
                 end
                 model.c(monomials)=[];
                 model.F_struc(:,1+monomials) = [];
@@ -277,9 +297,9 @@ if any(model.variabletype) & all(model.variabletype <= 2)
                 model.Q(:,monomials) = [];
                 model.Q(monomials,:) = [];
                 model.x0(monomials) = [];
-                model.variabletype(monomials)=[];                
-                keptvariables(monomials) = [];                
+                model.variabletype(monomials)=[];
+                keptvariables(monomials) = [];
             end
-        end 
+        end
     end
 end
