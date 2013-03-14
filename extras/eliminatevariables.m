@@ -230,37 +230,7 @@ x0wasempty = isempty(model.x0);
 model.x0 = zeros(length(model.c),1);
 
 % Try to reduce to QP
-if any(model.variabletype) & all(model.variabletype <= 2)
-    monomials = find(model.variabletype);
-    if nnz(model.F_struc(:,1+monomials))==0
-        if all(isinf(model.lb(monomials)))
-            if all(isinf(model.ub(monomials)))
-                for k = monomials(:)'
-                    i = find(model.monomtable(k,:));
-                    if model.variabletype(k)==1
-                        model.Q(i(1),i(2)) = model.Q(i(1),i(2)) + model.c(k)/2;
-                        model.Q(i(2),i(1)) = model.Q(i(1),i(2));
-                    else
-                        model.Q(i,i) = model.Q(i,i) + model.c(k);
-                    end
-                end
-                model.c(monomials)=[];
-                model.F_struc(:,1+monomials) = [];
-                model.lb(monomials) = [];
-                model.ub(monomials) = [];
-                newmonomtable(monomials,:) = [];
-                newmonomtable(:,monomials) = [];
-                model.monomtable = newmonomtable;
-                model.Q(:,monomials) = [];
-                model.Q(monomials,:) = [];
-                model.x0(monomials) = [];
-                model.variabletype(monomials)=[];                
-                keptvariables(monomials) = [];
-                
-            end
-        end 
-    end
-end
+[model,keptvariables,newmonomtable] = setupQuadratics(model,keptvariables,newmonomtable);
 
 if x0wasempty
     model.x0 = [];
@@ -291,4 +261,39 @@ if ~isempty(nonlinear)
     model.variabletype(bilinear & quadratic) = 1;
     sigmonial = any(0>model.monomtable,2) | any(model.monomtable-fix(model.monomtable),2);
     model.variabletype(sigmonial) = 4;
+end
+
+
+
+
+function [model,keptvariables,newmonomtable] = setupQuadratics(model,keptvariables,newmonomtable);
+if any(model.variabletype) & all(model.variabletype <= 2)
+    monomials = find(model.variabletype);
+    if nnz(model.F_struc(:,1+monomials))==0
+        if all(isinf(model.lb(monomials)))
+            if all(isinf(model.ub(monomials)))
+                for k = monomials(:)'
+                    i = find(model.monomtable(k,:));
+                    if model.variabletype(k)==1
+                        model.Q(i(1),i(2)) = model.Q(i(1),i(2)) + model.c(k)/2;
+                        model.Q(i(2),i(1)) = model.Q(i(1),i(2));
+                    else
+                        model.Q(i,i) = model.Q(i,i) + model.c(k);
+                    end
+                end
+                model.c(monomials)=[];
+                model.F_struc(:,1+monomials) = [];
+                model.lb(monomials) = [];
+                model.ub(monomials) = [];
+                newmonomtable(monomials,:) = [];
+                newmonomtable(:,monomials) = [];
+                model.monomtable = newmonomtable;
+                model.Q(:,monomials) = [];
+                model.Q(monomials,:) = [];
+                model.x0(monomials) = [];
+                model.variabletype(monomials)=[];                
+                keptvariables(monomials) = [];                
+            end
+        end 
+    end
 end
