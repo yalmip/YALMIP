@@ -373,6 +373,12 @@ param = model.options.mosek;
 [model.F_struc,model.K] = addbounds(model.F_struc,model.K,model.ub,model.lb);
 prob = yalmip2SDPmosek(model);
 solvertime = clock;
+
+% Debug?
+if model.options.savedebug
+    save mosekdebug prob param
+end
+
 if model.options.verbose == 0
     [r,res] = mosekopt('minimize echo(0)',prob,param);    
 else
