@@ -1,6 +1,14 @@
 function prob = precalcgpstruct(prob)
 prob.b = full(prob.b);
-[aa,bb,cc] = unique(prob.map);
+try
+    % In 2013a they changed the logic in the output. Tell MATLAB to use old
+    % style
+    [aa,bb,cc] = unique(prob.map,'legacy');
+catch
+    % If we have an old version, MATLAB would barf at the legacy flag
+    [aa,bb,cc] = unique(prob.map);
+end
+    
 if aa(1)==1
     bb=[0 bb(1:end)'];
 end
