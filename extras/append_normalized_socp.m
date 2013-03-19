@@ -1,6 +1,8 @@
-function [F_struc,K,c,Q,UB,LB,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,Q,UB,LB)
+function [F_struc,K,c,Q,UB,LB,x0,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,Q,UB,LB,x0)
 
 if K.q(1)>0
+    % We don't support initials here yet
+    x0 = [];   
     % To simplify code, we currently normalize everything to z'*z<z0^2
     % This done by writting [c^Tx+d;Ax+b] in cone as
     % [c^Tx+d;Ax+b]==[z0;z],  [z0;z] in cone

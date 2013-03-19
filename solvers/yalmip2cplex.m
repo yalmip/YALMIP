@@ -18,7 +18,7 @@ H       = 2*interfacedata.Q;
 if ~isempty(semicont_variables)
     [F_struc,K,lb,ub,semicont_variables] = extractSemiContBounds(F_struc,K,lb,ub,semicont_variables);
 end
-[F_struc,K,c,H,ub,lb,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,H,ub,lb);
+[F_struc,K,c,H,ub,lb,x0,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,H,ub,lb,x0);
 
 
 if any(interfacedata.variabletype)

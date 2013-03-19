@@ -43,7 +43,7 @@ if ~isempty(semicont_variables)
 end
 
 n_original = length(c);
-[F_struc,K,c,Q,UB,LB] = append_normalized_socp(F_struc,K,c,Q,UB,LB);
+[F_struc,K,c,Q,UB,LB,x0] = append_normalized_socp(F_struc,K,c,Q,UB,LB,x0);
 
 if size(F_struc,1)>0
     B = full(F_struc(:,1));         % Must be full  
