@@ -621,6 +621,14 @@ solver(i).constraint.equalities.linear = 0;
 i = i+1;
 
 solver(i) = sdpsolver;
+solver(i).tag     = 'CSDP';
+solver(i).version = 'opti';
+solver(i).checkfor= {'csdp','csdpset'};
+solver(i).call    = 'callopticsdp';
+solver(i).constraint.equalities.linear = 0;
+i = i+1;
+
+solver(i) = sdpsolver;
 solver(i).tag     = 'MAXDET';
 solver(i).version = '';
 solver(i).checkfor= {'maxdet.m'};

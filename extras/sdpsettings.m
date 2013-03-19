@@ -399,8 +399,7 @@ Names = {'solver'
     'sparsepop.errorBdIdx'
     'sparsepop.fValueUbd'
     'sparsepop.symbolicMath'
-    'sparsepop.mex'
-    
+    'sparsepop.mex'      
     'dsdp.r0'
     'dsdp.zbar'
     'dsdp.penalty'
@@ -1010,7 +1009,55 @@ else
     
     try
         % OPTI Toolbox interface
+        options.csdp = csdpset();
+        
+        remove = zeros(length(Names),1);
+        for i = 1:length(Names)
+            if strfind(Names{i},'csdp')
+                remove(i)=1;
+            end
+        end
+        Names = Names(find(~remove));
+        cNames = recursivefieldnames(options.csdp);
+        for i = 1:length(cNames)
+            Names{end+1} = ['csdp.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+        
+    catch
+        options.csdp.axtol  = 1e-8;
+        options.csdp.atytol = 1e-8;
+        options.csdp.objtol = 1e-8;
+        options.csdp.pinftol = 1e8;
+        options.csdp.dinftol = 1e8;
+        options.csdp.maxiter = 100;
+        options.csdp.minstepfrac = 0.90;
+        options.csdp.maxstepfrac = 0.97;
+        options.csdp.minstepp = 1e-8;
+        options.csdp.minstepd = 1e-8;
+        options.csdp.usexzgap = 1;
+        options.csdp.tweakgap = 0;
+    end
+    
+    try
+        % OPTI Toolbox interface
         options.dsdp = dsdpset();
+        
+        remove = zeros(length(Names),1);
+        for i = 1:length(Names)
+            if strfind(Names{i},'dsdp')
+                remove(i)=1;
+            end
+        end
+        Names = Names(find(~remove));
+        cNames = recursivefieldnames(options.dsdp);
+        for i = 1:length(cNames)
+            Names{end+1} = ['dsdp.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+        
     catch
         % Options for DSDP 5.6 classical interface
         options.dsdp.r0 = -1;
@@ -1050,19 +1097,18 @@ else
         options.mosek.param = [];
     end
     
-    options.csdp.axtol  = 1e-8;
-    options.csdp.atytol = 1e-8;
-    options.csdp.objtol = 1e-8;
-    options.csdp.pinftol = 1e8;
-    options.csdp.dinftol = 1e8;
-    options.csdp.maxiter = 100;
-    options.csdp.minstepfrac = 0.90;
-    options.csdp.maxstepfrac = 0.97;
-    options.csdp.minstepp = 1e-8;
-    options.csdp.minstepd = 1e-8;
-    options.csdp.usexzgap = 1;
-    options.csdp.tweakgap = 0;
-    
+%     options.csdp.axtol  = 1e-8;
+%     options.csdp.atytol = 1e-8;
+%     options.csdp.objtol = 1e-8;
+%     options.csdp.pinftol = 1e8;
+%     options.csdp.dinftol = 1e8;
+%     options.csdp.maxiter = 100;
+%     options.csdp.minstepfrac = 0.90;
+%     options.csdp.maxstepfrac = 0.97;
+%     options.csdp.minstepp = 1e-8;
+%     options.csdp.minstepd = 1e-8;
+%     options.csdp.usexzgap = 1;
+%     options.csdp.tweakgap = 0;    
   %  options.mosek.param = [];
     
 %     % Options for DSDP 5.6
