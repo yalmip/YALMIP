@@ -103,7 +103,7 @@ un_monom_vars = uniquestripped(monom.lmi_variables);
 if length(un_monom_vars)<length(monom.lmi_variables)
     [un_monom_vars,hh,jj] = unique(monom.lmi_variables);
     if length(monom.lmi_variables) ~=length(un_monom_vars)
-        newmonombase = monom.basis*sparse([1 1+jj],[1 1+(1:length(jj))],ones(1,1+length(jj)))';
+        newmonombase = monom.basis*sparse([1 1+jj(:)'],[1 1+(1:length(jj))],ones(1,1+length(jj)))';
         monom.basis = newmonombase;
         monom.lmi_variables = un_monom_vars;
     end
