@@ -264,6 +264,8 @@ elseif m>=2 & isa(varargin{2},'logdet')
     classification = 2;
 elseif m==2 & isempty(varargin{2})
     classification = 2;
+elseif m>=3 & isempty(varargin{2}) & isempty(varargin{3})
+    classification = 2;
 end
 
 if classification==0
