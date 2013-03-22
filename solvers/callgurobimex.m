@@ -177,11 +177,10 @@ switch flag
         problem = 2;
     case {7,8,9}
         problem = 3;
-    case {12}
+    case {12,13}
         problem = 4;
     case {1,6,10,11}
-        problem = 11;
-        
+        problem = 11;        
     otherwise
         problem = -1;
 end

@@ -65,7 +65,7 @@ switch result.status
     case 'INF_OR_UNBD'
         problem = 12;
     otherwise
-        problem = 9;
+        problem = -1;
 end
 
 % Save all data sent to solver?
