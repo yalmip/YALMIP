@@ -51,7 +51,7 @@ base = [];
 for i = 1:length(p)
     allvar = depends(p(i));
     t = setdiff(allvar,xvar);
-    if 1%isa(p(i),'sdpvar')
+    if isa(p(i),'sdpvar')
         [exponent_p,p_base] = getexponentbase(p(i),recover(depends(p(i))));
         ParametricIndicies = find(ismember(allvar,t));
         % FIX : don't define it here, wait until sparser below. Speed!!
@@ -63,8 +63,8 @@ for i = 1:length(p)
             keepthese = j(1:max(k));
             v = recovermonoms(exponent_p(keepthese,find(~ismember(allvar,t))),recover(xvar));
         end
-    end
-    if isa(p,'ncvar')
+    elseif isa(p,'ncvar')
+        error('coefficients not supported yet on NCVARS');
         [exponent_p,ordered_list] = exponents(p,recover(depends(p(i))));
         ParametricIndicies = find(ismember(allvar,t));
         
