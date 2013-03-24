@@ -26,7 +26,7 @@ else
             if length(un_Z_vars2) < length(lmi_variables)
                 [un_Z_vars,hh,jj] = unique(lmi_variables);
                 if length(lmi_variables) ~= length(un_Z_vars)
-                    basis = basis*sparse([1 1+jj],[1 1+(1:length(jj))],ones(1,1+length(jj)))';
+                    basis = basis*sparse([1 1+jj(:)'],[1 1+(1:length(jj))],ones(1,1+length(jj)))';
                     lmi_variables = un_Z_vars;
                 end
             end
