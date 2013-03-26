@@ -614,17 +614,17 @@ i = i+1;
 
 solver(i) = sdpsolver;
 solver(i).tag     = 'CSDP';
-solver(i).version = '';
-solver(i).checkfor= {'csdp','readsol','writesdpa'};
-solver(i).call    = 'callcsdp';
+solver(i).version = 'opti';
+solver(i).checkfor= {'csdp','csdpset'};
+solver(i).call    = 'callopticsdp';
 solver(i).constraint.equalities.linear = 0;
 i = i+1;
 
 solver(i) = sdpsolver;
 solver(i).tag     = 'CSDP';
-solver(i).version = 'opti';
-solver(i).checkfor= {'csdp','csdpset'};
-solver(i).call    = 'callopticsdp';
+solver(i).version = '';
+solver(i).checkfor= {'csdp','readsol','writesdpa'};
+solver(i).call    = 'callcsdp';
 solver(i).constraint.equalities.linear = 0;
 i = i+1;
 
