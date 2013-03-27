@@ -9,7 +9,7 @@ x0      = interfacedata.x0;
 ub      = interfacedata.ub;
 lb      = interfacedata.lb;
 
-model = yalmip2optidsdp(interfacedata)
+model = yalmip2optidsdp(interfacedata);
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 
 if options.savedebug
