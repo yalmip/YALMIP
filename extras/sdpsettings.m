@@ -1077,7 +1077,7 @@ else
         options.dsdp.lp_barrier = 1;
     end
     
-    try
+    try        
         evalc('[r,res]=mosekopt(''param'');');
         options.mosek = res.param;
         remove = zeros(length(Names),1);
