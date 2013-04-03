@@ -27,9 +27,9 @@ else
 end
 solvertime = clock;
 
-ivars = zeros(length(c),1);
-ivars(interfacedata.integer_variables) = 1;
-ivars = int32(ivars);
+ivars = repmat('C',length(c),1);
+ivars(interfacedata.integer_variables) = 'I';
+ivars(interfacedata.binary_variables) = 'B';
 opts = options.cbc;
 opts.nin = length(b);
 opts.maxtime =  100000;
@@ -41,9 +41,9 @@ rl = full([beq;repmat(-inf,length(b),1)]);
 A = [Aeq;A];
 
 % SOS currently not supported
-sos.sostype=[];
-sos.sosind=[];
-sos.soswt=[];
+sos.type='';
+sos.index=[];
+sos.weight=[];
 
 if options.savedebug
     save cbcdebug c A b Aeq beq lb ub opts
