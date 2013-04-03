@@ -255,7 +255,7 @@ solver(i).call    = 'callscipmex';
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.sos2 = 1;
-solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
+solver(i).constraint.inequalities.secondordercone = 0;
 i = i+1;
 
 solver(i) = qpsolver;

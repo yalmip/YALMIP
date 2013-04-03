@@ -41,14 +41,16 @@ if K.q(1)>0
     qc.r = [];
     for i = 1:length(K.q)
         ni = K.q(i);
-        % |Qx+c|<a+b'x
+        % |Qx+d|<a+b'x
         ai = F_struc(top,1);
         bi = F_struc(top,2:end);
         Qi = F_struc(top+1:top+K.q(i)-1,2:end);
         di = F_struc(top+1:top+K.q(i)-1,1);
         qc.Q{i} = Qi'*Qi-bi'*bi;
-        qc.l = [qc.l full(2*Qi*di-2*ai*bi')];
-        qc.r = [qc.r;full(ai*ai-di'*di)];
+        qc.l = [qc.l full(2*Qi'*di-2*ai*bi')];
+        qc.qru = [qc.r;full(ai*ai-di'*di)];
+        qc.qrl = [qc.r;-50];
+        % Linear constraint a+b'*x >= 0 should be added
         top = top  + K.q(i);
     end
     if i == 1
@@ -58,9 +60,12 @@ else
     qc = [];
 end
 
-sos.sostype = K.sos.type;
-sos.sosind = K.sos.variables;
-sos.soswt = K.sos.weight;
+sos.type = K.sos.type;
+if isempty(sos.type)
+    sos.type = '';
+end
+sos.index = K.sos.variables;
+sos.weight = K.sos.weight;
 if options.savedebug
     save f A rl ru lb ub VARTYPE sos
 end
