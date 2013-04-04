@@ -64,10 +64,29 @@ for i = 1:length(p)
             v = recovermonoms(exponent_p(keepthese,find(~ismember(allvar,t))),recover(xvar));
         end
     elseif isa(p,'ncvar')
-        error('coefficients not supported yet on NCVARS');
+  
         [exponent_p,ordered_list] = exponents(p,recover(depends(p(i))));
         ParametricIndicies = find(ismember(allvar,t));
+        NotParametricIndicies = find(~ismember(allvar,t));
         
+        pars   = recover(allvar(ParametricIndicies))';
+        nonpar = recover(allvar(NotParametricIndicies))';
+        
+        NonParMonoms = exponent_p(:,NotParametricIndicies);
+        used = zeros(size(exponent_p,1),1);
+        for j = 1:size(exponent_p,1)
+            if ~used(j)
+                thisMonom = NonParMonoms(j);
+                thisMonom = 1;
+                for k = 1:max(find(ordered_list(j,:)))
+                    thisMonom = thisMonom*recover(ordered_list(j,k));
+                end
+                
+                thisBase = prod(ordered_list(j,nonpar));
+            end
+        end
+        
+              
         for j = 1:length(ParametricIndicies)
             a = find(ordered_list(:,1) == ParametricIndicies(j))
             b = [];
