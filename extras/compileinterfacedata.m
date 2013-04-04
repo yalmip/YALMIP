@@ -92,15 +92,20 @@ if options.expand
         index_in_extended = find(ismembc(variables,extendedvariables));
         if ~isempty(index_in_extended)
             extstruct = yalmip('extstruct',variables(index_in_extended));
-            if isequal(extstruct.fcn ,'pwq_yalmip')
-                [properties,Fz,arguments]=model(extstruct.var,'integer',options,extstruct);
-                if iscell(properties)
-                    properties = properties{1};
+            if ~isa(extstruct,'cell')
+                extstruct = {extstruct};
+            end
+            for i = 1:length(extstruct)
+                if isequal(extstruct{i}.fcn ,'pwq_yalmip')
+                    [properties,Fz,arguments]=model(extstruct{i}.var,'integer',options,extstruct{i});
+                    if iscell(properties)
+                        properties = properties{1};
+                    end
+                    gain = getbasematrix(h,getvariables(extstruct{i}.var));
+                    h = replace(h,extstruct{i}.var,0);
+                    h = h + gain*properties.replacer;
+                    F = F + Fz;
                 end
-                gain = getbasematrix(h,getvariables(extstruct.var));
-                h = replace(h,extstruct.var,0);
-                h = h + gain*properties.replacer;
-                F = F + Fz;
             end
         end
     catch
