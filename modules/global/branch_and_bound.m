@@ -128,7 +128,7 @@ while go_on
         if output.problem == 12
             pp = p;
             pp.c = pp.c*0;
-            [output2,cost2] = solvelower(pp,options,lowersolver);
+            [output2,cost2] = solvelower(pp,options,lowersolver,[],[],timing);
             if output2.problem == 0
                 output.problem = 2;
             else
