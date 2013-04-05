@@ -3,8 +3,10 @@ function output = callbonmin(model)
 % Author Johan Löfberg
 
 model = yalmip2nonlinearsolver(model);
-options = model.options.bonmin;
-options.ipopt.print_level = model.options.verbose;  
+options = [];
+options.bonmin = removeDefaults(model.options.bonmin,bonminset());
+options.ipopt = model.options.ipopt;
+options.display = model.options.verbose;  
 
 if ~model.derivative_available
     disp('Derivate-free call to bonmin/ipopt not yet implemented')
@@ -110,7 +112,6 @@ end
 
 showprogress('Calling BONMIN',model.options.showprogress);
 solvertime = clock;
-
 [xout,info] = bonmin(model.x0,funcs,options);
 solvertime = etime(clock,solvertime);
 
@@ -151,5 +152,24 @@ end
 
 % Standard interface
 output = createoutput(x,D_struc,[],problem,'BONMIN',solverinput,solveroutput,solvertime);
+
+
+% Code supplied by Jonatan Currie
+function opts = removeDefaults(opts,defs)
+oFn = fieldnames(opts);
+for i = 1:length(oFn)
+    label = oFn{i};
+    if(isfield(defs,label))
+        if(ischar(opts.(label)))
+            if(strcmpi(defs.(label),opts.(label)))
+                opts = rmfield(opts,label);
+            end
+        else
+            if(defs.(label) == opts.(label))
+                opts = rmfield(opts,label);
+            end
+        end
+    end
+end
 
 
