@@ -235,8 +235,10 @@ Names = {'solver'
     'gurobi.CrossoverBasis'
     'gurobi.QCPDual'
     'gurobi.BranchDir'
+    'gurobi.ConcurrentMIP'
     'gurobi.Heuristics'
     'gurobi.ImproveStartGap'
+    'gurobi.ImproveStartNodes'
     'gurobi.ImproveStartTime'
     'gurobi.MinRelNodes'
     'gurobi.MIPFocus'
@@ -251,6 +253,10 @@ Names = {'solver'
     'gurobi.Symmetry'
     'gurobi.VarBranch'
     'gurobi.ZeroObjNodes'
+    'gurobi.TuneOutput'
+    'gurobi.TuneResults'
+    'gurobi.TuneTimeLimit'
+    'gurobi.TuneTrials'
     'gurobi.Cuts'
     'gurobi.CliqueCuts'
     'gurobi.CoverCuts'
@@ -275,6 +281,8 @@ Names = {'solver'
     'gurobi.IISMethod'
     'gurobi.LogFile'
     'gurobi.Method'
+    'gurobi.NonBlocking'
+    'gurobi.NumericFocus'
     'gurobi.PreCrush'
     'gurobi.PreDepRow'
     'gurobi.PreDual'
@@ -1164,25 +1172,7 @@ else
     options.glpk.tolobj = 1e-7;
     options.glpk.presol = 1;
     options.glpk.save = 0;
-    
-    %     options.gurobi.Aggregate=1;
-    %     options.gurobi.IterationLimit=1e12;
-    %     options.gurobi.FeasibilityTol=1e-6;
-    %     options.gurobi.IntFeasTol=1e-5;
-    %     options.gurobi.OptimalityTol=1e-6;
-    %     options.gurobi.MIPGap=1e-4;
-    %     options.gurobi.Method=1;
-    %     options.gurobi.Presolve=-1;
-    %     options.gurobi.PrePasses=-1;
-    %     options.gurobi.TimeLimit=1e12;
-    %     options.gurobi.Threads=0;
-    %     options.gurobi.DisplayInterval=5;
-    %     options.gurobi.TrapCtrlC=true;
-    %     options.gurobi.Sifting = -1;
-    %     options.gurobi.SiftMethod = 2;
-    %   %  options.gurobi.ZeroObjNodes = 0;
-    %     options.gurobi.PreSparsify = 1;
-        
+            
     options.gurobi.BarIterLimit = inf;
     options.gurobi.Cutoff = inf;
     options.gurobi.IterationLimit = inf;
@@ -1191,7 +1181,7 @@ else
     options.gurobi.TimeLimit = inf;
     
     options.gurobi.BarConvTol = 1e-8;
-     options.gurobi.BarQCPConvTol = 1e-6;
+    options.gurobi.BarQCPConvTol = 1e-6;
     options.gurobi.FeasibilityTol = 1e-6;
     options.gurobi.IntFeasTol = 1e-6;
     options.gurobi.MarkowitzTol = 0.0078125;
@@ -1215,8 +1205,10 @@ else
     options.gurobi.CrossoverBasis = 0;
     options.gurobi.QCPDual = 0;
     options.gurobi.BranchDir = 0;
+    options.gurobi.ConcurrentMIP = 1;
     options.gurobi.Heuristics = 0.05;
     options.gurobi.ImproveStartGap = 0;
+    options.gurobi.ImproveStartNodes = inf;
     options.gurobi.ImproveStartTime = inf;
     options.gurobi.MinRelNodes = 0;
     options.gurobi.MIPFocus = 0;
@@ -1231,6 +1223,10 @@ else
     options.gurobi.Symmetry = -1;
     options.gurobi.VarBranch = -1;
     options.gurobi.ZeroObjNodes = 0;
+    options.gurobi.TuneOutput = 2;
+    options.gurobi.TuneResults = -1;
+    options.gurobi.TuneTimeLimit = -1;
+    options.gurobi.TuneTrials = 2;
     options.gurobi.Cuts = -1;
     options.gurobi.CliqueCuts = -1;
     options.gurobi.CoverCuts = -1;
@@ -1255,6 +1251,8 @@ else
     options.gurobi.IISMethod = -1;
     options.gurobi.LogFile = '';
     options.gurobi.Method = -1;
+    options.gurobi.NonBlocking = 0;
+    options.gurobi.NumericFocus = 0;
     options.gurobi.PreCrush = 0;
     options.gurobi.PreDepRow = -1;
     options.gurobi.PreDual = -1;
@@ -1265,11 +1263,7 @@ else
     options.gurobi.PreSparsify = 0;
     options.gurobi.ResultFile = '';
     options.gurobi.Threads = 0;
-    
-%     options.ipopt.mu_strategy = 'adaptive';
-%     options.ipopt.tol = 1e-7;
-%     options.ipopt.hessian_approximation = 'limited-memory';
-%     
+      
     options.kypd.solver = '';
     options.kypd.lyapunovsolver = 'schur';
     options.kypd.reduce = 0;
