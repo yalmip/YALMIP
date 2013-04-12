@@ -1658,7 +1658,11 @@ function [Names,solvernames,solverops] = trytoset(solver,Names)
 
 try
     try
-        solverops = optimset(solver);
+        try
+            evalc(['solverops = ' solver '(''defaults'');']);
+        catch
+            solverops = optimset(solver);
+        end
     catch
         solverops = optimset;
     end
