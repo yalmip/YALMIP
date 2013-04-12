@@ -61,7 +61,8 @@ end
 fU = log(xU);
 dfL = 1/(xL);
 dfU = 1/(xU);
-xM = (xU - xL)/(fU-fL);
+%xM = (xU - xL)/(fU-fL);
+xM = (xL + xU)/2;
 fM = log(xM);
 dfM = 1/xM;
 
