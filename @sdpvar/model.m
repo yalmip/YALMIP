@@ -75,6 +75,7 @@ if ~isempty(properties)
         properties{i} = assertProperty(properties{i},'convexity','none');
         properties{i} = assertProperty(properties{i},'monotonicity','none');
         properties{i} = assertProperty(properties{i},'derivative',[]);
+        properties{i} = assertProperty(properties{i},'inverse',[]);
         properties{i} = assertProperty(properties{i},'models',getvariables(extstruct.var));
         properties{i} = assertProperty(properties{i},'convexhull',[]);
         properties{i} = assertProperty(properties{i},'bounds',[]);

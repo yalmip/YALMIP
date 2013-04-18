@@ -21,12 +21,12 @@ switch class(varargin{1})
         X = varargin{3};      
         F = set(X >= 1e-8);
 
-        operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');
-        operator.inverse = 'exp';
+        operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');       
         operator.convexhull = @convexhull;
         operator.bounds = @bounds;
         operator.domain = [0 inf];
         operator.derivative = @(x)(1./(abs(x)+eps));
+        operator.inverse = @(x)(exp(x));
 
         varargout{1} = F;
         varargout{2} = operator;

@@ -35,6 +35,7 @@ operator = struct('convexity','convex','monotonicity','increasing','definiteness
 operator.convexhull = @convexhull;
 operator.bounds     = @bounds;
 operator.derivative = @(x)exp(x);
+operator.inverse    = @(x)log(x);
 operator.range = [0 inf];
 
 % Bounding functions for the branch&bound solver
