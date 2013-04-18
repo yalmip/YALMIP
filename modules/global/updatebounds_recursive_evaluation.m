@@ -10,6 +10,7 @@ if p.changedbounds
                 case 'eval'
                     for j = 1:length(p.evaluation_scheme{i}.variables)
                         p = update_one_eval_bound(p,j);
+                        p = update_one_inverseeval_bound(p,j);
                     end
                 case 'monom'
                     for j = 1:length(p.evaluation_scheme{i}.variables)
