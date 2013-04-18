@@ -53,6 +53,10 @@ p.originalModel = p;
 p = presolveOneMagicRound(p);   
 p = convert_sigmonial_to_sdpfun(p);
 [p,changed] = convert_polynomial_to_quadratic(p);
+if changed
+    p.EqualityConstraintState = ones(p.K.f,1);
+    p.InequalityConstraintState = ones(p.K.l,1);
+end
 p = presolveOneMagicRound(p);  
 p = compile_nonlinear_table(p);
 
