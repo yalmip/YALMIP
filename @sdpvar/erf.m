@@ -17,6 +17,7 @@ switch class(varargin{1})
         operator.bounds = @bounds;
         operator.range = [-1 1];
         operator.derivative =@(x)exp(-x.^2)*2/sqrt(pi);
+        operator.inverse = @(x)(erfinv(x));
         operator.convexhull = @convexhull;
         
         varargout{1} = [];
