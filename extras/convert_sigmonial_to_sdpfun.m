@@ -89,7 +89,7 @@ if any(model.variabletype > 3)
                 else
                     model.evalMap{end}.properties.range = [-inf inf];
                 end
-                 model.evalMap{end}.properties.domain = [-inf inf];
+                model.evalMap{end}.properties.domain = [-inf inf];                                  
                 % Save information about this new variable 
                 found_and_converted = [found_and_converted;sigs(j) powers(j) n_old_monoms+j];
             end
@@ -119,6 +119,10 @@ if power == -1
     model.evalMap{end}.properties.bounds = @inverse_bound;
     model.evalMap{end}.properties.convexhull = @inverse_convexhull;
     model.evalMap{end}.properties.derivative = @(x) -1./(x.^2);
+    if model.lb(variable)>0 | model.ub(variable) < 0
+        model.evalMap{end}.properties.monotonicity = 'decreasing';
+        model.evalMap{end}.properties.inverse = @(x)(1./x);
+    end
     model.monomtable(monosig,variable) = 0;
     model.monomtable(monosig,monosig) = 1;
     model.variabletype(monosig) = 0;
