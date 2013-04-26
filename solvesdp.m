@@ -233,7 +233,8 @@ if options.dualize == 1
             n = size(complexInfo.replaced{i},1);
             re = 2*double(complexInfo.new{i}(1:n,1:n));            
             im = 2*double(complexInfo.new{i}(1:n,n+1:end));
-            im = im-diag(diag(im));
+            %im = im-diag(diag(im));
+            im=triu((im-im')/2)-(triu((im-im')/2))';
             assign(complexInfo.replaced{i},re + sqrt(-1)*im);
         end
     end
