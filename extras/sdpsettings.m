@@ -926,6 +926,15 @@ else
     try
         options.ipopt = ipoptset;    
         options.ipopt.hessian_approximation = 'limited-memory';
+        
+        cNames = recursivefieldnames(options.ipopt);
+        for i = 1:length(cNames)
+            Names{end+1} = ['ipopt.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+        
+        
     catch
         options.ipopt.mu_strategy = 'adaptive';
         options.ipopt.tol = 1e-7;
@@ -933,8 +942,7 @@ else
     end
       
     try   
-        options.bonmin = bonminset([],'noIpopt');
-        %options.bonmin.ipopt.hessian_approximation = 'limited-memory';
+        options.bonmin = bonminset([],'noIpopt');       
         options.bonmin = rmfield(options.bonmin,'var_lin');
         options.bonmin = rmfield(options.bonmin,'cons_lin');
         
