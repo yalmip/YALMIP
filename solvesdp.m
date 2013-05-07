@@ -137,7 +137,7 @@ end
 
 if ~isempty(F)
     if any(is(F,'sos'))        
-        varargout = solvesos(varargin{:});
+        diagnostic = solvesos(varargin{:});
         return
     end
 end
