@@ -1,8 +1,8 @@
 function model = update_integer_bounds(model);
 
 if ~isempty(model.integer_variables)
-    model.lb(model.integer_variables) = fix(model.lb(model.integer_variables)-1e-4);
-    model.ub(model.integer_variables) = fix(model.ub(model.integer_variables)+1e-4);
+    model.lb(model.integer_variables) = ceil(model.lb(model.integer_variables)-1e-4);
+    model.ub(model.integer_variables) = floor(model.ub(model.integer_variables)+1e-4);
 end
 if ~isempty(model.binary_variables)
     model.lb(model.binary_variables) = fix(model.lb(model.binary_variables)-1e-4);
