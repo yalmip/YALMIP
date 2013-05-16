@@ -75,7 +75,7 @@ for i = 1:1:length(F)
                         else
                             if length(c) == length(xred)%size(R,1)==size(R,2)
                                 ctilde = -(R')\(c/2);
-                                if ctilde'*ctilde-f > 0
+                                if ctilde'*ctilde-f > 0 & all(diag(R)>1e-3)
                                     % simple form norm(Rx-c) < r
                                     Fconv=Fconv + lmi(cone([R*xred-ctilde],sqrt(ctilde'*ctilde-f)));
                                 else
