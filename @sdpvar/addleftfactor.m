@@ -4,7 +4,8 @@ if ~isempty(X.midfactors)
         try
             X.leftfactors{i} = L*X.leftfactors{i};
         catch
-            1
+            X = flush(X);
+            return
         end
     end
 end
