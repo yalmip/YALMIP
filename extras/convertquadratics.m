@@ -75,7 +75,11 @@ for i = 1:1:length(F)
                         else
                             if length(c) == length(xred)%size(R,1)==size(R,2)
                                 ctilde = -(R')\(c/2);
-                                if ctilde'*ctilde-f > 0 & all(diag(R)>1e-3)
+                                if 0%ctilde'*ctilde-f > 0 & all(diag(R)>1e-3)
+                                    % Turned off. Can cause numerical
+                                    % issues if Q is close to singular,
+                                    % since we then backsolve against
+                                    % almost singular R
                                     % simple form norm(Rx-c) < r
                                     Fconv=Fconv + lmi(cone([R*xred-ctilde],sqrt(ctilde'*ctilde-f)));
                                 else
