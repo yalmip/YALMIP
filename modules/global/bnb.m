@@ -599,9 +599,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             relaxed_p.K.l =  relaxed_p.K.l+1;
             relaxed_p.F_struc = [-1+sum(cc(positive)) -cc';relaxed_p.F_struc];
         end
-        if solved_nodes == 36
-            %solved_nodes
-        end
+
         output = bnb_solvelower(lowersolver,relaxed_p,upper+abs(upper)*1e-2+1e-4,lower);
                
         % output = bnb_solvelower(lowersolver,relaxed_p,inf,lower);
