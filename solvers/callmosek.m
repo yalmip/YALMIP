@@ -24,6 +24,19 @@ linear_variables = find((sum(abs(mt),2)==1) & (any(mt==1,2)));
 nonlinear_variables = setdiff((1:size(mt,1))',linear_variables);
 sigmonial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
 
+% Some meta-solver thinks we handle binaries
+if ~isempty(interfacedata.binary_variables)
+    interfacedata.integer_variables = union( interfacedata.integer_variables, interfacedata.binary_variables);
+    if isempty(lb)
+        lb = repmat(-inf,1,length(interfacedata.c));
+    end
+    lb(interfacedata.binary_variables) = max(lb(interfacedata.binary_variables),0);    
+    if isempty(ub)
+        ub = repmat(inf,1,length(interfacedata.c));
+    end
+    ub(interfacedata.binary_variables) = min(ub(interfacedata.binary_variables),1);
+end
+
 if K.s(1)>0
     [x,D_struc,problem,res,solvertime,prob] = call_mosek_sdp(interfacedata);
 elseif ~isempty(sigmonial_variables) | isequal(interfacedata.solver.version,'GEOMETRIC')
@@ -182,7 +195,7 @@ else
 end
 solvertime = etime(clock,solvertime);
 
-if (r == 1010) | (r == 1011) | (r==1001)
+if (r == 1010) || (r == 1011) | (r==1001)
     problem = -5;
     x = [];
     D_struc = [];
