@@ -39,7 +39,7 @@ for i = 1:nargin
                 all_linear = 0;
             end
             n_var = n_var + 1;
-        case 'lmi'
+        case {'lmi','constraint'}
             Foriginal = Foriginal + varargin{i};
         otherwise
             error('Arguments should be SDPVAR or SET objects')
@@ -181,5 +181,5 @@ function F = binary_times_cont(d,y, z)
 if infbound
     error('Some of your continuous variables are not explicitly bounded.')
 end
-F = set((1-d)*M >= y - z >= m*(1-d)) + set(d*m <= z <= d*M);
+F = set((1-d)*M >= y - z >= m*(1-d)) + set(d*m <= z <= d*M) + set(m <= z <= M);
                 
