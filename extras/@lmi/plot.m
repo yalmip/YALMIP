@@ -6,9 +6,9 @@ function varargout = plot(varargin)
 % Note that only convex sets are allowed, or union of convex sets
 % represented using binary variables (either defined explictly or
 % introduced by YALMIP when modelling, e.g., mixed integer linear
-% programming represetable operators)
+% programming representable operators)
 %
-% C:  SET object
+% C:  Constraint object
 % x:  Plot variables [At most three variables]
 % c:  color [double] ([r g b] format) or char from 'rymcgbk'
 % n:  #vertices [double ] (default 50 in 2D and 200 otherwise)
