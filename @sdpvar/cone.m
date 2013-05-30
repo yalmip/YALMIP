@@ -37,6 +37,15 @@ if n<m & nargin>1
     Axplusb = Axplusb';
 end
 
+if ~is(Axplusb,'linear')
+    error('Both arguments must be linear');
+end
+if nargin > 1
+    if ~is(cxplusd,'linear')
+        error('Both arguments must be linear');
+    end
+end
+
 try
     if nargin == 2
         y = [cxplusd;Axplusb];
