@@ -2,27 +2,24 @@ function y = cone(Axplusb,cxplusd)
 %CONE Defines a second order cone constraint ||z||<x
 %
 % Input
-%    z       : SDPVAR object.
-%    h       : SDPVAR object
+%    z       : Linear SDPVAR object.
+%    h       : Linear scalar SDPVAR object
 %
 % Example
 %
 % Standard SOCP constraint ||z||<x where z is a vector and x is a scalar
-%    F = set(cone(z,x)) 
+%    F = cone(z,x)
 %
 % Alternative syntax with only one argument is also possible
-%    F = set(cone(z))
-% This command is equivalent to set(cone(z(2:end),z(1))
+%    F = cone(z)
+% This command is equivalent to cone(z(2:end),z(1)
 %
 % To quickly define several cones, the argument can be a matrix, and the
 % command is then short-hand for 
 % for i = 1:size(z,2);F = [F,cone(z(:,i))];end 
 % The code will however run much fast than the manual version
 %
-% See also  SET, RCONE, @SDPVAR/NORM
-
-% Author Johan Löfberg
-% $Id: cone.m,v 1.7 2008-04-24 11:15:13 joloef Exp $
+% See also  @SDPVAR/NORM
 
 [n,m] = size(Axplusb);
 if min(n,m)>1 & nargin>1
