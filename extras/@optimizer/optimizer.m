@@ -256,7 +256,7 @@ used_in = find(any(sys.model.monomtable(:,b),2));
 Q = sys.model.Q;
 Qa = Q;Qa(:,b)=[];Qa(b,:)=[];
 Qb = Q(:,b);Qb(b,:)=[];
-if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | (nnz(Qa)==0 & nnz(Qb)>0))
+if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | (nnz(Qb)>0))
     sys.nonlinear = 1;
 else
     sys.nonlinear = 0;
