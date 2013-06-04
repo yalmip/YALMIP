@@ -1,4 +1,4 @@
-function deg=degree(p,y,e)
+function deg=degree(p,y,flag,vector)
 %DEGREE Polynomial degree
 %
 % DEG = DEGREE(p,x,flag,vector)
@@ -22,6 +22,15 @@ function deg=degree(p,y,e)
 %
 % degree(p,[],1) returns [1;2]
 
+if nargin == 3
+    if isa(flag,'double')       
+        % Old syntax
+        deg = degree(p,y,'max',flag);
+        return;
+    end
+   
+end
+
 if isa(p,'double')
     if nargin==1
         deg = 0;
@@ -32,17 +41,15 @@ if isa(p,'double')
 end
 
 if nargin<2 | isempty(y)
-    y = recover(depends(p));
+    y = recover(depends(p));   
 end
 
-if nargin == 3
-    if isa(flag,'double')
-        if flag == 1
-            vector = 1;
-        else
-            vector = 0;
-        end
-    end
+if nargin < 3
+    flag = 'max';
+end
+
+if nargin < 4
+    vector = 0;
 end
 
 if vector == 0
