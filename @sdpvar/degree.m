@@ -45,7 +45,7 @@ if nargin == 3
     end
 end
 
-if nargin<3 | (nargin==3 & vector==0)
+if vector == 0
     exponent_p = exponents(p,y);
     switch nargin
         case 1
