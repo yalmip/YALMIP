@@ -597,12 +597,16 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             cc(positive) = ceil(cc(positive));
             cc(zero) = floor(cc(zero));
             relaxed_p.K.l =  relaxed_p.K.l+1;
-            relaxed_p.F_struc = [-1+sum(cc(positive)) -cc';relaxed_p.F_struc];
+            relaxed_p.F_struc = [-1+sum(cc(positive)) -cc';relaxed_p.F_struc];            
         end
-
+       
         output = bnb_solvelower(lowersolver,relaxed_p,upper+abs(upper)*1e-2+1e-4,lower);
                
-        % output = bnb_solvelower(lowersolver,relaxed_p,inf,lower);
+%         if output.problem == 2 & ~isinf(lower)
+%             % Solver must have made a mistkae
+%              output.problem = 1;            
+%         end
+              
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -673,7 +677,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     end
     
     try
-    x  = setnonlinearvariables(p,x);
+        x  = setnonlinearvariables(p,x);
     catch
     end
     
@@ -717,7 +721,6 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
                         end
                     end
                     
-                    % for i = 1:length(stack);stack(i).projection = stack(i).lower + (upper1-RootNodeCost)*(stack(i).TotalIntegerInfeas+stack(i).TotalBinaryInfeas)/RootNodeInfeas;end
                     x_min = x_min1;
                     upper = upper1;
                     [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p);
@@ -769,10 +772,8 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
                 end
             end
             
-        end
-        %if solved_nodes>100
-        p = adaptivestrategy(p,upper,solved_nodes);
-        % end
+        end       
+        p = adaptivestrategy(p,upper,solved_nodes);        
         keep_digging = 0;
     end
     
@@ -792,34 +793,10 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             RootNodeInfeas =  TotalIntegerInfeas+TotalBinaryInfeas;
             RootNodeCost = cost;
         end
-        
-        %
-        %           switch p.fixdir
-        %             case 'down'
-        %                 Pseudo = (cost-p.lower)/p.IntInfeas;
-        %                 if Pseudo_DOWN(p.fixedvariable,end)~=0
-        %                     Pseudo_DOWN(p.fixedvariable,end+1) = Pseudo;
-        %                 else
-        %                     j = min(find(Pseudo_DOWN(p.fixedvariable,:)==0));
-        %                     Pseudo_DOWN(p.fixedvariable,j) = Pseudo;
-        %                 end
-        %
-        %             case 'up'
-        %                 Pseudo = (cost-p.lower)/p.IntInfeas;
-        %                 if Pseudo_UP(p.fixedvariable,end)~=0
-        %                     Pseudo_UP(p.fixedvariable,end+1) = Pseudo;
-        %                 else
-        %                     j = min(find(Pseudo_UP(p.fixedvariable,:)==0));
-        %                     Pseudo_UP(p.fixedvariable,j) = Pseudo;
-        %                 end
-        %             otherwise
-        %         end
-        
+                
         % **********************************
         % BRANCH VARIABLE
         % **********************************
-        %   p.pu = Pseudo_UP;
-        %   p.pd = Pseudo_DOWN;
         [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,p.options,x_min,[],p);
         
         % **********************************
@@ -828,9 +805,6 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         p0_feasible = 1;
         p1_feasible = 1;
         
-%         if output.problem ~= 0
-%             cost = p.lower;
-%         end
         
         switch whatsplit
             case 'binary'
@@ -844,11 +818,6 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
                 
             otherwise
         end
-        
-        %   Ei = lower + (upper-RootNodeCost)*(TotalIntegerInfeas+TotalBinaryInfeas)/RootNodeInfeas;
-        
-        %  [p0_feasible,p0] = checkmusts(p0);
-        %  [p1_feasible,p1] = checkmusts(p1);
         
         node1.lb = p1.lb;
         node1.ub = p1.ub;
