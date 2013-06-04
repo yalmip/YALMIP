@@ -5,7 +5,7 @@ function deg=degree(p,y,flag,vector)
 %
 % p      : SDPVAR object.
 % x      : Degree w.r.t linear SDPVAR objects.
-% flag   : 'max', 'min', 'all', 'total'. Default 'max'
+% flag   : 'max', 'min'. Default 'max'
 % vector : If vector = 1, returns degree of each element in p
 %
 % Examples
@@ -55,18 +55,15 @@ end
 if vector == 0
     exponent_p = exponents(p,y);
     switch nargin
-        case 1
-            switch flag
-                case 'max'
-                    deg = full(max(sum(exponent_p,2)));
-                case 'min'
-                otherwise
-            end
+        case 1            
+            degrees = sum(exponent_p,2);
+            deg = full(max(degrees));            
         case {2,3}
             switch flag
                 case 'max'
                     deg = full(max(exponent_p,[],1));
-                case 'min'
+                case 'min'                    
+                    deg = full(min(exponent_p,[],1));
                 otherwise
             end
         otherwise
@@ -92,8 +89,13 @@ else
             switch nargin
                 case 1
                     deg(i,:) = full(max(sum(exponent_p,2)));
-                case {2,3}
-                    deg(i,:) = full(max(exponent_p,[],1));
+                case {2,3,4}
+                    switch flag
+                        case 'max'
+                            deg(i,:) = full(max(exponent_p,[],1));
+                        case 'min'                           
+                            deg(i,:) = full(min(exponent_p,[],1));
+                    end
                 otherwise
                     error('Too many arguments. Wadda ya mean?')
             end
