@@ -4,7 +4,7 @@ function dfdx = jacobian(f,x)
 % J = JACOBIAN(p)    Jacobian w.r.t all variables in p
 % J = JACOBIAN(p,x)  Jacobian w.r.t the SDPVAR variables x
 %
-% See also SDPVAR, HESSIAN, LINEARIZE
+% See also INT, HESSIAN, LINEARIZE, SDISPLAY
 
 % Author Johan Löfberg
 % $Id: jacobian.m,v 1.3 2007-08-10 08:37:19 joloef Exp $

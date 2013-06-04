@@ -4,7 +4,7 @@ function d2fdx2 = hessian(f,x)
 % J = HESSIAN(p)    Hessian w.r.t all variables in p
 % J = HESSIAN(p,x)  Hessian w.r.t the SDPVAR variables x
 %
-% See also SDPVAR, JACOBIAN, LINEARIZE
+% See also INT, JACOBIAN, LINEARIZE, SDISPLAY
 
 % Author Johan Löfberg
 % $Id: hessian.m,v 1.2 2004-07-02 08:17:31 johanl Exp $
