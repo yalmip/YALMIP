@@ -323,15 +323,10 @@ if strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.ta
         if (nargin < 4 | ~isa(varargin{4},'sdpvar'))
             error('You must specify parametric variables.')
         else
-             temp = [];
-             for i = 1:length(varargin{4})
-                 temp = [temp;getvariables(varargin{4}(i))];
-             end
-            interfacedata.parametric_variables = find(ismember(recoverdata.used_variables,temp));
-%            interfacedata.parametric_variables = [];
-%             for i = 1:length(varargin{4})
-%                   interfacedata.parametric_variables = [interfacedata.parametric_variables;find(ismember(recoverdata.used_variables,getvariables(varargin{4}(i))))];
-%             end            
+            interfacedata.parametric_variables = [];
+            for i = 1:length(varargin{4})
+                  interfacedata.parametric_variables = [interfacedata.parametric_variables;find(ismember(recoverdata.used_variables,getvariables(varargin{4}(i))))];
+            end            
             if isempty(varargin{5})
                 interfacedata.requested_variables = [];
             else
