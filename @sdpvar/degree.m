@@ -4,8 +4,8 @@ function deg=degree(p,y,e)
 % DEG = DEGREE(p,x,flag,vector)
 %
 % p      : SDPVAR object.
-% x      : Degree w.r.t linear SDPVAR objects, can be [].
-% flag   : 'max', 'min', 'all' can be []. Default 'max'
+% x      : Degree w.r.t linear SDPVAR objects. Empty means all variables
+% flag   : 'max', 'min', 'all'. Default 'max'
 % vector : If vector = 1, returns degree of each element in p
 %
 % Examples
@@ -18,9 +18,9 @@ function deg=degree(p,y,e)
 %
 % degree(p,[x1 x2]) returns [1 2]
 %
-% degree(p,[x1 x2],1) returns [1 0;1 2]
+% degree(p,[x1 x2],[],1) returns [1 0;1 2]
 %
-% degree(p,[],1) returns [1;3]
+% degree(p,[],1) returns [1;2]
 
 if isa(p,'double')
     if nargin==1
