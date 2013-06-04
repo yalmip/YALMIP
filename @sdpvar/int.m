@@ -1,5 +1,5 @@
 function F = int(f,x,from,to)
-% INT Integration of scalar SDPVAR object
+% INT Integration of scalar polynomial SDPVAR object
 %
 % F = int(f) Integrate w.r.t first variable
 % F = int(f,x) Integrate w.r.t x
