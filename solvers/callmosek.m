@@ -26,7 +26,7 @@ sigmonial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
 
 % Some meta-solver thinks we handle binaries
 if ~isempty(interfacedata.binary_variables)
-    interfacedata.integer_variables = union( interfacedata.integer_variables, interfacedata.binary_variables);
+    integer_variables = union( interfacedata.integer_variables, interfacedata.binary_variables);
     if isempty(lb)
         lb = repmat(-inf,1,length(interfacedata.c));
     end
@@ -399,8 +399,17 @@ else
 end
 solvertime = etime(clock,solvertime);
 
-x = res.sol.itr.y;
-if model.options.saveduals
+if res.rcode == 2001
+    res.sol.itr.prosta = 'DUAL_INFEASIBLE';
+end
+
+try
+    x = res.sol.itr.y;
+catch
+    x = nan(length(model.c),1);    
+end
+
+if model.options.saveduals & ~isempty(x)
     D_struc = [res.sol.itr.xx];    
     top = 1;
     for i = 1:length(model.K.s)

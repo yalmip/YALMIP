@@ -343,17 +343,14 @@ while goon
         end
     end
 
-
     output = feval(cutsolver,p_lp);
-     
+  
     % Remove lower bound (avoid accumulating them)
     if ~isinf(lower)
         p_lp.K.l = p_lp.K.l - 1;
         p_lp.F_struc = p_lp.F_struc(1:end-1,:);
     end
-    
-    
-     
+         
     if output.problem == 1 | output.problem == 12
         % LP relaxation was infeasible, hence problem is infeasible
         feasible = 0;
@@ -374,6 +371,17 @@ while goon
         [p_lp,infeasibility] = add_socp_cut(p,p_lp,x,infeasibility);
         [p_lp,infeasibility] = add_sdp_cut(p,p_lp,x,infeasibility);
         
+%         if length(p.binary_variables) == length(p.c)
+%             % All binary model. Add exclusion constraint
+%             I0 = find(abs(x) < 0.5);
+%             I1 = find(abs(x) >= 0.5);
+%             b = length(x)-1-length(I0);
+%             a = zeros(1,length(x));
+%             a(I0) = 1;
+%             a(I1) = -1;
+%             p_lp.F_struc = [b a;p_lp.F_struc];
+%             p_lp.K.l = p_lp.K.l  +1;            
+%         end
         
         if ~isempty(pool)
             res = pool*[1;x];
@@ -428,11 +436,20 @@ if p.K.s(1)>0
                     bA =  d(:,m)'*(kron(d(:,m),speye(n)).'*p.F_struc(top:top+n^2-1,:));
                     b = bA(:,1);
                     A = -bA(:,2:end);                   
-                    newF = real([newF;[b -A]]);
+                    newF = real([newF;[b -A]]);                   
                     newcuts = newcuts + 1;
                 end
             end
         end
+        
+%         d = randn(70,1);
+%         bA =  d'*(kron(d,speye(n)).'*p.F_struc(top:top+n^2-1,:));
+%         b = bA(:,1);
+%         A = -bA(:,2:end);
+%         newF = real([newF;[b -A]]);
+%         newcuts = newcuts + 1;
+                    
+        
         newF(abs(newF)<1e-12) = 0;
         keep=find(any(newF(:,2:end),2));
         newF = newF(keep,:);

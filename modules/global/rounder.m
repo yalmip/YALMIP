@@ -5,6 +5,7 @@ function [upper,x_min] = rounder(p,relaxedsolution)
 %
 % Rounds up and down, fixes etc.
 
+exclude = [];
 % This was the relaxed solution
 x = relaxedsolution.Primal;
 
@@ -34,13 +35,10 @@ if ismember('shifted ceil',p.options.bnb.rounding)
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
             x_min = xtemp;
-            upper =upperhere;
-            % return
+            upper =upperhere;           
         end
     end
 end
-
-
 
 if ismember('shifted round',p.options.bnb.rounding)
     % Round, update nonlinear terms, and compute feasibility
@@ -59,7 +57,7 @@ if ismember('shifted round',p.options.bnb.rounding)
         if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
             x_min = xtemp;
             upper =upperhere;%p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-            return
+            return      
         end
     end
 end
@@ -89,7 +87,7 @@ if ismember('round',p.options.bnb.rounding)
     if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
         x_min = xtemp;
         upper = computecost(p.f,p.corig,p.Q,x_min,p);%p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return
+        return    
     end
 end
 
@@ -117,8 +115,8 @@ if ismember('ceil',p.options.bnb.rounding)
     if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
         x_min = xtemp;
         upper = computecost(p.f,p.corig,p.Q,x_min,p);%upper = p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return
-    end
+        return   
+     end
 end
 
 if ismember('floor',p.options.bnb.rounding)
@@ -131,8 +129,8 @@ if ismember('floor',p.options.bnb.rounding)
     if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
         x_min = xtemp;
         upper = computecost(p.f,p.corig,p.Q,x_min,p);%upper = p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return
-    end
+        return    
+     end
 end
 
 function x = fix_semivar(p,x);

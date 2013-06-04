@@ -14,7 +14,6 @@ end
 p = relaxed_p;
 p.solver.tag = p.solver.lower.tag;
 
-
 removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
 
