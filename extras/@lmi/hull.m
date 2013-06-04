@@ -4,10 +4,10 @@ function [Fhull,t,y] = hull(varargin)
 % H = hull(F1,F2,...)
 %
 % OUTPUT
-%   H   : SET object describing the convex hull of the input constraints
+%   H   : Constraint object describing the convex hull of the input constraints
 %
 % INPUT
-%   Fi  : SET objects with constraints
+%   Fi  : Constraint objects with constraints
 %
 % Note that the convex representation of the convex hull requires a lifting
 % (introduction of auxially variables). Hence, if you have many set of
