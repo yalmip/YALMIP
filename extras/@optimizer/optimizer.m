@@ -256,7 +256,14 @@ used_in = find(any(sys.model.monomtable(:,b),2));
 Q = sys.model.Q;
 Qa = Q;Qa(:,b)=[];Qa(b,:)=[];
 Qb = Q(:,b);Qb(b,:)=[];
-if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | (nnz(Qb)>0))
+if nnz(Q)>0
+    zeroRow = find(~any(Q,1));
+    Qtest = Q;Q(zeroRow,:)=[];Q(:,zeroRow)=[];
+    problematicQP = min(eig(full(Qtest)))<-1e-14;
+else
+    problematicQP = 0;
+end
+if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | problematicQP)
     sys.nonlinear = 1;
 else
     sys.nonlinear = 0;
