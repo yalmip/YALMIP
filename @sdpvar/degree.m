@@ -1,13 +1,12 @@
 function deg=degree(p,y,e)
 %DEGREE Polynomial degree
 %
-% DEG = DEGREE(p,x,e)
+% DEG = DEGREE(p,x,flag,vector)
 %
-% p : SDPVAR object.
-% x : Degree w.r.t linear SDPVAR objects, can be [].
-
-
-% e : If e=1, returns degree of each element in p
+% p      : SDPVAR object.
+% x      : Degree w.r.t linear SDPVAR objects, can be [].
+% flag   : 'max', 'min', 'all' can be []. Default 'max'
+% vector : If vector = 1, returns degree of each element in p
 %
 % Examples
 % x1 = sdpvar(1,1);x2 = sdpvar(1,1);
@@ -23,10 +22,6 @@ function deg=degree(p,y,e)
 %
 % degree(p,[],1) returns [1;3]
 
-% Author Johan Löfberg 
-% $Id: degree.m,v 1.3 2007-05-10 15:00:33 joloef Exp $  
-
-
 if isa(p,'double')
     if nargin==1
         deg = 0;
@@ -36,11 +31,21 @@ if isa(p,'double')
     return
 end
 
-if nargin<2
+if nargin<2 | isempty(y)
     y = recover(depends(p));
 end
 
-if nargin<3 | (nargin==3 & e==0)
+if nargin == 3
+    if isa(flag,'double')
+        if flag == 1
+            vector = 1;
+        else
+            vector = 0;
+        end
+    end
+end
+
+if nargin<3 | (nargin==3 & vector==0)
     exponent_p = exponents(p,y);
     switch nargin
         case 1
