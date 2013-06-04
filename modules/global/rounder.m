@@ -5,7 +5,6 @@ function [upper,x_min] = rounder(p,relaxedsolution)
 %
 % Rounds up and down, fixes etc.
 
-exclude = [];
 % This was the relaxed solution
 x = relaxedsolution.Primal;
 
@@ -35,7 +34,7 @@ if ismember('shifted ceil',p.options.bnb.rounding)
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
             x_min = xtemp;
-            upper =upperhere;           
+            upper =upperhere;            
         end
     end
 end
