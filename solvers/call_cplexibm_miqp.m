@@ -152,8 +152,7 @@ else
         end
     else
         if isempty(H)
-            evalc('[x,fval,exitflag,output] = cplexmilp(f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype'',x0,options.cplex);');
-            
+            evalc('[x,fval,exitflag,output] = cplexmilp(f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype'',x0,options.cplex);');            
         else
             evalc('[x,fval,exitflag,output] = cplexmiqp(H,f,Aineq,bineq,Aeq,beq,K.sos.type,K.sos.variables,K.sos.weight,lb,ub,ctype'',x0,options.cplex);');
         end
