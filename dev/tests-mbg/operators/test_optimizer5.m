@@ -54,7 +54,7 @@ mbg_asserttolequal(sol1,[3], 1e-4);
 
 P3 = optimizer([x <= u,y <= z], -x-y,[],{u,z},{x,y});
 sol3 = P3{{4,5}};
-mbg_asserttrue(isa(sol3,'cell') && length(sol3)==2 && sol3{2}==5);
+mbg_asserttrue(isa(sol3,'cell') && length(sol3)==2 && abs(sol3{2}-5) <= 1e-5);
 
 P4 = optimizer([x <= u,y <= z],norm(A-x)-y,[],{u,z,A},{x,y,A});
 sol4 = P4{{4,5,ones(2,3)}};

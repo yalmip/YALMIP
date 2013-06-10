@@ -4,4 +4,4 @@ function test_optimizer8
 sdpvar x u
 P = optimizer([x <= u],-x,[],u,x)
 U = P{[7 8 9]};
-mbg_asserttrue(isequal([7 8 9],U));
+mbg_asserttrue(norm([7 8 9]-U)<1e-7);
