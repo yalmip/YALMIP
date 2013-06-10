@@ -162,11 +162,9 @@ newmonomtable(removethese,:) = [];
 
 if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
-    alreadyAdded = zeros(1,size(newmonomtable,1));
-    % R2012b
-   % [ii,jj,kk] = unique(newmonomtable,'rows','stable');
-    [ii,jj,kk] = unique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1),'rows','stable');
-   % [ii1,jj1,kk1] = unique(newmonomtable,'rows','stable');
+    alreadyAdded = zeros(1,size(newmonomtable,1));      
+    %[ii,jj,kk] = unique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1),'rows','stable');
+    [ii,jj,kk] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
     S = sparse(kk,1:length(kk),1);
     skipped = setdiff(1:length(kk),jj);
     model.precalc.S = S;

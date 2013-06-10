@@ -283,7 +283,8 @@ sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
 sys.model.precalc.Qmap = [];
 % R2012b...
 try
-    [ii,jj,kk] = unique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1),'rows','stable');
+   % [ii,jj,kk] = unique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1),'rows','stable');
+    [ii,jj,kk] = stableunique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1));
  %   [ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','stable');
     sys.model.precalc.S = sparse(kk,1:length(kk),1);
     sys.model.precalc.skipped = setdiff(1:length(kk),jj);    
