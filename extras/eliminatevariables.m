@@ -2,15 +2,6 @@ function [model,keptvariables,infeasible] = eliminatevariables(model,varindex,va
 
 keptvariables = 1:length(model.c);
 
-% The first set of equalities are just used when the model is linear in the
-% parametric variables, hence we delete them 
-%model.F_struc(1:length(varindex),:) = [];
-%model.K.f = model.K.f - length(varindex);
-
-%newmonomtable = model.monomtable;
-%rmvmonoms = newmonomtable(:,varindex);
-%newmonomtable(:,varindex) = 0;
-
 rmvmonoms = model.rmvmonoms;
 newmonomtable = model.newmonomtable;
 
@@ -31,14 +22,10 @@ if ~isempty(model.precalc.jj2)
 end
 monomvalue = prod(aux,2);
 
-%removethese = find(~any(newmonomtable,2));
-%keepingthese = find(any(newmonomtable,2));
-
 removethese = model.removethese;
 keepingthese = model.keepingthese;
 
 value = monomvalue(removethese);
-%monomgain = monomvalue;monomgain(removethese) = [];
 monomgain = monomvalue(keepingthese);
 
 if ~isempty(model.F_struc)
@@ -61,25 +48,16 @@ if model.K.f > 0
     end
 end
 if model.K.l > 0
-    candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);  
+    candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);
     if ~isempty(candidates)
-       %infeasibles = find(model.F_struc(model.K.f + candidates,1)<0);
-         if find(model.F_struc(model.K.f + candidates,1)<0,1) 
-             infeasible = 1;
-             return
-         else
-             model.F_struc(model.K.f + candidates,:) = [];
-             model.K.l = model.K.l - length(candidates);
-         end
-
-%         infeasibles = find(model.F_struc(model.K.f + candidates,1)<0);
-%         if ~isempty(infeasibles)          
-%             infeasible = 1;
-%             return
-%         else
-%             model.F_struc(model.K.f + candidates,:) = [];
-%             model.K.l = model.K.l - length(candidates);
-%         end
+        
+        if find(model.F_struc(model.K.f + candidates,1)<0,1)
+            infeasible = 1;
+            return
+        else
+            model.F_struc(model.K.f + candidates,:) = [];
+            model.K.l = model.K.l - length(candidates);
+        end
     end
 end
 if model.K.q(1) > 0
@@ -179,26 +157,7 @@ model.c = S*model.c;
 %model.F_struc2 = [model.F_struc(:,1) (S*model.F_struc(:,2:end)')'];
 model.F_struc = model.F_struc*model.precalc.blkOneS;%blkdiag(1,S');
 %norm(model.F_struc-model.F_struc2)
-if 0
-    for i  = 1:size(newmonomtable,1)
-        if ~alreadyAdded(i)
-            this = newmonomtable(i,:);
-            j = findrows(newmonomtable(i+1:1:end,:),this);
-            if ~isempty(j)
-                j = j + i;
-                % j = setdiff(j,skipped);
-                % if ~isempty(j)
-                model.c(i) = model.c(i) + sum(model.c(j));
-                model.F_struc(:,i+1) = model.F_struc(:,i+1) + sum(model.F_struc(:,j+1),2);
-                skipped = unique([skipped j(:)']);
-                alreadyAdded(j)=1;
-                %  end
-            end
-        end
-    end
-    model.c(skipped) = [];   
-    model.F_struc(:,1+skipped) = [];
-end
+
 model.lb(skipped) = [];
 model.ub(skipped) = [];
 newmonomtable(skipped,:) = [];
