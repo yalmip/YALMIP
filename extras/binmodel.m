@@ -13,13 +13,13 @@ function varargout = binmodel(varargin)
 % If an input p contains continuous variables, the continuous variables
 % may only enter linearly (i.e. degree w.r.t continuous variables should
 % be at most 1). More over, all continuous variables must be explicitly
-% bounded in the SET object D.
+% bounded in the constraint object D.
 %
 % Example
 %  binvar a b
 %  sdpvar x y
 %  [plinear1,plinear2,F] = binmodel(a^3+b,a*b);
-%  [plinear1,plinear2,F] = binmodel(a^3*x+b*y,a*b*x, set(-2 <=[x y] <=2));
+%  [plinear1,plinear2,F] = binmodel(a^3*x+b*y,a*b*x, -2 <=[x y] <=2);
 %
 % See also BINARY, BINVAR, SOLVESDP
 
@@ -29,7 +29,7 @@ function varargout = binmodel(varargin)
 all_linear = 1;
 p = [];
 n_var = 0;
-Foriginal = set([]);
+Foriginal = [];
 for i = 1:nargin
     switch class(varargin{i})
         case 'sdpvar'
@@ -108,15 +108,15 @@ if ~isempty(bilinear)
     
     if all(ismember(xi,allbinary)) & all(ismember(yi,allbinary))
         % fast case for binary*binary
-        F = F + set(binary(z_bilinear)) + set(x >= z_bilinear) + set(y >= z_bilinear) + set(1+z_bilinear >= x + y) + set(0 <= z_bilinear <= 1);
+        F = [F, binary(z_bilinear), x >= z_bilinear, y >= z_bilinear, 1+z_bilinear >= x + y, 0 <= z_bilinear <= 1];
     else
         for i = 1:length(bilinear)
             if ismember(xi(i),allbinary) & ismember(yi(i),allbinary)
-                F = F + set(x(i) >= z_bilinear(i)) + set(y(i) >= z_bilinear(i)) + set(1+z_bilinear(i) >= x(i) + y(i)) + set(0 <= z_bilinear(i) <= 1);
+                F = [F, x(i) >= z_bilinear(i), y(i) >= z_bilinear(i), 1+z_bilinear(i) >= x(i) + y(i), 0 <= z_bilinear(i) <= 1];
             elseif ismember(xi(i),allbinary)
-                F = F + binary_times_cont(x(i),y(i), z_bilinear(i));
+                F = [F, binary_times_cont(x(i),y(i), z_bilinear(i))];
             else
-                F = F + binary_times_cont(y(i),x(i), z_bilinear(i));
+                F = [F, binary_times_cont(y(i),x(i), z_bilinear(i))];
             end
         end
     end
@@ -139,7 +139,7 @@ if ~isempty(polynomial)
             the_binary_monom = the_monom;the_binary_monom(non_binary) = 0;
             [ii,jj] = find(the_binary_monom);
             x = recover(jj);
-            F = F + set(x >= z_polynomial(i)) + set(length(x)-1+z_polynomial(i) > sum(x)) + set(0 <= z_polynomial(i) <= 1);
+            F = [F, x >= z_polynomial(i), length(x)-1+z_polynomial(i) >= sum(x), 0 <= z_polynomial(i) <= 1];
             % Now define the actual variable
             temp =  z_polynomial(i);z_polynomial(i) = sdpvar(1,1);
             the_real_monom = the_monom;the_real_monom(allbinary)=0;
@@ -150,7 +150,7 @@ if ~isempty(polynomial)
             % simple case, just binary terms
             [ii,jj] = find(the_monom);
             x = recover(jj);
-            F = F + set(x >= z_polynomial(i)) + set(length(x)-1+z_polynomial(i) >= sum(x)) + set(0 <= z_polynomial(i) <= 1);
+            F = [F, x >= z_polynomial(i), length(x)-1+z_polynomial(i) >= sum(x), 0 <= z_polynomial(i) <= 1];
         end
     end
 else
@@ -181,5 +181,5 @@ function F = binary_times_cont(d,y, z)
 if infbound
     error('Some of your continuous variables are not explicitly bounded.')
 end
-F = set((1-d)*M >= y - z >= m*(1-d)) + set(d*m <= z <= d*M) + set(m <= z <= M);
+F = [(1-d)*M >= y - z >= m*(1-d), d*m <= z <= d*M, m <= z <= M];
                 
