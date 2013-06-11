@@ -263,7 +263,7 @@ if nnz(Q)>0
 else
     problematicQP = 0;
 end
-if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | problematicQP)
+if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | problematicQP) | ~isempty(sys.model.evalMap)
     sys.nonlinear = 1;
 else
     sys.nonlinear = 0;
@@ -296,7 +296,7 @@ catch
    % sys.model.precalc.skipped=[];
 end
 
-if sys.nonlinear & isempty(sys.model.evalMap)
+if sys.nonlinear %& isempty(sys.model.evalMap)
     % These artificial equalities are removed if we will use eliminate variables
     sys.model.F_struc(1:length(sys.parameters),:) = [];
     sys.model.K.f = sys.model.K.f - length(sys.parameters);
@@ -319,23 +319,7 @@ if sys.nonlinear & isempty(sys.model.evalMap)
     sys.model.newmonomtable(:,sys.parameters) = 0;
    
     sys.model.removethese = find(~any(sys.model.newmonomtable,2));
-    sys.model.keepingthese = find(any(sys.model.newmonomtable,2));
-    
- %   sys.model.newmonomtable(:, sys.model.removethese)=[];
- %   sys.model.newmonomtable(sys.model.removethese,:)=[];
-    
-%     variabletype = zeros(size(sys.model.newmonomtable,1),1)';
-%     nonlinear = ~(sum(sys.model.newmonomtable,2)==1 & sum(sys.model.newmonomtable~=0,2)==1);
-%     if ~isempty(nonlinear)
-%         variabletype(nonlinear) = 3;
-%         quadratic = sum(sys.model.newmonomtable,2)==2;
-%         variabletype(quadratic) = 2;
-%         bilinear = max(sys.model.newmonomtable,[],2)<=1;
-%         variabletype(bilinear & quadratic) = 1;
-%         sigmonial = any(0>sys.model.newmonomtable,2) | any(sys.model.newmonomtable-fix(sys.model.newmonomtable),2);
-%         variabletype(sigmonial) = 4;
-%     end
-%     sys.model.precalc.variabletype = variabletype;
+    sys.model.keepingthese = find(any(sys.model.newmonomtable,2));    
 end
 
 sys = class(sys,'optimizer');
