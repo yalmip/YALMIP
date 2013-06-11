@@ -465,6 +465,15 @@ solver(i).call    = 'calllindo_miqp';
 solver(i).constraint.integer = 1;
 i = i+1;
 
+solver(i) = qpsolver;
+solver(i).tag     = 'ecos';
+solver(i).version = '';
+solver(i).checkfor= {'ecos'};
+solver(i).call    = 'callecos';
+solver(i).objective.quadratic.convex = 0;
+solver(i).constraint.inequalities.secondordercone = 1;
+i = i+1;
+
 solver(i) = sdpsolver;
 solver(i).tag     = 'SeDuMi';
 solver(i).version = '1.1';
