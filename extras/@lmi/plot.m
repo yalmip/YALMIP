@@ -238,6 +238,7 @@ errorstatus = 0;
 waitbar_created = 0;
 t0 = clock;
 waitbar_starts_at = 2;
+lastdraw = clock;
 try % Try to ensure that we close h
     if length(x)==2
         mu = 0.5;
@@ -272,8 +273,9 @@ try % Try to ensure that we close h
              waitbar_created = 1;
             end
         end
-        if waitbar_created
+        if waitbar_created & etime(clock,lastdraw)>1/10
             waitbar(i/n_,h)
+            lastdraw = clock;
         end
         i=i+1;
     end
