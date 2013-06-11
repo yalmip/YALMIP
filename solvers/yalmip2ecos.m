@@ -18,13 +18,14 @@ end
 if K.f > 0
     b = -full(F_struc(1:K.f,1));
     A = F_struc(1:K.f,2:end);
-    h = full(F_struc(1+K.f:end,1));
+    h = full(F_struc(1+K.f:end,1));        
     G = -F_struc(1+K.f:end,2:end);
 else
     A = [];
     b = [];
-    h = full(F_struc(1:end,1));
-    G = -F_struc(1:end,2:end);
+    h = full(F_struc(:,1));
+    G = -F_struc;
+    G(:,1)=[];  
 end
 
 dims.l = K.l;

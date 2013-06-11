@@ -25,8 +25,8 @@ if ~isempty(ub)
         UB(integer_variables) = round(UB(integer_variables));
     end
 else
-    LB = -repmat(inf,n,1);
-    UB = repmat(inf,n,1);
+    LB = -inf(n,1);
+    UB = inf(n,1);
 end
 
 %[F_struc,K,LB,UB,semicont_variables] = extractSemiContBounds(F_struc,K,LB,UB,semicont_variables);

@@ -13,13 +13,15 @@ if K.q(1)>0
     F_struc = [F_struc(1:K.f+K.l,:) spalloc(K.f+K.l,nNew,0)];
     F_struc = [F_strucSOCP;F_struc];
     K.f = K.f + nNew;
-    c = [c;spalloc(nNew,1,0)];
-    Q = blkdiag(Q,spalloc(nNew,nNew,0));
+    c(end+nNew) = sparse(0);
+    Q(end+nNew,end+nNew) = sparse(0);
+    %c = [c;spalloc(nNew,1,0)];
+    %Q = blkdiag(Q,spalloc(nNew,nNew,0));
     UB = [UB;inf(nNew,1)];
     for i = 1:length(K.q);
         LB = [LB;0;-inf(K.q(i)-1,1)];
     end
-    if nargout > 6
+    if nargout > 7
         % Cplex interface needs explicit representations of z'Q*z+Lz+r
         top = nOriginal+1;
         ri = zeros(1,length(K.q));
