@@ -23,9 +23,6 @@ function varargout = binmodel(varargin)
 %
 % See also BINARY, BINVAR, SOLVESDP
 
-% Author Johan Löfberg
-% $Id: binmodel.m,v 1.5 2007-06-16 10:33:41 joloef Exp $
-
 all_linear = 1;
 p = [];
 n_var = 0;
