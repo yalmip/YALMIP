@@ -35,7 +35,8 @@ if ~isempty(model.F_struc)
 end
 infeasible = 0;
 if model.K.f > 0
-    candidates = find(sum(abs(model.F_struc(1:model.K.f,2:end)),2) == 0);
+    candidates = find(~any(model.F_struc(1:model.K.f,2:end),2));
+    %candidates = find(sum(abs(model.F_struc(1:model.K.f,2:end)),2) == 0);
     if ~isempty(candidates)
         % infeasibles = find(model.F_struc(candidates,1)~=0);
         if find(model.F_struc(candidates,1)~=0,1)%;~isempty(infeasibles)
@@ -48,10 +49,12 @@ if model.K.f > 0
     end
 end
 if model.K.l > 0
-    candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);
+    candidates = find(~any(model.F_struc(model.K.f + (1:model.K.l),2:end),2));
+    %candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);
     if ~isempty(candidates)
         
-        if find(model.F_struc(model.K.f + candidates,1)<0,1)
+        %if find(model.F_struc(model.K.f + candidates,1)<0,1)
+        if any(model.F_struc(model.K.f + candidates,1)<0)
             infeasible = 1;
             return
         else
@@ -142,9 +145,9 @@ if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
     alreadyAdded = zeros(1,size(newmonomtable,1));      
     %[ii,jj,kk] = unique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1),'rows','stable');
-    [ii,jj,kk] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
+    [ii,jj,kk,skipped] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
     S = sparse(kk,1:length(kk),1);
-    skipped = setdiff(1:length(kk),jj);
+   % skipped = setdiff(1:length(kk),jj);
     model.precalc.S = S;
     model.precalc.skipped = skipped;
     model.precalc.newmonomtable = newmonomtable;
