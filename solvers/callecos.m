@@ -1,60 +1,30 @@
-function output = callecos(model)
+function output = callecos(yalmipmodel)
 
 % Retrieve needed data
-options = model.options;
-F_struc = model.F_struc;
-c       = model.c;
-K       = model.K;
-ub      = model.ub;
-lb      = model.lb;
+options = yalmipmodel.options;
 
-% *********************************************
-% Bounded variables converted to constraints
-% N.B. Only happens when caller is BNB
-% *********************************************
-if ~isempty(ub)
-    [F_struc,K] = addbounds(F_struc,K,ub,lb);
-end
-
-if K.f > 0
-    b = -full(F_struc(1:K.f,1));
-    A = F_struc(1:K.f,2:end);
-    h = full(F_struc(1+K.f:end,1));
-    G = -F_struc(1+K.f:end,2:end);
-else
-    A = [];
-    b = [];
-    h = full(F_struc(1:end,1));
-    G = -F_struc(1:end,2:end);
-end
-
-dims.l = K.l;
-if K.q(1)==0
-    dims.q = [];
-else
-    dims.q = K.q;
-end
+model = yalmip2ecos(yalmipmodel);
 
 if options.savedebug
-    save ecosdebug  A b G h c dims
+    save ecosdebug model
 end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 solvertime = clock;
-if isempty(A)
+if isempty(model.A)
     if options.verbose
-        [x,y,info,s,z] = ecos(c,G,h,dims);
+        [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims);
     else
-        evalc('[x,y,info,s,z] = ecos(c,G,h,dims);');
+        evalc('[x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims);');
     end
 else
     if options.verbose
-        [x,y,info,s,z] = ecos(c,G,h,dims,A,b);
+        [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b);
     else
-        evalc('[x,y,info,s,z] = ecos(c,G,h,dims,A,b);');
+        evalc('[x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b);');
     end
 end
-if model.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+if yalmipmodel.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % Internal format
 Primal = x;
@@ -71,16 +41,11 @@ switch info.exitflag
         problem = 9;
 end
 
-infostr = yalmiperror(problem,model.solver.tag);
+infostr = yalmiperror(problem,yalmipmodel.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
-    solverinput.A = A;
-    solverinput.b = b;
-    solverinput.G = G;
-    solverinput.h = h;
-    solverinput.c = c;
-    solverinput.dims = dims;
+    solverinput.model = model;
 else
     solverinput = [];
 end
