@@ -5,21 +5,34 @@ keptvariables = 1:length(model.c);
 rmvmonoms = model.rmvmonoms;
 newmonomtable = model.newmonomtable;
 
-%ss = repmat(value(:)',size(rmvmonoms,1),1);
-%aux = ss.^rmvmonoms;
-%monomvalue = prod(aux,2);
+% Assign evaluation-based values
+if length(model.evalParameters > 0)
+    alls = union(varindex,model.evalParameters);
+    [dummy,loc] = ismember(varindex,alls);
+    remappedvalue = zeros(length(alls),1);
+    remappedvalue(loc) = value;
+    for i = 1:length(model.evalMap)
+        j = find(model.evalMap{i}.variableIndex == varindex);
+        if ~isempty(j)
+            p = value(j);
+             [dummy,loc] = ismember(model.evalMap{i}.computes,alls);
+            remappedvalue(loc) = feval(model.evalMap{i}.fcn,p);
+        end
+    end
+    value = remappedvalue;
+end
 
-%[ii,jj] = find(rmvmonoms);
-%aux = rmvmonoms*0+1;
-%indexx = sub2ind(size(rmvmonoms),ii,jj);
+% Evaluate fixed monomial terms
 aux = model.precalc.aux;
 if ~isempty(model.precalc.jj1)
     z = value(model.precalc.jj1).^rmvmonoms(model.precalc.index1);
     aux(model.precalc.index1) = z;
 end
+% Assign simple linear terms
 if ~isempty(model.precalc.jj2)
     aux(model.precalc.index2) = value(model.precalc.jj2);
 end
+
 monomvalue = prod(aux,2);
 
 removethese = model.removethese;

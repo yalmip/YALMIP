@@ -388,11 +388,12 @@ end
 % General functions (exp, log,...)
 % ******************************************************
 keep = ones(length(solvers),1);
-for i = 1:length(solvers)
-    keep(i) = (ProblemClass.evaluation <= solvers(i).evaluation);
+if ~forced_choice
+    for i = 1:length(solvers)
+        keep(i) = (ProblemClass.evaluation <= solvers(i).evaluation);
+    end
+    solvers = solvers(find(keep));
 end
-solvers = solvers(find(keep));
-
 
 % FIX : UUUUUUGLY
 if isempty(solvers)

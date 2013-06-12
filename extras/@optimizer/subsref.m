@@ -96,7 +96,7 @@ elseif isequal(subs.type,'{}')
         
     for i = 1:nBlocks
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
-        if self.nonlinear & isempty(self.model.evalMap)
+        if self.nonlinear %& isempty(self.model.evalMap)
             originalModel = self.model;
             try
                 [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
@@ -115,7 +115,7 @@ elseif isequal(subs.type,'{}')
             end
             originalModel.precalc = self.model.precalc;           
             self.model = originalModel;
-        else                                  
+        else                     
             if ~isempty(thisData)
                 self.model.F_struc(1:prod(self.dimin),1) = thisData(:);
             end         

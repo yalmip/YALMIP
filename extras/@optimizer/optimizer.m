@@ -296,30 +296,43 @@ catch
    % sys.model.precalc.skipped=[];
 end
 
-if sys.nonlinear %& isempty(sys.model.evalMap)
+if sys.nonlinear
     % These artificial equalities are removed if we will use eliminate variables
     sys.model.F_struc(1:length(sys.parameters),:) = [];
     sys.model.K.f = sys.model.K.f - length(sys.parameters);
     
+    % Which variables are simple nonlinear operators acting on parameters
+    evalParameters = [];
+    for i = 1:length(sys.model.evalMap)
+        if all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
+            evalParameters = [evalParameters;sys.model.evalMap{i}.computes(:)];
+        end
+    end
+    sys.model.evalParameters = evalParameters;
+    
     % Precompute some structures
     newmonomtable = sys.model.monomtable;
-    rmvmonoms = newmonomtable(:,sys.parameters);
+    rmvmonoms = newmonomtable(:,[sys.parameters;evalParameters]);
+    % Linear indexation to fixed monomial terms which have to be computed
     [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
     sys.model.precalc.aux = rmvmonoms*0+1;
     sys.model.precalc.index1 = sub2ind(size(rmvmonoms),ii1,jj1);    
     sys.model.precalc.jj1 = jj1;    
     
-    [ii2,jj2] = find(rmvmonoms == 1);
-    sys.model.precalc.aux = rmvmonoms*0+1;
+    % Linear indexation to linear terms
+    [ii2,jj2] = find(rmvmonoms == 1);   
     sys.model.precalc.index2 = sub2ind(size(rmvmonoms),ii2,jj2);    
     sys.model.precalc.jj2 = jj2;    
     
     sys.model.newmonomtable = model.monomtable;
-    sys.model.rmvmonoms =  sys.model.newmonomtable(:,sys.parameters);
-    sys.model.newmonomtable(:,sys.parameters) = 0;
+    sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.parameters;evalParameters]);
+    sys.model.newmonomtable(:,union(sys.parameters,evalParameters)) = 0;
    
     sys.model.removethese = find(~any(sys.model.newmonomtable,2));
     sys.model.keepingthese = find(any(sys.model.newmonomtable,2));    
+    
+  %  sys.model.removethese = unique(sys.model.removethese);
+  %  sys.model.keepingthese = setdiff(sys.model.keepingthese,sys.model.removethese);
 end
 
 sys = class(sys,'optimizer');
