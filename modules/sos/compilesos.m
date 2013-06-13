@@ -1,10 +1,21 @@
 function [F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomials)
 %COMPILESOS Sum of squares decomposition
 %
-%    [F,obj] = compilesos(F,h,options,params,monomials) compiles the SOS
+%    [F,obj,m] = compilesos(F,h,options,params,monomials) compiles the SOS
 %    problem (i.e., derives the SDP model) without actually solving it
+%
+%    Inputs
+%     F         : The model involving SOS constraints
+%     h         : Objective function (function of params) [optional]
+%     options   : SDPSETTINGS structure [optional]
+%     params    : Parametric variables in model [optional]
+%     monomials : Prespecified monomials to be used [optional]
+%    Outputs
+%     F         : Constraints defining the problem
+%     h         : Objective function
+%     m         : Monomials used in the decomposition
 % 
-% See also SOLVESOS
+% See also SOLVESOS, SOS
 
 % ************************************************
 %% Check #inputs
