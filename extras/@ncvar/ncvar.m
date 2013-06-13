@@ -345,7 +345,12 @@ switch nargin
         sys.savedata = [];
         sys.extra = [];
         sys.extra.expanded = [];
+        sys.originalbasis = [];
+        sys.leftfactors{1} = [];
+        sys.rightfactors{1} = [];
+        sys.midfactors{1} = [];
         sys.conicinfo = 0;
+        
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
         if ~isempty(constants);
@@ -369,6 +374,10 @@ switch nargin
         sys.extra = [];
         sys.extra.expanded = [];        
         sys.conicinfo = 0;
+        sys.originalbasis = [];
+        sys.leftfactors{1} = [];
+        sys.rightfactors{1} = [];
+        sys.midfactors{1} = [];
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
         if ~isempty(constants);
@@ -379,7 +388,7 @@ switch nargin
         if isempty(sys.lmi_variables)
             sys = full(reshape(sys.basis(:,1),sys.dim(1),sys.dim(2)));
         else
-            sys = class(sys,'sdpvar');
+            sys = class(sys,'ncvar');
         end
         return
     case 7 % Fast version for internal use
@@ -667,8 +676,12 @@ if isa(basis,'cell')
         sys{blk}.typeflag = 0;
         sys{blk}.savedata = [];
         sys{blk}.extra = [];
-        sys{blk}.extra.expanded = [];        
+        sys{blk}.extra.expanded = [];
         sys{blk}.conicinfo = conicinfo;
+        sys{blk}.originalbasis = [];
+        sys{blk}.leftfactors{1} = [];
+        sys{blk}.rightfactors{1} = [];
+        sys{blk}.midfactors{1} = [];
         sys{blk} = class(sys{blk},'ncvar');
     end
     if length(n)==1
@@ -684,6 +697,10 @@ else
     sys.extra = [];
     sys.extra.expanded = [];    
     sys.conicinfo = conicinfo;
+    sys.originalbasis = [];
+    sys.leftfactors{1} = [];
+    sys.rightfactors{1} = [];
+    sys.midfactors{1} = [];
     sys = class(sys,'ncvar');
     if ~isreal(basis)
         % Add internal information about complex pairs

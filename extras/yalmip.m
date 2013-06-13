@@ -973,6 +973,13 @@ switch varargin{1}
     case 'parvariables'
         varargout{1} = internal_sdpvarstate.parVariables;
         
+    case 'nonCommutingVariables'
+        if isempty(internal_sdpvarstate.nonCommutingTable)
+             varargout{1} = [];
+        else
+            varargout{1} = find(isnan(internal_sdpvarstate.nonCommutingTable(:,1)));
+        end
+            
     case 'nonCommutingTable'
         if nargin == 2
             internal_sdpvarstate.nonCommutingTable = varargin{2};

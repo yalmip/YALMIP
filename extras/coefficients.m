@@ -33,6 +33,11 @@ if isa(p,'double')
     return
 end
 
+if isa(p,'ncvar')
+    [base,v] = ncvar_coefficients(p,x);
+    return
+end
+
 if nargout>1 & (max(size(p))>1)
     error('For matrix inputs, only the coefficients can be returned. Request feature if you need this...');
 end

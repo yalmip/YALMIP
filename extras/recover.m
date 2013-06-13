@@ -31,9 +31,17 @@ else
                 end
             end
 
-            varargout{1} = sdpvar(n,1,[],lmi_variables(:)',basis,0);
+            if any(ismember(lmi_variables,yalmip('nonCommutingVariables')))
+                varargout{1} = ncvar(n,1,[],lmi_variables(:)',basis,0);
+            else
+                varargout{1} = sdpvar(n,1,[],lmi_variables(:)',basis,0);
+            end
         else
-            x = sdpvar(n,1,[],lmi_variables(:)',sparse(i,i+1,ones(n,1),n,n+1),0);
+            if any(ismember(lmi_variables,yalmip('nonCommutingVariables')))
+                x = ncvar(n,1,[],lmi_variables(:)',sparse(i,i+1,ones(n,1),n,n+1),0);
+            else
+                x = sdpvar(n,1,[],lmi_variables(:)',sparse(i,i+1,ones(n,1),n,n+1),0);
+            end
             for i = 1:length(lmi_variables)
                 varargout{i} = flush(x(i));
             end
