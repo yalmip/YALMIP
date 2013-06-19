@@ -982,7 +982,7 @@ switch varargin{1}
             
     case 'nonCommutingTable'
         if nargin == 2
-            internal_sdpvarstate.nonCommutingTable = varargin{2};
+            internal_sdpvarstate.nonCommutingTable = varargin{2};       
         else
             varargout{1} = internal_sdpvarstate.nonCommutingTable;
         end
