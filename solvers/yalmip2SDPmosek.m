@@ -38,16 +38,26 @@ for j = 1:length(model.K.s)
     prob.barc.subl = [prob.barc.subl l(:)'];
     prob.barc.val = [prob.barc.val val(:)'];
     
-    for i = 1:size(model.A,2)
-        Ai = model.A(top:top+n^2-1,i);
-        Ai = tril(reshape(Ai,n,n));
-        [k,l,val] = find(Ai);
-        prob.bara.subj = [prob.bara.subj j*ones(1,length(k))];
-        prob.bara.subi = [prob.bara.subi i*ones(1,length(k))];
-        prob.bara.subk = [prob.bara.subk k(:)'];
-        prob.bara.subl = [prob.bara.subl l(:)'];
-        prob.bara.val = [prob.bara.val val(:)'];
-    end
+    Ais = model.A(top:top+n^2-1,:);
+    [k,l,val] = find(Ais);
+    [I,J] = ind2sub([n n],k);
+    keep = find(I >= J);
+    I = I(keep);
+    J = J(keep);  
+    l = l(keep);
+    val = val(keep);
+    
+    % Which LMI
+    prob.bara.subj = [prob.bara.subj j*ones(1,length(val))];
+    % Which variable
+    prob.bara.subi = [prob.bara.subi l(:)'];
+    % Row
+    prob.bara.subk = [prob.bara.subk I(:)'];
+    % Column
+    prob.bara.subl = [prob.bara.subl J(:)'];
+    % Value
+    prob.bara.val = [prob.bara.val val(:)'];
+    
     top = top + n^2;
 end
 
