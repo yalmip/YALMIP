@@ -31,18 +31,6 @@ end
 commuting = find(~any(nonCommutingTable,2));
 nonCommutingTable(commuting,1) = commuting;
 
-% Expand non-commuting nonlinears
-for i = 1:size(nonCommutingTable)
-    if variabletype(i) & ~isnan(nonCommutingTable(i,1))
-        [aux,monoms,powers] = find(monomtable(i,:));
-        r = [];
-        for j = 1:length(monoms)
-            r = [r repmat(monoms(j),1,powers(j))];
-        end
-        nonCommutingTable(i,1:length(r))=r;
-    end
-end
-
 base = getbase(X);
 vars = getvariables(X);
 yvar = getvariables(Y);
@@ -50,11 +38,31 @@ Z = X;
 newMonoms = [1];
 for i = vars
     monTerms = nonCommutingTable(i,:);
-    monTerms = monTerms(monTerms ~= 0);
-    monTerms = monTerms(~isnan(monTerms));
-    if any(ismember(yvar,monTerms))
+    
+    % Possibilities
+    % [v(x) NC]
+    % [NAN NC]
+    if isa(Y,'sdpvar')       
+        if isnan(monTerms(1))
+            % Purely non-commuting so no replacement can occur
+            newMonoms = [newMonoms;recover(i)];
+        else
+            % call recursively with sdpvar replace
+            if any(isnan(nonCommutingTable(monTerms(find(monTerms)))))
+                [ct,vt] = coefficients(recovernc(i),Y);
+            else
+                [ct,vt] = coefficients(recover(i),Y);
+            end
+            newMonomial = ct;
+            if degree(vt)>=1
+                newMonomial = newMonomial*W^degree(vt);
+            end
+            newMonoms = [newMonoms;newMonomial];
+        end
+    else
+        % Replacing a non-commuting with something else
         newMonomial = 1;
-        for j = 1:length(monTerms)
+        for j = 2:max(find(monTerms))
             if monTerms(j)==yvar
                 newMonomial = newMonomial*W;
             else
@@ -62,8 +70,6 @@ for i = vars
             end
         end
         newMonoms = [newMonoms;newMonomial];
-    else
-        newMonoms = [newMonoms;recover(i)];
-    end
+    end                 
 end
 Z = reshape(base*newMonoms,size(X));
