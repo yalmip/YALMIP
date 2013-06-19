@@ -34,6 +34,9 @@ if isa(p,'double')
 end
 
 if isa(p,'ncvar')
+    if isa(x,'ncvar')
+        error('Coefficients not applicable when x is non-commuting');
+    end
     [base,v] = ncvar_coefficients(p,x);
     return
 end
