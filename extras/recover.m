@@ -30,7 +30,7 @@ else
                     lmi_variables = un_Z_vars;
                 end
             end
-
+               
             if any(ismember(lmi_variables,yalmip('nonCommutingVariables')))
                 varargout{1} = ncvar(n,1,[],lmi_variables(:)',basis,0);
             else
