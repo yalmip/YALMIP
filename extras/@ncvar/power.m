@@ -13,8 +13,8 @@ else
     d = ones(x.dim(1),x.dim(2))*d;
 end
 
-if any(d ~= fix(d))
-    error('Only integer powers allowed in non-commuting variables');
+if any(d ~= fix(d)) | any(d<0)
+    error('Only non-negative integer powers allowed in non-commuting variables');
 end
 
 % Just loop and call mpower instead
