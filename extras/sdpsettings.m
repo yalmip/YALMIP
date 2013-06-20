@@ -1709,8 +1709,7 @@ end
 cNames = fieldnames(options);
 for i = 1:length(cNames)
     eval(['temp = options.' cNames{i} ';']);
-    if isa(temp,'struct')%eval(['isa(options.' cNames{i} ',''struct''' ')'])
-        %cNames = [cNames;recursivefieldnames(eval(['' cNames{i}]),[cNames{i}])];
+    if isa(temp,'struct')
         cNames = [cNames;recursivefieldnames(temp,[cNames{i}])];
     end
 end
