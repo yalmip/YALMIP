@@ -924,7 +924,7 @@ else
     options.quadprogbb.max_time = inf;
   
     try
-        options.ipopt = ipoptset;    
+        options.ipopt = ipoptset;
         options.ipopt.hessian_approximation = 'limited-memory';
         
         cNames = recursivefieldnames(options.ipopt);
@@ -932,9 +932,7 @@ else
             Names{end+1} = ['ipopt.' cNames{i}];
         end
         [m,n] = size(Names);
-        names = lower(Names);
-        
-        
+        names = lower(Names);               
     catch
         options.ipopt.mu_strategy = 'adaptive';
         options.ipopt.tol = 1e-7;
@@ -966,7 +964,32 @@ else
         names = lower(Names);
     catch
         options.nomad =[];
-    end
+     end
+    
+     
+     try
+         options.clp = clpset;
+         cNames = recursivefieldnames(options.clp);
+         for i = 1:length(cNames)
+             Names{end+1} = ['clp.' cNames{i}];
+         end
+         [m,n] = size(Names);
+         names = lower(Names);
+     catch
+         
+     end
+     
+     try
+         options.ooqp = ooqpset;
+         cNames = recursivefieldnames(options.ooqp);
+         for i = 1:length(cNames)
+             Names{end+1} = ['ooqp.' cNames{i}];
+         end
+         [m,n] = size(Names);
+         names = lower(Names);
+     catch
+         options.ooqp = [];
+     end
     
     try
         options.xpress = xprsoptimset;
@@ -1708,6 +1731,13 @@ end
 
 cNames = fieldnames(options);
 for i = 1:length(cNames)
+    temp = [];    % Compensate for bug in ML. If a file called temp
+                  % is in the path, the isa(temp,'struct') below
+                  % will fail, unless we make the variable visible
+                  % to MATLABs interpreter pre-runtime (creation of
+                  % variable in eval is not detected by MATLAB, hence at
+                  % "compile-time", the only temp is the file)
+                  % eval must be used for old MATLAB versions...
     eval(['temp = options.' cNames{i} ';']);
     if isa(temp,'struct')
         cNames = [cNames;recursivefieldnames(temp,[cNames{i}])];

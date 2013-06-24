@@ -22,11 +22,7 @@ else
     b =[F_struc(K.f+1:end,1);F_struc(1:K.f,1)];    
 end
 
-opts.nin = length(b)-K.f;
-opts.tolfun = options.clp.primaltolerance;
-opts.maxiter = options.clp.maxnumiterations;
-opts.maxtime = options.clp.maxnumseconds;
-opts.display = options.verbose;
+opts = options.clp;
 
 if length(b)>0
     rl = repmat(-inf,length(b),1);
@@ -43,23 +39,26 @@ if options.savedebug
 end
 
 solvertime = clock; 
-[x,fval,exitflag,iter] = clp(full(c), A, rl, ru, lb, ub,opts,H);
+[x,fval,exitflag,iter] = clp(H,full(c), A, rl, ru, lb, ub,opts);
+
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % No duals
 D_struc = [];
 
 switch exitflag
-    case 1
-        problem = 0;
     case 0
-        problem = 3;
-    case -1
+        problem = 0;
+    case 1
         problem = 1;
-    case -2
-        problem = 11;
-    case -5
+    case 2
+        problem = 2;
+    case 3
+        problem = 3;
+    case 5
         problem = 16;
+    case 4
+        problem = 11;
     otherwise
         problem = -1;
 end
