@@ -33,14 +33,20 @@ if isempty(lb)
     ub = inf(length(c),1);
 end
 
-opts.tolfun = options.clp.primaltolerance;
-opts.maxiter = options.clp.maxnumiterations;
-opts.maxtime = options.clp.maxnumseconds;
-opts.display = options.verbose;
+opts = options.ooqp;
 
 H = 2*sparse(triu(Q));
 A = A';
 Aeq = Aeq';
+if K.f == 0
+    Aeq = [];
+    beq = [];
+end
+if K.l == 0
+    A = [];
+    blow = [];
+    bupp = [];
+end
 if options.savedebug
     save ooqpdebug c H lb ub Aeq beq A blow bupp opts
 end
@@ -67,6 +73,8 @@ switch stat
         problem = 1;
     case 1
         problem = 11; 
+    case {1,4}
+        problem = 9;
     otherwise
         problem = -1;
 end
