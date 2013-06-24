@@ -1,7 +1,11 @@
 function X = addrightfactor(X,R)
 if ~isempty(X.midfactors)
     for i = 1:length(X.midfactors)
-        X.rightfactors{i} = X.rightfactors{i}*R;
+        try
+            X.rightfactors{i} = X.rightfactors{i}*R;
+        catch
+            X = flush(X);
+        end
     end
 end
 X = cleandoublefactors(X);
