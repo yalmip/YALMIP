@@ -1728,16 +1728,9 @@ end
 
 cNames = fieldnames(options);
 for i = 1:length(cNames)
-    temp = [];    % Compensate for bug in ML. If a file called temp
-                  % is in the path, the isa(temp,'struct') below
-                  % will fail, unless we make the variable visible
-                  % to MATLABs interpreter pre-runtime (creation of
-                  % variable in eval is not detected by MATLAB, hence at
-                  % "compile-time", the only temp is the file)
-                  % eval must be used for old MATLAB versions...
-    eval(['temp = options.' cNames{i} ';']);
-    if isa(temp,'struct')
-        cNames = [cNames;recursivefieldnames(temp,[cNames{i}])];
+    eval(['temporaryOptions = options.' cNames{i} ';']);
+    if isa(temporaryOptions,'struct')
+        cNames = [cNames;recursivefieldnames(temporaryOptions,[cNames{i}])];
     end
 end
 for i = 1:length(cNames)
