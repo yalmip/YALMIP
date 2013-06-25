@@ -15,14 +15,14 @@ end
 % bilinear model. We only need the original bounds and variables.
 p.lb = p.lb(1:length(p_original.c));
 p.ub = p.ub(1:length(p_original.c));
-x = x(1:length(p_original.c));
 
- if ~isempty(p_original.integer_variables)
-     % disp('Report bug: FIX ME in global_solve_upper at 16')
-     local_gave_good = find(abs(x(p.integer_variables)-fix(x(p.integer_variables)))< options.bnb.inttol);
-     p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
-     p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
- end
+% if ~isempty(p_original.integer_variables)
+%     % disp('Report bug: FIX ME in global_solve_upper at 16')
+%     local_gave_good = find(abs(x(p.integer_variables)-fix(x(p.integer_variables)))< options.bnb.inttol);
+%     p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
+%     p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
+% end
+x = x(1:length(p_original.c));
 %         
 p_upper = p_original;
 
