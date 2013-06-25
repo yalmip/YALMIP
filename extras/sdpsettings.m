@@ -596,10 +596,7 @@ Names = {'solver'
     
     'lindo.LS_IPARAM_NLP_SOLVER'
     'lindo.LS_IPARAM_NLP_MAXLOCALSEARCH'
-    'lindo.METHOD'
-    
-    
-    %'mosek.param'
+    'lindo.METHOD'   
     'sos.model'
     'sos.newton'
     'sos.congruence'
