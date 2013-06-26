@@ -132,8 +132,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
     x(~removethese)=output.Primal;
     output.Primal=x;
 else
-    p.solver.version = p.solver.lower.version;
-    p.solver.subversion = p.solver.lower.subversion;
+    p.solver = p.solver.lower;
     output = feval(lowersolver,p);    
 end
 
