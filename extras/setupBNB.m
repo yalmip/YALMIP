@@ -36,6 +36,6 @@ if isempty(localsolver) | strcmpi(localsolver.tag,'bnb')
     end
     return
 elseif strcmpi(localsolver.tag,'bmibnb')
-    [localsolver,diagnostics] = setupBMIBNB(localsolver,tempProblemClass,options,solvers,socp_are_really_qc,h,F,logdetStruct,parametric,evaluation_based,F_vars);
+    [localsolver,diagnostics] = setupBMIBNB(localsolver,tempProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
 end
 solver.lower = localsolver;
