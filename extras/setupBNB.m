@@ -1,6 +1,6 @@
-function [solver,diagnostics] = setupBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars)
+function [solver,diagnostic] = setupBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars)
 
-diagnostics = [];
+diagnostic = [];
 
 temp_options = options;
 temp_options.solver = options.bnb.solver;

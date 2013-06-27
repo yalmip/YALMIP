@@ -1,6 +1,6 @@
-function [solver,diagnostics] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars)
+function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars)
 
-diagnostics = [];
+diagnostic = [];
 
 % Relax problem for lower solver
 tempProblemClass = ProblemClass;

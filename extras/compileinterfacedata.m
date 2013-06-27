@@ -301,8 +301,8 @@ end
 localsolver.qc = 0;
 localsolver = solver;
 if strcmpi(solver.tag,'bnb')
-    [solver,diagnostics] = setupBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
-    if ~isempty(diagnostics)
+    [solver,diagnostic] = setupBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
+    if ~isempty(diagnostic)
         return
     end 
 end
@@ -415,8 +415,8 @@ end
 % (UNLESS ALREADY SPECIFIED IN OPTIONS)
 % *************************************************************************
 if strcmpi(solver.tag,'bmibnb')
-    [solver,diagnostics] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
-    if ~isempty(diagnostics)
+    [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
+    if ~isempty(diagnostic)
         return
     end   
 end
