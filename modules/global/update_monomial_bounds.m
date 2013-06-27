@@ -16,7 +16,6 @@ for i = 1:length(polynomials)
         model.ub(j) = min(model.ub(j),bound(2));
         [inversebound,var] = inversepowerbound(model.lb,model.ub,monomials, polynomials(i));
         if ~isempty(var)
-
             model.lb(var) = max(model.lb(var),inversebound(1));
             model.ub(var) = min(model.ub(var),inversebound(2));
         end
