@@ -26,35 +26,39 @@ function  [inversebound,var] = inversepowerbound(lb,ub,monomials,polynomial);
 inversebound = [];
 var = [];
 [i,var,val] = find(monomials);
-if length(var) == 1
-    if even(val)
-        if val > 2
-            inversebound = [-inf inf];
-            aux = inf;
-            if ~isinf(lb(polynomial))
-                if lb(polynomial) >= 0
-                    aux = lb(polynomial)^(1/val);
+if all(val == fix(val)) & all(val >= 0)
+    if length(var) == 1
+        if even(val)
+            if val > 2
+                inversebound = [-inf inf];
+                aux = inf;
+                if ~isinf(lb(polynomial))
+                    if lb(polynomial) >= 0
+                        aux = lb(polynomial)^(1/val);
+                    end
                 end
+                if ~isinf(ub(polynomial))
+                    if ub(polynomial) >= 0
+                        aux = max(aux,ub(polynomial)^(1/val));
+                    end
+                else
+                    aux = inf;
+                end
+                inversebound = [-aux aux];
+            else
+                var = [];
+            end
+        elseif val >= 3
+            inversebound = [-inf inf];
+            if ~isinf(lb(polynomial))
+                inversebound(1,1) = sign(lb(polynomial))*abs(lb(polynomial))^(1/val);
             end
             if ~isinf(ub(polynomial))
-                if ub(polynomial) >= 0
-                    aux = max(aux,ub(polynomial)^(1/val));
-                end
-            else
-                aux = inf;
+                inversebound(1,2) = sign(ub(polynomial))*abs(ub(polynomial))^(1/val);
             end
-            inversebound = [-aux aux];
-        else
-            var = [];
         end
-    elseif val >= 3
-        inversebound = [-inf inf];
-        if ~isinf(lb(polynomial))
-            inversebound(1,1) = sign(lb(polynomial))*abs(lb(polynomial))^(1/val);
-        end
-        if ~isinf(ub(polynomial))
-            inversebound(1,2) = sign(ub(polynomial))*abs(ub(polynomial))^(1/val);
-        end
+    else
+        var = [];
     end
 else
     var = [];
