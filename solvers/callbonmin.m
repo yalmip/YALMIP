@@ -1,10 +1,13 @@
 function output = callbonmin(model)
 
-% Author Johan Löfberg
-
 model = yalmip2nonlinearsolver(model);
 options = [];
-options.bonmin = removeDefaults(model.options.bonmin,bonminset());
+try
+    options.bonmin = removeDefaults(model.options.bonmin,bonminset());
+catch
+    % Hack to account for issue #114. Ensure code works on old matlab
+    % versions
+end
 options.ipopt = model.options.ipopt;
 options.display = model.options.verbose;  
 
