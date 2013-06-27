@@ -78,9 +78,9 @@ end
 % Save all data from the solver?
 if options.savesolveroutput
     solveroutput.x = x;
-    solveroutput.fmin = fmin;
-    solveroutput.flag = flag;
-    solveroutput.output=output;
+    solveroutput.fval = fval;
+    solveroutput.exitflag = exitflag;
+    solveroutput.iter = iter;
 else
     solveroutput = [];
 end
