@@ -22,7 +22,9 @@ end
 if p.options.bmibnb.cut.multipliedequality
     p_cut = addMultipliedEqualityCuts(p_cut);
 end
-
+if p.options.bmibnb.cut.convexity
+    p_cut = addConvexityCuts(p_cut);
+end
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************

@@ -64,6 +64,7 @@ p = compile_nonlinear_table(p);
 p_cut = addBilinearVariableCuts(p);
 p_cut = addEvalVariableCuts(p_cut);
 p_cut = addMonomialCuts(p_cut);
+%p_cut = addConvexityCuts(p_cut);
 
 p_cut = mergeBoundsToModel(p_cut);
 if nargin > 1

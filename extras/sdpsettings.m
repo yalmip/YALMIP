@@ -163,6 +163,7 @@ Names = {'solver'
     'bmibnb.localstart'
     'bmibnb.strengthscheme'
     'bmibnb.cut.multipliedequality'
+    'bmibnb.cut.convexity'
     'bmibnb.cut.evalvariable'
     'bmibnb.cut.bilinear'  
     'bmibnb.cut.monomial'  
@@ -838,6 +839,7 @@ else
     options.bmibnb.branchmethod = 'best';
     options.bmibnb.branchrule = 'omega';
     options.bmibnb.cut.multipliedequality = 0;
+    options.bmibnb.cut.convexity = 0;
     options.bmibnb.cut.evalvariable = 1;
     options.bmibnb.cut.bilinear = 1;
     options.bmibnb.cut.monomial = 1;
