@@ -11,7 +11,7 @@ function varargout = plot(varargin)
 % C:  Constraint object
 % x:  Plot variables [At most three variables]
 % c:  color [double] ([r g b] format) or char from 'rymcgbk'
-% n:  #vertices [double ] (default 50 in 2D and 200 otherwise)
+% n:  #vertices [double ] (default 100 in 2D and 300 otherwise)
 % options: options structure from sdpsettings
 
 % Author Johan Löfberg
@@ -120,17 +120,17 @@ end
 
 if nargin < 4
     if length(x)==3
-        n = 200;
+        n = 300;
     else
-        n = 50;
+        n = 100;
     end
 else
     n = varargin{4};
     if isempty(n)
         if length(x)==3
-            n = 100;
+            n = 300;
         else
-            n = 25;
+            n = 100;
         end
     end
     if ~isa(n,'double')
