@@ -18,14 +18,15 @@ if isempty(F_struc)
     A = sparse([]);
     b = [];
 else
-    A =[-F_struc(K.f+1:end,2:end);-F_struc(1:K.f,2:end)];
-    b =[F_struc(K.f+1:end,1);F_struc(1:K.f,1)];    
+    A = -F_struc(1:K.f+K.l,2:end);
+    b = F_struc(1:K.f+K.l,1);    
 end
 
 opts = options.clp;
 
 if length(b)>0
     rl = repmat(-inf,length(b),1);
+    rl(1:K.f) = b(1:K.f);
 else
     rl = [];
 end
@@ -39,12 +40,12 @@ if options.savedebug
 end
 
 solvertime = clock; 
-[x,fval,exitflag,iter] = clp(H,full(c), A, rl, ru, lb, ub,opts);
+[x,fval,exitflag,iter,lambda] = clp(H,full(c), A, rl, ru, lb, ub,opts);
 
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % No duals
-D_struc = [];
+D_struc = -lambda.dual_row;
 
 switch exitflag
     case 0
