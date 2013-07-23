@@ -9,7 +9,7 @@ switch class(varargin{1})
         d = size(x);
         x = x(:);
         y = [];
-        for i = 1:length(x)
+        for i = 1:prod(d)
             xi = extsubsref(x,i);
             if isreal(xi)
                 y = [y;InstantiateElementWise(mfilename,xi)];
