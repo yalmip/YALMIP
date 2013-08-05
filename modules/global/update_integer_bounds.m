@@ -10,10 +10,10 @@ if ~isempty(model.integer_variables)
     model.lb(model.integer_variables) = ceil(model.lb(model.integer_variables)-1e-4);
     model.ub(model.integer_variables) = floor(model.ub(model.integer_variables)+1e-4);
     if ~isempty(fixlb)
-        model.lb(fixlb) = lbfixed;
+        model.lb(fixlb) = lbfixed(fixlb);
     end
     if ~isempty(fixub)
-        model.ub(fixub) = ubfixed;
+        model.ub(fixub) = ubfixed(fixub);
     end
 end
 if ~isempty(model.binary_variables)
@@ -24,10 +24,10 @@ if ~isempty(model.binary_variables)
     model.lb(model.binary_variables) = fix(model.lb(model.binary_variables)-1e-4);
     model.ub(model.binary_variables) = fix(model.ub(model.binary_variables)+1e-4);
     if ~isempty(fixlb)
-        model.lb(model.binary_variables(fixlb)) = lbfixed;
+        model.lb(model.binary_variables(fixlb)) = lbfixed(fixlb);
     end
     if ~isempty(fixub)
-        model.ub(model.binary_variables(fixub)) = ubfixed;
+        model.ub(model.binary_variables(fixub)) = ubfixed(fixub);
     end
 end
 if any(model.lb(model.binary_variables) > model.ub(model.binary_variables))
