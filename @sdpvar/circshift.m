@@ -2,7 +2,6 @@ function X = circshift(varargin)
 % CIRCSHIFT (overloaded)
 
 % Author Johan Löfberg
-% $Id: circshift.m,v 1.2 2006-07-26 20:17:57 joloef Exp $
 
 Y = varargin{1};
 X = Y;
