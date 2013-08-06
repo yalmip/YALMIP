@@ -171,15 +171,19 @@ if enumerationfailed
     % Enumeration failed, probably due to lack of MPT. If problem is conic,
     % we are in trouble. If simple LP, we can resort to duality approach
     if conic
-        disp(' - Enumeration of uncertainty polytope failed. Missing Multiparametric Toolbox?')
+        if ops.verbose
+            disp(' - Enumeration of uncertainty polytope failed. Missing Multiparametric Toolbox?')
+        end
         error('Enumeration failed (lacking MPT?),  and due to conic constraints, duality cannot be used');
     else
         F_lp = extractConstraints(UncertainModel.F_xw,'elementwise');
         UncertainModel.F_xw = UncertainModel.F_xw - F_lp;
         nv = yalmip('nvars');
         F_filter = filter_duality(F_lp,Uncertainty.Zmodel,x,w,ops);
-        if isa(F_filter','lmi')
-        disp([' - Duality introduced ' num2str(yalmip('nvars')-nv') ' variables, ' num2str(nnz(is(F_filter,'equality'))) ' equalities, ' num2str(nnz(is(F_filter,'elementwise'))) ' LP inqualities and ' num2str(nnz(is(F_filter,'sdp'))+nnz(is(F_filter,'socp'))) ' conic constraints']);
+        if ops.verbose
+            if isa(F_filter','lmi')
+             disp([' - Duality introduced ' num2str(yalmip('nvars')-nv') ' variables, ' num2str(nnz(is(F_filter,'equality'))) ' equalities, ' num2str(nnz(is(F_filter,'elementwise'))) ' LP inqualities and ' num2str(nnz(is(F_filter,'sdp'))+nnz(is(F_filter,'socp'))) ' conic constraints']);
+            end
         end
         F_robust = F_robust + F_filter;
     end
