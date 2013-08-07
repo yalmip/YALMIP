@@ -70,8 +70,13 @@ for i = 1:1:length(F)
                     if p==0
                         % Write as second order cone
                         d = -c'*x-f;
-                        if isa(d,'double') & d==1
-                            Fconv=Fconv + lmi(cone([R*xred],(1+d)/2));
+                        if isa(d,'double')
+                            if d<0
+                                infeasible = 1;
+                                return
+                            else
+                                Fconv=Fconv + lmi(cone([R*xred],sqrt(d)));
+                            end
                         else
                             if length(c) == length(xred)%size(R,1)==size(R,2)
                                 ctilde = -(R')\(c/2);                             
