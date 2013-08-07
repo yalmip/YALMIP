@@ -56,16 +56,12 @@ for i = 1:1:length(F)
                     [R,p]=chol(Qred);
                     if p
                         % Safety check to account for low rank problems
-%                        try
                         if all(eig(full(Qred))>=-1e-12)
                             [u,s,v]=svd(full(Qred));
                             r=find(diag(s)>1e-12);
                             R=(u(:,r)*sqrt(s(r,r)))';
                             p=0;
                         end
- %                       catch
- %                           1
- %                       end
                     end
                     if p==0
                         % Write as second order cone
@@ -78,7 +74,7 @@ for i = 1:1:length(F)
                                 Fconv=Fconv + lmi(cone([R*xred],sqrt(d)));
                             end
                         else
-                            if length(c) == length(xred)%size(R,1)==size(R,2)
+                            if length(c) == length(xred)
                                 ctilde = -(R')\(c/2);                             
                                 Fconv=Fconv + lmi(cone([R*xred;.5*(1-d)],.5*(1+d)));                             
                             else
