@@ -24,8 +24,12 @@ if any(is(F_xw,'elementwise'))
                 disp(' - Using exact S-procedure to eliminate uncertainty');
             end
             lambda = sdpvar(1);
-            e = (w-uncertaintyModel{1}.center);
-            g = uncertaintyModel{1}.r^2-e'*e;
+            if isempty(uncertaintyModel{1}.r)
+                g = uncertaintyModel{1}.g;
+            else
+                e = (w-uncertaintyModel{1}.center);
+                g = uncertaintyModel{1}.r^2-e'*e;
+            end
             Parameters = [Parameters;lambda];
             F_sprocedure = [F_sprocedure, sos(p(i)-lambda*g), lambda>=0];
             %F_sprocedure = [F_sprocedure, lambda>0, compilesos(sos(p(i)-lambda*g),[],ops,s)];

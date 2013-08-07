@@ -138,7 +138,7 @@ separatedZmodel = separateUncertainty(Zmodel,uncertaintyGroups);
 % structures, such as norm(w,1)<1, which currently is treated as a general
 % polytopic uncertainty, since the expansion hides the simplicity
 % 'Bounds', 'Simplex', 'Conic', 'Polytopic', '2-norm', '1-norm', 'inf-norm'
-[uncertaintyTypes,separatedZmodel,uncertaintyGroups] = classifyUncertainty(separatedZmodel,uncertaintyGroups);
+[uncertaintyTypes,separatedZmodel,uncertaintyGroups] = classifyUncertainty(separatedZmodel,uncertaintyGroups,w);
 
 UncertainModel.F_x = F_x;
 UncertainModel.F_xw = F_xw;
@@ -333,7 +333,7 @@ for i = 1:length(separatedZmodel)
 end
 
 
-function [uncertaintyTypes,separatedZmodel,uncertaintyGroups] = classifyUncertainty(separatedZmodel,uncertaintyGroups)
+function [uncertaintyTypes,separatedZmodel,uncertaintyGroups] = classifyUncertainty(separatedZmodel,uncertaintyGroups,w)
 
 for i = 1:length(separatedZmodel)
     uncertaintyTypes{i} = 'unclassified';
@@ -391,8 +391,9 @@ for i = 1:length(separatedZmodel)
     if strcmp(uncertaintyTypes{i},'unclassified')
         if ~any(separatedZmodel{i}.K.s > 0) &  separatedZmodel{i}.K.l==0 & separatedZmodel{i}.K.f==0 & length(separatedZmodel{i}.K.q)==1
             % Hmm, only 1 SOCP
-            if all(separatedZmodel{i}.F_struc(1,2:end)==0) % r > norm(f)
+            if all(separatedZmodel{i}.F_struc(1,2:end)==0)
                 if isequal(separatedZmodel{i}.F_struc(2:end,2:end),speye(separatedZmodel{i}.K.q(1)-1))
+                    % r > norm(x)
                     uncertaintyTypes{i} = '2-norm';
                     separatedZmodel{i}.center = -separatedZmodel{i}.F_struc(2:end,1);
                     separatedZmodel{i}.r = sqrt(max(0,separatedZmodel{i}.F_struc(1,1)^2));
@@ -400,6 +401,7 @@ for i = 1:length(separatedZmodel)
                     S = separatedZmodel{i}.F_struc(2:end,2:end);
                     [ii,jj,kk] = find(S);
                     if all(kk==2) & length(ii)==length(unique(ii)) & length(jj)==length(unique(jj))
+                        % r > norm(x-center)
                         uncertaintyTypes{i} = '2-norm';
                         separatedZmodel{i}.center = -separatedZmodel{i}.F_struc(2:end,1)/2;
                         separatedZmodel{i}.r = sqrt((separatedZmodel{i}.F_struc(1,1)^2-separatedZmodel{i}.F_struc(end,1)^2)/4);
@@ -413,6 +415,29 @@ for i = 1:length(separatedZmodel)
                         separatedZmodel{i}.r = sqrt((separatedZmodel{i}.F_struc(1,1)^2-separatedZmodel{i}.F_struc(end,1)^2)/4);
                     end
                 end
+            end
+        end
+    end
+end
+
+% Look for quadratic constraints, other than norm models
+% A bit redundant code should be integrated with the case above
+for i = 1:length(separatedZmodel)
+    if strcmp(uncertaintyTypes{i},'unclassified')
+        if ~any(separatedZmodel{i}.K.s > 0) &  separatedZmodel{i}.K.l==0 & separatedZmodel{i}.K.f==0 & length(separatedZmodel{i}.K.q)==1
+            % 1 single SOCP ||Ax+b|| <= cx+d
+            A = separatedZmodel{i}.F_struc(2:end,2:end);
+            b = separatedZmodel{i}.F_struc(2:end,1);
+            c = separatedZmodel{i}.F_struc(1,2:end);
+            d = separatedZmodel{i}.F_struc(1,1);
+            if min(eig(full(A'*A-c'*c)))
+                % Originates in a quadratic constraint
+                rhs = c*w(uncertaintyGroups{i}(:))+d;
+                lhs = A*w(uncertaintyGroups{i}(:))+b;
+                uncertaintyTypes{i} = 'quadratic';                
+                separatedZmodel{i}.g = rhs^2-lhs'*lhs;
+                separatedZmodel{i}.center = [];
+                separatedZmodel{i}.r = [];
             end
         end
     end

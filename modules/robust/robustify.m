@@ -107,7 +107,7 @@ end
 
 % LP constraints with quadratic dependence and quadratic uncertainty region
 % can be handled tightly using the S-procedure
-if all(strcmp(Uncertainty.uncertaintyTypes,'2-norm')) & length(Uncertainty.uncertaintyTypes)==1 & ~ops.robust.forced_enumeration
+if (all(strcmp(Uncertainty.uncertaintyTypes,'2-norm')) | all(strcmp(Uncertainty.uncertaintyTypes,'quadratic'))) & length(Uncertainty.uncertaintyTypes)==1 & ~ops.robust.forced_enumeration
     [UncertainModel.F_xw,F_sprocedure] = filter_sprocedure(UncertainModel.F_xw,w,Uncertainty.separatedZmodel,ops);
     F_robust = F_robust + F_sprocedure;
 end
