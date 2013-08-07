@@ -198,3 +198,7 @@ for i = Quadratics
 end
 model.Quadratics = Quadratics;
 model.QuadraticsList = QuadraticsList;
+
+model.binary_variables  = find(ismember(linearindicies,model.binary_variables));
+model.integer_variables  = find(ismember(linearindicies,model.integer_variables));
+model.semicont_variables  = find(ismember(linearindicies,model.semicont_variables));
