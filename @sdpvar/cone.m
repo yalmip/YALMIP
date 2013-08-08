@@ -37,19 +37,19 @@ if n<m & nargin>1
     Axplusb = Axplusb';
 end
 
-if isa(Axplusb,'sdpvar')
-    if ~is(Axplusb,'linear')
-        error('Both arguments must be linear');
-    end
-end
-
-if nargin > 1
-    if isa(cxplusd,'sdpvar')
-        if ~is(cxplusd,'linear')
-            error('Both arguments must be linear');
-        end
-    end
-end
+% if isa(Axplusb,'sdpvar')
+%     if ~is(Axplusb,'linear')
+%         error('Both arguments must be linear');
+%     end
+% end
+% 
+% if nargin > 1
+%     if isa(cxplusd,'sdpvar')
+%         if ~is(cxplusd,'linear')
+%             error('Both arguments must be linear');
+%         end
+%     end
+% end
 
 try
     if nargin == 2
