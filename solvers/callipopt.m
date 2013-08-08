@@ -1,10 +1,11 @@
 function output = callipopt(model)
 
-% Author Johan Löfberg
-% $Id: callipopt.m,v 1.6 2009-09-29 10:30:15 joloef Exp $
-
 options = [];
-options.ipopt = model.options.ipopt;
+try
+    options.ipopt = optiRemoveDefaults(model.options.ipopt,ipoptset());
+catch
+    options.ipopt = model.options.ipopt;
+end
 options.ipopt.print_level = 2+model.options.verbose;
 
 model = yalmip2nonlinearsolver(model);
