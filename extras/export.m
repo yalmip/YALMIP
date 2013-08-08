@@ -173,6 +173,10 @@ switch lower(solver.tag)
     case 'ecos'
         model = yalmip2ecos(interfacedata);      
         
+        
+    case 'cbc'
+        model = yalmip2cbc(interfacedata);       
+                
     case 'dsdp-opti'
         model = yalmip2optidsdp(interfacedata);       
         
