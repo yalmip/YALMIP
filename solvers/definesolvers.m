@@ -207,7 +207,7 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
 
-solver(i) = lpsolver;
+solver(i) = qpsolver;
 solver(i).tag     = 'CBC';
 solver(i).version = '';
 solver(i).checkfor= {'cbc','opti_cbc'};

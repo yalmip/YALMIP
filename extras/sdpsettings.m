@@ -979,6 +979,18 @@ else
      end
      
      try
+         options.cbc = cbcset;
+         cNames = recursivefieldnames(options.cbc);
+         for i = 1:length(cNames)
+             Names{end+1} = ['cbc.' cNames{i}];
+         end
+         [m,n] = size(Names);
+         names = lower(Names);
+     catch
+         
+     end
+     
+     try
          options.ooqp = ooqpset;
          cNames = recursivefieldnames(options.ooqp);
          for i = 1:length(cNames)
