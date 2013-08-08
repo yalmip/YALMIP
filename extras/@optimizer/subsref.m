@@ -126,13 +126,21 @@ elseif isequal(subs.type,'{}')
         end
         if isempty(self.output.z)
             if ~isempty(output.Primal)
-                u = [u reshape(output.Primal(self.map),self.dimout)];
+                % Make sure we map index 0 to Nans
+                % 0 corresponds to variables which weren't visible in
+                % problem
+                output.Primal = [nan;output.Primal];
+                u = [u reshape(output.Primal(1+self.map),self.dimout)];
             else
                 u = [u reshape(0*self.map+nan,self.dimout)];
             end
         else
-            if ~isempty(output.Primal)              
-                assign(self.output.z,output.Primal(self.map));
+            if ~isempty(output.Primal)
+                % Make sure we map index 0 to Nans
+                % 0 corresponds to variables which weren't visible in
+                % problem
+                output.Primal = [nan;output.Primal];
+                assign(self.output.z,output.Primal(1+self.map));
                 assign(self.input.expression,thisData);
                 u = [u reshape(double(self.output.expression),self.dimout)];
             end

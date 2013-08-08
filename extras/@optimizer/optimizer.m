@@ -206,17 +206,26 @@ if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2)==1) & all(bas
     uvec = u(:);
     for i = 1:length(uvec)
         var = getvariables(uvec(i));
-        map = [map;find(var == model.used_variables)];
+        mapIndex = find(var == model.used_variables);
+        if ~isempty(mapIndex)
+            map = [map;mapIndex];
+        else
+            map = [map;0];
+        end
     end
 else
     % Some expression which we will use assign and double to evaluate
     vars = depends(u);
     z = recover(vars);    
     map = [];
-    for i = 1:length(z)
-        %var = getvariables(z(i));
+    for i = 1:length(z)        
         var = vars(i);
-        map = [map;find(var == model.used_variables)];
+        mapIndex = find(var == model.used_variables);
+        if ~isempty(mapIndex)
+            map = [map;mapIndex];
+        else
+            map = [map;0];
+        end
     end        
 end
 
