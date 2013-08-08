@@ -213,7 +213,7 @@ solver(i).version = '';
 solver(i).checkfor= {'cbc','opti_cbc'};
 solver(i).call    = 'callcbc';
 solver(i).constraint.integer = 1;
-solver(i).constraint.sos2 = 1;
+solver(i).constraint.sos2 = 0;
 i = i+1;
 
 solver(i) = lpsolver;
