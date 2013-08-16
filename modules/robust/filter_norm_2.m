@@ -25,7 +25,7 @@ for i = 1:length(all_f)
         di = di + ci'*center;
         bi = bi + Bi*center;
         if isequal(abs(lastBici),abs([Bi' ci]))
-            F = F + set(x'*Q_xx{i}*x+bi'*x + di - r*s >= 0);
+            F = F + set(x'*Q_xx{i}*x+bi'*x + di - r*norm(full(Bi(used_rows,used)))*s >= 0);
         else
             s = sdpvar(1,1);
             if length(used)==1
