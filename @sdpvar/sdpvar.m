@@ -517,20 +517,7 @@ for blk = 1:length(n)
         case 'hermitian complex'
             basis = spalloc(n^2,1+nvar,2);
             l = 2;
-            an_empty = spalloc(n,n,2);
-            %             for i=1:n
-            %                 temp = an_empty;
-            %                 temp(i,i)=1;
-            %                 basis(:,l)=temp(:);
-            %                 l = l+1;
-            %                 for j=i+1:n,
-            %                     temp = an_empty;
-            %                     temp(i,j)=1;
-            %                     temp(j,i)=1;
-            %                     basis(:,l)=temp(:);
-            %                     l = l+1;
-            %                 end
-            %             end
+            an_empty = spalloc(n,n,2);            
             Y = reshape(1:n^2,n,n);
             Y = tril(Y);
             Y = (Y+Y')-diag(sparse(diag(Y)));
@@ -540,11 +527,7 @@ for blk = 1:length(n)
             BasisImag = [spalloc(n^2,n*(n-1)/2,n)];
             l = 1;
             for i=1:n
-                for j=i+1:n,                                                               
-                   % temp = an_empty;
-                   % temp(i,j)=sqrt(-1);
-                   % temp(j,i)=-sqrt(-1);
-                   % BasisImag(:,l)=temp(:);
+                for j=i+1:n,                                                                                  
                     BasisImag(i+(j-1)*n,l)=sqrt(-1);
                     BasisImag(j+(i-1)*n,l)=-sqrt(-1);
                     l = l+1;
@@ -612,14 +595,6 @@ for blk = 1:length(n)
         case 'hankel'
             % Create a vector. We will hankelize it later
             basis = [spalloc(n(blk)*1,1,0) speye(n(blk)*1)];
-%            basis = spalloc(n^2,1+nvar,2);
-%            an_empty = spalloc(n,1,1);
-%            for i=1:n,
-%               v = an_empty;
-%               v(i)=1;
-%               temp = sparse(hankel(v));
-%               basis(:,i+1) = temp(:);
-%           end
 
         case 'diagonal'
             j = 2:n+1;
@@ -748,16 +723,6 @@ else
     sys.midfactors{1} = [];
     sys = class(sys,'sdpvar');
     sys.midfactors{1} = sys;
-%     if ~isreal(basis)
-%         % Add internal information about complex pairs
-%         complex_elements = find(any(imag(basis),2));
-%         complex_pairs = [];
-%         for i = 1:length(complex_elements)
-%             complex_pairs = [complex_pairs;lmi_variables(find(basis(complex_elements(i),:))-1)];
-%         end
-%         complex_pairs = uniquesafe(complex_pairs,'rows');
-%         yalmip('addcomplexpair',complex_pairs);
-%     end
     if isequal(matrix_type,'hankel')
         % To speed up generation, we have just created a vector, and now
         % hankelize it
