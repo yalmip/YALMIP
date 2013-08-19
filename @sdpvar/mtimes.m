@@ -326,8 +326,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                             before = findhash(new_mt_hash_aux,current_hash,new_mt_hash_counter); % first among new monomials
                             if before
                                 before=before+current_offset;
-                            else
-                                %before = possibleOld(sortedHashLocs(findhashsorted(possibleOldHashSorted,current_hash)));
+                            else                               
                                 sb = 1;
                                 cth = full(current_hash);
                                 while isempty(before) & sb <= length(possibleOldBlocked)
