@@ -214,7 +214,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             %    iteration, i.e. those generated when multiplying x(ix) with
             %    all y. These are sorted every iteration
             new_mt_hash = [];
-            new_mt_hash_aux = spalloc(length(X.lmi_variables)*length(Y.lmi_variables),1,0);
+            
+            %new_mt_hash_aux = spalloc(length(X.lmi_variables)*length(Y.lmi_variables),1,0);
+            
+            new_mt_hash_aux = zeros(min(1e3,length(X.lmi_variables)*length(Y.lmi_variables)),1);
+            
             new_mt_hash_counter = 0;
 
             %             % 3. Those that are generated at the current iteration. These
@@ -322,7 +326,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
                             else
                                 before = possibleOld(sortedHashLocs(findhashsorted(possibleOldHashSorted,current_hash)));
                             end
-                        else
+                        else                   
+                           % length(new_mt_hash_aux)
                             before = findhash(new_mt_hash_aux,current_hash,new_mt_hash_counter); % first among new monomials
                             if before
                                 before=before+current_offset;
@@ -340,6 +345,30 @@ switch 2*X_is_spdvar+Y_is_spdvar
                                     sb = sb+1;
                                 end
                             end
+%                             
+%                             before = [];
+%                             sb = 1;
+%                             cth = full(current_hash);
+%                             while isempty(before) & sb <= length(possibleOldBlocked)
+%                                 
+%                                 testitfull = possibleOldHashSortedBlockedFull{sb};
+%                                 mmm=findhashsorted(testitfull,cth);
+%                                 if mmm
+%                                     mmm=sortedHashLocsBlocked{sb}(mmm);
+%                                     before = possibleOldBlocked{sb}(mmm);
+%                                 end
+%                                 sb = sb+1;
+%                             end
+%                             
+%                             if isempty(before)
+%                                 before = findhash(new_mt_hash_aux,current_hash,new_mt_hash_counter); % first among new monomials
+%                                 if before
+%                                     before=before+current_offset;
+%                                 end
+%                             end
+                            
+                            
+                            
                         end
                         if before
                             Z.lmi_variables(i) = before;
@@ -348,6 +377,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                             %   isemptynew_mt_hash=0;
                             thesewhereactuallyused(acounter) = 1;
                             new_mt_hash_counter = new_mt_hash_counter + 1;
+                            if new_mt_hash_counter>length(new_mt_hash_aux)
+                               new_mt_hash_aux = [new_mt_hash_aux;zeros(length(new_mt_hash_aux),1)];
+                            end
                             new_mt_hash_aux(new_mt_hash_counter) = current_hash;
 
                             nvar = nvar + 1;
@@ -355,6 +387,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                         end
                         i = i+1;
                     end
+
                 end % End y-variables
 
                 if all(copytofrom)
@@ -367,12 +400,15 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 else
                     new_mt = [new_mt allmt_xplusy(:,find(thesewhereactuallyused))];
                 end
-
-                bsize = 1000;
-                if new_mt_hash_counter > bsize
+% 
+                bsize = 100; 
+                if new_mt_hash_counter>5
+                    bsize = new_mt_hash_counter-1;
+                end
+                if new_mt_hash_counter > bsize                   
                     ship = new_mt_hash_aux(1:bsize);
                     mt_hash = [mt_hash;ship];
-                    new_mt_hash_aux = new_mt_hash_aux(bsize+1:end);
+                    new_mt_hash_aux = new_mt_hash_aux(bsize+1:new_mt_hash_counter);
                     new_mt_hash_counter = nnz(new_mt_hash_aux);
                     [newHashSorted, sortednewHashLocs] = sort(ship);
                     possibleOldBlocked{end+1}    = (1:bsize)+current_offset;
@@ -382,6 +418,21 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     %  possibleOldHashSortedOffset{end+1} = current_offset;
                     current_offset = current_offset + bsize;
                 end
+% % 
+%                 bsize = 1000;
+%                 if new_mt_hash_counter > bsize
+%                     ship = new_mt_hash_aux(1:new_mt_hash_counter);
+%                     mt_hash = [mt_hash;ship];                  
+%                     [newHashSorted, sortednewHashLocs] = sort(ship);
+%                     possibleOldBlocked{end+1}    = (1:new_mt_hash_counter)+current_offset;
+%                     sortedHashLocsBlocked{end+1} = sortednewHashLocs;
+%                     possibleOldHashSortedBlocked{end+1} = (newHashSorted);
+%                     possibleOldHashSortedBlockedFull{end+1} = full(newHashSorted);                    
+%                     current_offset = current_offset + new_mt_hash_counter;                    
+%                     new_mt_hash_aux = zeros(1e3,1);
+%                     new_mt_hash_counter = 0;                    
+%                 end
+% 
 
 
             end % End x-variables
