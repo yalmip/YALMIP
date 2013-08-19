@@ -50,13 +50,13 @@ X = sdpvar(n(1),n(2),type,field);
 vars = getvariables(X);
 N = prod(n(3:end));
 nNewVars = length(vars)*N;
-NewVars = v0+(1:nNewVars);
-appendYALMIPvariables(NewVars);
+usedNewVars = v0+(1:nNewVars);
+appendYALMIPvariables((vars(end)+1):usedNewVars(end));
 
 X = struct(X);
 X.dim = n;
-X.basis = [spalloc(size(X.basis,1)*N,1,0) kron(X.basis(:,2:end),eye(N))];
-X.lmi_variables = NewVars;
+X.basis = [spalloc(size(X.basis,1)*N,1,0) kron(X.basis(:,2:end),speye(N))];
+X.lmi_variables = usedNewVars;
 
 X = class(X,'ndsdpvar');
 X = clean(X);
