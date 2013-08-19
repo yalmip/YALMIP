@@ -84,11 +84,13 @@ for j = 1:length(exponent_m)
             end
         else
             ii = 0;
+            
             for i = 1:length(keep)
                 if ~keep(i) & ~dontkeep(i)
                     q = exponent_m{j}(i,:)'*2;
-                    interfacedata.c = full([-q' 1])';
-                    interfacedata.F_struc = full([bfixed -[exponent_p -ones(size(exponent_p,1),1);q' -1]]);
+                    interfacedata.c = ([-q' 1])';
+                    interfacedata.Q = spalloc(length(interfacedata.c),length(interfacedata.c),0);
+                    interfacedata.F_struc = ([bfixed -[exponent_p -ones(size(exponent_p,1),1);q' -1]]);
                     solution = feval(interfacedata.solver.call,interfacedata);
                     no_lp_solved = no_lp_solved  + 1;
                     ii = ii + 1;
