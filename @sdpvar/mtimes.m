@@ -331,25 +331,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                                 sb = 1;
                                 cth = full(current_hash);
                                 while isempty(before) & sb <= length(possibleOldBlocked)
-                                 %   testit = possibleOldHashSortedBlocked{sb};
+                                    
                                     testitfull = possibleOldHashSortedBlockedFull{sb};
-                                 %   testit = possibleOldHashSortedBlocked{sb};
-                                 
-                                 %    testit = possibleOldHashSortedBlocked{sb};
-                                 %    testitfull = possibleOldHashSortedBlockedFull{sb};
-                                 %   testitfull = possibleOldHashSortedBlockedFull{sb};
-                                 %   mmm=findhashsorted(testit,cth);
-                                 %   mmm=findhashsorted(testit,cth);
-                                 %   mmm=findhashsorted(testitfull,cth);
-                                 %   mmm=findhashsorted(testitfull,cth);
-                                 %   mmm2=findhashsorted(testitfull,current_hash);
-                                   mmm=findhashsorted(testitfull,cth);
-                                 %   mmm=findhashsorted(testit,current_hash);
-                                   % testit2 = full(possibleOldHashSortedBlocked{sb});
-                                   % mmm2=findhashsorted(testit2,full(current_hash));
-                                %    if ~isequal(mmm,mmm2)
-                                %        1
-                                %    end
+                                    mmm=findhashsorted(testitfull,cth);
                                     if mmm
                                         mmm=sortedHashLocsBlocked{sb}(mmm);
                                         before = possibleOldBlocked{sb}(mmm);
