@@ -45,12 +45,53 @@ if nargin > d+1
     field = varargin{d+2};
 end
 
-X = [];
-for i = 1:prod(n(3:end))
-    x = sdpvar(n(1),n(2),type,field);
-    X = [X;x(:)];
-end
+v0 = yalmip('nvars');
+X = sdpvar(n(1),n(2),type,field);
+vars = getvariables(X);
+N = prod(n(3:end));
+nNewVars = length(vars)*N;
+NewVars = v0+(1:nNewVars);
+appendYALMIPvariables(NewVars);
+
 X = struct(X);
 X.dim = n;
+X.basis = [spalloc(size(X.basis,1)*N,1,0) kron(X.basis(:,2:end),eye(N))];
+X.lmi_variables = NewVars;
+
 X = class(X,'ndsdpvar');
 X = clean(X);
+
+function appendYALMIPvariables(lmi_variables);
+
+[mt,variabletype,hashed_monoms,current_hash] = yalmip('monomtable');
+% Update monomtable and pre-calculated variable type
+n_mt = size(mt,1);
+m_mt = size(mt,2);
+newmt = [];
+if min(lmi_variables)>m_mt % New variables
+    if size(mt,1)~=size(mt,2)
+        mt(size(mt,1),size(mt,1))=0;
+    end
+    % This was faster before. However in recent versions of matlab, there
+    % is a compiled version of blkdiag available
+    % fill=spalloc(size(mt,1),length(lmi_variables),0);   
+    % mt=[mt fill;fill' speye(length(lmi_variables))]; 
+    if isempty(mt)        
+        mt = speye(length(lmi_variables));
+        newmt = mt;
+    else
+        newmt = speye(length(lmi_variables));
+        mt=blkdiag(mt,speye(length(lmi_variables)));
+    end
+else
+    mt(lmi_variables,lmi_variables) = speye(length(lmi_variables));
+end
+variabletype(1,size(mt,1)) = 0;
+if ~isempty(newmt)
+    new_hash = 3*rand_hash(size(mt,2),size(newmt,2),1);
+    hashed_monoms = [hashed_monoms;newmt*new_hash];
+    current_hash = [current_hash;new_hash];
+    yalmip('setmonomtable',mt,variabletype,hashed_monoms,current_hash);
+else 
+    yalmip('setmonomtable',mt,variabletype);
+end
