@@ -7,5 +7,5 @@ else
     value = double(X.cx);
 end
 for i = 1:length(X.P);
-    value = value  + X.gain(1)*log(det(double(X.P{i})));
+    value = value  + X.gain(i)*log(det(double(X.P{i})));
 end
