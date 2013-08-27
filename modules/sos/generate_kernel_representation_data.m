@@ -44,6 +44,7 @@ if reuse & options.sos.reuse
         allj = [];
         used_in_p = zeros(size(exponent_p_monoms,1),1);
         hash = randn(size(exponent_p_monoms,2),1);
+        p_hash = exponent_p_monoms*hash;
         exponent_p_monoms_hash = exponent_p_monoms*hash;
         for i = 1:size(N_unique,1)
             monom = sparse(N_unique(i,3:end));
@@ -93,7 +94,7 @@ else
                     nss = pos(:,1);
                     mss = pos(:,2);
                     indicies = nss+(mss-1)*n(k);
-                    ind(i,indicies+start) = ind(i,indicies+start) + 1;                         
+                    ind(i,indicies+start) = ind(i,indicies+start) + 1;                                                                 
                 end
                 start = start + (n(k))^2;
                 %                start = start + (matrixSOSsize*n(k))^2;
@@ -107,7 +108,7 @@ else
                 used_in_p(j) = 1;
                 allj(end+1,1:length(j)) = j(:)';
             end
-        end
+        end                     
     end
 end
 saveData.ind = ind;
@@ -116,7 +117,8 @@ saveData.ind = ind;
 % So these have to be added 0*Q = b
 not_dealt_with  = find(used_in_p==0);
 while ~isempty(not_dealt_with)
-    j = findrows(exponent_p_monoms,exponent_p_monoms(not_dealt_with(1),:));
+    %j = findrows(exponent_p_monoms,exponent_p_monoms(not_dealt_with(1),:));
+    j = find(p_hash == p_hash(not_dealt_with(1)));
     allj(end+1,1:length(j)) = j(:)';
     used_in_p(j) = 1;
     not_dealt_with  = find(used_in_p==0);
@@ -184,20 +186,74 @@ b = b(:);
 function newAi = inflate(Ai,matrixSOSsize,n);
 % Quick fix for matrix SOS case, should be optimized
 newAi = [];
+newAi = [];
+newAj = [];
+newAk = [];
+top = 1;
 for i = 1:matrixSOSsize
     for r = i:matrixSOSsize
         for m = 1:size(Ai,1)
             ai = reshape(Ai(m,:),n,n);
-            V = zeros(matrixSOSsize,matrixSOSsize);
-            V(i,r)=1;
-            V(r,i)=1;
-            ai = kron(V,ai);
-            newAi = [newAi;ai(:)'];
+            
+            if 1
+              %  V = spalloc(matrixSOSsize,matrixSOSsize,2);
+              %  V(i,r)=1;
+              %  V(r,i)=1;
+              %  aii = kron(V,ai);
+              %  aii = aii(:);
+              %  [ii,jj,kk] = find(aii);
+              % newAj = [newAj ii(:)'];
+              %  newAi = [newAi repmat(top,1,length(ii))];
+              %  newAk = [newAk kk(:)'];
+                [dnewAj,dnewAi,dnewAk] = inflatelocal(ai,matrixSOSsize,r,i,top);
+                newAj = [newAj dnewAj];
+                newAi = [newAi dnewAi];
+                newAk = [newAk dnewAk];
+                % newAi = [newAi;ai(:)'];
+            else
+                 [dnewAjC,dnewAiC,dnewAkC] = inflatelocal(ai,matrixSOSsize,r,i,top);
+                 [dnewAj,dnewAi,dnewAk] = inflatelocalnew(ai,matrixSOSsize,r,i,top,n);
+                 AA=reshape(full(sparse(dnewAi*0+1,dnewAj,dnewAk,1,(matrixSOSsize*n)^2)),n*matrixSOSsize,[]);
+                 AA2=reshape(full(sparse(dnewAiC*0+1,dnewAjC,dnewAkC,1,(matrixSOSsize*n)^2)),n*matrixSOSsize,[]);
+                 
+                 if norm(AA-AA2)>0
+                     1
+                 end
+              
+              
+                newAj = [newAj dnewAj];
+                newAi = [newAi dnewAi];
+                newAk = [newAk dnewAk];
+%                 
+%                 [ii,jj,kk] = find(ai-diag(diag(ai)));
+%                 iii = [(i-1)*n+ii;(r-1)*n+jj]
+%                 jjj = [(r-1)*n+jj;(i-1)*n+ii]
+%                 kkk = [kk;kk];
+%                 indexi = repmat(top,1,length(iii));
+%                 index = iii+(jjj-1)*matrixSOSsize*n
+%                 newAj = [newAj index(:)'];
+%                 newAi = [newAi indexi];
+%                 newAk = [newAk kkk(:)'];
+%                 
+%                 [ii,jj,kk] = find(diag(diag(ai)));
+%                 iii = [(i-1)*n+ii]
+%                 jjj = [(r-1)*n+jj]
+%                 kkk = [kk];
+%                 indexi = repmat(top,1,length(iii));
+%                 index = iii+(jjj-1)*matrixSOSsize*n
+%                 newAj = [newAj index(:)'];
+%                 newAi = [newAi indexi];
+%                 newAk = [newAk kkk(:)'];
+            end
+            
+            %sparse(indexi,index,kkk,1,(n*nA)^2)
+            
+            top = top+1;
         end
     end
 end
+newAi = sparse(newAi,newAj,newAk,top-1,(matrixSOSsize*n)^2);
 
-        
 
 function [Z,Q1,R] = sparsenull(A)
 
@@ -206,3 +262,45 @@ n = max(find(sum(abs(R),2)));
 Q1 = Q(:,1:n);
 R = R(1:n,:);
 Z = Q(:,n+1:end); % New basis
+
+
+ function [dnewAj,dnewAi,dnewAk] = inflatelocal(ai,matrixSOSsize,r,i,top)
+        V = spalloc(matrixSOSsize,matrixSOSsize,2);
+        V(i,r)=1;
+        V(r,i)=1;
+        aii = kron(V,ai);
+        aii = aii(:);
+        [ii,jj,kk] = find(aii);
+        
+        dnewAj = ii(:)';
+        dnewAi = repmat(top,1,length(ii));
+        dnewAk = kk(:)';
+        % newAi = [newAi;ai(:)'];
+        
+        
+        
+     function [dnewAj,dnewAi,dnewAk] = inflatelocalnew(ai,matrixSOSsize,r,i,top,n)
+         
+         if r==i
+             [ii,jj,kk] = find(ai-diag(diag(ai)));
+         else
+             [ii,jj,kk] = find(ai);
+         end               
+         iii = [(i-1)*n+ii;(r-1)*n+jj];
+         jjj = [(r-1)*n+jj;(i-1)*n+ii];
+         kkk = [kk;kk];
+         indexi = repmat(top,1,length(iii));
+         index = iii+(jjj-1)*matrixSOSsize*n;
+         dnewAj = [ index(:)'];
+         dnewAi = [ indexi];
+         dnewAk = [ kkk(:)'];
+         
+         [ii,jj,kk] = find(diag(diag(ai)));
+         iii = [(i-1)*n+ii];
+         jjj = [(r-1)*n+jj];
+         kkk = [kk];
+         indexi = repmat(top,1,length(iii));
+         index = iii+(jjj-1)*matrixSOSsize*n;
+         dnewAj = [dnewAj index(:)'];
+         dnewAi = [dnewAi indexi];
+         dnewAk = [dnewAk kkk(:)'];
