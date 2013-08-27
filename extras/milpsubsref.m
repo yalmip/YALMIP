@@ -31,7 +31,13 @@ switch class(varargin{1})
                 end
             case 2
                 index1 = varargin{2}.subs{1};
+                if isa(index1,'char')
+                    index1 = 1:size(varargin{1},1);
+                end
                 index2 = varargin{2}.subs{2};
+                if isa(index2,'char')
+                    index2 = 1:size(varargin{1},2);
+                end
                 y = [];
                 for i = 1:length(index1)
                     temp = [];
