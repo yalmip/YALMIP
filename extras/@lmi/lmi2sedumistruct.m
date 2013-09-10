@@ -412,24 +412,7 @@ for i = 1:length(sdp_con)
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
     
-    if 0
-        %is(F.clauses{constraints}.data,'kyp')
-        %         % This code should never be called
-        %         ss = struct(F.clauses{constraints}.data);
-        %
-        %         nn = size(ss.extra.M,1);
-        %         bb = getbase(ss.extra.M);
-        %         for ib = 1:size(bb,2)-1
-        %             Mbase{ib} = (reshape(bb(:,ib+1),nn,nn));
-        %         end
-        %         if ss.extra.negated
-        %             schur_data{i,1} = {-ss.extra.A,-ss.extra.B,Mbase,getvariables(ss.extra.M),getvariables(ss.extra.P)};
-        %         else
-        %             schur_data{i,1} = {ss.extra.A,ss.extra.B,Mbase,getvariables(ss.extra.M),getvariables(ss.extra.P)};
-        %         end
-        %         schur_funs{i,1} = 'HKM_schur_KYP';
-        %         schur_variables{i,1} = lmi_variables;
-    elseif is(F.clauses{constraints}.data,'gkyp')
+    if is(F.clauses{constraints}.data,'gkyp')
         ss = struct(F.clauses{constraints}.data);
         
         nn = size(F.clauses{1}.data,1);
