@@ -213,6 +213,7 @@ details.b = b;
 details.E = E;
 details.f = f;
 details.dual = Lambda;
+details.dualeq = mu;
 details.primal = x;
 if length(b)>0
     details.inequalities = A*x <= b;
