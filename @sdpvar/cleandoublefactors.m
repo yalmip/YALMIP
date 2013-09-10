@@ -16,8 +16,8 @@ if length(isdouble)>1
     allfactors = 1:length(Z.midfactors);
     keepfactors = setdiff(allfactors,isdouble(2:end));
     Z.midfactors{isdouble(1)} = total;
-    Z.leftfactors{isdouble(1)} = eye(size(total,1));
-    Z.rightfactors{isdouble(1)} = eye(size(total,2));
+    Z.leftfactors{isdouble(1)} = speye(size(total,1));
+    Z.rightfactors{isdouble(1)} = speye(size(total,2));
     Z.leftfactors = {Z.leftfactors{keepfactors}};
     Z.rightfactors = {Z.rightfactors{keepfactors}};
     Z.midfactors = {Z.midfactors{keepfactors}};
