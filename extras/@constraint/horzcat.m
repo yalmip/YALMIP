@@ -1,5 +1,15 @@
 function F = horzcat(varargin)
 
+% for i=1:1:nargin
+%     if isa(varargin{i},'constraint')
+%         varargin{i} = set(varargin{i});
+%     end
+% end
+% if all(cellfun('isclass',varargin,'lmi'))
+%     F = fastcat(varargin{:});
+%     return
+% end
+
 F = [];
 for i=1:1:nargin
     if isa(varargin{i},'double') & ~isempty(varargin{i})

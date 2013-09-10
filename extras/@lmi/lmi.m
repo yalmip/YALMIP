@@ -158,15 +158,17 @@ TypeofConstraint = zeros(length(Fi),1)-1;
 
 % support for SOS constraints placed in vector
 if length(Fi) == 1
-    if is(Fi{1},'sos')
-        % Expand to a set of SOS constraints
-        if ~issymmetric(Fi{1})
-            p = Fi{1}(:);
-            for i = 1:length(p)
-                Fi{i} = p(i);
+    if isa(Fi{1},'sdpvar')% is(Fi{1},'sos')
+        if gethackflag(Fi{1})==1
+            % Expand to a set of SOS constraints
+            if ~issymmetric(Fi{1})
+                p = Fi{1}(:);
+                for i = 1:length(p)
+                    Fi{i} = p(i);
+                end
+                TypeofConstraint = zeros(length(Fi),1)-1;
+                strict = zeros(length(Fi),1)-1;
             end
-            TypeofConstraint = zeros(length(Fi),1)-1;
-            strict = zeros(length(Fi),1)-1;
         end
     end
 end
