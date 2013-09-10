@@ -37,6 +37,11 @@ if n<m & nargin>1
     Axplusb = Axplusb';
 end
 
+if nargin > 1 & ~is(Axplusb,'real')
+    y = cone([real(Axplusb);imag(Axplusb)],cxplusd);
+    return
+end
+
 % if isa(Axplusb,'sdpvar')
 %     if ~is(Axplusb,'linear')
 %         error('Both arguments must be linear');
