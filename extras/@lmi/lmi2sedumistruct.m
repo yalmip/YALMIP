@@ -454,7 +454,7 @@ for i = 1:length(sdp_con)
     % get numerics
     Fibase = getbase(F.clauses{constraints}.data);
     % now delete old data to save memory
-    F.clauses{constraints}.data=[];
+    % F.clauses{constraints}.data=[];
     
     % Which variables are needed in this constraint
     %lmi_variables = getvariables(Fi);
