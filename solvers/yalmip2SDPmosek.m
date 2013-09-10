@@ -28,6 +28,27 @@ prob.bara.subk = [];
 prob.bara.subl = [];
 prob.bara.val = [];
 
+AA = model.A';
+rowIndex = [];
+colIndex = [];
+conIndex = [];
+for j = 1:length(model.K.s)
+    n = model.K.s(j);
+    rowIndex = [rowIndex; kron(ones(n,1),(1:n)')];
+    colIndex = [colIndex; kron((1:n)',ones(n,1))];
+    conIndex = [conIndex; ones(n^2,1)*j];    
+end
+[ii,jj,kk] = find(model.A(top:top + sum(K.s.^2)-1,:));
+keep = find(rowIndex(ii)>=colIndex(ii));
+ii = ii(keep);
+jj = jj(keep);
+kk = kk(keep);
+prob.bara.subi = [prob.bara.subi jj(:)'];
+prob.bara.subj = [prob.bara.subj conIndex(ii)];
+prob.bara.subk = [prob.bara.subk rowIndex(ii)];
+prob.bara.subl = [prob.bara.subl colIndex(ii)];
+prob.bara.val = [prob.bara.val kk(:)'];
+    
 for j = 1:length(model.K.s)
     n = model.K.s(j);
     Ci = model.C(top:top+n^2-1);
@@ -37,8 +58,10 @@ for j = 1:length(model.K.s)
     prob.barc.subk = [prob.barc.subk k(:)'];
     prob.barc.subl = [prob.barc.subl l(:)'];
     prob.barc.val = [prob.barc.val val(:)'];
-    
-    Ais = model.A(top:top+n^2-1,:);
+  
+    if 0
+    %Ais = model.A(top:top+n^2-1,:);
+    Ais = AA(:,top:top+n^2-1)';
     [elementIndex,variableIndex,val] = find(Ais);
     [row,column] = ind2sub([n n],elementIndex);
     keep = find(row >= column);
@@ -47,6 +70,7 @@ for j = 1:length(model.K.s)
     variableIndex = variableIndex(keep);
     val = val(keep);
     
+  
     % Which LMI
     prob.bara.subj = [prob.bara.subj j*ones(1,length(val))];
     % Which variable
@@ -57,7 +81,7 @@ for j = 1:length(model.K.s)
     prob.bara.subl = [prob.bara.subl column(:)'];
     % Value
     prob.bara.val = [prob.bara.val val(:)'];
-    
+    end
     top = top + n^2;
 end
 
