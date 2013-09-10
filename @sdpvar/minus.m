@@ -29,7 +29,7 @@ if ~Y_is_spdvar
 end
 
 if isa(X,'sdpvar') 
-    if is(X,'gkyp') 
+    if X.typeflag == 40%is(X,'gkyp') 
         y = X + uminus(Y);
         return
     end

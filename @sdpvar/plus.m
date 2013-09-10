@@ -33,13 +33,13 @@ if ~Y_is_spdvar
 end
 
 if isa(X,'sdpvar') 
-    if is(X,'gkyp') 
+    if X.typeflag == 40%is(X,'gkyp') is(X,'gkyp') 
         y = addgkyp(X,Y);
         return
     end
 end
 if isa(Y,'sdpvar') 
-    if is(Y,'gkyp') 
+    if Y.typeflag == 40%is(Y,'gkyp') 
         y = addgkyp(Y,X);
         return
     end
