@@ -15,6 +15,8 @@ if ~X_is_spdvar
     elseif isa(X,'intval')
         X_is_spdvar = 0;
         Y.basis = intval(Y.basis);
+    elseif isa(X,'uint8')| isa(X,'uint16') | isa(X,'uint32') | isa(X,'uint64')
+        X = double(X);
     end
 end
 
@@ -25,6 +27,8 @@ if ~Y_is_spdvar
     elseif isa(Y,'intval')
         Y_is_spdvar = 0;
         X.basis = intval(X.basis);
+    elseif isa(Y,'uint8') | isa(Y,'uint16') | isa(Y,'uint32') | isa(Y,'uint64')
+        Y = double(Y);
     end
 end
 

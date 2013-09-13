@@ -51,8 +51,8 @@ try
                     error(lasterr)
                 end
             case 2
-                if ~isempty(Y)
-                  Y = sparse(Y);
+                if ~isempty(Y)                    
+                    Y = sparse(double(Y));                    
                 end
                 y = X;
                 

@@ -521,6 +521,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     return
                 end
             else
+                if ~isa(Y,'double')
+                    Y = double(Y);
+                end
                 Z.dim(1) = n_Y;
                 Z.dim(2) = m_Y;
                 Z.basis = kron(Z.basis,Y(:));
@@ -532,6 +535,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 return
             end
         elseif y_isscalar
+            if ~isa(Y,'double')
+                Y = double(Y);
+            end
             Z.dim(1) = n_X;
             Z.dim(2) = m_X;
             Z.basis = Z.basis*Y;
@@ -550,6 +556,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % encountered in large-scale QPs
             Z.basis = [X.basis(:,1) Y.'];
         else
+            if ~isa(Y,'double')
+                Y = double(Y);
+            end
             Z.basis = kron(Y.',speye(n_X))*X.basis;
         end
         Z.conicinfo = [0 0];
@@ -631,6 +640,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         else
             try
+                if ~isa(X,'double')
+                    X = double(X);
+                end
                 speyemy = speye(m_Y);
                 kronX = kron(speyemy,X);
                 Z.basis = kronX*Y.basis;
@@ -638,6 +650,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 disp('Multiplication of SDPVAR object caused memory error');
                 disp('Continuing using unvectorized version which is extremely slow');
                 Z.basis = [];
+                if ~isa(X,'double')
+                    X = double(X);
+                end
                 for i = 1:size(Y.basis,2);
                     dummy = X*reshape(Y.basis(:,i),Y.dim(1),Y.dim(2));
                     Z.basis = [Z.basis dummy(:)];
