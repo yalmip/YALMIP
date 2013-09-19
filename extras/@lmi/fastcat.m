@@ -3,7 +3,7 @@ function X = fastcat(varargin)
 X = varargin{1};
 nTOT = length(X.clauses);
 for i = 2:nargin
-    X.clauses = cat(2,X.clauses,varargin{i}.clauses);   
+    X.clauses{i} = varargin{i}.clauses{1};   
     nTOT = nTOT + length(varargin{i}.clauses);
     X.LMIid = [X.LMIid varargin{i}.LMIid];
 end
