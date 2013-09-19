@@ -117,7 +117,7 @@ end
 
 
 
-table('',headers,data)
+yalmiptable('',headers,data)
 
 function x= truncstring(x,n)
 if length(x) > n
