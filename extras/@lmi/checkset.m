@@ -231,6 +231,6 @@ else
         temp = {data{:,[1 2 3 4]}};
         data = reshape(temp,length(temp)/4,4);
     end
-    table('',header,data)
+    yalmiptable('',header,data)
     disp(' ');
 end

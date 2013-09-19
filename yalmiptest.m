@@ -121,7 +121,7 @@ else
 end
 
 if ~((nargin==2) & (ops.verbose==0))    
-table({'Searching for installed solvers'},header,data);
+yalmiptable({'Searching for installed solvers'},header,data);
 disp(' ')
 end
 if nargin<2
@@ -264,7 +264,7 @@ formats{2}.header.just = 'right';
 formats{3}.header.just = 'right';
 
 clc
-table([],header,data,formats)
+yalmiptable([],header,data,formats)
 
 
 function [pass,sol,result] = testsdpvar(ops)
