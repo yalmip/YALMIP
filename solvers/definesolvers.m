@@ -207,15 +207,6 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
 
-solver(i) = qpsolver;
-solver(i).tag     = 'CBC';
-solver(i).version = '';
-solver(i).checkfor= {'cbc','opti_cbc'};
-solver(i).call    = 'callcbc';
-solver(i).constraint.integer = 1;
-solver(i).constraint.sos2 = 0;
-i = i+1;
-
 solver(i) = lpsolver;
 solver(i).tag     = 'GLPK';
 solver(i).version = 'GLPKMEX-CC';
@@ -447,6 +438,15 @@ solver(i).tag     = 'OOQP';
 solver(i).version = '';
 solver(i).checkfor= {'opti_ooqp.m'};
 solver(i).call    = 'calloptiooqp';
+i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'CBC';
+solver(i).version = '';
+solver(i).checkfor= {'cbc','opti_cbc'};
+solver(i).call    = 'callcbc';
+solver(i).constraint.integer = 1;
+solver(i).constraint.sos2 = 0;
 i = i+1;
 
 solver(i) = qpsolver;
