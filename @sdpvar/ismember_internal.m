@@ -103,7 +103,7 @@ if isa(p,'polytope')
     be = [];
     
 else
-    p = convexHull(p);
+    p = p.minHRep(); 
     H = p.A;
     K = p.b;
     Ae = p.Ae;
