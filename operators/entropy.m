@@ -8,6 +8,8 @@ function varargout = entropy(varargin)
 % Implemented as evalutation based nonlinear operator. Hence, the concavity
 % of this function is exploited to perform convexity analysis and rigorous
 % modelling.
+%
+% See also crossentropy.
 
 % Author Johan Löfberg
 % $Id: entropy.m,v 1.11 2007-08-02 20:57:53 joloef Exp $

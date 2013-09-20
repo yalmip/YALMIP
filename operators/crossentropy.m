@@ -4,6 +4,8 @@ function varargout = crossentropy(varargin)
 % y = CROSSENTROPY(x,y)
 %
 % Computes/declares cross entropy -sum(x.*log(y))
+%
+% See also entropy.
 
 % Author Johan Löfberg
 
