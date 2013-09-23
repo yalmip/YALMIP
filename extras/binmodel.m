@@ -95,8 +95,7 @@ else
 end
 
 % replace x*y with z, x>z, x>z, 1+z>x+y
-if ~isempty(bilinear)
-    z_bilinear = sdpvar(length(bilinear),1);
+if ~isempty(bilinear)   
     [jj,ii] = find(mt(vars(bilinear),:)');
     xi = jj(1:2:end);
     yi = jj(2:2:end);
@@ -105,8 +104,12 @@ if ~isempty(bilinear)
     
     if all(ismember(xi,allbinary)) & all(ismember(yi,allbinary))
         % fast case for binary*binary
+        z_bilinear = binvar(length(bilinear),1);
         F = [F, binary(z_bilinear), x >= z_bilinear, y >= z_bilinear, 1+z_bilinear >= x + y, 0 <= z_bilinear <= 1];
     else
+        z_bilinear = sdpvar(length(bilinear),1);
+        theseAreBinaries = find(ismember(xi,allbinary) & ismember(yi,allbinary));
+        z_bilinear(theseAreBinaries) = binvar(length(theseAreBinaries),1);
         for i = 1:length(bilinear)
             if ismember(xi(i),allbinary) & ismember(yi(i),allbinary)
                 F = [F, x(i) >= z_bilinear(i), y(i) >= z_bilinear(i), 1+z_bilinear(i) >= x(i) + y(i), 0 <= z_bilinear(i) <= 1];
