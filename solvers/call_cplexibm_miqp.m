@@ -82,6 +82,7 @@ if options.savesolveroutput
     solveroutput.fval = fval;
     solveroutput.exitflag = exitflag;
     solveroutput.lambda = lambda;
+    solveroutput.output = output;
 else
     solveroutput = [];
 end
