@@ -35,6 +35,7 @@ for i = 1:length(all_f)
                 else
                     F = F + set(x'*Q_xx{i}*x+bi'*x + di - r*s >= 0) + set(-s<=Bi(:,used)'*x+ci(used)<=s);                   
                 end
+                used_rows = 1:size(Bi,1);
                 lastBici = [Bi' ci];
             else
                 used_rows = find(any(full(Bi(:,used)')));
