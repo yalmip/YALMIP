@@ -158,7 +158,11 @@ elseif isequal(subs.type,'{}')
             top = 1;
             for i = 1:length(self.dimoutOrig)
                 n = prod(self.dimoutOrig{i});
-                allu{i} = [allu{i} reshape(u(top:top+n-1,k),self.dimoutOrig{i})];
+                uvec = reshape(u(top:top+n-1,k),self.dimoutOrig{i});
+                if self.complexOutput(i)   
+                    uvec = uvec(1:size(uvec,1)/2,:) +  uvec(1+size(uvec,1)/2:end,:)*sqrt(-1);
+                end
+                allu{i} = [allu{i} uvec];
                 top = top + n;
             end
         end
