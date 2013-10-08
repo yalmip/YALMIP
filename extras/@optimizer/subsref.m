@@ -98,11 +98,7 @@ elseif isequal(subs.type,'{}')
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
         if self.nonlinear %& isempty(self.model.evalMap)
             originalModel = self.model;
-            try
-                [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
-            catch
-                error('Nonlinear replacement in optimizer object only supported in MATLAB R2012A or later');
-            end
+            [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
             if ~infeasible                          
                 eval(['output = ' self.model.solver.call '(self.model);']);
                 x = originalModel.c*0;
