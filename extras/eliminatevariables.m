@@ -171,7 +171,9 @@ else
 end
 model.c = S*model.c;
 %model.F_struc2 = [model.F_struc(:,1) (S*model.F_struc(:,2:end)')'];
-model.F_struc = model.F_struc*model.precalc.blkOneS;%blkdiag(1,S');
+if ~isempty(model.F_struc)
+    model.F_struc = model.F_struc*model.precalc.blkOneS;%blkdiag(1,S');
+end
 %norm(model.F_struc-model.F_struc2)
 
 model.lb(skipped) = [];
