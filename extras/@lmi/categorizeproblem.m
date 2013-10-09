@@ -249,7 +249,7 @@ for i = 1:Counter
                             case 3
                                 problem.constraint.equalities.quadratic = 1;
                             case {4,54}
-                                error
+                                problem.constraint.inequalities.secondordercone = 1;
                             case 5
                                 error
                             case 55
@@ -266,7 +266,7 @@ for i = 1:Counter
                             case 3
                                 problem.constraint.equalities.polynomial = 1;
                             case {4,54}
-                                %   problem.constraint.inequalities.secondordercone = 1;
+                                problem.constraint.inequalities.secondordercone = 1;
                             case 5
                                 %   problem.constraint.inequalities.rotatedsecondordercone = 1;
                             case 55
