@@ -9,9 +9,6 @@ function X=sos1(X,weights)
 % Output
 %  F : CONSTRAINT object
 
-% Author Johan Löfberg 
-% $Id: sos2.m,v 1.8 2009-10-08 11:11:06 joloef Exp $  
-
 X.typeflag = 51;
 if nargin == 1
     X.extra.sosweights = 1:length(X);

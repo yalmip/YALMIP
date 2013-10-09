@@ -13,9 +13,6 @@ function X=sos2(X,weights,dim)
 %
 % See also sos1
 
-% Author Johan Löfberg 
-% $Id: sos2.m,v 1.8 2009-10-08 11:11:06 joloef Exp $  
-
 % Normalize arguments
 if nargin < 3
     dim = 1;
