@@ -200,14 +200,14 @@ end
 if ProblemClass.constraint.inequalities.secondordercone.linear & ~socp_are_really_qc & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-         keep(i) = solvers(i).constraint.inequalities.secondordercone.linear;
+         keep(i) = solvers(i).constraint.inequalities.secondordercone.linear | solvers(i).constraint.inequalities.semidefinite.linear | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
     end
     solvers = solvers(find(keep));
 end  
 if ProblemClass.constraint.inequalities.secondordercone.nonlinear & ~socp_are_really_qc & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-         keep(i) = solvers(i).constraint.inequalities.secondordercone.nonlinear;
+         keep(i) = solvers(i).constraint.inequalities.secondordercone.nonlinear | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
     end
     solvers = solvers(find(keep));
 end  
