@@ -82,7 +82,7 @@ end
 if isa(x,'cell')
     xvec = [];
   for i = 1:length(x)
-      if ~isa(x{i},'sdpvar')
+      if ~(isa(x{i},'sdpvar') | isa(x{i},'ndsdpvar'))
           error(['The parameters must be SDPVAR objects. Parameter #' num2str(i) ' is a ' upper(class(x{i}))]);
       end
       if is(x{i},'complex')
