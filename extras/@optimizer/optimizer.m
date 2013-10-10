@@ -82,6 +82,9 @@ end
 if isa(x,'cell')
     xvec = [];
   for i = 1:length(x)
+      if ~isa(x{i},'sdpvar')
+          error(['The parameters must be SDPVAR objects. Parameter #' num2str(i) ' is a ' upper(class(x{i}))]);
+      end
       if is(x{i},'complex')
           x{i} = [real(x{i});imag(x{i})];
           complexInput(i) = 1;
