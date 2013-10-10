@@ -564,7 +564,7 @@ end
 %   3. Solver supports SOCC
 if ~((solver.constraint.inequalities.elementwise.quadratic.convex == 1) & socp_are_really_qc)
     if ~(strcmp(solver.tag,'bnb') & socp_are_really_qc & localsolver.constraint.inequalities.elementwise.quadratic.convex==1 )
-        if ((solver.constraint.inequalities.secondordercone == 0) | (strcmpi(solver.tag,'bnb') & localsolver.constraint.inequalities.secondordercone==0))
+        if ((solver.constraint.inequalities.secondordercone.linear == 0) | (strcmpi(solver.tag,'bnb') & localsolver.constraint.inequalities.secondordercone==0))
             if solver.constraint.inequalities.semidefinite.linear
                 [F,changed] = convertsocp(F);
             else

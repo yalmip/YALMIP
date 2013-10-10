@@ -53,7 +53,8 @@ problem.constraint.inequalities.semidefinite.sigmonial = 0;
 
 problem.constraint.inequalities.rank = 0;
 
-problem.constraint.inequalities.secondordercone = 0;
+problem.constraint.inequalities.secondordercone.linear = 0;
+problem.constraint.inequalities.secondordercone.nonlinear = 0;
 problem.constraint.inequalities.rotatedsecondordercone = 0;
 problem.constraint.inequalities.powercone = 0;
 
@@ -167,7 +168,7 @@ for i = 1:Counter
             case 3
                 problem.constraint.equalities.linear = 1;
             case {4,54}
-                problem.constraint.inequalities.secondordercone = 1;
+                problem.constraint.inequalities.secondordercone.linear = 1;
             case 5
                 problem.constraint.inequalities.rotatedsecondordercone = 1;
             case 20
@@ -195,7 +196,7 @@ for i = 1:Counter
                     case 3
                         problem.constraint.equalities.sigmonial = 1;
                     case {4,54}
-                        error('Sigmonial SOCP not supported');
+                       problem.constraint.inequalities.secondordercone.nonlinear = 1;
                     case 5
                         error('Sigmonial RSOCP not supported');
                     otherwise
@@ -214,7 +215,7 @@ for i = 1:Counter
                             case 3
                                 problem.constraint.equalities.linear = 1;
                             case {4,54}
-                                problem.constraint.inequalities.secondordercone = 1;
+                                problem.constraint.inequalities.secondordercone.linear = 1;
                             case 5
                                 problem.constraint.inequalities.rotatedsecondordercone = 1;
                             case 20
@@ -249,7 +250,7 @@ for i = 1:Counter
                             case 3
                                 problem.constraint.equalities.quadratic = 1;
                             case {4,54}
-                                problem.constraint.inequalities.secondordercone = 1;
+                                problem.constraint.inequalities.secondordercone.nonlinear = 1;
                             case 5
                                 error
                             case 55
@@ -266,7 +267,7 @@ for i = 1:Counter
                             case 3
                                 problem.constraint.equalities.polynomial = 1;
                             case {4,54}
-                                problem.constraint.inequalities.secondordercone = 1;
+                                problem.constraint.inequalities.secondordercone.nonlinear = 1;
                             case 5
                                 %   problem.constraint.inequalities.rotatedsecondordercone = 1;
                             case 55
@@ -286,7 +287,7 @@ for i = 1:Counter
                 case 3
                     problem.constraint.equalities.linear = 1;
                 case {4,54}
-                    problem.constraint.inequalities.secondordercone = 1;
+                    problem.constraint.inequalities.secondordercone.linear = 1;
                 case 5
                     problem.constraint.inequalities.rotatedsecondordercone = 1;
                 case 20
@@ -357,6 +358,9 @@ if (relax==1) | (relax==3)
     problem.constraint.inequalities.semidefinite.quadratic  = 0;
     problem.constraint.inequalities.semidefinite.polynomial = 0;
     problem.constraint.inequalities.semidefinite.sigmonial  = 0;
+    
+    problem.constraint.inequalities.elementwise.secondordercone.linear = problem.constraint.inequalities.secondordercone.linear |  problem.constraint.inequalities.secondordercone.nonlinear ;
+    problem.constraint.inequalities.elementwise.secondordercone.nonlinear = 0;
     
     poly_constraint = 0;
     bilin_constraint = 0;
