@@ -28,11 +28,17 @@ switch class(varargin{1})
         varargout{1} = power(varargin{1},varargin{2});
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         X = varargin{1};
-        [n,m] = size(X);
-        if isreal(X) & n*m==1
-            varargout{1} = yalmip('define',mfilename,varargin{:});
+        if isreal(X)
+            dim = size(X);
+            X = reshape(X,prod(dim),1);
+            y = [];
+            for i = 1:prod(dim)
+                y = [y;yalmip('define',mfilename,extsubsref(X,i),varargin{2})];
+            end
+            y = reshape(y,dim);
+            varargout{1} = y;
         else
-            error('CPOWER can only be applied to real scalars.');
+            error('CPOWER can only be applied to real vectors.');
         end
 
     case 'char' % YALMIP send 'model' when it wants the epigraph or hypograph
