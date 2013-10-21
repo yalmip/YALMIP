@@ -436,6 +436,10 @@ switch varargin{1}
                             internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
                             internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];                           
                             allNewExtendedIndex = [allNewExtendedIndex i];
+                            % Add this to the list of possible matches.
+                            % Required for repeated elements in argument
+                            % (such as a symmetric matrix)
+                            correct_operator = [correct_operator length(internal_sdpvarstate.ExtendedMap)];
                         end
                     end
                 end
