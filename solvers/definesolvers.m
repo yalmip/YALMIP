@@ -762,7 +762,7 @@ i = i+1;
 solver(i) = emptysolver;
 solver(i).tag     = 'MPT';
 solver(i).version = '2';
-solver(i).checkfor= {'mpt_mpqp'};
+solver(i).checkfor= {'mpt_getInput'};
 solver(i).call    = 'callmpt';
 solver(i).objective.linear = 1;
 solver(i).objective.quadratic.convex = 1;
@@ -851,6 +851,17 @@ solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).dual = 1;
+solver(i).evaluation = 1;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag     = 'penlab';
+solver(i).version = '';
+solver(i).checkfor= {'penlab.m'};
+solver(i).call    = 'callpenlab';
+solver(i).objective.linear = 1;
+solver(i).objective.quadratic.convex = 1;
+solver(i).objective.quadratic.nonconvex = 1;
 solver(i).evaluation = 1;
 i = i+1;
 
