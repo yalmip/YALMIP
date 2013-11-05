@@ -67,7 +67,7 @@ end
 sos.index = K.sos.variables;
 sos.weight = K.sos.weight;
 if options.savedebug
-    save f A rl ru lb ub VARTYPE sos
+    save scipdebug f A rl ru lb ub VARTYPE sos
 end
 
 % Call mex-interface
