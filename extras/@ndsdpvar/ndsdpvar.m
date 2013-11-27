@@ -55,7 +55,7 @@ appendYALMIPvariables((vars(end)+1):usedNewVars(end));
 
 X = struct(X);
 X.dim = n;
-X.basis = [spalloc(size(X.basis,1)*N,1,0) kron(X.basis(:,2:end),speye(N))];
+X.basis = [spalloc(size(X.basis,1)*N,1,0) kron(speye(N),X.basis(:,2:end))];
 X.lmi_variables = usedNewVars;
 
 X = class(X,'ndsdpvar');
