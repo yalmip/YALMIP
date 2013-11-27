@@ -96,29 +96,60 @@ try
                 m = y.dim(2);
                 subX = sparse(subsasgn(full(reshape(X.basis(:,1),n,m)),I,Y));
                 y.basis = subX(:);
-                
-                j = 1;
-                Z = 0*Y;
-                for i = 1:length(x_lmi_variables)
-                    subX = sparse(subsasgn(full(reshape(X.basis(:,i+1),n,m)),I,Z));
-                    if (norm(subX,inf)>0)
-                        y.basis(:,j+1) = subX(:);
-                        lmi_variables = [lmi_variables x_lmi_variables(i)];
-                        j = j+1;
+                if isa(I.subs{1},'char')
+                    I.subs{1} = 1:n;
+                end
+                if length(I.subs)>1
+                    if isa(I.subs{2},'char')
+                        I.subs{1} = 1:m;
                     end
-                end  
+                end
+                if length(I.subs)>1
+                    if length(I.subs{1})==1 & length(I.subs{2})~=1
+                        I.subs{1} = repmat(I.subs{1},size(I.subs{2},1),size(I.subs{2},2));
+                    elseif length(I.subs{2})==1 & length(I.subs{1})~=1
+                        I.subs{2} = repmat(I.subs{2},size(I.subs{1},1),size(I.subs{1},2));
+                    end
+                end
+                
+                if length(I.subs)>1
+                    LinearIndex = sub2ind([n m],I.subs{1},I.subs{2});
+                else
+                    LinearIndex = I.subs{1};
+                end
+                
+                X.basis(LinearIndex,2:end)=sparse(0);                
+                y.basis = [y.basis(:,1) X.basis(:,2:end)];
+                
+               % j = 1;
+               % Z = 0*Y;
+               % for i = 1:length(x_lmi_variables)
+               %     subX = sparse(subsasgn(full(reshape(X.basis(:,i+1),n,m)),I,Z));
+               %     if (norm(subX,inf)>0)
+               %         y.basis(:,j+1) = subX(:);
+               %         lmi_variables = [lmi_variables x_lmi_variables(i)];
+               %         j = j+1;
+               %     end
+               % end  
                 y.dim(1) = size(subX,1);
                 y.dim(2) = size(subX,2);
-                if isempty(lmi_variables) % Convert back to double!!
-                    y=full(reshape(y.basis(:,1),y.dim(1),y.dim(2)));
-                    return
-                else %Nope, still a sdpvar
-                    y.lmi_variables = lmi_variables;
-                     % Reset info about conic terms
+                y = clean(y);
+                if isa(y,'sdpvar')
+                    % Reset info about conic terms
                     y.conicinfo = [0 0];
                     y = flush(y);
                 end
                 
+%                 if isempty(lmi_variables) % Convert back to double!!
+%                     y=full(reshape(y.basis(:,1),y.dim(1),y.dim(2)));
+%                     return
+%                 else %Nope, still a sdpvar
+%                     y.lmi_variables = lmi_variables;
+%                      % Reset info about conic terms
+%                     y.conicinfo = [0 0];
+%                     y = flush(y);
+%                 end
+%                 
             case 3
                 z = X;
                 
