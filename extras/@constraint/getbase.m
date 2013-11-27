@@ -1,3 +1,3 @@
-§function B = colon(F)
+function B = getbase(F)
 
 B = getbase(set(F));
