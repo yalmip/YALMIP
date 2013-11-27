@@ -67,7 +67,7 @@ if model.K.l > 0
     if ~isempty(candidates)
         
         %if find(model.F_struc(model.K.f + candidates,1)<0,1)
-        if any(model.F_struc(model.K.f + candidates,1)<0)
+        if any(model.F_struc(model.K.f + candidates,1)<-1e-14)
             infeasible = 1;
             return
         else
