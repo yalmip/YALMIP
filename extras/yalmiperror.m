@@ -94,7 +94,8 @@ case -3
   error_string = ['Convexity check failed ' solver ]; 
  case 15
   error_string = ['Infeasible or unbounded problem ' solver ]; 
-  
+ case 16
+  error_string = ['User terminated ' solver ];         
   
  otherwise
 end
