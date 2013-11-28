@@ -271,7 +271,7 @@ Qb = Q(:,b);Qb(b,:)=[];
 if nnz(Q)>0
     zeroRow = find(~any(Q,1));
     Qtest = Q;Q(zeroRow,:)=[];Q(:,zeroRow)=[];
-    problematicQP = min(eig(full(Qtest)))<-1e-14;
+    problematicQP = analyzeQuadratic(Qtest);%min(eig(full(Qtest)))<-1e-14;
 else
     problematicQP = 0;
 end
@@ -353,3 +353,38 @@ function i = uniqueRows(x);
 B = getbase(x);
 [temp,i,j] = unique(B,'rows');
 i = i(:);
+
+
+function problematicQP = analyzeQuadratic(Q)
+problematicQP=0;
+% Try to figure out if the quadratic part is convex or not.
+% Avoid eigenvalue check etc as far as possible. This matrix might be huge!
+[i,j,s] = find(Q);
+if all(i == j)
+    % diagonal
+    if any(s)<-1e-14
+        problematicQP = 1;  
+    end
+    return
+end
+
+% A common case is that the matrix is block diagonal. Hence, we detect the
+% blocks, and then check the blocks
+[p,q,r,s,cc,rr] = dmperm(Q);
+Q = Q(p,p);
+for block = 1:length(r)-1
+    Qblock = Q(r(block):r(block+1)-1,r(block):r(block+1)-1);
+    if length(Qblock)==1
+        if Qblock < 1e-14
+            problematicQP = 1;
+            return
+        end
+    else
+        if min(eig(full(Qblock)))<-1e-14
+            problematicQP = 1;
+            return
+        end
+    end
+end
+
+
