@@ -85,7 +85,7 @@ switch varargin{1}
             % table is square
             varargout{1}(n,n) = 0;
             internal_sdpvarstate.monomtable = varargout{1};
-            need_new = size(internal_sdpvarstate.monomtable,1) - length(internal_sdpvarstate.hash);
+            need_new = size(internal_sdpvarstate.monomtable,1) - length(internal_sdpvarstate.hash);            
             internal_sdpvarstate.hash = [internal_sdpvarstate.hash ; 3*gen_rand_hash(size(internal_sdpvarstate.monomtable,1),need_new,1)];
             internal_sdpvarstate.hashedmonomtable = internal_sdpvarstate.monomtable*internal_sdpvarstate.hash;
         end
