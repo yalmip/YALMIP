@@ -363,8 +363,17 @@ problematicQP=0;
 if all(i == j)
     % diagonal
     if any(s)<-1e-14
-        problematicQP = 1;  
+        problematicQP = 1;
     end
+    return
+end
+
+% Remove zero columns/rows
+rmv = find(~any(Q,1));
+Q(:,rmv)=[];
+Q(rmv,:)=[];
+[R,p] = chol(Q);
+if ~p
     return
 end
 
@@ -372,17 +381,40 @@ end
 % blocks, and then check the blocks
 [p,q,r,s,cc,rr] = dmperm(Q);
 Q = Q(p,p);
-for block = 1:length(r)-1
-    Qblock = Q(r(block):r(block+1)-1,r(block):r(block+1)-1);
-    if length(Qblock)==1
-        if Qblock < 1e-14
+block = 1;
+%for block = 1:length(r)-1
+while block <= length(r)-1
+    
+    if r(block)+1 == r(block+1)
+        % Go thorough sequence of diagonal blocks
+        diagend = block + 1;
+        while diagend <= length(r)-1 & (r(diagend)+1 == r(diagend+1))
+            diagend = diagend + 1;
+        end
+        diagend = diagend-1;
+        Qblock = Q(r(block):r(diagend),r(block):r(diagend));
+        if any(diag(Qblock))<-1e-14
             problematicQP = 1;
             return
         end
+        block = diagend+1;
     else
-        if min(eig(full(Qblock)))<-1e-14
-            problematicQP = 1;
-            return
+        Qblock = Q(r(block):r(block+1)-1,r(block):r(block+1)-1);
+        
+        block = block + 1;
+        if length(Qblock)==1
+            if Qblock < 1e-14
+                problematicQP = 1;
+                return
+            end
+        else
+            [R,p] = chol(Qblock);
+            if p
+                if min(eig(full(Qblock)))<-1e-14
+                    problematicQP = 1;
+                    return
+                end
+            end
         end
     end
 end
