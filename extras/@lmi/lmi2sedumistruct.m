@@ -60,6 +60,10 @@ localtop = 1;
 % wheras the final output will be transposed
 
 % Linear equality constraints
+alljx = [];
+allix = [];
+allsx = [];
+block = 0;
 for i = 1:length(equ_con)
     constraints = equ_con(i);
     data = getbase(F.clauses{constraints}.data);
@@ -75,9 +79,13 @@ for i = 1:length(equ_con)
     end
     mapX = [1 1+lmi_variables];
     [ix,jx,sx] = find(data);    
-    F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);
+   
+    %F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);    
+    %F_struc = [F_struc F_structemp];
     
-    F_struc = [F_struc F_structemp];
+    alljx = [alljx mapX(jx)];
+    allix = [allix ix(:)'+block];block = block + ntimesm;
+    allsx = [allsx sx(:)'];
     
     if F.clauses{constraints}.cut
         KCut.f = [KCut.f localtop:localtop+ntimesm-1];
@@ -87,6 +95,7 @@ for i = 1:length(equ_con)
     top = top+ntimesm;
     K.f = K.f+ntimesm;
 end
+F_struc = sparse(alljx,allix,allsx,1+nvars,block);
 
 % Linear inequality constraints
 localtop = 1;
