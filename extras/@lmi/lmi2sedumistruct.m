@@ -67,14 +67,16 @@ block = 0;
 for i = 1:length(equ_con)
     constraints = equ_con(i);
     data = getbase(F.clauses{constraints}.data);
-    [n,m] = size(F.clauses{constraints}.data);
+  %  [n,m] = size(F.clauses{constraints}.data);
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
     if isreal(data)
-        ntimesm = n*m; %Just as well pre-calc
+        ntimesm = size(data,1);
+        %ntimesm = n*m; %Just as well pre-calc
     else
         % Complex constraint, Expand to real and Imag
-        ntimesm = 2*n*m; %Just as well pre-calc
+        ntimesm = 2*size(data,1);
+        %ntimesm = 2*n*m; %Just as well pre-calc
         data = [real(data);imag(data)];
     end
     mapX = [1 1+lmi_variables];
@@ -347,14 +349,16 @@ for i = 1:length(lp_con)
     constraints = lp_con(i);
     Fi = F.clauses{constraints}.data;
     Fibase = getbase(Fi);
-    [n,m] = size(Fi);
+  %  [n,m] = size(Fi);
     
     % Convert to real problem
     if isreal(Fibase)
-        ntimesm = n*m; %Just as well pre-calc
+        ntimesm = size(Fibase,1);
+        %ntimesm = n*m; %Just as well pre-calc
     else
         % Complex constraint, Expand to real and Imag
-        ntimesm = 2*n*m; %Just as well pre-calc
+        ntimesm = 2*size(Fibase,1);
+        %ntimesm = 2*n*m; %Just as well pre-calc
         Fibase = [real(Fibase);imag(Fibase)];
     end
     
