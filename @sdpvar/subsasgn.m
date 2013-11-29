@@ -113,7 +113,10 @@ try
                 end
                 
                 if length(I.subs)>1
-                    LinearIndex = sub2ind([n m],I.subs{1},I.subs{2});
+                   % LinearIndex = sub2ind([n m],I.subs{1},I.subs{2});
+                    ii = kron(I.subs{1}(:),ones(length(I.subs{2}),1));
+                    jj = kron(ones(length(I.subs{1}),1),I.subs{2}(:));
+                    LinearIndex = sub2ind([n m],ii,jj);%I.subs{1},I.subs{2});
                 else
                     LinearIndex = I.subs{1};
                 end
