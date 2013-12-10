@@ -3,6 +3,10 @@ function solution = savesdpafile(varargin)
 %
 %    SAVESDPAFILE(F,h,'filename')    Saves the problem min(h(x)), F(x)>0 to the file filename
 %    SAVESDPAFILE(F,h)               A "Save As" - box will be opened                               
+%
+% Note the the SDPA format does not support SOCPs or equalities.
+% If you have equalities, remove them using the option 'removeequalities'
+% in sdpsettings.
 
 % Author Johan Löfberg
 % $Id: savesdpafile.m,v 1.6 2006-12-11 12:50:36 joloef Exp $
@@ -14,7 +18,16 @@ nvars = yalmip('nvars');
 if isa(F,'constraint')
     F = set(F);
 end
-    
+
+if any(is(F,'equality'))
+	error('savesdpafile does not support equalities (not supported in the SDPA format');
+end
+
+if any(is(F,'socp'))
+	error('savesdpafile does not support SOCPs (not supported in the SDPA format');
+end
+
+
 % Expand nonlinear operators
 [F,failure,cause] = expandmodel(F,h,sdpsettings);
 if failure % Convexity propgation failed
