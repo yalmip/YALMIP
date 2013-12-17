@@ -4,6 +4,9 @@ function output = call_cplexibm_qcmiqp(interfacedata)
 
 % This is a gateway to all CPLEX interfaces
 % Call LP/QP solver if sufficient
+% Bug in 12.6 regarding display options. Hence, we turn it on and then run
+% silently by redirecting output instead
+interfacedata.options.cplex.Display = 'on';
 if isempty(interfacedata.K.q) | interfacedata.K.q(1)==0
     output = call_cplexibm_miqp(interfacedata);
     return
