@@ -1058,6 +1058,18 @@ else
     end
     
     try
+        options.baron = baronset;
+        cNames = recursivefieldnames(options.baron);
+        for i = 1:length(cNames)
+            Names{end+1} = ['baron.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+    catch
+        options.baron = [];
+    end
+    
+    try
         % OPTI Toolbox interface
         options.csdp = csdpset();
         
