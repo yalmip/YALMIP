@@ -80,7 +80,7 @@ switch varargin{1}
     case 'monomtable'
         varargout{1} = internal_sdpvarstate.monomtable;
         n = size(internal_sdpvarstate.monomtable,1);
-        if size(internal_sdpvarstate.monomtable,2) < n
+        if 0%size(internal_sdpvarstate.monomtable,2) < n
             % Normalize the monomtalbe. Some external functions presume the
             % table is square
             varargout{1}(n,n) = 0;

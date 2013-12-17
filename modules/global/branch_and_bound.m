@@ -124,6 +124,14 @@ while go_on
 
         [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 
+        if output.problem == -1
+            % We have no idea what happened. 
+            % Behave as if it worked, so we can branch as see if things
+            % clean up nicely
+            cost = p.lower;
+            output.problem = 3;
+        end
+        
         % Cplex sucks...
         if output.problem == 12
             pp = p;
@@ -193,7 +201,14 @@ while go_on
 
                     oldCount = numGlobalSolutions;
                     if numGlobalSolutions < p.options.bmibnb.numglobal                        
-                        [upper,x_min,cost,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
+                        [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
+                        if length(info_text)==0
+                            info_text = info_text2;
+                        elseif  length(info_text2)>0
+                            info_text = [info_text ' | ' info_text2];
+                        else
+                            info_text = info_text; 
+                        end
                         if ~isequal(p.solver.uppersolver.tag,'none')
                             if upper > p.options.bmibnb.target
                                 if options.bmibnb.lowertarget > lower                                    
