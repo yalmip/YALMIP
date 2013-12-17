@@ -28,25 +28,36 @@ obj = ['@(x) ' obj];
 obj = eval(obj);
 
 % Create string representing nonlinear constraints
-con = '[';
-remove = [];
-for i = 1:length(cu)
-    if isinf(cl(i)) & isinf(cu(i))
-        remove = [remove;i];
-    else
-        con = [con createmodelstring(Anonlinear(i,:),model) ';'];
+if length(cu)>0
+    con = '[';
+    remove = [];
+    for i = 1:length(cu)
+        if isinf(cl(i)) & isinf(cu(i))
+            remove = [remove;i];
+        else
+            con = [con createmodelstring(Anonlinear(i,:),model) ';'];
+        end
     end
-end    
-cl(remove) = [];
-cu(remove) = [];
-con = [con ']'];
-con = ['@(x) ' con];
-con = eval(con);
+    cl(remove) = [];
+    cu(remove) = [];
+    con = [con ']'];
+    con = ['@(x) ' con];
+    con = eval(con);
+else
+    cu = [];
+    cl = [];
+    con = [];
+end
 
 % Linear constraints
 ru = full([model.b;model.beq]);
 rl = full([repmat(-inf,length(model.b),1);model.beq]);
 A =  [model.A; model.Aeq];
+remove = find(isinf(rl) & isinf(ru));
+A(remove,:)=[];
+rl(remove) = [];
+ru(remove) = [];
+
 lb = model.lb;
 ub = model.ub;
 
@@ -64,12 +75,17 @@ end
 solvertime = clock;
 [x,fval,exitflag,info,allsol] = baron(obj,A,rl,ru,lb,ub,con,cl,cu,xtype,x0,opts);
 solvertime = etime(clock,solvertime);
-x = RecoverNonlinearSolverSolution(model,x);
 
 % Check, currently not exhaustive...
 switch exitflag
     case 1
         problem = 0;
+    case 2
+        problem = 1;
+    case 3
+        problem = 2;
+    case 5
+        problem = 11;
     otherwise
         problem = 9;
 end
@@ -96,6 +112,10 @@ if model.options.savesolveroutput
     solveroutput.allsol=allsol;
 else
     solveroutput = [];
+end
+
+if ~isempty(x)
+    x = RecoverNonlinearSolverSolution(model,x);
 end
 
 % Standard interface
@@ -143,8 +163,8 @@ for i = index(:)'
 end
 string = string(1:end-1);
 string = strrep(string,'+-','-');
-string = strrep(string,'-1*','-');
-string = strrep(string,'+1*','+');
+string = strrep(string,')-1*',')-');
+string = strrep(string,')+1*',')+');
 
 function string = createQstring(Q,model)
 % Special code for the quadratic term
