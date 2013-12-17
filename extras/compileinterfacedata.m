@@ -220,6 +220,7 @@ do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon-standard');
 do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
 do_not_convert = do_not_convert | strcmpi(options.solver,'moment');
 do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
+do_not_convert = do_not_convert | strcmpi(options.solver,'baron');
 do_not_convert = do_not_convert | (options.convertconvexquad == 0);
 do_not_convert = do_not_convert | (options.relax == 1);
 if ~do_not_convert & any(variabletype(F_vars))
@@ -900,7 +901,9 @@ if options.usex0
     end
     x0 = zeros(sdpvar('nvars'),1);
     x0(used_variables)  = x0_used(:);
-    x0(isnan(x0))=0;
+    if ~solver.supportsinitialNAN
+        x0(isnan(x0))=0;
+    end
 end
 if ~isempty(x0)
     % Get a coordinate in the reduced space
