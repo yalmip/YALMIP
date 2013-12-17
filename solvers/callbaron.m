@@ -58,7 +58,7 @@ x0 = model.x0;
 opts = model.options.baron;
 
 if model.options.savedebug    
-    save barondebug obj con A cl cu lb ub x0 opts
+    save barondebug obj con A ru rl cl cu lb ub x0 opts
 end
 
 solvertime = clock;
