@@ -25,6 +25,12 @@ if ~isempty(p.bilinears)
         p.lb(x(implied_pos))=0;
     end
     
+    from_square = find(x == y & ~isinf(p.ub(z)));
+    if ~isempty(from_square)
+        p.ub(x(from_square)) = min(p.ub(x(from_square)),sqrt(p.ub(z(from_square))));        
+        p.lb(x(from_square)) = max(p.lb(x(from_square)),-sqrt(p.ub(z(from_square))));        
+    end
+    
     p = update_integer_bounds(p);
     
     quadratic_variables = p.bilinears(x==y,1);

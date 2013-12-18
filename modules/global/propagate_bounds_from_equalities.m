@@ -157,9 +157,23 @@ for k = 1:length(a)%find_a
         L(k) = 0;
         U(k) = 0;
         ak = a(k);
-        if ak > 0
-            newlower = (-b - ap*U - am*L)/ak;
-            newupper = (-b - am*U - ap*L)/ak;
+        
+        if ak < 0
+            ak = -ak;
+            aa = am;
+            am = -ap;
+            ap = -aa;
+            b = -b;
+            a = -a;
+        end
+        
+        if ak > 0       
+            use1 = find(ap'~=0);
+            use2 = find(am'~=0);            
+            newlower = (-b - ap(use1)*U(use1) - am(use2)*L(use2))/ak;
+            newupper = (-b - am(use2)*U(use2) - ap(use1)*L(use1))/ak;
+            %newlower = (-b - ap*U - am*L)/ak;
+            %newupper = (-b - am*U - ap*L)/ak;
         else
             newlower = (-b - am*U - ap*L)/ak;
             newupper = (-b - ap*U - am*L)/ak;
