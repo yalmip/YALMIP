@@ -53,10 +53,12 @@ end
 ru = full([model.b;model.beq]);
 rl = full([repmat(-inf,length(model.b),1);model.beq]);
 A =  [model.A; model.Aeq];
-remove = find(isinf(rl) & isinf(ru));
-A(remove,:)=[];
-rl(remove) = [];
-ru(remove) = [];
+if length(ru)>0
+    remove = find(isinf(rl) & isinf(ru));
+    A(remove,:)=[];
+    rl(remove) = [];
+    ru(remove) = [];
+end
 
 lb = model.lb;
 ub = model.ub;
@@ -67,7 +69,7 @@ xtype(model.binary_variables) = 'B';
 xtype(model.integer_variables) = 'I';
 x0 = model.x0;
 opts = model.options.baron;
-
+opts.prlevel = model.options.verbose;
 if model.options.savedebug    
     save barondebug obj con A ru rl cl cu lb ub x0 opts
 end
@@ -133,8 +135,12 @@ if pos
     j = find(map.computes == i);
     j = map.variableIndex(j);
     % we have f(x(j)), but have to map back to linear indicies
-    j = find(model.linearindicies == j);
-    z =  [map.fcn '(x(' num2str(j) '))'];
+    jl = find(model.linearindicies == j);
+    if isempty(jl)
+        z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+    else
+        z =  [map.fcn '(x(' num2str(jl) '))'];
+    end
 else
     i = find(model.linearindicies == i);
     z =  ['x(' num2str(i) ')'];
