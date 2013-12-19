@@ -8,6 +8,8 @@ function p = update_one_eval_bound(p,i);
 arg = p.evalMap{i}.variableIndex;
 xL = p.lb(arg);
 xU = p.ub(arg);
+L = -inf;
+U = inf;
 if ~isempty(p.evalMap{i}.properties.bounds)
     % A bound generator is available!
     [L,U] = feval(p.evalMap{i}.properties.bounds,xL,xU,p.evalMap{i}.arg{2:end-1});
