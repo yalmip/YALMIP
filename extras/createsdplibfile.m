@@ -1,9 +1,6 @@
 function createsdplibfile(F_struc,K, c, filename)
 %CREATESDPLIBFILE Internal function to create SDPA data files
 
-% Author Johan Löfberg
-% $Id: createsdplibfile.m,v 1.2 2004-07-02 08:17:30 johanl Exp $
-
 fid = fopen(filename,'w');
 
 F_blksz = [];
