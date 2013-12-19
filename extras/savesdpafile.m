@@ -5,11 +5,8 @@ function solution = savesdpafile(varargin)
 %    SAVESDPAFILE(F,h)               A "Save As" - box will be opened                               
 %
 % Note the the SDPA format does not support SOCPs or equalities.
-% If you have equalities, remove them using the option 'removeequalities'
-% in sdpsettings.
-
-% Author Johan Löfberg
-% $Id: savesdpafile.m,v 1.6 2006-12-11 12:50:36 joloef Exp $
+% Equalities will be eliminated using double-sided inequalities. If the
+% model contains SOCP constraints the command will exit.
 
 F = varargin{1};
 h = varargin{2};
@@ -19,14 +16,9 @@ if isa(F,'constraint')
     F = set(F);
 end
 
-if any(is(F,'equality'))
-	error('savesdpafile does not support equalities (not supported in the SDPA format');
-end
-
 if any(is(F,'socp'))
 	error('savesdpafile does not support SOCPs (not supported in the SDPA format');
 end
-
 
 % Expand nonlinear operators
 [F,failure,cause] = expandmodel(F,h,sdpsettings);
@@ -38,6 +30,14 @@ if failure % Convexity propgation failed
     diagnostic.problem = 14;
     diagnostic.info = yalmiperror(14,cause);
     return
+end
+
+% Convert equalities to inequalities
+feq =find(is(F,'equality'));
+if ~isempty(feq)
+    f = sdpvar(F(feq));
+    F(feq)=[];
+    F = [F, f >= 0, f <= 0];
 end
 
 % Get the SP format

@@ -45,9 +45,9 @@ try
             end
         end
     end
+    fclose(fid);
 catch
     fclose(fid);
 end
-fclose(fid);
 
 
