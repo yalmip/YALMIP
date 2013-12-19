@@ -24,9 +24,17 @@ end
 showprogress('Calling CPLEX',options.showprogress);
 solvertime = clock;
 if isempty(model.integer_variables) & isempty(model.binary_variables) & isempty(model.semicont_variables) & isempty(model.K.sos.type)
-    [x,fval,exitflag,output] = cplexqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.lb,model.ub,model.x0,model.options);
+    if options.verbose
+        [x,fval,exitflag,output] = cplexqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.lb,model.ub,model.x0,model.options);
+    else
+        evalc('[x,fval,exitflag,output] = cplexqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.lb,model.ub,model.x0,model.options);');
+    end
 else
-    [x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype',model.x0,model.options);
+    if options.verbose
+        [x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype',model.x0,model.options);
+    else
+        evalc('[x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype'',model.x0,model.options);');
+    end
 end
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 

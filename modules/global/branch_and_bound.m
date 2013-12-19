@@ -92,7 +92,7 @@ while go_on
     for i = 1:length(options.bmibnb.strengthscheme)
         if ~p.feasible
             break
-        end
+        end      
         switch options.bmibnb.strengthscheme(i)
             case 1
                 p = updatebounds_recursive_evaluation(p);
