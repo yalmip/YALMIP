@@ -51,7 +51,12 @@ p_upper.options.saveduals = 0;
 % Solve upper bounding problem
 p_upper.options.usex0 = 1;
 tstart = tic;
-output = feval(uppersolver,p_upper);
+try
+    output = feval(uppersolver,p_upper);
+catch
+    output.Primal = zeros(length(p_upper.lb),1);
+    output.Problem = -1;
+end
 timing.uppersolve = timing.uppersolve + toc(tstart);
 
 % Project into the box (numerical issue)
