@@ -129,6 +129,9 @@ while go_on
             % Behave as if it worked, so we can branch as see if things
             % clean up nicely
             cost = p.lower;
+            if isnan(cost)
+                cost = -inf;
+            end
             output.problem = 3;
         end
         
