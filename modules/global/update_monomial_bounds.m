@@ -1,4 +1,19 @@
-function model = update_monomial_bounds(model,these);
+function model = update_monomial_bounds(model,these)
+
+if nargin == 1 & all(model.variabletype<=2)
+    % Fast code for purely quadratic case
+    x = model.bilinears(:,2);
+    y = model.bilinears(:,3);
+    z = model.bilinears(:,1);
+    corners = [model.lb(x).*model.lb(y) model.ub(x).*model.lb(x) model.lb(x).*model.ub(y) model.ub(x).*model.ub(y)];
+    
+    maxz = max(corners,[],2);
+    minz = min(corners,[],2);
+    
+    model.lb(z) = max(model.lb(z),minz);
+    model.ub(z) = min(model.ub(z),maxz);
+    return
+end
 
 if nargin == 1
     polynomials = find((model.variabletype ~= 0));
