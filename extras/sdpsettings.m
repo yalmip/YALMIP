@@ -166,7 +166,8 @@ Names = {'solver'
     'bmibnb.cut.convexity'
     'bmibnb.cut.evalvariable'
     'bmibnb.cut.bilinear'  
-    'bmibnb.cut.monomial'  
+    'bmibnb.cut.monomial'
+    'bmibnb.cut.complementarity'
     'cbc.tolint'
     'cbc.maxiter'
     'cbc.maxnodes'
@@ -843,6 +844,7 @@ else
     options.bmibnb.cut.evalvariable = 1;
     options.bmibnb.cut.bilinear = 1;
     options.bmibnb.cut.monomial = 1;
+    options.bmibnb.cut.complementarity = 1;
     options.bmibnb.sdpcuts = 0;
     options.bmibnb.lpreduce = 1;
     options.bmibnb.lowrank  = 0;
