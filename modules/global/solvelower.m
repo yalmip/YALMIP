@@ -25,6 +25,9 @@ end
 if p.options.bmibnb.cut.convexity
     p_cut = addConvexityCuts(p_cut);
 end
+if p.options.bmibnb.cut.complementarity
+    p_cut = addComplementarityCuts(p_cut);
+end
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -45,7 +48,8 @@ else
             end
         end
         
-        if ~all(eig(full(p_cut.Q))>-1e-12)
+        if analyzeQuadratic(p_cut.Q);%all(eig(full(p_cut.Q))>-1e-12)
+        %if ~all(eig(full(p_cut.Q))>-1e-12)
             p_cut.Q = p.Q;
             p_cut.c = p.c;
         end
