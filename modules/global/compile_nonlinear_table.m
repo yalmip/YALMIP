@@ -18,3 +18,12 @@ linears = setdiff(linears,p.evalVariables);
 p.linears = linears;
 p.bilinears = bilinears;
 p.nonlinears = nonlinears;
+
+Quadratics = find(p.variabletype==2);
+QuadraticsList = zeros(length(p.c),2);
+for i = Quadratics
+    vars = find(p.monomtable(i,:));
+    QuadraticsList(i,:) = vars(:)';
+end
+p.Quadratics = Quadratics;
+p.QuadraticsList = QuadraticsList;
