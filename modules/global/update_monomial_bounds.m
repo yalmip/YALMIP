@@ -1,6 +1,6 @@
 function model = update_monomial_bounds(model,these)
 
-if nargin == 1 & all(model.variabletype<=2)
+if nargin == 1 & all(model.variabletype<=2) & any(model.variabletype)
     % Fast code for purely quadratic case
     x = model.bilinears(:,2);
     y = model.bilinears(:,3);
