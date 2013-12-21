@@ -14,6 +14,11 @@ else
     p_F_struc_forbilin=p_F_struc;
 end
 
+usedVariables = find(any(p.F_struc(:,2:end)));
+if all(isinf(p.lb(usedVariables))) & all(isinf(p.ub(usedVariables)))
+    return
+end
+
 if p.K.f >0
     interestingRows = find(p_F_struc(:,1));
     if ~isempty(interestingRows)
