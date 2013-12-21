@@ -112,15 +112,19 @@ if p.K.f >0
             p_ub = p.ub(find_a);
             p_lb = p.lb(find_a);
             
-            if  any(isinf(p_lb)) | any(isinf(p_ub))
-                [p_lb,p_ub] = propagatewINFreduced(full(a(find_a)),full(ap(find_a)),full(am(find_a)),p_lb,p_ub,b);
-                p.lb(find_a) = p_lb;
-                p.ub(find_a) = p_ub;
-            else
-                [p_lb,p_ub] = propagatewoINFreduced(full(a(find_a)),full(ap(find_a)),full(am(find_a)),p_lb,p_ub,b);
-                p.lb(find_a) = p_lb;
-                p.ub(find_a) = p_ub;
-            end          
+            inflb = isinf(p_lb);
+            infub = isinf(p_ub);
+            if ~all(inflb & infub)
+                if  any(inflb) | any(infub)
+                    [p_lb,p_ub] = propagatewINFreduced(full(a(find_a)),full(ap(find_a)),full(am(find_a)),p_lb,p_ub,b);
+                    p.lb(find_a) = p_lb;
+                    p.ub(find_a) = p_ub;
+                else
+                    [p_lb,p_ub] = propagatewoINFreduced(full(a(find_a)),full(ap(find_a)),full(am(find_a)),p_lb,p_ub,b);
+                    p.lb(find_a) = p_lb;
+                    p.ub(find_a) = p_ub;
+                end
+            end
         end
     end
 end
