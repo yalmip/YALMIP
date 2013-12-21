@@ -1,11 +1,5 @@
 function p = propagate_bounds_from_equalities(p)
 
-% % Simple extraction first
-% if p.K.f > 0
-%     [p.lb,p.ub] = remove_bounds_from_Aeqbeq(-p.F_struc(1:p.K.f,2:end),p.F_struc(1:p.K.f,1),p.lb,p.ub);
-% end
-
-%p.equalitypresolved = 1;
 LU = [p.lb p.ub];
 
 p_F_struc = p.F_struc;
