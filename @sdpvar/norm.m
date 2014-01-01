@@ -4,7 +4,7 @@ function varargout = norm(varargin)
 % t = NORM(x,P)
 %
 % The variable t can only be used in convexity preserving
-% operations such as t<0, max(t,y)<1, minimize t etc.
+% operations such as t<=1, max(t,y)<=1, minimize t etc.
 %
 %    For matrices...
 %      NORM(X) models the largest singular value of X, max(svd(X)).
@@ -12,17 +12,13 @@ function varargout = norm(varargin)
 %      NORM(X,1) models the 1-norm of X, the largest column sum, max(sum(abs(X))).
 %      NORM(X,inf) models the infinity norm of X, the largest row sum, max(sum(abs(X'))).
 %      NORM(X,'fro') models the Frobenius norm, sqrt(sum(diag(X'*X))).
-%      NORM(X,'fro') models the Nuclear norm, sqrt(sum(diag(X'*X))).
+%      NORM(X,'nuc') models the Nuclear norm, sum of singular values.
 %    For vectors...
 %      NORM(V) = norm(V,2) = standard Euclidean norm.
 %      NORM(V,inf) = max(abs(V)).
 %      NORM(V,1) = sum(abs(V))
 %
 % SEE ALSO SUMK, SUMABSK
-
-% Author Johan Löfberg
-% $Id: norm.m,v 1.46 2010-02-23 11:23:09 joloef Exp $
-
 
 %% ***************************************************
 % This file defines a nonlinear operator for YALMIP
@@ -38,10 +34,6 @@ function varargout = norm(varargin)
 %% ***************************************************
 switch class(varargin{1})
     
-    case 'double' % What is the numerical value of this argument (needed for displays etc)
-        % SHOULD NEVER HAPPEN, THIS SHOULD BE CAUGHT BY BUILT-IN
-        error('Overloaded SDPVAR/NORM CALLED WITH DOUBLE. Report error')
-        
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         if nargin == 1
             varargout{1} = yalmip('define',mfilename,varargin{1},2);
@@ -94,50 +86,26 @@ switch class(varargin{1})
                                 xrevec=reshape(real(X),1,[]);
                                 ximvec=reshape(imag(X),1,[]);
                                 F = [F,cone([zvec;xrevec;ximvec])];
-%                                 for i = 1:size(X,1)
-%                                     for j = 1:size(X,2)
-%                                         xi = extsubsref(X,i,j);
-%                                         zi = extsubsref(Z,i,j);
-%                                         F = F + set(cone([real(xi);imag(xi)],zi));
-%                                     end
-%                                 end
                             end
                             F = F + set(sum(Z,1) <= t);
                         else
                             if isreal(X)
                                 % Standard definition
-                                if 0%prod(size(X))==1
-                                    F = set(-t <= X <= t);
-                                else
-                                    
-                                    Xbase = getbase(X);
-                                    Constant = find(~any(Xbase(:,2:end),2));
-                                    if ~isempty(Constant)
-                                        % Exploit elements without any
-                                        % decision variables
-                                        r1 = ones(length(Z),1);
-                                        r2 = zeros(length(Z),1);
-                                        r1(Constant) = 0;
-                                        r2(Constant) = abs(Xbase(Constant,1));
-                                        Z = Z.*r1 + r2;
-                                    end
-                                    F = set(-Z <= X <= Z) + set(sum(Z) <= t);
+                                % F = set(-t <= X <= t);
+                                Xbase = getbase(X);
+                                Constant = find(~any(Xbase(:,2:end),2));
+                                if ~isempty(Constant)
+                                    % Exploit elements without any
+                                    % decision variables
+                                    r1 = ones(length(Z),1);
+                                    r2 = zeros(length(Z),1);
+                                    r1(Constant) = 0;
+                                    r2(Constant) = abs(Xbase(Constant,1));
+                                    Z = Z.*r1 + r2;
                                 end
-                                % Added to improve MILP models
-                                %  F = F + set(z > 0) + set(t > 0);
-                                %  [M,m] = derivebounds(X);
-                                %  bounds(z,0,max(abs([M -m]),[],2));
-                                %  bounds(t,0,sum(max(abs([M -m]),[],2)));
-                            else
-                                F = set([]);
-                                
-                                F = set(cone([reshape(Z,1,[]);real(reshape(X,1,[]));imag(reshape(X,1,[]))]));
-                                
-                                %                                for i = 1:length(X)
-                                %                                    xi = extsubsref(X,i);
-                                %                                    zi = extsubsref(z,i);
-                                %                                    F = F + set(cone([real(xi);imag(xi)],zi));
-                                %                                end
+                                F = set(-Z <= X <= Z) + set(sum(Z) <= t);                                                               
+                            else                                                                
+                                F = set(cone([reshape(Z,1,[]);real(reshape(X,1,[]));imag(reshape(X,1,[]))]));                                                              
                                 F = F + set(sum(Z) <= t);
                             end
                         end
@@ -257,31 +225,8 @@ switch class(varargin{1})
                             F = F + set(t - sum(absX)-addsum == 0);
                         end
                         
-                    else
-                        
-                        F = max_integer_model([X;-X],t);
-                        
-                        %                         n = length(X);
-                        %                         X     = reshape(X,n,1);
-                        %                         absX  = sdpvar(n,1);
-                        %                         d     = binvar(n,1);
-                        %                         [M,m] = derivebounds(X);
-                        %
-                        %                         if all(M==m)
-                        %                             F = [t == norm(M,inf)];
-                        %                         else
-                        %                             maxABSX = max([abs(m) abs(M)],[],2);
-                        %
-                        %                             % Big-M to generate the absolute values
-                        %                             % d(i) == 0  ==> X(i)<=0 ==> absX(i) = -X(i)
-                        %                             F = set([]);
-                        %                             F = F + set(X <= M.*d)     + set(0 <= absX+X <= 2*maxABSX.*d);
-                        %                             F = F + set(X >= m.*(1-d)) + set(0 <= absX-X <= 2*maxABSX.*(1-d));
-                        %
-                        %                             % Copied from max_internal to find max
-                        %                             F = findmax(F,M,m,absX,t);
-                        %                         end
-                        
+                    else                        
+                        F = max_integer_model([X;-X],t);                                                                       
                     end
                     varargout{1} = F;
                     varargout{2} = struct('convexity','convex','monotonicity','milp','definiteness','positive','model','integer');
