@@ -54,7 +54,7 @@ s = b-A*x; % slack
 [M,m] = derivebounds(s);
 
 % Let us try to derive bounds on the dual variables
-F = [A'*y == Q*x + c, s>0, y>0];%KKT 
+F = [A'*y == Q*x + c, s>=0, y>=0];%KKT 
 F = [F, s <= ds.*M];   % Big M, we know upper bound on s 
 F = [F, dy+ds <= 1];  % Complementary slackness 
 F = [F, 0 <= sum(dy) <= n];
