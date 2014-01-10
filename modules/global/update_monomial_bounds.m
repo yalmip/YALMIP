@@ -5,7 +5,7 @@ if nargin == 1 & all(model.variabletype<=2) & any(model.variabletype)
     x = model.bilinears(:,2);
     y = model.bilinears(:,3);
     z = model.bilinears(:,1);
-    corners = [model.lb(x).*model.lb(y) model.ub(x).*model.lb(x) model.lb(x).*model.ub(y) model.ub(x).*model.ub(y)];
+    corners = [model.lb(x).*model.lb(y) model.ub(x).*model.lb(y) model.lb(x).*model.ub(y) model.ub(x).*model.ub(y)];
     
     maxz = max(corners,[],2);
     minz = min(corners,[],2);
