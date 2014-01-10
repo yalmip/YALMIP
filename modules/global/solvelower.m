@@ -48,7 +48,7 @@ else
             end
         end
         
-        if analyzeQuadratic(p_cut.Q);%all(eig(full(p_cut.Q))>-1e-12)
+        if ~analyzeQuadratic(p_cut.Q);%all(eig(full(p_cut.Q))>-1e-12)
         %if ~all(eig(full(p_cut.Q))>-1e-12)
             p_cut.Q = p.Q;
             p_cut.c = p.c;
