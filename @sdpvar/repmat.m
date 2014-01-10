@@ -1,44 +1,31 @@
 function Y=repmat(varargin)
 %REPMAT (overloaded)
 
-% Author Johan Löfberg 
-% $Id: repmat.m,v 1.8 2010-02-23 10:41:59 joloef Exp $   
-
 try
   X = varargin{1};
   Y = X;
   Y.basis = [];
-  n = Y.dim(1);
-  m = Y.dim(2);
+  dim = Y.dim;
   for i = 1:length(Y.lmi_variables)+1
-    temp = repmatfixed(reshape(X.basis(:,i),n,m),varargin{2:end});
+    temp = repmatfixed(reshape(X.basis(:,i),dim),varargin{2:end});
     Y.basis(:,i) = temp(:);
   end
-  Y.dim(1) = size(temp,1);
-  Y.dim(2) = size(temp,2);
+  Y.dim = size(temp); 
   Y = flush(Y);
   % Reset info about conic terms
   Y.conicinfo = [0 0];
+  if length(Y.dim)>2     
+      Y = ndsdpvar(Y);
+  end
 catch
-  error(lasterr)
+  error
 end
 
+function B = repmatfixed(A,siz)
 
-
-function B = repmatfixed(A,M,N)
-
-if nargin < 2
-    error('MATLAB:repmat:NotEnoughInputs', 'Requires at least 2 inputs.')
-end
-
-if nargin == 2
-    if isscalar(M)
-        siz = [M M];
-    else
-        siz = M;
-    end
-else
-    siz = [M N];
+% nd-indexing does not work on sparse
+if length(siz)>2
+    A = full(A);
 end
 
 if isscalar(A)
