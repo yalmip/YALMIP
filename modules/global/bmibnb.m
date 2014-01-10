@@ -198,7 +198,7 @@ p = build_recursive_scheme(p);
 % Pre-calc lists of linear/bilinear/nonlinear variables (we have bilineared
 % the model now, so the old precompiled table could be wrong
 % *************************************************************************
-% p = compile_nonlinear_table(p);
+p = compile_nonlinear_table(p);
 
 % *************************************************************************
 % Select branch variables. We should branch on all variables that are
