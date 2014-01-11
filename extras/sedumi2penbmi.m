@@ -73,6 +73,7 @@ end
 if nnz(Q)>0
     [row,col,vals] = find(triu(Q));
     pen.q_nzs = length(row);
+    pen.Q_nzs = length(row);%Bug in PENLABs interface?
     pen.q_val = vals';
     pen.q_col = col'-1;
     pen.q_row = row'-1;
