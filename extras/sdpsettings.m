@@ -1161,6 +1161,19 @@ else
         options.mosek.param = [];
     end
     
+    try
+        options.penlab = penlab.defopts(1);
+        cNames = recursivefieldnames(options.penlab);
+        for i = 1:length(cNames)
+            Names{end+1} = ['penlab.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+    catch
+        options.penlab = [];
+    end
+    
+    
 %     options.csdp.axtol  = 1e-8;
 %     options.csdp.atytol = 1e-8;
 %     options.csdp.objtol = 1e-8;
