@@ -14,4 +14,5 @@ end
 % knowledge when we model the operator, nor before we start the whole
 % algorithm
 LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables);
+LU = extract_bounds_from_norm_operator(LU,yalmip('extstruct'),extendedvariables);
 yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
