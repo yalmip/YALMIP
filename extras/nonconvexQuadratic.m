@@ -5,7 +5,7 @@ problematicQP=0;
 [i,j,s] = find(Q);
 if all(i == j)
     % diagonal
-    if any(s)<-1e-14
+    if any(s<-1e-14)
         problematicQP = 1;
     end
     return
