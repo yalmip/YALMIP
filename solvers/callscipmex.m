@@ -66,13 +66,24 @@ if isempty(sos.type)
 end
 sos.index = K.sos.variables;
 sos.weight = K.sos.weight;
+
+ops = options.scip;
+switch options.verbose
+    case 0
+        ops.display = 0;
+    case 3
+        ops.display = 3;
+    otherwise
+        ops.display = 4;
+end
+
 if options.savedebug
-    save scipdebug H f A rl ru lb ub VARTYPE sos
+    save scipdebug H f A rl ru lb ub VARTYPE sos ops
 end
 
 % Call mex-interface
-solvertime = clock; 
-[x,FMIN,STATUS,INFO] = scip(H, f, A, rl, ru, lb, ub, VARTYPE, sos,qc);
+solvertime = clock;  
+[x,FMIN,STATUS,INFO] = scip(H, f, A, rl, ru, lb, ub, VARTYPE, sos,qc,[],ops);
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 D_struc = [];
