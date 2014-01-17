@@ -1103,6 +1103,18 @@ else
         options.csdp.usexzgap = 1;
         options.csdp.tweakgap = 0;
     end
+        
+    try
+        options.scip = optiset;
+        cNames = recursivefieldnames(options.scip);
+        for i = 1:length(cNames)
+            Names{end+1} = ['scip.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+    catch
+        options.scip = [];
+    end
     
     try
         % OPTI Toolbox interface
