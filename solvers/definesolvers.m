@@ -276,6 +276,7 @@ solver(i).tag     = 'SCIP';
 solver(i).version = '';
 solver(i).checkfor= {'scip'};
 solver(i).call    = 'callscipmex';
+solver(i).objective.quadratic.nonconvex=1;
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.sos2 = 1;
