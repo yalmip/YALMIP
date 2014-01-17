@@ -271,7 +271,7 @@ Qb = Q(:,b);Qb(b,:)=[];
 if nnz(Q)>0
     zeroRow = find(~any(Q,1));
     Qtest = Q;Q(zeroRow,:)=[];Q(:,zeroRow)=[];
-    problematicQP = analyzeQuadratic(Qtest);%min(eig(full(Qtest)))<-1e-14;
+    problematicQP = nonconvexQuadratic(Qtest);%min(eig(full(Qtest)))<-1e-14;
 else
     problematicQP = 0;
 end
