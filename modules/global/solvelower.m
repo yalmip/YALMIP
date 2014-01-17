@@ -48,7 +48,7 @@ else
             end
         end
         
-        if analyzeQuadratic(p_cut.Q);
+        if nonconvexQuadratic(p_cut.Q);
             p_cut.Q = p.Q;
             p_cut.c = p.c;
         end
