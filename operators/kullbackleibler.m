@@ -20,9 +20,9 @@ switch class(varargin{1})
             y = varargin{2}(:);
         end
         l = log(x./y);
-        l(x==0) = 0;
+        l(x<=0) = 0;
         l = real(l);
-        varargout{1} = sum(x.*l);        
+        varargout{1} = sum(x.*l);       
 
     case 'sdpvar'
 
@@ -45,11 +45,11 @@ switch class(varargin{1})
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/LOG called with CHAR argument?');
+        error('SDPVAR/KULLBACKLEIBLER called with CHAR argument?');
 end
 
 function df = derivative(x)
-z = reshape(x,[],2);
+z = abs(reshape(x,[],2));
 x = z(:,1);
 y = z(:,2);
 % Use KL = -Entropy + Cross Entropy
