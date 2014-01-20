@@ -95,6 +95,8 @@ else
                             deg(i,:) = full(max(exponent_p,[],1));
                         case 'min'                           
                             deg(i,:) = full(min(exponent_p,[],1));
+                        otherwise
+                            error('Do not understand the flag')
                     end
                 otherwise
                     error('Too many arguments. Wadda ya mean?')
