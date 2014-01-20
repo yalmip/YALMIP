@@ -83,7 +83,15 @@ end
 
 % Call mex-interface
 solvertime = clock;  
-[x,FMIN,STATUS,INFO] = scip(H, f, A, rl, ru, lb, ub, VARTYPE, sos,qc,[],ops);
+try
+    [x,FMIN,STATUS,INFO] = scip(H, f, A, rl, ru, lb, ub, VARTYPE, sos,qc,[],ops);
+catch
+    % -6 for instance causes a blank crash
+    x = [];
+    FMIN=[];
+    STATUS = -1;
+    INFO = [];
+end
 if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 D_struc = [];
