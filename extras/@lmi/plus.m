@@ -39,11 +39,10 @@ if nY == 0
     return;
 end
 
-if length(Y.clauses)==1
-    X.clauses{end + 1} = Y.clauses{1};
-else
-    X.clauses = {X.clauses{:},Y.clauses{:}};
+for i = 1:length(Y.clauses)
+    X.clauses{end+1} = Y.clauses{i};
 end
+
 X.LMIid = [X.LMIid Y.LMIid];
 
 % VERY FAST UNIQUE BECAUSE THIS IS CALLED A LOT OF TIMES....
