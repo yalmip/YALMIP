@@ -225,9 +225,13 @@ else
     [nx,mx] = size(X.basis);
     
     if length(ind1) > 1
-        Z = X.basis.';
-        Z = Z(:,ind1);
-        Z = Z.';
+        try
+            Z = X.basis.';
+            Z = Z(:,ind1);
+            Z = Z.';
+        catch
+            Z = X.basis(ind1,:);    
+        end
     else
         Z = X.basis(ind1,:);
     end
