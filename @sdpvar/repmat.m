@@ -21,7 +21,11 @@ catch
   error
 end
 
-function B = repmatfixed(A,siz)
+function B = repmatfixed(A,siz,sz2)
+
+if nargin == 3
+    siz = [siz sz2];
+end
 
 % nd-indexing does not work on sparse
 if length(siz)>2
