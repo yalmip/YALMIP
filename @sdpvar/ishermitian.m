@@ -19,12 +19,27 @@ if (n==m)
     else
 
         % What are the linear indicies to the transposed matrices
-        ind = reshape(reshape(1:n^2,n,n)',n^2,1);
-
+        %ind = reshape(reshape(1:n^2,n,n)',n^2,1);       
+        [i,j,k] = find(X.basis);
+        col = ceil(i/X.dim(1));
+        row = i - (col-1)*X.dim(1);
+        
+        % Original linear indicies
+        % row + (col-1)*X.dim(1)
+        % Transposed linear indicies
+        inew = col + (row-1)*X.dim(1);
+        tranposedBasis = sparse(inew,j,k);
+         
         if ~isreal(X.basis)
-            residual = mid(X.basis-conj(X.basis(ind,:)));
-        else
-            residual = mid(X.basis-X.basis(ind,:));
+            residual = mid(X.basis-conj(tranposedBasis));
+            %residual = mid(X.basis-conj(X.basis(ind,:)));
+        else        
+            residual = mid(X.basis-tranposedBasis);
+            % Optimized for speed on huge sparse cases
+            %[i,j,k] = find(X.basis);
+            %basisTransposed = sparse(ind(i),j,k);
+            %residual = mid(X.basis-basisTransposed);
+            %%residual = mid(X.basis-X.basis(ind,:));
         end
 
         if nnz(residual)>0
