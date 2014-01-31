@@ -28,7 +28,7 @@ if (n==m)
         % row + (col-1)*X.dim(1)
         % Transposed linear indicies
         inew = col + (row-1)*X.dim(1);
-        tranposedBasis = sparse(inew,j,k);
+        tranposedBasis = sparse(inew,j,k,size(X.basis,1),size(X.basis,2));
          
         if ~isreal(X.basis)
             residual = mid(X.basis-conj(tranposedBasis));
