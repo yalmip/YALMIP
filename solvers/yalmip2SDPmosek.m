@@ -29,16 +29,52 @@ prob.bara.subl = [];
 prob.bara.val = [];
 
 AA = model.A';
-rowIndex = [];
-colIndex = [];
-conIndex = [];
-for j = 1:length(model.K.s)
-    n = model.K.s(j);
-    rowIndex = [rowIndex; kron(ones(n,1),(1:n)')];
-    colIndex = [colIndex; kron((1:n)',ones(n,1))];
-    conIndex = [conIndex; ones(n^2,1)*j];    
-end
+% rowIndex = [];
+% colIndex = [];
+% conIndex = [];
+ tops = [1];
+ for j = 1:length(model.K.s)
+     n = model.K.s(j);  
+     tops = [tops tops(end)+n^2];
+%     rowIndex = [rowIndex; kron(ones(n,1),(1:n)')];
+%     colIndex = [colIndex; kron((1:n)',ones(n,1))];
+%     conIndex = [conIndex; ones(n^2,1)*j];    
+ end
 [ii,jj,kk] = find(model.A(top:top + sum(K.s.^2)-1,:));
+cols = zeros(length(ii),1);
+rows = zeros(length(ii),1);
+allcol = [];
+allrow = [];
+allcon = [];
+allvar = [];
+allval = [];
+for j = 1:length(model.K.s)
+    
+    ind = find(ii>=tops(j) & ii<=tops(j+1)-1);
+    iilocal = ii(ind)-tops(j)+1;
+    col = ceil(iilocal/model.K.s(j));
+    row = iilocal - (col-1)*model.K.s(j);
+    allcol = [allcol col(:)'];
+    allrow = [allrow row(:)'];
+    allvar = [allvar jj(ind(:))'];
+    allval = [allval kk(ind(:))'];
+    allcon = [allcon repmat(j,1,length(col))];
+end
+keep = find(allrow >= allcol);
+allcol = allcol(keep);
+allrow = allrow(keep);
+allcon = allcon(keep);
+allvar = allvar(keep);
+allval = allval(keep);
+%allvar = jj(keep);
+%allval = kk(keep);
+prob.bara.subi = [prob.bara.subi allvar];
+prob.bara.subj = [prob.bara.subj allcon];
+prob.bara.subk = [prob.bara.subk allrow];
+prob.bara.subl = [prob.bara.subl allcol];
+prob.bara.val = [prob.bara.val allval];
+
+if 0
 keep = find(rowIndex(ii)>=colIndex(ii));
 ii = ii(keep);
 jj = jj(keep);
@@ -48,7 +84,8 @@ prob.bara.subj = [prob.bara.subj conIndex(ii)];
 prob.bara.subk = [prob.bara.subk rowIndex(ii)];
 prob.bara.subl = [prob.bara.subl colIndex(ii)];
 prob.bara.val = [prob.bara.val kk(:)'];
-    
+end    
+
 for j = 1:length(model.K.s)
     n = model.K.s(j);
     Ci = model.C(top:top+n^2-1);
