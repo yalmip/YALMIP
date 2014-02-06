@@ -1,9 +1,11 @@
-function [M,m,infbound] = derivebounds(f)
+function [M,m,infbound] = derivebounds(f,lowerupper)
 % Code to compute  estimates of max and min
 % of the linear vector f
 basis = getbase(f);
 fvars = getvariables(f);
-lowerupper = yalmip('getbounds',fvars);
+if nargin == 1
+    lowerupper = yalmip('getbounds',fvars);
+end
 
 if any(any(isinf(lowerupper)))
     infbound = 1;
