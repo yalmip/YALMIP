@@ -29,23 +29,6 @@ Flow = [ repmat(-inf,length(model.bnonlinineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-% options.A = [model.A;model.Aeq];
-% options.ru = [repmat(0,length(model.b),1);
-%               repmat(0,length(model.beq),1)];
-% options.rl = [repmat(-inf,length(model.b),1);
-%               repmat(0,length(model.beq),1)];
-% 
-% Fupp = [ repmat(0,length(model.bnonlinineq),1);
-%     repmat(0,length(model.bnonlineq),1)];
-% 
-% Flow = [ repmat(-inf,length(model.bnonlinineq),1);
-%     repmat(0,length(model.bnonlineq),1)];
-% 
-% model.A = [];
-% model.Aeq = [];
-% model.b = [];
-% model.beq = [];
-
 if isempty(Flow)
     Flow = [];
     Fupp = [];
