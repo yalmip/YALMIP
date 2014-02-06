@@ -1,4 +1,4 @@
-function LU = extract_bounds_from_abs_operator(LU,extstruct,extvariables);
+function LU = extract_bounds_from_min_operator(LU,extstruct,extvariables);
 for i = 1:length(extstruct)
     if isequal(extstruct(i).fcn,'min_internal')
         arg = extstruct(i).arg{1};
