@@ -17,4 +17,5 @@ end
 LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),extendedvariables);
 LU = extract_bounds_from_norm_operator(LU,yalmip('extstruct'),extendedvariables);
 LU = extract_bounds_from_min_operator(LU,yalmip('extstruct'),extendedvariables);
+LU = extract_bounds_from_max_operator(LU,yalmip('extstruct'),extendedvariables);
 yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
