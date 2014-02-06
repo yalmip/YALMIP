@@ -5,6 +5,6 @@ for i = 1:length(extstruct)
         epi = getvariables(extstruct(i).var);
         [M,m] = derivebounds(arg,LU);
         LU(epi,1) = min(m);
-        LU(epi,2) = max(m);
+        LU(epi,2) = min(M);
     end
 end
