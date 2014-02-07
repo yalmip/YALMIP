@@ -20,8 +20,5 @@ for i = 1:length(extstruct)
             % At least fix lower bound on absolute
             LU(extvariables(i),1) = max([0 LU(extvariables(i),1)]);
         end
-    elseif isequal(extstruct(i).fcn,'norm')
-        % norms are positive...
-        LU(extvariables(i),1) = max([0 LU(extvariables(i),1)]);
     end
 end
