@@ -4,15 +4,6 @@ function output = callbaron(model)
 % baron handles its own computational tree etc
 model = yalmip2nonlinearsolver(model);
 
-if isfield(model.options.fmincon,'LargeScale')
-    if isequal(model.options.fmincon.LargeScale,'off')
-        model.A = full(model.A);
-        model.b = full(model.b);
-        model.Aeq = full(model.Aeq);
-        model.beq = full(model.beq);
-    end
-end
-
 % [Anonlinear*f(x) <= b;Anonlinear*f(x) == b]
 cu = full([model.bnonlinineq;model.bnonlineq]);
 cl = full([repmat(-inf,length(model.bnonlinineq),1);model.bnonlineq]);
