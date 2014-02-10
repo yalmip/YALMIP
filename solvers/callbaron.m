@@ -96,6 +96,10 @@ if model.options.savesolverinput
     solverinput.ru = ru;
     solverinput.lb = lb;
     solverinput.ub = ub;
+    solverinput.con = con;
+    solverinput.cl = cl;
+    solverinput.cu = cu;
+    solverinput.xtype = xtype;
     solverinput.opts = opts;
 else
     solverinput = [];
