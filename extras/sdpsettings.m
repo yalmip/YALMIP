@@ -1072,6 +1072,18 @@ else
     end
     
     try
+        options.knitro = optimset;
+        cNames = recursivefieldnames(options.knitro);
+        for i = 1:length(cNames)
+            Names{end+1} = ['knitro.' cNames{i}];
+        end
+        [m,n] = size(Names);
+        names = lower(Names);
+    catch
+        options.knitro = [];
+    end
+    
+    try
         % OPTI Toolbox interface
         options.csdp = csdpset();
         
