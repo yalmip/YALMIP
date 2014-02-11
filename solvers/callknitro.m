@@ -88,11 +88,11 @@ problem = 0;
 switch exitflag
     case 0
         problem = 0;
-    case {-200,-204,-515}
+    case {-200,-204,-205,-515}
         problem = 1;
-    case -101
+    case {-101,-300}
         problem = 2;
-    case -400
+    case {-400,-401}
         problem = 3;
     otherwise
         problem = 11;
