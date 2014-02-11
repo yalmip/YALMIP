@@ -1,16 +1,10 @@
 function output = callfmincon(model)
 
-% Author Johan Löfberg
-% $Id: callfmincon.m,v 1.61 2010-01-20 10:20:57 joloef Exp $
-
-
 model = yalmip2nonlinearsolver(model);
 
 switch model.options.verbose
     case 0
-        model.options.fmincon.Display = 'off';
-    case 1
-        model.options.fmincon.Display = 'final';
+        model.options.fmincon.Display = 'off';   
     otherwise
         model.options.fmincon.Display = 'iter';
 end
