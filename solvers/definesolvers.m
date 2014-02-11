@@ -46,6 +46,7 @@ emptysolver.constraint.inequalities.secondordercone.nonlinear = 0;
 emptysolver.constraint.inequalities.rotatedsecondordercone = 0;
 emptysolver.constraint.inequalities.powercone = 0;
 
+emptysolver.constraint.complementarity.variable  = 0;
 emptysolver.constraint.complementarity.linear  = 0;
 emptysolver.constraint.complementarity.nonlinear  = 0;
 
