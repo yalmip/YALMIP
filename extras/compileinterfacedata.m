@@ -274,9 +274,8 @@ if length(solver.version)>0
     solver.tag = [solver.tag '-' solver.version];
 end
 
-if ProblemClass.constraint.complementarity.linear | ProblemClass.constraint.complementarity.nonlinear
-    if ~(solver.constraint.complementarity.linear | solver.constraint.complementarity.nonlinear)
-               
+if ProblemClass.constraint.complementarity.variable | ProblemClass.constraint.complementarity.linear | ProblemClass.constraint.complementarity.nonlinear
+    if ~(solver.constraint.complementarity.variable | solver.constraint.complementarity.linear | solver.constraint.complementarity.nonlinear)               
         % Extract the terms in the complementarity constraints x^Ty==0,
         % x>=0, y>=0, since these involves bounds that should be appended
         % to the list of constraints from which we do bound propagation
@@ -292,6 +291,23 @@ if ProblemClass.constraint.complementarity.linear | ProblemClass.constraint.comp
         [F] = modelComplementarityConstraints(F,solver,ProblemClass);  
         % FIXME Reclassify should be possible to do manually!
         [ProblemClass,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars);
+    elseif solver.constraint.complementarity.variable
+        % Solver supports x(i)*x(j)==0
+        Fok = [];
+        Freform = [];
+        Fc = F(find(is(F,'complementarity')));              
+        for i = 1:length(Fc)
+            [Cx,Cy] = getComplementarityTerms(Fc(i));
+            if (islinear(Cx) & islinear(Cy) & is(Cx,'lpcone') &  is(Cy,'lpcone'))
+             Fok = [Fok, Fc(i)];
+            else
+                s1 = sdpvar(length(Cx),1);
+                s2 = sdpvar(length(Cy),1);                
+                Freform = [Freform,complements(s1>=0,s2>=0),s1 == Cx, s2 == Cy];
+            end            
+        end   
+        F = F-Fc;
+        F = F + Fok + Freform;
     end
 end
 

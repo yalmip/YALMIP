@@ -58,6 +58,7 @@ problem.constraint.inequalities.secondordercone.nonlinear = 0;
 problem.constraint.inequalities.rotatedsecondordercone = 0;
 problem.constraint.inequalities.powercone = 0;
 
+problem.constraint.complementarity.variable = 0;
 problem.constraint.complementarity.linear = 0;
 problem.constraint.complementarity.nonlinear = 0;
 

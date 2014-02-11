@@ -1,5 +1,14 @@
 function output = callknitro(model)
 
+% Extract and clear complementarity structure
+if model.K.c(1) > 0
+    C = model.F_struc(model.K.f+model.K.l+1:model.K.f+model.K.l+2*sum(model.K.c),:);
+    model.F_struc(model.K.f+model.K.l+1:model.K.f+model.K.l+2*sum(model.K.c),:)=[];
+    %model.K.l = model.K.l + sum(2*model.K.c);
+else
+    C = [];
+end
+
 % Standard NONLINEAR setup
 model = yalmip2nonlinearsolver(model);
 
@@ -39,7 +48,26 @@ switch model.options.verbose
         model.options.knitro.Display = 'iter';    
 end
 
-model.extendedFeatures = [];
+% SETUP complementarity information
+if model.K.c(1) > 0
+    top = 0;
+     model.extendedFeatures.ccIndexList1 = [];
+     model.extendedFeatures.ccIndexList2 = []; 
+    for i = 1:length(model.K.c)
+        n = model.K.c(i);
+        for j = 0:n-1
+            j1 = find(C(top+i+j,:))-1;j1 = find(model.linearindicies == j1);
+            j2 = find(C(top+i+n+j,:))-1;j2 = find(model.linearindicies == j2);
+            model.lb(j1) = max(model.lb(j1),0);
+            model.lb(j2) = max(model.lb(j2),0);
+            model.extendedFeatures.ccIndexList1 = [model.extendedFeatures.ccIndexList1  j1];
+            model.extendedFeatures.ccIndexList2 = [model.extendedFeatures.ccIndexList2 j2];
+        end
+        top = top + 2*n;
+    end
+else
+    model.extendedFeatures = [];
+end
 model.objFnType = [];
 model.xType = zeros(length(model.lb),1);
 model.xType(model.binary_variables) = 2;
@@ -47,7 +75,7 @@ model.xType(model.integer_variables) = 1;
 model.cineqFnType = repmat(2,length(model.bnonlinineq),1);
 
 solvertime = clock;
-[x,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro);
+[x,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro);
 solvertime = etime(clock,solvertime);
 
 x = RecoverNonlinearSolverSolution(model,x);

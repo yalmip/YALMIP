@@ -32,10 +32,12 @@ rlo_con = find(type_of_constraint == 5);
 pow_con = find(type_of_constraint == 20);
 sos2_con = find(type_of_constraint == 50);
 sos1_con = find(type_of_constraint == 51);
+cmp_con = find(type_of_constraint == 55);
 
 % SeDuMi struct
 K.f = 0; % Linear equality
 K.l = 0; % Linear inequality
+K.c = 0; % Complementarity constraints
 K.q = 0; % SOCP
 K.r = 0; % Rotated SOCP (obsolete)
 K.p = 0; % Power cone
@@ -47,6 +49,7 @@ K.xcomplex = [];
 
 KCut.f = [];
 KCut.l = [];
+KCut.c = [];
 KCut.q = [];
 KCut.r = [];
 KCut.p = [];
@@ -141,6 +144,28 @@ else
         [F_struc,K,KCut] = recursive_lp_fix(F,F_struc,K,KCut,lin_con,nvars,4,1);
     end
 end
+
+for i = 1:length(cmp_con)
+    constraints = cmp_con(i);
+    
+    [n,m] = size(F.clauses{constraints}.data);
+    ntimesm = n*m; %Just as well pre-calc
+    
+    % Which variables are needed in this constraint
+    lmi_variables = getvariables(F.clauses{constraints}.data);
+    
+    % We allocate the structure blockwise...
+    F_structemp  = spalloc(1+nvars,ntimesm,0);
+    % Add these rows only
+    F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
+    
+    % ...and add them together (efficient for large structures)
+    F_struc = [F_struc F_structemp];
+    
+    top = top+ntimesm;
+    K.c(i) = n;
+end
+
 if length(qdr_con) > 0
     [F_struc,K,KCut] = recursive_socp_fix(F,F_struc,K,KCut,qdr_con,nvars,8,1);
 end
