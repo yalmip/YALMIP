@@ -12,7 +12,7 @@ end
 % Standard NONLINEAR setup
 model = yalmip2nonlinearsolver(model);
 
-model.options.knitro.GradObj = 'on';  
+model.options.knitro.GradObj = 'on';
 model.options.knitro.GradConstr = 'on';
 model.options.knitro.JacobPattern = jacobiansparsityfromnonlinear(model,0);
 
@@ -45,14 +45,14 @@ switch model.options.verbose
     case 0
         model.options.knitro.Display = 'off';
     otherwise
-        model.options.knitro.Display = 'iter';    
+        model.options.knitro.Display = 'iter';
 end
 
 % SETUP complementarity information
 if model.K.c(1) > 0
     top = 0;
-     model.extendedFeatures.ccIndexList1 = [];
-     model.extendedFeatures.ccIndexList2 = []; 
+    model.extendedFeatures.ccIndexList1 = [];
+    model.extendedFeatures.ccIndexList2 = [];
     for i = 1:length(model.K.c)
         n = model.K.c(i);
         for j = 0:n-1
@@ -89,19 +89,19 @@ switch exitflag
     case 0
         problem = 0;
     case {-200,-204,-515}
-        problem = 1;    
+        problem = 1;
     case -101
         problem = 2;
     case -400
-        problem = 3;        
+        problem = 3;
     otherwise
         problem = 11;
 end
-        
+
 % Save all data sent to solver?
 if model.options.savesolverinput
-    solverinput.model = model;  
-    solverinput.funcs = funcs;  
+    solverinput.model = model;
+    solverinput.funcs = funcs;
 else
     solverinput = [];
 end
