@@ -88,7 +88,20 @@ if ~model.options.usex0
     model.x0(isinf(options.lb)) = options.ub(isinf(options.lb))-1;
     model.x0(isinf(model.x0)) = 0;
 end
-    
+
+% If quadratic objective and no nonlinear constraints, we can supply an
+% Hessian of the Lagrangian
+usedinObjective = find(model.c | any(model.Q,2));
+if ~any(model.variabletype(usedinObjective)) & any(model.Q)
+    if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
+        H = model.Q(:,model.linearindicies);
+        H = H(model.linearindicies,:);
+        funcs.hessian = @(x,s,l) tril(2*H);
+        funcs.hessianstructure = @()tril(sparse(double(H | H)));      
+        options.ipopt.hessian_approximation = 'exact';
+    end
+end
+
 solvertime = clock;
 [xout,info] = ipopt(model.x0,funcs,options);
 solvertime = etime(clock,solvertime);
