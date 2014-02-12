@@ -928,7 +928,7 @@ solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
-solver(i).constraint.equalities.multiterm  = 1;
+solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
 
 solver(i) = emptysolver;

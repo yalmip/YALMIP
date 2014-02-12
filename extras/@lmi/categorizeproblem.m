@@ -131,6 +131,8 @@ any_discrete_variables = ~isempty(integer_variables) | ~isempty(binary_variables
 
 interval_data = isinterval(h);
 
+problem.constraint.equalities.multiterm = 0;
+
 for i = 1:Counter
     
     Fi = F.clauses{i};
@@ -151,13 +153,14 @@ for i = 1:Counter
         rank_constraint = rank_constraint | any(ismember(getvariables(Fi.data),rank_variables));
     end
     
-    % Check for equalities violating GP definition
-%     problem.constraint.equalities.multiterm = 0;
-%     if Fi.type==3
-%         if multipletermsInEquality(Fi)
-%              problem.constraint.equalities.multiterm = 1;
-%         end
-%     end
+    % Check for equalities violating GP definition    
+    if problem.constraint.equalities.multiterm == 0
+        if Fi.type==3
+            if multipletermsInEquality(Fi)
+                problem.constraint.equalities.multiterm = 1;
+            end
+        end
+    end
     
     if ~any_nonlinear_variables % No nonlinearly parameterized constraints
         
