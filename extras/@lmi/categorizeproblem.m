@@ -461,7 +461,6 @@ function p = multipletermsInEquality(Fi);
 p = 0;
 Fi = sdpvar(Fi.data);
 if length(getvariables(Fi))>1
-    B = getbase(Fi);
-    B(:,1)=0;
-    p = any(sum(B | B,2)>1);
+    B = getbase(Fi);     
+    p = any(sum(B | B,2)-(B(:,1) == 0) > 1);    
 end
