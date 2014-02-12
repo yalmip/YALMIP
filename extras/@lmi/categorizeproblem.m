@@ -156,8 +156,10 @@ for i = 1:Counter
     % Check for equalities violating GP definition    
     if problem.constraint.equalities.multiterm == 0
         if Fi.type==3
-            if multipletermsInEquality(Fi)
-                problem.constraint.equalities.multiterm = 1;
+            if isempty(strfind(Fi.handle,'Expansion of'))
+                if multipletermsInEquality(Fi)
+                    problem.constraint.equalities.multiterm = 1;
+                end
             end
         end
     end
