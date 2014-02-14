@@ -448,16 +448,24 @@ if strcmpi(solver.tag,'cutsdp')
 
     % Relax problem for lower solver
     tempProblemClass = ProblemClass;
-    tempProblemClass.constraint.inequalities.elementwise.linear =  tempProblemClass.constraint.inequalities.elementwise.linear |     tempProblemClass.constraint.inequalities.semidefinite.linear | tempProblemClass.constraint.inequalities.secondordercone;
+    tempProblemClass.constraint.inequalities.elementwise.linear =  tempProblemClass.constraint.inequalities.elementwise.linear |     tempProblemClass.constraint.inequalities.semidefinite.linear | tempProblemClass.constraint.inequalities.secondordercone.linear;
     tempProblemClass.constraint.inequalities.semidefinite.linear = 0;
-    tempProblemClass.constraint.inequalities.secondordercone = 0;
+    tempProblemClass.constraint.inequalities.secondordercone.linear = 0;
     tempProblemClass.objective.quadratic.convex = 0;
     
     temp_options = options;
     temp_options.solver = options.cutsdp.solver;
 
+    if strcmp(options.cutsdp.solver,'bnb')
+        error('BNB can not be used in CUTSDP. Please install and use a better MILP solver');
+    end
+    
     [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
 
+    if ~isempty(lowersolver) & strcmpi(lowersolver.tag,'bnb')
+        error('BNB can not be used in CUTSDP. Please install and use a better MILP solver');
+    end
+        
     if isempty(lowersolver) | strcmpi(lowersolver.tag,'cutsdp') |strcmpi(lowersolver.tag,'bmibnb') | strcmpi(lowersolver.tag,'bnb')
         diagnostic.solvertime = 0;
         diagnostic.info = yalmiperror(-2,'YALMIP');
