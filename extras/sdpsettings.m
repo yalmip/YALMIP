@@ -1073,6 +1073,7 @@ else
     
     try
         options.knitro = optimset;
+        options.knitro.optionsfile = '';
         cNames = recursivefieldnames(options.knitro);
         for i = 1:length(cNames)
             Names{end+1} = ['knitro.' cNames{i}];
@@ -1080,7 +1081,7 @@ else
         [m,n] = size(Names);
         names = lower(Names);
     catch
-        options.knitro = [];
+       options.knitro.optionsfile = '';
     end
     
     try

@@ -75,7 +75,7 @@ model.xType(model.integer_variables) = 1;
 model.cineqFnType = repmat(2,length(model.bnonlinineq),1);
 
 solvertime = clock;
-[x,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro);
+[x,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro,model.options.knitro.optionsfile);
 solvertime = etime(clock,solvertime);
 
 x = RecoverNonlinearSolverSolution(model,x);
