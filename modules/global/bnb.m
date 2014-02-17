@@ -742,7 +742,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     switch output.problem
         case 0
             if can_use_ceil_lower
-                lower = ceil(lower);
+                lower = ceil(lower-1e-8);
             end
         case {1,12,-4}
             keep_digging = 0;
