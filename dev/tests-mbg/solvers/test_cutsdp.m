@@ -11,6 +11,6 @@ F = [F, a>=-9*x];
 F = [F, trace(P) == 1];
 F = [F, [t (c+a)';c+a P] >=0];
 ops = sdpsettings('solver','cutsdp','cutsdp.maxiter',10);
-solvesdp(F,t,ops)
+sol = solvesdp(F,t,ops)
 % Just assert that it ran
 mbg_asserttrue(sol.problem ~= -1);
