@@ -356,6 +356,16 @@ if ProblemClass.constraint.equalities.multiterm
     end
     solvers = solvers(find(keep));
 end  
+% FIXME
+% No support for multiterm is YALMIPs current way of saying "GP solver". We
+% use this flag to prune GPs based on objective too
+if ~ProblemClass.gppossible
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)                      
+         keep(i) = solvers(i).constraint.equalities.multiterm;
+    end
+    solvers = solvers(find(keep));
+end  
 
 % ******************************************************
 % Complementarity constraints
