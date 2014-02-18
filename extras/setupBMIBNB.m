@@ -76,6 +76,7 @@ if any(getcutflag(F))
     Ftemp = F;
     Ftemp(find(getcutflag(F)))=[];
     [temp_ProblemClass,aux1,aux2,aux3,aux4,aux5,aux6] = categorizeproblem(Ftemp,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars);
+    temp_ProblemClass.gppossible = ProblemClass.gppossible;
 else
     temp_ProblemClass = ProblemClass;
 end
