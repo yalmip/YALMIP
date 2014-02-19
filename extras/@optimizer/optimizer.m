@@ -308,7 +308,7 @@ catch
    % sys.model.precalc.skipped=[];
 end
 
-if sys.nonlinear
+if sys.nonlinear & isempty(sys.model.evalMap)
     % These artificial equalities are removed if we will use eliminate variables
     sys.model.F_struc(1:length(sys.parameters),:) = [];
     sys.model.K.f = sys.model.K.f - length(sys.parameters);
