@@ -557,7 +557,7 @@ end
 old_binary_variables = binary_variables;
 if ~isempty(binary_variables) & (solver.constraint.binary==0)
     x_bin = recover(binary_variables(ismember(binary_variables,unique([getvariables(h) getvariables(F)]))));
-    F = F + set(x_bin<1)+set(x_bin>0);
+    F = F + set(x_bin<=1)+set(x_bin>=0);
     integer_variables = union(binary_variables,integer_variables);
     binary_variables = [];
 end
