@@ -307,14 +307,14 @@ end
 % ******************************************************
 % Discrete data
 % ******************************************************
-if ProblemClass.constraint.integer 
+if ProblemClass.constraint.integer & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
         keep(i) = solvers(i).constraint.integer;
     end
     solvers = solvers(find(keep));
 end  
-if ProblemClass.constraint.binary 
+if ProblemClass.constraint.binary & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
          keep(i) = solvers(i).constraint.integer | solvers(i).constraint.binary;            
