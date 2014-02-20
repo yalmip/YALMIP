@@ -5,13 +5,6 @@ superiorto('sdpvar');
 superiorto('double');
 superiorto('logical');
 
-if isa(X,'blkvar')
-    X = sdpvar(X);
-end
-if isa(Y,'blkvar')
-    Y = sdpvar(Y);
-end
-
 % Evaluate
 switch quantifier
     case '>'
