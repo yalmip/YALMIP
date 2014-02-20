@@ -1,8 +1,6 @@
 function F = constraint(X,quantifier,Y)
 % Internal class for constraint list
 
-% Author Johan Löfberg
-
 superiorto('sdpvar');
 superiorto('double');
 superiorto('logical');
