@@ -97,8 +97,7 @@ switch class(X)
             sdpvarExpr = parseLMI(X);
             % Old notation
             X = strrep(X,'.>','>');
-            X = strrep(X,'.<','<');
-            %   X = strrep(X,'=','==');X = strrep(X,'====','==');
+            X = strrep(X,'.<','<');            
         catch
             error(lasterr)
         end
@@ -132,13 +131,7 @@ switch class(X)
         strict = 0;
         X = 'Numeric value';
 
-    case {'struct','constraint'}
-        %Fi = X.Evaluated;
-        %strict = X.strict;
-
-        %if isequal(X.List{2},'==') 
-        %    F{1}=sethackflag(F{1},3);
-        %end
+    case {'struct','constraint'}      
         [Fi,strict,LMIIdentifiers,tags] = getlist(X); 
         if isempty(handlestring) | length(handlestring)==0
             handlestring = tags{1};
@@ -197,31 +190,13 @@ while i <= length(Fi)
         if TypeofConstraint(i) == 2
 
             % remove constraint of the type set(0 >= 0)
-            B = getbase(thisFi);
-            if 0
-                % Detect constraint set(negative number >= 0)
-                % removed due to problems with mpt toolbox
-                candidates = find(B(:,1) < 0);
-                if ~isempty(candidates)
-                    Bv = B(candidates,2:end);
-                    dummy = any(Bv,2);
-                    used = find(dummy);
-                    if length(used) < size(Bv,1)
-                        thisFi = thisFi(candidates(used));
-                        if any(B(candidates(find(~dummy)),1) < 0)
-                            % error('Trivially infeasible : There are negative constants in this element-wise constraint.');
-                        end
-                    end
-                end
-            end
+            B = getbase(thisFi);            
             if ~noprune
                 Bv = B(:,2:end);
                 notused = find((~any(Bv,2)) & (B(:,1)>=0));
                 if ~isempty(notused)
-                    used = setdiff(1:size(Bv,1),notused);%find(any(Bv,2))
-                    %                    if length(used)<size(Bv,1)
-                    thisFi = thisFi(used);
-                    %                   end
+                    used = setdiff(1:size(Bv,1),notused);                    
+                    thisFi = thisFi(used);                    
                 end
             end
         end
@@ -257,8 +232,7 @@ if all(TypeofConstraint == 2) & all(strict==strict(1))
         else
             for i = 1:length(Fi)
                 fi = Fi{i};
-                if sizes(i) > 1
-                    %             fi = Fi{i};fi = reshape(fi,sizes(i),1);
+                if sizes(i) > 1                    
                     fi = reshape(fi,prod(size(fi)),1);
                 end
                 vecF = [vecF;fi];
@@ -280,10 +254,8 @@ if all(TypeofConstraint == 2) & all(strict==strict(1))
     F.clauses{1}.jointprobabilistic = [];
     F.clauses{1}.confidencelevel = [];
     F.clauses{1}.extra = [];
- %   F.LMIid = [F.LMIid yalmip('lmiid')];
     F.LMIid = [F.LMIid LMIIdentifiers(1)];
 else
-    %start = yalmip('lmiid');
     for i = 1:length(Fi)
         switch TypeofConstraint(i)
             case {1,2,3,4,5,7,8,9,10,11,12,13,15,16,20,30,40,50,51,52,53,54}
