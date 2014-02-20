@@ -20,6 +20,10 @@ if length(model.evalParameters > 0)
         end
     end
     value = remappedvalue;
+    % We only eliminate in models where the operators dissapear after
+    % parameters are fixed 
+    model.evalMap = [];
+    model.evalVariables = [];
 end
 
 % Evaluate fixed monomial terms

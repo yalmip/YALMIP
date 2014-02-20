@@ -96,7 +96,7 @@ elseif isequal(subs.type,'{}')
         
     for i = 1:nBlocks
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
-        if self.nonlinear & isempty(self.model.evalMap)
+        if self.nonlinear & ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
             if ~infeasible                          
@@ -113,6 +113,9 @@ elseif isequal(subs.type,'{}')
             self.model = originalModel;
         else                     
             if ~isempty(thisData)
+                if ~isempty(self.model.evalMap) &  ~self.model.solver.evaluation
+                    error('After fixing parameters, there are still nonlinear operators in the model, but the solver does not support this. Note that YALMIP is not guaranteed to remove all operators, even though they only contain parametric expressions. As an example, exp(1+parameter) will not be reduced, while exp(parameter) will. You will have to use another solver, or reparameterize your model (look at exp(1+parameter) as a new parameter instead)');
+                end
                 self.model.F_struc(1:prod(self.dimin),1) = thisData(:);
             end         
             output = self.model.solver.callhandle(self.model);           

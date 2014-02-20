@@ -308,7 +308,19 @@ catch
    % sys.model.precalc.skipped=[];
 end
 
-if sys.nonlinear & isempty(sys.model.evalMap)
+sys.complicatedEvalMap = 0;
+% Are all nonlinear operators acting on simple parameters? Elimination
+% strategy will only be applied on simple problems such as x<=exp(par)
+for i = 1:length(sys.model.evalMap)
+    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
+       sys.complicatedEvalMap = 1;
+    end
+    if length(sys.model.evalMap{i}.arg)>2
+        sys.complicatedEvalMap = 1;
+    end
+end
+    
+if sys.nonlinear & ~sys.complicatedEvalMap%isempty(sys.model.evalMap)
     % These artificial equalities are removed if we will use eliminate variables
     sys.model.F_struc(1:length(sys.parameters),:) = [];
     sys.model.K.f = sys.model.K.f - length(sys.parameters);
