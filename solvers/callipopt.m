@@ -41,7 +41,7 @@ if ~isempty(model.lb)
         problem = 1;   
         solverinput = [];
         solveroutput = [];  
-        output = createoutput(model.lb*0,[],[],problem,'IPOPT',solverinput,solveroutput,0);
+        output = createoutput(model.c*0,[],[],problem,'IPOPT',solverinput,solveroutput,0);
         return
     end
 end
