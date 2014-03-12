@@ -34,7 +34,7 @@ lmiinfo{50}= 'Special ordered set of type 2';
 lmiinfo{51}= 'Special ordered set of type 1';
 lmiinfo{52}= 'Semi-continuous variable';
 lmiinfo{53}= 'Semi-integer variable';
-lmiinfo{54}= 'Second order cone constraints';
+lmiinfo{54} = 'Vectorized second order cone constraints';
 lmiinfo{55}= 'Complementarity constraint';
 lmiinfo{56}= 'Meta constraint';
 

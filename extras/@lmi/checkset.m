@@ -56,7 +56,7 @@ lmiinfo{9} = 'KYP constraint';
 lmiinfo{10} = 'Eigenvalue constraint';
 lmiinfo{11} = 'SOS constraint';
 lmiinfo{15} = 'Uncertainty declaration';
-lmiinfo{54} = 'Vectorized second order cone constraint';
+lmiinfo{54} = 'Vectorized second order cone constraints';
 lmiinfo{55} = 'Complementarity constraint';
 header = {'ID','Constraint','Type','Primal residual','Dual residual','Tag'};
 
