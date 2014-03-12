@@ -56,6 +56,7 @@ lmiinfo{9} = 'KYP constraint';
 lmiinfo{10} = 'Eigenvalue constraint';
 lmiinfo{11} = 'SOS constraint';
 lmiinfo{15} = 'Uncertainty declaration';
+lmiinfo{54} = 'Vectorized second order cone constraint';
 lmiinfo{55} = 'Complementarity constraint';
 header = {'ID','Constraint','Type','Primal residual','Dual residual','Tag'};
 
@@ -118,6 +119,11 @@ for j = 1:nlmi
         case 8
             res(j,1) = -full(max(max(abs(F0-round(F0)))));
             res(j,1) = min(res(j,1),-(any(F0>1) | any(F0<0)));
+        case 54
+            res(j,1) = inf;
+            for k = 1:size(F0,2)
+                res(j,1) = min(res(j,1),full(F0(1,k)-norm(F0(2:end,k))));
+            end                
         case 11
             if 0
                 p = F.clauses{j}.data;          
