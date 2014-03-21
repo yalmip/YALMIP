@@ -57,8 +57,10 @@ end
 switch (INFO.phasevalue)
     case 'pdOPT'
         problem = 0;
-    case {'noINFO','pFEAS','dFEAS','pdFEAS'}
+    case {'noINFO','pFEAS','dFEAS'}
         problem = 3;
+    case {'pdFEAS'}
+        problem = 4;
     case 'pFEAS_dINF'
         problem = 2;
     case 'pINF_dFEAS'
