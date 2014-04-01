@@ -98,7 +98,7 @@ end
 switch STATUS
     case {5,171,180,151,200}
         problem = 0;
-    case {182,173,183,0,213,204,209}
+    case {110,182,173,183,0,213,204,209}
         problem = 1;
     case 214
         problem = 2;
