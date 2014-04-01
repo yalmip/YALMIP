@@ -356,27 +356,7 @@ try
     
     sdpvar x(1,1,'full','complex');
     assert(isreal(x*x'))
-    
-%     x = sdpvar(4,1);
-%     sdpvar i a   
-%     y = [i a];
-%     y(1)
-%    % i = sdpvar(1,1);
-%    % a = sdpvar(1,1);
-%    % [i a]
-%     
-%     
-%     
-%     size(x([i j]))
-%     assert(all(size(x([i j])) == [2 1]))
-%     assert(all(size(x(1,[i j])) == [1 2]))
-%    % assert(all(size(x(1,[i j])) == [1 2]));
-%    % x(1,[i j]);
-   % x([i j],1);
-   % x([i j],[i j]);
-    
-    
-    
+              
     result = 'N/A';
 catch
     sol.info = 'Problems';
@@ -388,8 +368,7 @@ end
 function [pass,sol,result] = feasible(ops) 
 t = sdpvar(1,1);
 Y = sdpvar(2,2);
-F = set('Y<=t*eye(2)');
-F = F+set('Y>=[1 0.2;0.2 1]');
+F = [Y<=t*eye(2), Y>=[1 0.2;0.2 1]];
 sol = solvesdp(F,t,ops);
 pass = ismember(sol.problem,[0 3 4 5]);
 if pass
@@ -402,9 +381,7 @@ end
 
 function [pass,sol,result] = infeasible(ops)
 t = sdpvar(1,1);
-Y = sdpvar(2,2);
-F = set('t>=0');
-F = F+set('t<=-10');
+F = [t>=0, t<=-10];
 sol = solvesdp(F,t,ops);
 pass = ~(sol.problem==0);
 result = 'N/A';
@@ -415,8 +392,8 @@ B = [0.4;0.08];
 L = [1.9034 1.1501];
 
 Y = sdpvar(2,2);
-F = set([Y Y*(A-B*L)';(A-B*L)*Y Y]);
-F = F+set('L*Y*L''<=1');
+F = [Y Y*(A-B*L)';(A-B*L)*Y Y];
+F = F+[L*Y*L'<=1];
 sol = solvesdp(F,-logdet(Y),ops);
 Y = double(Y);
 pass = ismember(sol.problem,[0 3 4 5]);
@@ -432,8 +409,8 @@ A = [1 0;0.4 1];
 B = [0.4;0.08]; 
 L = [1.9034 1.1501];  
 Y = sdpvar(2,2);
-F = set('[Y Y*(A-B*L)'';(A-B*L)*Y Y]>=0');
-F = F+set('L*Y*L''<=1');
+F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
+F = F+[L*Y*L'<=1];
 sol = solvesdp(F,-logdet(Y),ops);
 Y = double(Y);
 pass = ismember(sol.problem,[0 3 4 5]);
@@ -450,13 +427,7 @@ z = sdpvar(1,1);
 
 X = [x 1 2;1 y 3;2 3 100];
 
-F = set(X>=0);
-F = F+set(x>=10);
-F = F+set(y>=0); 
-F = F+set(z>=0);
-F = F+set(x<=1000);
-F = F+set(y<=1000); 
-F = F+set(z<=1000);
+F = [X>=0,x>=10,y>=0,z>=0, x<=1000, y<=1000,z<=1000];
 sol = solvesdp(F,x+y+z,ops);
 x   = double(x);
 y   = double(y);
@@ -473,19 +444,13 @@ end
 
 function [pass,sol,result] = complete_2(ops)
 x = sdpvar(1,1);
-%y = sdpvar(1,1);
 z = sdpvar(1,1);
 
 X = [x 2;2 z];
 
-F = set('X>=0');
-F = F+set('x>=0');
-F = F+set('z>=0');
-F = F+set('x<=10');
-F = F+set('z<=10');
+F = [X>=0, x>=0,z>=0,x<=10,z<=10];
 sol = solvesdp(F,x+z,ops);
 x   = double(x);
-%y   = double(y);
 z   = double(z);
 
 pass = ismember(sol.problem,[0 3 4 5]);
@@ -520,7 +485,7 @@ for i = 1:n
     M = M+tau(i)*[ei*ei' zeros(n,1);zeros(1,n) -1];
 end
 
-F = F+set(M>=0);
+F = F+[M>=0];
 sol = solvesdp(F,t,ops);
 
 t   = double(t);
@@ -538,8 +503,8 @@ function [pass,sol,result] = socptest1(ops)
 x = sdpvar(2,1);
 a = [0;1];
 b = [1;1];
-F = set('||x-a||<1');
-F = F+set('||x-b||<1');
+F = norm(x-a)<=1;
+F = F+[norm(x-b) <= 1];
 sol = solvesdp(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 
@@ -559,10 +524,10 @@ x = sdpvar(3,1);
 y = sdpvar(3,1);
 a = [0;1;0];
 b = [1;1;0];
-F = set('||x-a||<1');
-F = F+set('||x-b||<1');
-F = F+set('x(1)==0.35');
-F = F+set('z(2:3)==[5;6]');
+F = norm(x-a)<=1;
+F = F+[norm(x-b)<=1];
+F = F+[x(1)==0.35];
+F = F+[z(2:3)==[5;6]];
 sol = solvesdp(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 
@@ -584,12 +549,12 @@ x = sdpvar(2,1);
 y = sdpvar(3,1);
 a = [0;1];
 b = [1;1];
-F = set('||x-a||<1');
-F = F+set('||x-b||<1');
-F = F+set('x(1)==0.35');
-F = F+set('z(1,end)>=5');
-F = F+set('z(2,end)<=100');
-F = F+set('z(2)==5');
+F = norm(x-a)<=1;
+F = F+[norm(x-b)<=1);
+F = F+[x(1)==0.35];
+F = F+[z(1,end)>=5];
+F = F+[z(2,end)<=100];
+F = F+[z(2)==5];
 
 sol = solvesdp(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
