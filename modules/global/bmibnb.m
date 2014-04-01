@@ -477,7 +477,7 @@ pnew.ub = inf(2*n,1);
 pnew.lb(1:n) = newlb;
 pnew.ub(1:n) = newub;
 if length(pnew.x0)>0
-    pnew.x0 = V*p.x0(1:2);
+    pnew.x0 = V*p.x0;
 end
 pnew.diagonalized = 1;
 
