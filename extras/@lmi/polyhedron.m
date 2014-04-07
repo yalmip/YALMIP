@@ -27,7 +27,7 @@ if isempty(p.binary_variables) & isempty(p.integer_variables)
     beq = p.F_struc(1:p.K.f,1);
     A = -p.F_struc(p.K.f+1:end,2:end);
     b = p.F_struc(p.K.f+1:end,1);    
-    P = polyhedron('A',A,'b',b,'Ae',Aeq,'be',beq);
+    P = Polyhedron('A',A,'b',b,'Ae',Aeq,'be',beq);
     x = recover(p.used_variables);
 else
     
