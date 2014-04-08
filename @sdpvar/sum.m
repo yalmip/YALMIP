@@ -1,8 +1,5 @@
-function Y=sum(X,I)
+function Y=sum(X,I,dummy)
 %SUM (overloaded)
-
-% Author Johan Löfberg 
-% $Id: sum.m,v 1.9 2009-10-15 10:25:41 joloef Exp $   
 
 if length(X.dim)==2
     if nargin == 1
