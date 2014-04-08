@@ -1264,6 +1264,16 @@ solver(i).usesother = 1;
 i = i+1;
 
 solver(i) = lpsolver;
+solver(i).tag     = 'INTLINPROG';
+solver(i).version = '';
+solver(i).checkfor= {'intlinprog.m'};
+solver(i).call    = 'callintlinprog';
+solver(i).constraint.binary = 0;
+solver(i).constraint.integer = 1;
+solver(i).dual = 0;
+i = i+1;
+
+solver(i) = lpsolver;
 solver(i).tag     = 'BINTPROG';
 solver(i).version = '';
 solver(i).checkfor= {'bintprog.m'};

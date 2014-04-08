@@ -993,6 +993,18 @@ else
      end
      
      try
+         options.intlinprog =optimoptions('intlinprog');
+         evalc('cNames = recursivefieldnames(struct(options.intlinprog));');
+         for i = 1:length(cNames)
+             Names{end+1} = ['intlinprog.' cNames{i}];
+         end
+         [m,n] = size(Names);
+         names = lower(Names);
+     catch
+         options.intlinprog = [];
+     end
+     
+     try
          options.ooqp = ooqpset;
          cNames = recursivefieldnames(options.ooqp);
          for i = 1:length(cNames)
