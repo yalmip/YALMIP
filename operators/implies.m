@@ -65,16 +65,36 @@ Y = varargin{2};
 %     end
 % end
 
-if isempty(varargin{1})
+if isempty(X)
     varargout{1} = [];
 end
 
-switch class(varargin{1})
+switch class(X)
 
     case {'sdpvar','constraint','lmi'}      
         varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
         
     case 'char'        
         varargout{1} = implies_internal(varargin{3:end});
+        
+    case 'logical'
+        if length(X)==1
+            if X
+                varargout{1} = Y;
+            else
+                varargout{1} = [];
+            end
+        else
+            if length(X) == length(Y)
+                i = find(X);
+                if isempty(i)
+                    varargout{1} = [];
+                else
+                    varargout{1} = Y(i);
+                end
+            else
+                error('Size mismatch in input arguments');
+            end
+        end
 end
 
