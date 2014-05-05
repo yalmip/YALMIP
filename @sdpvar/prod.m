@@ -1,11 +1,15 @@
-function product=prod(X)
+function product=prod(X,dimen)
 %PROD (overloaded)
 
-% Author Johan L÷fberg
-% $Id: prod.m,v 1.8 2008-01-16 22:14:12 joloef Exp $
+if nargin == 2
+    if dimen == 2
+        product = prod(X')';
+        return
+    end
+end
 
-% Ugly hack to fix a special user case prod([1e-7 1e-7 1e7 1e7].*[x1 x2 x3
-% x4])
+% Ugly hack to fix a special user case 
+% such as prod([1e-7 1e-7 1e7 1e7].*[x1 x2 x3 x4])
 scale = 1;
 if min(size(X))==1
     base = getbase(X);
@@ -18,9 +22,28 @@ if min(size(X))==1
     end
     X.basis = base;
 end
-product = 1;
-for i = 1:length(X)
-    pick = cell(1,1);pick{1}={i};
-    product = product*subsref(X,struct('type','()','subs',pick));
+
+if X.dim(1)==1 | X.dim(2)==1
+      product = 1;    
+    for i = 1:length(X)
+        pick = cell(1,1);pick{1}={i};
+        product = product*subsref(X,struct('type','()','subs',pick));
+    end
+    product.basis = product.basis*scale;    
+else
+    vecProd = [];
+    top = 1;
+    for j = 1:X.dim(2)
+        product = 1;
+        for i = 1:X.dim(1)
+            pick = cell(1,1);pick{1}={top};
+            product = product*subsref(X,struct('type','()','subs',pick));
+            top = top + 1;
+        end
+        vecProd = [vecProd;product];
+    end
+    dim = X.dim;dim(1) = 1;
+    vecProd.dim = dim;
+    vecProd.basis = vecProd.basis*scale;
+    product = vecProd;
 end
-product.basis = product.basis*scale;
