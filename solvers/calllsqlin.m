@@ -65,12 +65,10 @@ end
 
 model.d = -Cones(2:end,1);
 model.C = Cones(2:end,2:end-1);
-model.A = A;
+model.Aineq = A;
 model.Aeq = Aeq;
-model.b = b;
+model.bineq = b;
 model.beq = beq;
-model.lb = [];
-model.ub = [];
 model.x0 = [];
 model.options = interfacedata.options.lsqlin;
 model.solver = 'lsqlin';
