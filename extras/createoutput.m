@@ -1,4 +1,4 @@
-function output = createoutput(primal,dual,slack,problem,tag,input,output,time)
+function output = createoutput(primal,dual,slack,problem,tag,input,solveroutput,time)
 
 if nargin == 1
     problem = primal;
@@ -6,7 +6,7 @@ if nargin == 1
     dual = [];
     slack = [];
     input = [];
-    output = [];
+    solveroutput = [];
     time = [];
 end
 
@@ -16,6 +16,6 @@ output.Slack       = slack;
 output.problem     = problem;
 output.infostr     = yalmiperror(problem,tag);
 output.solverinput = input;
-output.solveroutput= output;
+output.solveroutput= solveroutput;
 output.solvertime  = time;
 
