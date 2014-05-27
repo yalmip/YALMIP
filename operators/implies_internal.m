@@ -125,8 +125,7 @@ switch settype(X)
         if isequal(getbase(X),[-ones(n,1) eye(n)]) | isequal(getbase(X),[ones(n,1) -eye(n)]) & all(ismember(depends(X),yalmip('binvariables')));
             % Smart code for X == 1 implies Y
             F = [Y(:) >= recover(getvariables(X))];
-        else
-            %zero_tolerance = 1e-4;
+        else           
             d = binvar(length(X),2,'full');
             %F = linearnegativeconstraint_implies_binary([-zero_tolerance-X;X-zero_tolerance],[d(:,1);d(:,2)],[],[],zero_tolerance);
             F = linearnegativeconstraint_implies_binary([-zero_tolerance-X;X-zero_tolerance],[d(:,1);d(:,2)],[],[],zero_tolerance/100);
