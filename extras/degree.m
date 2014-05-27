@@ -18,7 +18,7 @@ function deg = degree(x,y,z)
 %
 % degree(p,[x1 x2]) returns [1 2]
 %
-% degree(p,[x1 x2],[],1) returns [1 0;1 2]
+% degree(p,[x1 x2],'max',1) returns [1 0;1 2]
 %
 % degree(p,[],1) returns [1;2] 
 
