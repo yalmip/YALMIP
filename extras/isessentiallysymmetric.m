@@ -1,5 +1,7 @@
-function issym=issymmetric(X)
-%ISSYMMETRIC Check if variable is symmetric
+function issym=isessentiallysymmetric(X)
+%ISESSENTIALLYSYMMETRIC Check if variable is symmetric
+
+% Weird name to account for MATLAB2014 and later where issymmetric exist
 
 [n,m] = size(X);
 issym = 0;
