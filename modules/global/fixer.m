@@ -1,4 +1,4 @@
-function [upper1,x_min] = fixer(p,output);
+function [upper1,x_min] = fixer(p,output,prelaxed);
 
 x = output.Primal;
 
