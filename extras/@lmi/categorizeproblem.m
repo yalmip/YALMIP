@@ -461,6 +461,9 @@ function p = multipletermsInEquality(Fi);
 p = 0;
 Fi = sdpvar(Fi.data);
 if length(getvariables(Fi))>1
-    B = getbase(Fi);     
+    B = getbase(Fi);  
+    if ~isreal(B)
+        B = [real(B);imag(B)];   
+    end
     p = any(sum(B | B,2)-(B(:,1) == 0) > 1);    
 end
