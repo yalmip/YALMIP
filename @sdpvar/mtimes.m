@@ -310,11 +310,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     Z.lmi_variables(i:(i+length(indicies)-1)) = (nvar+1):(nvar+length(indicies));
                     nvar = nvar + length(indicies);
                     i = i + length(indicies);
-                else
-
-                    %isemptynew_mt_hash = new_mt_hash_counter == 0;
+                else                  
                     for acounter = indicies
-
                         current_hash = allhash(acounter);
 
                         % Ok, braze your self for some horrible special case
@@ -348,38 +345,13 @@ switch 2*X_is_spdvar+Y_is_spdvar
                                     end
                                     sb = sb+1;
                                 end
-                            end
-%                             
-%                             before = [];
-%                             sb = 1;
-%                             cth = full(current_hash);
-%                             while isempty(before) & sb <= length(possibleOldBlocked)
-%                                 
-%                                 testitfull = possibleOldHashSortedBlockedFull{sb};
-%                                 mmm=findhashsorted(testitfull,cth);
-%                                 if mmm
-%                                     mmm=sortedHashLocsBlocked{sb}(mmm);
-%                                     before = possibleOldBlocked{sb}(mmm);
-%                                 end
-%                                 sb = sb+1;
-%                             end
-%                             
-%                             if isempty(before)
-%                                 before = findhash(new_mt_hash_aux,current_hash,new_mt_hash_counter); % first among new monomials
-%                                 if before
-%                                     before=before+current_offset;
-%                                 end
-%                             end
-                            
-                            
-                            
+                            end                                                                                  
                         end
                         if before
                             Z.lmi_variables = expandAllocation(Z.lmi_variables,i);
                             Z.lmi_variables(i) = before;
                         else
-                            changed_mt=1;
-                            %   isemptynew_mt_hash=0;
+                            changed_mt=1;                            
                             thesewhereactuallyused(acounter) = 1;
                             new_mt_hash_counter = new_mt_hash_counter + 1;
                             if new_mt_hash_counter>length(new_mt_hash_aux)
@@ -406,7 +378,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 else
                     new_mt = [new_mt allmt_xplusy(:,find(thesewhereactuallyused))];
                 end
-% 
+ 
                 bsize = 100; 
                 if new_mt_hash_counter>5
                     bsize = new_mt_hash_counter-1;
@@ -420,26 +392,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     possibleOldBlocked{end+1}    = (1:bsize)+current_offset;
                     sortedHashLocsBlocked{end+1} = sortednewHashLocs;
                     possibleOldHashSortedBlocked{end+1} = (newHashSorted);
-                    possibleOldHashSortedBlockedFull{end+1} = full(newHashSorted);
-                    %  possibleOldHashSortedOffset{end+1} = current_offset;
+                    possibleOldHashSortedBlockedFull{end+1} = full(newHashSorted);                   
                     current_offset = current_offset + bsize;
                 end
-% % 
-%                 bsize = 1000;
-%                 if new_mt_hash_counter > bsize
-%                     ship = new_mt_hash_aux(1:new_mt_hash_counter);
-%                     mt_hash = [mt_hash;ship];                  
-%                     [newHashSorted, sortednewHashLocs] = sort(ship);
-%                     possibleOldBlocked{end+1}    = (1:new_mt_hash_counter)+current_offset;
-%                     sortedHashLocsBlocked{end+1} = sortednewHashLocs;
-%                     possibleOldHashSortedBlocked{end+1} = (newHashSorted);
-%                     possibleOldHashSortedBlockedFull{end+1} = full(newHashSorted);                    
-%                     current_offset = current_offset + new_mt_hash_counter;                    
-%                     new_mt_hash_aux = zeros(1e3,1);
-%                     new_mt_hash_counter = 0;                    
-%                 end
-% 
-
 
             end % End x-variables
 
