@@ -245,6 +245,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             possibleOldHashSortedBlockedFull{1} = full(possibleOldHashSorted);
             current_offset = size(mt_hash,1);
 
+            YB = Y.basis(:,1+index_Y(theyvars(:)'));
             for ix = thexvars(:)'
 
                 mt_x = local_mt(:,ix);
@@ -256,17 +257,21 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 % Optimized and treat special case scalar*matrix etc
                 if x_isscalar
                     Xibase = X.basis(:,1+index_X(ix));
-                    allprodbase = Xibase * Y.basis(:,1+index_Y(testthese));
+                    %allprodbase = Xibase * Y.basis(:,1+index_Y(testthese));
+                    allprodbase = Xibase * YB;
                 elseif y_isscalar
                     Xibase = X.basis(:,1+index_X(ix));
-                    allprodbase =  Xibase * Y.basis(:,1+index_Y(testthese));
+                    %allprodbase =  Xibase * Y.basis(:,1+index_Y(testthese));
+                    allprodbase =  Xibase * YB;
                 elseif inner_vector_product
                     Xibase = X.basis(:,1+index_X(ix)).';
-                    allprodbase = Xibase*Y.basis(:,1+index_Y(testthese));
+                    %allprodbase = Xibase*Y.basis(:,1+index_Y(testthese));
+                    allprodbase = Xibase*YB;
                 else
                     Xibase = reshape(X.basis(:,1+index_X(ix)),nx,mx);
                     temp = kron(speyemy,Xibase);
-                    allprodbase = temp * Y.basis(:,1+index_Y(testthese));
+                    %allprodbase = temp * Y.basis(:,1+index_Y(testthese));
+                    allprodbase = temp * YB;
                 end
 
                 % Keep non-zero matrices
