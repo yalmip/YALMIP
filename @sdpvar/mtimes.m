@@ -115,8 +115,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             index_X(iX)=1:length(iX);index_X=index_X(:);
             index_Y(iY)=1:length(iY);index_Y=index_Y(:);
 
-            % Pre-allocate sufficiently long
-            Z.lmi_variables = [Z.lmi_variables zeros(1,length(X.lmi_variables)*length(Y.lmi_variables))];
+            % Pre-allocate under assumption that product is fairly sparse
+            % If more is required later, it will be expanded
+            Z.lmi_variables = [Z.lmi_variables zeros(1,length(X.lmi_variables)+length(Y.lmi_variables))];
+            %Z.lmi_variables = [Z.lmi_variables zeros(1,length(X.lmi_variables)*length(Y.lmi_variables))];
+            
 
             % Pre-calc identity (used a lot
             speyemy = sparse(1:my,1:my,1,my,my);
@@ -303,6 +306,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     % All nonlinear variables are new, so we can create them at once
                     changed_mt=1;
                     thesewhereactuallyused = thesewhereactuallyused+1;
+                    Z.lmi_variables = expandAllocation(Z.lmi_variables,(i+length(indicies)-1));
                     Z.lmi_variables(i:(i+length(indicies)-1)) = (nvar+1):(nvar+length(indicies));
                     nvar = nvar + length(indicies);
                     i = i + length(indicies);
@@ -371,6 +375,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                             
                         end
                         if before
+                            Z.lmi_variables = expandAllocation(Z.lmi_variables,i);
                             Z.lmi_variables(i) = before;
                         else
                             changed_mt=1;
@@ -383,6 +388,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                             new_mt_hash_aux(new_mt_hash_counter) = current_hash;
 
                             nvar = nvar + 1;
+                            Z.lmi_variables = expandAllocation(Z.lmi_variables,i);
                             Z.lmi_variables(i) = nvar;
                         end
                         i = i+1;
@@ -790,5 +796,12 @@ if size(X,1) == size(X,2)
         yes = 1;
     end
 end
+
+function x = expandAllocation(x,n)
+
+if length(x) < n
+    x = [x zeros(1,2*n-length(x))];
+end
+        
 
 
