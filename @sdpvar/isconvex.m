@@ -6,6 +6,8 @@ function YESNONA = isconvex(p)
 % p: scalar SDPVAR object
 % T: The result (1: convex, 0: concave, NaN: cannot be determined)
 %
+% NOTE : Under development. Do not trust if you have monomial in your model
+%
 % Example
 % sdpvar x y
 % isconvex(x+y) will return 1
