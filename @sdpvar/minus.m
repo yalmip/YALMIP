@@ -191,14 +191,14 @@ switch 2*X_is_spdvar+Y_is_spdvar
             in_X_logical = ones(1,length(X.lmi_variables));
             in_X = 1:length(X.lmi_variables);            
         else
-            in_X_logical = ismembc(all_lmi_variables,X.lmi_variables);
+            in_X_logical = ismembcYALMIP(all_lmi_variables,X.lmi_variables);
             in_X = find(in_X_logical);
         end
         if isequal(all_lmi_variables,Y.lmi_variables)
             in_Y_logical = ones(1,length(Y.lmi_variables));
             in_Y = 1:length(Y.lmi_variables);
         else
-            in_Y_logical = ismembc(all_lmi_variables,Y.lmi_variables);
+            in_Y_logical = ismembcYALMIP(all_lmi_variables,Y.lmi_variables);
             in_Y = find(in_Y_logical);
         end
                 
@@ -265,17 +265,23 @@ switch 2*X_is_spdvar+Y_is_spdvar
 end
 
 % Update info on KYP objects
-if X_is_spdvar & Y_is_spdvar & X.typeflag==9  & Y.typeflag==9
+if X_is_spdvar & Y_is_spdvar 
+  if  X.typeflag==9  & Y.typeflag==9
     error('Substraction of KYP objects currently not supported')
+  end
 end
-if Y_is_spdvar & Y.typeflag==9
+if Y_is_spdvar
+  if  Y.typeflag==9
     y.extra.M = -Y.extra.M+X;
     y.extra.negated = ~Y.extra.negated;
     return
+  end 
 end
-if X_is_spdvar & X.typeflag==9
+if X_is_spdvar 
+ if X.typeflag==9
     y.extra.M = y.extra.M-Y;
     return
+ end
 end
 
 

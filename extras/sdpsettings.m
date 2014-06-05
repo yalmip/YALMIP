@@ -719,7 +719,7 @@ obsoletenames ={
 [m,n] = size(Names);
 names = lower(Names);
 
-if (nargin>0) & isstruct(varargin{1})
+if (nargin>0) && isstruct(varargin{1})
     options = varargin{1};
     paramstart = 2;
 else

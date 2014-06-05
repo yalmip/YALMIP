@@ -14,7 +14,7 @@ switch quantifier
     case '<'
         Z = Y - X;      
     case '<='
-        Z = Y - X;       
+        Z = Y - X;
     case '=='
         Z = Y - X;      
     otherwise

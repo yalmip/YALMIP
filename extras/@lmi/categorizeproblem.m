@@ -126,7 +126,8 @@ else
     allvars = F_vars;
 end
 
-any_nonlinear_variables =~isempty(find(ismembc(nonlinear_variables,allvars)));
+members = ismembcYALMIP(nonlinear_variables,allvars);
+any_nonlinear_variables =~isempty(find(members));
 any_discrete_variables = ~isempty(integer_variables) | ~isempty(binary_variables) | ~isempty(semicont_variables);
 
 interval_data = isinterval(h);
@@ -143,10 +144,10 @@ for i = 1:Counter
     % Any discrete variables used
     if any_discrete_variables
         Fvar = getvariables(Fi.data);
-        int_data = int_data | any(ismembc(Fvar,integer_variables));
-        bin_data = bin_data | any(ismembc(Fvar,binary_variables));
-        par_data = par_data | any(ismembc(Fvar,parametric_variables));
-        scn_data = scn_data | any(ismembc(Fvar,semicont_variables));
+        int_data = int_data | any(ismembcYALMIP(Fvar,integer_variables));
+        bin_data = bin_data | any(ismembcYALMIP(Fvar,binary_variables));
+        par_data = par_data | any(ismembcYALMIP(Fvar,parametric_variables));
+        scn_data = scn_data | any(ismembcYALMIP(Fvar,semicont_variables));
     end
     
     if any_rank_variables
@@ -374,10 +375,15 @@ if (relax==1) | (relax==3)
     problem.evaluation = 0;
 end
 
-
 % Analyse the objective function
 quad_info = [];
-if (~isempty(h)) & ~is(h,'linear') &~(relax==1) &~(relax==3)
+if isa(h,'sdpvar')
+    h_is_linear = is(h,'linear');
+else
+    h_is_linear = 0;
+end
+
+if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
     if ~(isempty(binary_variables) & isempty(integer_variables))
         h_var = depends(h);
         if any(ismember(h_var,binary_variables))

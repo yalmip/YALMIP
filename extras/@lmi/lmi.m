@@ -180,7 +180,7 @@ while i <= length(Fi)
             TypeofConstraint(i) = 1;
         end
 
-        if (TypeofConstraint(i)==1) & (symmetryKnown == 0)
+        if (TypeofConstraint(i)==1) & (symmetryKnown == 0)        
             [n,m]=size(thisFi);
             if (n~=m) | ((TypeofConstraint(i) == 1) & (n*m==1)) | ~ishermitian(thisFi)
                 TypeofConstraint(i) = 2;

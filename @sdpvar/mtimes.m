@@ -104,9 +104,10 @@ switch 2*X_is_spdvar+Y_is_spdvar
             if y_isscalar
                 Ybase = sparse(full(Ybase));
             end
-
-            index_X = double(ismembc(all_lmi_variables,X.lmi_variables));
-            index_Y = double(ismembc(all_lmi_variables,Y.lmi_variables));
+           
+            index_X = double(ismembcYALMIP(all_lmi_variables,X.lmi_variables));
+            index_Y = double(ismembcYALMIP(all_lmi_variables,Y.lmi_variables));
+            
             iX=find(index_X);
             iY=find(index_Y);
             index_X(iX)=1:length(iX);index_X=index_X(:);
@@ -160,8 +161,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
             bilinearproduct = 0;
             candofastlocation  = 0;
             if all(oldvariabletype(X.lmi_variables)==0) & all(oldvariabletype(Y.lmi_variables)==0)
-                % if isempty(intersect(X.lmi_variables,Y.lmi_variables))
-                if ~any(ismembc(X.lmi_variables,Y.lmi_variables))
+                % if isempty(intersect(X.lmi_variables,Y.lmi_variables))             
+                members = ismembcYALMIP(X.lmi_variables,Y.lmi_variables);              
+                if ~any(members)
                     bilinearproduct = 1;
                     try
                         dummy = ismembc2(1,1); % Not available in all versions (needed in ismember)

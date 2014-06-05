@@ -39,14 +39,18 @@ function diagnostic = solvesdp(varargin)
 yalmiptime = clock; % Let us see how much time we spend
 
 % Avoid warning
-if length(varargin)>=2 & isa(varargin{2},'double')
-	varargin{2} = [];
+if length(varargin)>=2
+    if isa(varargin{2},'double')
+        varargin{2} = [];
+    end
 end
 
-if length(varargin)>=2 & isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>1
-    % Several objectives
-     diagnostic = solvesdp_multiple(varargin{:});
-     return
+if length(varargin)>=2
+    if isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>1
+        % Several objectives
+        diagnostic = solvesdp_multiple(varargin{:});
+        return
+    end
 end
 
 % Arrrgh, new format with logdet much better, but we have to
@@ -410,7 +414,7 @@ diagnostic.yalmiptime = etime(clock,yalmiptime)-output.solvertime;
 diagnostic.solvertime = output.solvertime;
 try
     diagnostic.info = output.infostr;
-catch
+catch   
     diagnostic.info = yalmiperror(output.problem,solver.tag);
 end
 diagnostic.problem = output.problem;
@@ -438,7 +442,7 @@ if interfacedata.options.saveyalmipmodel
     diagnostic.yalmipmodel = interfacedata;
 end
 
-if options.warning & warningon & isempty(findstr(output.infostr,'No problems detected'))
+if options.warning & warningon & isempty(findstr(diagnostic.info,'No problems detected'))
     disp(['Warning: ' output.infostr]);
 end
 

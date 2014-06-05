@@ -61,8 +61,9 @@ m = m(1);
 sumn=sum(n);
 shift=[0;cumsum(n)];
 for j = 1:nblocks
-    if isasdpvar(j)
-        in_this = find(ismembc(all_lmi_variables,varargin{j}.lmi_variables));
+    if isasdpvar(j)        
+        members = ismembcYALMIP(all_lmi_variables,varargin{j}.lmi_variables);     
+        in_this = find(members);
         dummy = [1 1+in_this];
         [i2,j2,s2] = find(varargin{j}.basis);
         j2 = dummy(j2);
