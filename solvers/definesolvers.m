@@ -1234,6 +1234,16 @@ i = i+1;
 % solver(i).parametric = 1;
 % i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'INTLINPROG';
+solver(i).version = '';
+solver(i).checkfor= {'intlinprog.m'};
+solver(i).call    = 'callintlinprog';
+solver(i).constraint.binary = 0;
+solver(i).constraint.integer = 1;
+solver(i).dual = 0;
+i = i+1;
+
 % % ***************************************
 % % SOMEWHAT MORE COMPLEX DEFINITIONS OF
 % % THE INTERNAL MICP SOLVER
@@ -1261,16 +1271,6 @@ solver(i).constraint.semivar = 1;
 solver(i).constraint.semiintvar = 1;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'INTLINPROG';
-solver(i).version = '';
-solver(i).checkfor= {'intlinprog.m'};
-solver(i).call    = 'callintlinprog';
-solver(i).constraint.binary = 0;
-solver(i).constraint.integer = 1;
-solver(i).dual = 0;
 i = i+1;
 
 solver(i) = lpsolver;
