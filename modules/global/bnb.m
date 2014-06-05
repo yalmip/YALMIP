@@ -42,9 +42,6 @@ function output = bnb(p)
 %
 % See also SOLVESDP, BINVAR, INTVAR, BINARY, INTEGER
 
-% Author Johan Löfberg
-% $Id: bnb.m,v 1.60 2010-03-09 14:51:21 joloef Exp $
-
 % ********************************
 %% INITIALIZE DIAGNOSTICS IN YALMIP
 % ********************************
@@ -529,20 +526,13 @@ if p.K.f > 0 & ~isempty(p.binary_variables)
     end
 end
 
-%p = presolve_bounds_from_equalities(p);
 pid = 0;
 lowerhist = [];
 upperhist = [];
-%p.Musts = Musts;
-%poriginal.Musts = Musts;
 p.fixedvariable = [];
 p.fixdir = '';
-%Pseudo_UP = spalloc(length(p.c),100,0);
-%Pseudo_UP(:,1) =abs(p.c)/geomean(abs(p.c));
-%Pseudo_DOWN = spalloc(length(p.c),100,0);
-%Pseudo_DOWN(:,1) = abs(p.c)/geomean(abs(p.c));
-%p.initial_binary_variables = poriginal.binary_variables;
-%p.initial_integer_variables = poriginal.integer_variables;
+p.sosgroups = sosgroups;
+p.sosvariables = sosvariables;
 while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
     
     % ********************************************
@@ -601,12 +591,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         end
        
         output = bnb_solvelower(lowersolver,relaxed_p,upper+abs(upper)*1e-2+1e-4,lower);
-               
-%         if output.problem == 2 & ~isinf(lower)
-%             % Solver must have made a mistkae
-%              output.problem = 1;            
-%         end
-              
+                             
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -634,16 +619,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             catch
                 1
             end
-            % **************************************
-            % Hmm, don't remember why this fix...
-            % **************************************
-            %  if(p.K.l>0) & ~any(p.variabletype) & any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
-            %      output.problem = 1;
-            %  elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
-            %      output.problem = 1;
-            %  end
-            % But now changed to handle bug in bonmin which reports
-            % feasibility for an infeasible node in test_bnb_minlp_1
+ 
             if(p.K.l>0) & any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
                 output.problem = 1;
             elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
@@ -712,7 +688,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
                 poriginal.upper = upper;
                 poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output);
+                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);
                 if upper1 < upper
                     
                     if isfield(p.options,'plottruss')
@@ -804,8 +780,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         % **********************************
         p0_feasible = 1;
         p1_feasible = 1;
-        
-        
+                
         switch whatsplit
             case 'binary'
                 [p0,p1,index] = binarysplit(p,x,index,cost,[],sosgroups,sosvariables);
@@ -815,6 +790,9 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
                 
             case 'semi'
                 [p0,p1] = semisplit(p,x,index,cost,x_min);
+                
+            case 'sos1'
+                [p0,p1] = sos1split(p,x,index,cost,x_min);
                 
             otherwise
         end
@@ -832,9 +810,9 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         node1.binary_variables = p1.binary_variables;
         node1.semicont_variables = p1.semicont_variables;
         node1.semibounds = p1.semibounds;
-        % node1.Musts = p1.Musts;
         node1.pid = pid;pid = pid + 1;
-        % node1.projection = Ei;
+        node1.sosgroups = p1.sosgroups;
+        node1.sosvariables = p1.sosvariables;
         
         node0.lb = p0.lb;
         node0.ub = p0.ub;
@@ -849,16 +827,17 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         node0.binary_variables = p0.binary_variables;
         node0.semicont_variables = p0.semicont_variables;
         node0.semibounds = p0.semibounds;
-        % node0.Musts = p0.Musts;
         node0.pid = pid;pid = pid + 1;
-        % node0.projection = Ei;
-        
+        node0.sosgroups = p0.sosgroups;
+        node0.sosvariables = p0.sosvariables;
+            
         if p1_feasible
             stack = push(stack,node1);
         end
         if p0_feasible
             stack = push(stack,node0);
         end
+
     end
     
     % Lowest cost in any open node
@@ -889,6 +868,8 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         p.semibounds = node.semibounds;
         % p.Musts = node.Musts;
         p.pid = node.pid;
+        p.sosgroups = node.sosgroups;
+        p.sosvariables = node.sosvariables;
     end
     gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
     if isnan(gap)
@@ -957,18 +938,19 @@ end
 function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p)
 all_variables = [integer_variables(:);binary_variables(:)];
 
+if isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')
+    % All variables are in SOS1 constraints
+    for i = 1:length(p.sosgroups)        
+        dist(i) = (sum(x(p.sosgroups{i}))-max(x(p.sosgroups{i})))/length(p.sosgroups{i});
+    end
+    % Which SOS to branch on
+    [val,index] = max(dist);    
+    whatsplit = 'sos1';
+    globalindex = index;
+    return
+end
+
 switch options.bnb.branchrule
-    %     case 'pseudo'
-    %         % FIXME
-    %         for i = 1:length(all_variables)
-    %             fi = x(all_variables(i))-floor(all_variables(i));
-    %             PU = p.pu(all_variables(i),:);
-    %             PU = geomean(PU(PU>0));
-    %             PD = p.pd(all_variables(i),:);
-    %             PD = geomean(PD(PD>0));
-    %             D(i) = PU*(1-fi)+PD*fi;
-    %         end
-    %         [val,index] = max(D);
     case 'weight'
         interror = abs(x(all_variables)-round(x(all_variables)));
         [val,index] = max(abs(p.weight(all_variables)).*interror);
@@ -1047,10 +1029,10 @@ end
 
 p0.ub(variable)=0;
 p0.lb(variable)=0;
-% if length(friends) == 1
-%     p0.ub(friends)=1;
-%     p0.lb(friends)=1;
-% end
+if length(friends) == 1
+     p0.ub(friends) = 1;
+     p0.lb(friends) = 1;
+end
 
 p0.lower = lower;
 p0.depth = p.depth+1;
@@ -1060,8 +1042,8 @@ p0.binary_variables = new_binary;%setdiff1D(p0.binary_variables,variable);
 p1.ub(variable)=1;
 p1.lb(variable)=1;
 if length(friends) > 1
-    %    p1.ub(friends)=0;
-    %    p1.lb(friends)=0;
+    p1.ub(friends)=0;
+    p1.lb(friends)=0;
 end
 
 p1.binary_variables = new_binary;%p0.binary_variables;%setdiff1D(p1.binary_variables,variable);
@@ -1108,6 +1090,26 @@ if lb-current<0.5
     p1=p0;
     p0=pt;
 end
+
+function [p0,p1] = sos1split(p,x,index,lower,options,x_min)
+
+v = p.sosgroups{index};
+n = ceil(length(v)/2);
+v1 = v(randperm(length(v),n));
+v2 = setdiff(v,v1);
+%v1 = v(1:n);
+%v2 = v(n+1:end);
+
+% In first node, set v2 to 0 and v1 to sosgroup
+p0 = p;p0.lower = lower;
+p0.sosgroups{index} = v1;
+p0.ub(v2) = 0;
+
+% In second node, set v1 to 0 and v1 to sosgroup
+p1 = p;p1.lower = lower;
+p1.sosgroups{index} = v2;
+p1.ub(v1) = 0;
+
 
 function [p0,p1] = semisplit(p,x,index,lower,options,x_min)
 
