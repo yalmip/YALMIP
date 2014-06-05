@@ -127,9 +127,11 @@ end
 % *************************************************************************
 % Maybe new NDSDPVAR syntax
 % *************************************************************************
-if nargin > 2 & isa(varargin{3},'double') & ~isempty(varargin{3})
-    sys = ndsdpvar(varargin{:});
-    return
+if nargin > 2
+    if isa(varargin{3},'double') & ~isempty(varargin{3})
+        sys = ndsdpvar(varargin{:});
+        return
+    end
 end
 
 

@@ -65,7 +65,16 @@ if nargin == 1
     allStruct = yalmip('extstruct');
 end
 
-if isempty(nonlinears) & isempty(allextended) & all(ismembc(lmi_variables,solution.variables))
+if isempty(nonlinears) & isempty(allextended)
+    
+    try
+        % Fast, but not supported in octave
+        members = ismembc(lmi_variables,solution.variables);
+    catch
+        members = ismember(lmi_variables,solution.variables);
+    end
+    
+    if all(members)
 
     % speed up code for simple linear case
     values = solution.values;
@@ -87,6 +96,7 @@ if isempty(nonlinears) & isempty(allextended) & all(ismembc(lmi_variables,soluti
     end
 
     return
+    end
 end
 
 if nargin == 1
