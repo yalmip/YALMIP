@@ -1,8 +1,6 @@
 function varargout=beta(varargin)
 %BETA (overloaded)
 
-% Author Johan Löfberg
-% $Id: beta.m,v 1.4 2008-05-01 21:57:37 joloef Exp $
 switch class(varargin{1})
 
     case 'sdpvar'

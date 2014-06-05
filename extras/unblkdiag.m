@@ -5,9 +5,6 @@ function sys = unblkdiag(F)
 %
 % See also DISSECT
 
-% Author Johan Löfberg
-% $Id: unblkdiag.m,v 1.4 2006-01-17 15:49:08 joloef Exp $
-
 switch class(F)
     case 'lmi'
         sys = set([]);

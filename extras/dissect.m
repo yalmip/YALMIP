@@ -5,10 +5,6 @@ function varargout = dissect(X);
 %
 % See also UNBLKDIAG
 
-% Author Johan Löfberg
-% $Id: dissect.m,v 1.8 2009-04-29 11:38:00 joloef Exp $
-
-
 if isa(X,'constraint')
     X = set(X);
 end

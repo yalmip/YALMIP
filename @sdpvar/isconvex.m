@@ -6,7 +6,7 @@ function YESNONA = isconvex(p)
 % p: scalar SDPVAR object
 % T: The result (1: convex, 0: concave, NaN: cannot be determined)
 %
-% NOTE : Under development. Do not trust if you have monomial in your model
+% NOTE : Under development. Do not trust if you have monomials in your model
 %
 % Example
 % sdpvar x y
@@ -17,8 +17,6 @@ function YESNONA = isconvex(p)
 % isconvex(max(x,exp(x+y))) will return 1
 % isconvex(-max(x,exp(x+y))) will return 0
 % isconvex(max(x,min(x,-x))) will return NaN
-
-% Author Johan Löfberg 
 
 YESNONA = NaN;
 [F,failure,cause] = expandmodel([],p,sdpsettings('allownonconvex',0,'allowmilp',0));

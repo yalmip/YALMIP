@@ -1,7 +1,4 @@
-function output = callquadprog(interfacedata)
-
-% Author Johan Löfberg
-% $Id: callquadprog.m,v 1.17 2007-08-02 11:39:36 joloef Exp $
+function output = callqpoases(interfacedata)
 
 options = interfacedata.options;
 model = yalmip2quadprog(interfacedata);

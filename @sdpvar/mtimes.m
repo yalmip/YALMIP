@@ -1,9 +1,6 @@
 function Z = mtimes(X,Y)
 %MTIMES (overloaded)
 
-% Author Johan Löfberg
-% $Id: mtimes.m,v 1.81 2009-10-21 14:35:10 joloef Exp $
-
 % Check classes
 X_is_spdvar = isa(X,'sdpvar');
 Y_is_spdvar = isa(Y,'sdpvar');
