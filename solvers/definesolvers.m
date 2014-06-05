@@ -244,6 +244,16 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
 
+% Needed for Later Octave version (glpkmex is depracated)
+solver(i) = lpsolver;
+solver(i).tag     = 'GLPK';
+solver(i).version = 'GLPKMEX';
+solver(i).checkfor= {'glpk.m'};
+solver(i).call    = 'callglpkoctave';
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+i = i+1;
+
 solver(i) = lpsolver;
 solver(i).tag     = 'CDD';
 solver(i).version = 'CDDMEX';
