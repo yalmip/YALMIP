@@ -180,7 +180,7 @@ if p.options.cutsdp.verbose
     disp(['* Max iterations : ' num2str(p.options.cutsdp.maxiter)]);
 end
 
-if p.options.bnb.verbose;            disp(' Node       Infeasibility.     Lower    LP cuts');end;
+if p.options.bnb.verbose;            disp(' Node       Infeasibility.     Lower bound    LP cuts');end;
 
 %% Initialize diagnostic
 infeasibility = -inf;
@@ -199,12 +199,12 @@ if p.K.q(1) > 0
     for i = 1:length(p.K.q)
         n = p.K.q(i);
         newF = p.F_struc(top,:);
-
+        
         % Clean
         newF(abs(newF)<1e-12) = 0;
         keep=find(any(newF(:,2:end),2));
         newF = newF(keep,:);
-
+        
         p_lp.F_struc = [p_lp.F_struc;newF];
         p_lp.K.l = p_lp.K.l + size(newF,1);
         top = top+n;
@@ -232,7 +232,7 @@ if p.K.s(1)>0
         newF(abs(newF)<1e-12) = 0;
         keep=find(any(newF(:,2:end),2));
         newF = newF(keep,:);
-
+        
         p_lp.F_struc = [p_lp.F_struc;newF];
         p_lp.K.l = p_lp.K.l + size(newF,1);
         top = top+n^2;
@@ -316,13 +316,13 @@ while goon
         p_lp.F_struc(p_lp.K.f+redundant,:) = [];
         p_lp.K.l = p_lp.K.l-length(redundant);
     end
-
+    
     % Add lower bound
     if ~isinf(lower)
         p_lp.F_struc = [p_lp.F_struc;-lower p_lp.c'];
         p_lp.K.l = p_lp.K.l + 1;
     end
-
+    
     if p.options.cutsdp.nodefix
         % Try to find variables to fix w.l.o.g
         [fix_up,fix_down] = presolve_fixvariables(A,b,c,p_lp.lb,p_lp.ub,sdpmonotinicity);
@@ -342,15 +342,15 @@ while goon
             p_lp.ub(fix_down) = p_lp.lb(fix_down);
         end
     end
-
+    
     output = feval(cutsolver,p_lp);
-  
+    
     % Remove lower bound (avoid accumulating them)
     if ~isinf(lower)
         p_lp.K.l = p_lp.K.l - 1;
         p_lp.F_struc = p_lp.F_struc(1:end-1,:);
     end
-         
+    
     if output.problem == 1 | output.problem == 12
         % LP relaxation was infeasible, hence problem is infeasible
         feasible = 0;
@@ -360,32 +360,30 @@ while goon
         lower = inf;
     else
         % Relaxed solution
-        x = output.Primal;
-       % load dummy
-       % nons = [nons;x'];
-       % save dummy nons
+        x = output.Primal;      
         lower = p.f+p.c'*x+x'*p.Q*x;
-                        
+        
         infeasibility = 0;
         [p_lp,infeasibility] = add_socp_cut(p,p_lp,x,infeasibility);
         [p_lp,infeasibility] = add_sdp_cut(p,p_lp,x,infeasibility);
-                
+        [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility);
+        
         if ~isempty(pool)
             res = pool*[1;x];
             j = find(res<0)
             if ~isempty(j)
-            p_lp.F_struc = [p_lp.F_struc;pool(j,:)];
-            p_lp.K.l = p_lp.K.l + length(j);
-            pool(j,:)=[];
+                p_lp.F_struc = [p_lp.F_struc;pool(j,:)];
+                p_lp.K.l = p_lp.K.l + length(j);
+                pool(j,:)=[];
             end
         end
-            
- 
+        
+        
         goon = infeasibility <= p.options.cutsdp.feastol;
         goon = goon & feasible;
         goon = goon & (solved_nodes < p.options.cutsdp.maxiter-1);
     end
-
+    
     solved_nodes = solved_nodes + 1;
     if p.options.cutsdp.verbose;fprintf(' %4.0f :      %12.3E      %12.3E      %2.0f\n',solved_nodes,infeasibility,lower,p_lp.K.l-p.K.l);end
 end
@@ -394,52 +392,103 @@ D_struc = [];
 
 
 
-function [p_lp,infeasibility] = add_sdp_cut(p,p_lp,x,infeasibility);
+function [p_lp,infeasibility] = add_sdp_cut(p,p_lp,x,infeasibility_in);
 
 if p.K.s(1)>0
-    % Add cuts
-    top = p.K.f+p.K.l+p.K.q+1;
-    for i = 1:1:length(p.K.s)
-        n = p.K.s(i);
-        X = p.F_struc(top:top+n^2-1,:)*[1;x];
-        X = reshape(X,n,n);X = (X+X')/2;
-        Y = randn(n,n);
-        newcuts = 1;
-        newF = zeros(n,size(p.F_struc,2));
-        [d,v] = eig(X);
-        infeasibility = min(infeasibility,min(diag(v)));
-        dummy=[];
-        newF = [];
-        if infeasibility<0
-            [ii,jj] = sort(diag(v));
-            for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'%find(diag(v<0))%1:1%length(v)
-                if v(m,m)<-1e-12
-                    %d(:,m) = round(d(:,m));
-                    %d(:,m) = quadprog(X,zeros(length(X),1),[],[],[],[],-ones(length(X),1),ones(length(X),1),d(:,m));
-                    if round(d(:,m))'*X*round(d(:,m)) < 0 %& round(d(:,m))'*X*round(d(:,m))<0.2*d(:,m)'*X*d(:,m)
-                         d(:,m) = round(d(:,m));
-                       % d(:,m) = quadprog(X,zeros(14,1),[],[],[],[],-ones(14,1),ones(14,1),d(:,m));
-                    end
-                    bA =  d(:,m)'*(kron(d(:,m),speye(n)).'*p.F_struc(top:top+n^2-1,:));
-                    b = bA(:,1);
-                    A = -bA(:,2:end);                   
-                    newF = real([newF;[b -A]]);                   
-                    newcuts = newcuts + 1;
-                end
-            end
-        end
+    % Solution found by MILP solver
+    xsave = x;
+    for i = 1:1:length(p.K.s) 
+        x = xsave;
         
-        newF(abs(newF)<1e-12) = 0;
-        keep=find(any(newF(:,2:end),2));
-        newF = newF(keep,:);
-        if size(newF,1)>0
-            p_lp.F_struc = [p_lp.F_struc;newF];
-            p_lp.K.l = p_lp.K.l + size(newF,1);
-            [i,j] = sort(p_lp.F_struc*[1;x]);
+        iter = 1;
+        infeasibility = -1;
+        while iter <= 2 & (infeasibility(end) < -1e-9)
+            % Add one cut b + a'*x >= 0 (if x infeasible)
+            [X,p_lp,infeasibility(iter),a,b] = add_one_sdp_cut(p,p_lp,x,i);
+            if infeasibility(iter) < -1e-9
+                % Project current point on hyper-plane and move towards the
+                % SDP feasible region, and the iterate a couple of
+                % iterations to generate a deeper cut
+                x = x + a*(-b-a'*x)/(a'*a);
+            end
+            iter = iter + 1;
         end
-        top = top+n^2;
+    end
+    infeasibility = min(infeasibility_in,infeasibility(1));
+else
+    infeasibility = min(infeasibility_in,0);
+end
+
+
+function  [X,p_lp,infeasibility,asave,bsave] = add_one_sdp_cut(p,p_lp,x,i);
+
+newcuts = 0;
+newF = [];
+n = p.K.s(i);
+top = p.K.f+p.K.l+sum(p.K.q)+sum(p.K.s(1:i-1).^2)+1;
+X = p.F_struc(top:top+n^2-1,:)*[1;x];
+X = reshape(X,n,n);X = (X+X')/2;
+asave = [];
+bsave = [];
+% First check if it happens to be psd. Then we are done. Quicker
+% than computing all eigenvalues
+% This also acts as a slight safe-guard in case the sparse eigs
+% fails to prove that the smallest eigenvalue is non-negative
+[R,indefinite] = chol(X+eye(length(X))*1e-12);
+if indefinite
+    if n < 1000
+        [d,v] = eig(X);
+    else
+        [d,v] = eigs(sparse(X),25,'SA');
+    end
+    d(abs(d)<1e-12)=0;
+    infeasibility = min(diag(v));
+else
+    infeasibility = 0;
+end
+
+
+if infeasibility<0
+    [ii,jj] = sort(diag(v));
+    for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'%find(diag(v<0))%1:1%length(v)
+        if v(m,m)<-1e-12
+            bA =  d(:,m)'*(kron(d(:,m),speye(n)).'*p.F_struc(top:top+n^2-1,:));
+            b = bA(:,1);
+            A = -bA(:,2:end);            
+            newF = real([newF;[b -A]]);
+            newcuts = newcuts + 1;
+            if m == 1
+                asave = -A(:);
+                bsave = b;
+            end
+        end        
     end
 end
+
+newF(abs(newF)<1e-12) = 0;
+keep=find(any(newF(:,2:end),2));
+newF = newF(keep,:);
+if size(newF,1)>0    
+    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);newF;p_lp.F_struc(1+p_lp.K.f:end,:)];  
+    p_lp.K.l = p_lp.K.l + size(newF,1);
+end
+
+
+function [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility)
+if length(x) ==  length(p.binary_variables)
+    % Add a nogood cut. Might already have been generated by
+    % the SDP cuts, but it doesn't hurt to add it
+    zv = find(x == 0);
+    nz = find(x == 1);
+    a = zeros(1,length(x));
+    a(zv) = 1;
+    a(nz) = -1;
+    b = length(x)-length(zv)-1;
+    newF = [b a];
+    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);newF;p_lp.F_struc(1+p_lp.K.f:end,:)];
+    p_lp.K.l = p_lp.K.l + 1;
+end
+
 
 function [p_lp,infeasibility] = add_socp_cut(p,p_lp,x,infeasibility);
 
@@ -482,6 +531,6 @@ end
 function plotyalmippolytope(p_lp)
 
 x = sdpvar(length(p_lp.c),1);
-  A = -p_lp.F_struc(p_lp.K.f + (1:p_lp.K.l),2:end);
-        b = p_lp.F_struc(p_lp.K.f + (1:p_lp.K.l),1);
-        plot([A*x < b,-10<x<10]);
+A = -p_lp.F_struc(p_lp.K.f + (1:p_lp.K.l),2:end);
+b = p_lp.F_struc(p_lp.K.f + (1:p_lp.K.l),1);
+plot([A*x < b,-10<x<10]);
