@@ -1,5 +1,5 @@
 function issym=isessentiallysymmetric(X)
-%ISESSENTIALLYSYMMETRIC Check if variable is symmetric
+%ISESSENTIALLYSYMMETRIC Check if variable is essentially symmetric
 
 % Weird name to account for MATLAB2014 and later where issymmetric exist
 
