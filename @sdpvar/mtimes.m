@@ -246,6 +246,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             current_offset = size(mt_hash,1);
 
             YB = Y.basis(:,1+index_Y(theyvars(:)'));
+            if isequal(YB,speye(size(YB,1)))
+                simpleMultiplicationwithI = 1;
+            else
+                simpleMultiplicationwithI = 0;
+            end
             for ix = thexvars(:)'
 
                 mt_x = local_mt(:,ix);
@@ -256,26 +261,33 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 % in one shot using vectorization and Kronecker tricks
                 % Optimized and treat special case scalar*matrix etc
                 if x_isscalar
-                    Xibase = X.basis(:,1+index_X(ix));
+                    allprodbase = X.basis(:,1+index_X(ix));
                     %allprodbase = Xibase * Y.basis(:,1+index_Y(testthese));
-                    allprodbase = Xibase * YB;
+                    allprodbase = allprodbase * YB;
                 elseif y_isscalar
-                    Xibase = X.basis(:,1+index_X(ix));
+                    allprodbase = X.basis(:,1+index_X(ix));
                     %allprodbase =  Xibase * Y.basis(:,1+index_Y(testthese));
-                    allprodbase =  Xibase * YB;
+                    allprodbase =  allprodbase * YB;                                            
                 elseif inner_vector_product
-                    Xibase = X.basis(:,1+index_X(ix)).';
+                    allprodbase = X.basis(:,1+index_X(ix)).';
                     %allprodbase = Xibase*Y.basis(:,1+index_Y(testthese));
-                    allprodbase = Xibase*YB;
+                    if ~simpleMultiplicationwithI
+                        allprodbase = allprodbase*YB;    
+                    end
                 else
-                    Xibase = reshape(X.basis(:,1+index_X(ix)),nx,mx);
-                    temp = kron(speyemy,Xibase);
+                    allprodbase = reshape(X.basis(:,1+index_X(ix)),nx,mx);
+                    allprodbase = kron(speyemy,allprodbase);
                     %allprodbase = temp * Y.basis(:,1+index_Y(testthese));
-                    allprodbase = temp * YB;
+                    allprodbase = allprodbase * YB;
                 end
 
                 % Keep non-zero matrices
-                nonzeromatrices = find(sum(abs(allprodbase),1)>1e-12);
+                if size(allprodbase,1)==1
+                   nonzeromatrices = find(allprodbase);                
+                   nonzeromatrices = nonzeromatrices(find(abs(allprodbase(nonzeromatrices))>1e-12));                    
+                else                    
+                    nonzeromatrices = find(sum(abs(allprodbase),1)>1e-12);
+                end                               
                 testthese = testthese(nonzeromatrices);
                 allprodbase = allprodbase(:,nonzeromatrices);
 
@@ -284,7 +296,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 if prod(size(mt_x))==1 % Bug in Solaris and Linux, ML 6.X
                     allmt_xplusy = local_mt(:,testthese) + sparse(repmat(full(mt_x),1,nyvars));
                 else
-                    allmt_xplusy = local_mt(:,testthese) + repmat(mt_x,1,nyvars);
+                    allmt_xplusy = bsxfun(@plus,local_mt(:,testthese),mt_x);
+                 %   allmt_xplusy = local_mt(:,testthese) + repmat(mt_x,1,nyvars);
                 end
                 allhash = allmt_xplusy'*hash;
                 thesewhereactuallyused = zeros(1,nyvars);
