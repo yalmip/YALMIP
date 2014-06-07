@@ -24,9 +24,6 @@ function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend)
 %
 % See also DUAL, SOLVESDP, PRIMALIZE
 
-% Author Johan Löfberg
-% $Id: dualize.m,v 1.62 2007-05-15 12:06:03 joloef Exp $
-
 % Check for unsupported problems
 
 if isempty(F)
