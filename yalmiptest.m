@@ -36,10 +36,13 @@ if ~exist('callsedumi.m')
 end
 
 detected = which('yalmip.m','-all');
-if length(detected)>1
-    disp('You seem to have multiple installations of YALMIP in your path. Please correct this...');
-    detected
-    return
+% Will not work in Octave as Octave only reports first item found?
+if isa(detected,'cell') 
+    if length(detected)>1
+        disp('You seem to have multiple installations of YALMIP in your path. Please correct this...');
+        detected
+        return
+    end
 end
 
 donttest = 0;
