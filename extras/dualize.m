@@ -24,9 +24,6 @@ function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend)
 %
 % See also DUAL, SOLVESDP, PRIMALIZE
 
-% Author Johan Löfberg
-% $Id: dualize.m,v 1.62 2007-05-15 12:06:03 joloef Exp $
-
 % Check for unsupported problems
 
 if isempty(F)
@@ -329,6 +326,7 @@ end
 keep = ones(length(F),1);
 isSDP  = is(F,'sdp');
 isSOCP = is(F,'socp');
+isVecSOCP = is(F,'vecsocp');
 
 % Pre-allocate all SDP slacks in one call
 % This is a lot faster
@@ -369,6 +367,17 @@ for i = 1:length(F)
         F_AXb =  F_AXb + set(slack==0);
         F_CONE = F_CONE + set(cone(S(2:end),S(1)));
         shiftMatrix{end+1} = spalloc(n,1,0);
+        X{end+1}=S;
+        keep(i)=0;
+    elseif isVecSOCP(i)
+         % Vectorized SOC dual-form cone
+        Fi = sdpvar(F(i));
+        [n,m]  = size(Fi);
+        S  = sdpvar(n,m,'full');        
+        slack = Fi-S;
+        F_AXb =  F_AXb + set(slack==0);
+        F_CONE = F_CONE + set(cone(S));
+        shiftMatrix{end+1} = spalloc(n,m,0);
         X{end+1}=S;
         keep(i)=0;
     end
@@ -461,7 +470,7 @@ shiftMatrix={shiftMatrix{index}};
 shift = [];
 for i = 1:length(F_CONE)
     ns(i) = length(X{i});
-    if size(X{i},2)==1
+    if size(X{i},2)==1 | (size(X{i},1) ~= size(X{i},2))
         % SOCP
         shift = [shift;shiftMatrix{i}(:)];
     else
@@ -674,11 +683,13 @@ for j = 1:1:n_cones
         start = start + length(ind);
     else
         % Second order cone
-        ind = 1:ns(j);
+        ind = 1:prod(size(X{j}));
+        %ind = 1:ns(j);
 
         % Get constraint AiX=b
         Fi = Fbase_X(1:length(b),start+(1:length(ind)))';
-        Ai = spalloc(ns(j),length(b),nnz(Fi));
+        %Ai = spalloc(ns(j),length(b),nnz(Fi));
+        Ai = spalloc(prod(size(X{j})),length(b),nnz(Fi));
         Ai(ind,:) = Fi;
         vecA{j} = Ai;
         start = start + length(ind);
@@ -713,7 +724,8 @@ for j = 1:1:n_cones
         C{j} = (C{j}+ C{j}')/2;
         start = start + length(indi);
     else
-        ind = 1:ns(j);
+        %ind = 1:ns(j);
+        ind = 1:prod(size(X{j}));
         C{j} = spalloc(ns(j),1,0);
         C{j}(ind) = -Fbase_X(end,start+(1:length(ind)));
         start = start + length(ind);
@@ -741,9 +753,12 @@ for j = 1:n_cones
         % Fast call avoids symmetry check
         Fdual = Fdual + lmi(S,[],[],[],1);
     else
-        Ay = reshape(vecA{j}*y,ns(j),1);
+        Ay = reshape(vecA{j}*y,[],1);
+        %Ay = reshape(vecA{j}*y,ns(j),1);
         S = C{j}-Ay;
-        Fdual = Fdual + lmi(cone(S(2:end),S(1)));
+        S = reshape(S,size(X{j},1),[]);
+        %Fdual = Fdual + lmi(cone(S(2:end),S(1)));
+        Fdual = Fdual + lmi(cone(S));
     end
 end
 if n_lp > 0

@@ -46,8 +46,22 @@ end
 if length(Foriginal)>0
     nv = yalmip('nvars');
     yalmip('setbounds',1:nv,repmat(-inf,nv,1),repmat(inf,nv,1));    
-    LU = getbounds(Foriginal);    
-    LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),yalmip('extvariables'));               
+    LU = getbounds(Foriginal);
+    extstruct = yalmip('extstruct');
+    extendedvariables = yalmip('extvariables');
+    for i = 1:length(extstruct)
+        switch extstruct(i).fcn
+            case 'abs'
+                LU = extract_bounds_from_abs_operator(LU,extstruct,extendedvariables,i);
+            case 'norm'
+                LU = extract_bounds_from_norm_operator(LU,extstruct,extendedvariables,i);
+            case 'min_internal'
+                LU = extract_bounds_from_min_operator(LU,extstruct,extendedvariables,i);
+            case 'max_internal'
+                LU = extract_bounds_from_max_operator(LU,extstruct,extendedvariables,i);
+            otherwise
+        end
+    end
     yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
 end
 

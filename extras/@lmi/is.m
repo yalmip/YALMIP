@@ -41,6 +41,11 @@ else
                 Fi = F.clauses{i};
                 YESNO(i,1) = (Fi.type==4);
             end
+        case {'vecsocp'}
+            for i = 1:length(F.clauses)
+                Fi = F.clauses{i};
+                YESNO(i,1) = (Fi.type==54);
+            end            
         case 'pcone'
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
