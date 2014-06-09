@@ -8,11 +8,11 @@ function varargout = subsref(varargin)
 % Stupid first slice call (supported by MATLAB)
 % x = sdpvar(2);x(1,:,:)
 if length(varargin{2})==1
-    if  length(varargin{2}.subs) > 2 & isequal(varargin{2}.type,'()')
+    if  length(varargin{2}.subs) > 2 && isequal(varargin{2}.type,'()')
         i = 3;
         ok = 1;
-        while ok & (i <= length(varargin{2}.subs))
-            ok = ok & (isequal(varargin{2}.subs{i},1) | isequal(varargin{2}.subs{i},':'));
+        while ok && (i <= length(varargin{2}.subs))
+            ok = ok && (isequal(varargin{2}.subs{i},1) || isequal(varargin{2}.subs{i},':'));
             i = i + 1;
         end
         if ok
@@ -23,7 +23,7 @@ if length(varargin{2})==1
     end
 end
 
-if (isequal(varargin{2}.type,'()') & ((isa(varargin{2}.subs{1},'sdpvar')) | (length(varargin{2}.subs)==2 & isa(varargin{2}.subs{2},'sdpvar'))))
+if (isequal(varargin{2}.type,'()') && ((isa(varargin{2}.subs{1},'sdpvar')) || (length(varargin{2}.subs)==2 && isa(varargin{2}.subs{2},'sdpvar'))))
     % *****************************************
     % Experimental code for varaiable indicies
     % *****************************************

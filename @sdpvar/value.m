@@ -67,12 +67,7 @@ end
 
 if isempty(nonlinears) & isempty(allextended)
     
-    try
-        % Fast, but not supported in octave
-        members = ismembc(lmi_variables,solution.variables);
-    catch
-        members = ismember(lmi_variables,solution.variables);
-    end
+    members = ismembcYALMIP(lmi_variables,solution.variables);
     
     if all(members)
 
@@ -118,7 +113,7 @@ end
 
 % Evaluate the extended operators
 if ~isempty(allextended)
-    extended_variables = find(ismembc(X.lmi_variables,allextended));
+    extended_variables = find(ismembcYALMIP(X.lmi_variables,allextended));
     if ~isempty(extended_variables)
         for i = 1:length(extended_variables)
             extvar = lmi_variables(extended_variables(i));

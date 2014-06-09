@@ -164,8 +164,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 in_Y_logical = [ones(1,length(Y.lmi_variables)) zeros(1,length(X.lmi_variables))];
             else
                 all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
-                in_X_logical = ismembc(all_lmi_variables,X.lmi_variables);
-                in_Y_logical = ismembc(all_lmi_variables,Y.lmi_variables);
+                in_X_logical = ismembcYALMIP(all_lmi_variables,X.lmi_variables);
+                in_Y_logical = ismembcYALMIP(all_lmi_variables,Y.lmi_variables);
             end
         end
        % all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);

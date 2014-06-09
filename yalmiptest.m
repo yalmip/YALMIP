@@ -46,7 +46,7 @@ if isa(detected,'cell')
 end
 
 donttest = 0;
-if (nargin==1) & isa(prefered_solver,'char') & strcmp(prefered_solver,'test')
+if (nargin==1) && isa(prefered_solver,'char') && strcmp(prefered_solver,'test')
     donttest = 0;
     prefered_solver = '';    
 else

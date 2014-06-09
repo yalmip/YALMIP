@@ -1,4 +1,4 @@
-function z=ihatethis(x,i,j);
+function z=extsubsref(x,i,j);
 
 if nargin < 3
     z = x(i);

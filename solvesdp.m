@@ -46,7 +46,7 @@ if length(varargin)>=2
 end
 
 if length(varargin)>=2
-    if isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>1
+    if isa(varargin{2},'sdpvar') && prod(size(varargin{2}))>1
         % Several objectives
         diagnostic = solvesdp_multiple(varargin{:});
         return
@@ -517,21 +517,21 @@ classification = 0;
 m = length(varargin);
 if m==1
     classification = 2;
-elseif m>=3 & isstruct(varargin{3})
+elseif m>=3 && isstruct(varargin{3})
     classification = 2;
-elseif m>=4 & isstruct(varargin{4})
+elseif m>=4 && isstruct(varargin{4})
     classification = 1;
-elseif m>=2 & isa(varargin{2},'lmi')
+elseif m>=2 && isa(varargin{2},'lmi')
     classification = 1;
-elseif m>=3 & isa(varargin{3},'sdpvar')
+elseif m>=3 && isa(varargin{3},'sdpvar')
     classification = 1;
-elseif m>=2 & isa(varargin{2},'sdpvar') & min(size(varargin{2}))==1
+elseif m>=2 && isa(varargin{2},'sdpvar') & min(size(varargin{2}))==1
     classification = 2;
-elseif m>=2 & isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>=1
+elseif m>=2 && isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>=1
     classification = 1;
-elseif m>=2 & isa(varargin{2},'logdet')
+elseif m>=2 && isa(varargin{2},'logdet')
     classification = 2;
-elseif m==2 & isempty(varargin{2})
+elseif m==2 && isempty(varargin{2})
     classification = 2;
 end
 

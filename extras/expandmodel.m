@@ -140,7 +140,7 @@ else
 end
 
 % Index to variables modeling operators
-extended = find(ismembc(variables,extendedvariables));
+extended = find(ismembcYALMIP(variables,extendedvariables));
 
 if nargin < 3
     options = sdpsettings;
@@ -201,7 +201,7 @@ end
 % *************************************************************************
 % OK, looks good. Apply recursive expansion on the objective
 % *************************************************************************
-index_in_extended = find(ismembc(variables,extendedvariables));
+index_in_extended = find(ismembcYALMIP(variables,extendedvariables));
 allExtStructs = yalmip('extstruct');
 if ~isempty(index_in_extended)
     [F_expand,failure,cause] = expand(index_in_extended,variables,h,F_expand,extendedvariables,monomtable,variabletype,'objective',0,options,method,[],allExtStructs,w);
@@ -227,7 +227,7 @@ while constraint <=length(F) & ~failure
             end
         end
         
-        index_in_extended = find(ismembc(variables,extendedvariables));
+        index_in_extended = find(ismembcYALMIP(variables,extendedvariables));
         if ~isempty(index_in_extended)
             if is(F(constraint),'equality')
                 if options.allowmilp | options.allownonconvex
@@ -259,7 +259,7 @@ if ~isempty(MARKER_VARIABLES)
     for j = equalities
         v = getvariables(F(j));
         if length(v)==1
-            if ismembc(v,MARKER_VARIABLES)
+            if ismembcYALMIP(v,MARKER_VARIABLES)
                 remove = [remove j];
             end
         end
