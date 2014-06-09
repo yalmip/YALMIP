@@ -36,6 +36,10 @@ if ~isempty(F)
     end
 end
 
+if isa(F,'constraint')
+    F = lmi(F);
+end
+
 if nargin < 3
     options = sdpsettings;
 end
