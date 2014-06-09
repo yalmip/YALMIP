@@ -356,8 +356,7 @@ try
     res = A*x-b;
     assert(nnz(clean([res res]'*[res res]-res'*res,1e-8))==0)
     assert(isreal(clean(res'*res,1e-8)))
-    
-    sdpvar x(1,1,'full','complex');
+
     assert(isreal(x*x'))
               
     result = 'N/A';
