@@ -20,7 +20,7 @@ for i = 1:Counter
             info.lin = [info.lin;size(Fi,1) size(Fi,2) F.LMIid(i)];
         case 3
             info.equ = [info.equ;size(Fi,1) size(Fi,2) F.LMIid(i)];
-        case 4
+        case {4,54}
             info.soc = [info.soc;size(Fi,1) size(Fi,2) F.LMIid(i)];
         case 5
             info.rlc = [info.rlc;size(Fi,1) size(Fi,2) F.LMIid(i)];

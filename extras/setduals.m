@@ -25,9 +25,12 @@ if ~isempty(D_struc)
     end
     
     if ~isempty(Finfo.soc)
+        k = 1;
         for i = 1:size(Finfo.soc,1)
             lmi_index = [lmi_index;Finfo.soc(i,3)];
-            duals{j}=Z.q{i};j = j+1;
+            duals{j}=[Z.q{k:k+Finfo.soc(i,2)-1}];
+            j = j+1;
+            k = k + Finfo.soc(i,2);
         end
     end
     
@@ -46,6 +49,7 @@ if ~isempty(D_struc)
             top = top+Finfo.lin(i,1)*Finfo.lin(i,2);
         end
     end
+    
     if ~isempty(Finfo.equ)
         top=1;
         for i = 1:size(Finfo.equ,1)
