@@ -872,7 +872,7 @@ if (K.f>0)
         F_struc = F_struc(K.f+1:end,:);
         K.f = 0;
         Fold = F;
-        [nlmi neq]=size(F);
+        [nlmi neq]=sizeOLD(F);
         iseq = is(Fold(1:(nlmi+neq)),'equality');
         F = Fold(find(~iseq));
         Fremoved = Fold(find(iseq));
