@@ -1,4 +1,4 @@
-function Z = minus(P)
+function Z = uminus(P)
 %display           Overloaded
 
 % Author Johan Löfberg 

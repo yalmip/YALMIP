@@ -1,5 +1,5 @@
-function y = plus(X,Y)
-%PLUS (overloaded)
+function y = minus(X,Y)
+%MINUS (overloaded)
 
 % Author Johan Löfberg
 % $Id: minus.m,v 1.1 2005-10-12 16:05:54 joloef Exp $
