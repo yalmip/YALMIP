@@ -215,7 +215,7 @@ if ~isempty(nonlinears)
         used_in_monom = find(monom_i);
         
         if ~isempty(all_extended_variables)
-            extended_variables = find(ismembc(used_in_monom,all_extended_variables));
+            extended_variables = find(ismembcYALMIP(used_in_monom,all_extended_variables));
             if ~isempty(extended_variables)
                 for ii = 1:length(extended_variables)
                     extvar = used_in_monom(extended_variables(ii));
