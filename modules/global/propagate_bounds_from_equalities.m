@@ -22,7 +22,7 @@ end
 if p.K.f >0
     interestingRows = find(p_F_struc(:,1));
     if ~isempty(interestingRows)
-        for j = interestingRows%1:p.K.f     
+        for j = interestingRows(:)'  
             thisrow = p_F_struc(j,:);
             if thisrow(1)<0
                 thisrow = -thisrow;
