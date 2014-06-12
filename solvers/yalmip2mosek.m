@@ -59,7 +59,7 @@ end
 if K.q(1)>0
     nof_new = sum(K.q);
     prob.a = [prob.a [spalloc(K.f,nof_new,0);spalloc(K.l,nof_new,0);speye(nof_new)]];
-    prob.a(1+K.f+K.l:end,1:length(c)) = prob.a(1+K.f+K.l:end,1:length(c));
+    %prob.a(1+K.f+K.l:end,1:length(c)) = prob.a(1+K.f+K.l:end,1:length(c));
     prob.blc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end);
     prob.buc(1+K.f+K.l:end) = prob.buc(1+K.f+K.l:end);
     prob.c = [prob.c;zeros(nof_new,1)];
