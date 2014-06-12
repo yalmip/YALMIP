@@ -35,9 +35,9 @@ if ~isempty(interfacedata.binary_variables)
 end
 
 if ~isempty(sigmonial_variables) | isequal(interfacedata.solver.version,'GEOMETRIC')
-    [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);          
+    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);          
 else
-    [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_lpqpsocpsdp(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);        
+    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);        
 end
 
 infostr = yalmiperror(problem,'MOSEK');	
@@ -52,8 +52,8 @@ end
 
 % Save all data from the solver?
 if options.savesolveroutput
+    solveroutput.r = r;
     solveroutput.res = res;
-    solveroutput.sol = sol;
     
 else
     solveroutput = [];
@@ -69,10 +69,10 @@ output.solverinput = solverinput;
 output.solveroutput= solveroutput;
 output.solvertime  = solvertime;
 
-function [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_lpqpsocpsdp(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);
+function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);
 
 if nnz(Q)==0 & isempty(integer_variables) && isempty(x0)
-    [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_lpqpsocpsdpdual(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);
+    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdpdual(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0);
     return
 end
 
@@ -145,19 +145,19 @@ if options.savedebug
 end
 
 % Call MOSEK
-[res,sol,solvertime] = doCall(prob,param,options);
+[r,res,solvertime] = doCall(prob,param,options);
 
 x = [];
 D_struc = [];
-if (res == 1010) || (res == 1011) | (res==1001)
+if (r == 1010) || (r == 1011) | (r==1001)
     problem = -5;
-elseif res == 1200
+elseif r == 1200
     problem = 7;
-elseif res == 10007
+elseif r == 10007
     problem = 16;    
 else
     % Recover solutions
-    sol = sol.sol;
+    sol = res.sol;
     if isempty(integer_variables)
         x = sol.itr.xx(1:length(c)); % Might have added new ones                
         D_struc = (sol.itr.suc-sol.itr.slc);        
@@ -188,10 +188,11 @@ else
     end
 end
 
-function [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);
+function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);
    
 x = [];
 D_struc = [];
+r = [];
 res = [];
 solvertime = 0;
 [prob,problem] = yalmip2geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);
@@ -240,7 +241,7 @@ if problem == 0
     end
 end
 
-function [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_lpqpsocpsdpdual(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0)
+function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdpdual(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables,x0)
 
 % Convert if the caller is bnb or bmibnb which might have appended bounds
 % Sure, we could setup model with bounds, but... 
@@ -269,22 +270,22 @@ if K.s(1)>0
    prob = appendSDPdata(F_struc,K,prob);
 end
 
-[res,sol,solvertime] = doCall(prob,param,options);
+[r,res,solvertime] = doCall(prob,param,options);
 
 try
-    x = sol.sol.itr.y;
+    x = res.sol.itr.y;
 catch
     x = nan(length(model.c),1);    
 end
 
 if options.saveduals & ~isempty(x)
-    D_struc = [sol.sol.itr.xx];    
+    D_struc = [res.sol.itr.xx];    
     top = 1;
     for i = 1:length(K.s)
         X = zeros(K.s(i));
         n = K.s(i);
         I = find(tril(ones(n)));
-        X(I) = sol.sol.itr.barx(top:((top+n*(n+1)/2)-1));
+        X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
         X = X + tril(X,-1)';
         D_struc = [D_struc;X(:)];
         top = top + n*(n+1)/2;
@@ -293,7 +294,7 @@ else
     D_struc = [];
 end
 
-problem = MosekYALMIPError(sol);
+problem = MosekYALMIPError(res);
 
 function [res,sol,solvertime] = doCall(prob,param,options)
 
@@ -306,17 +307,17 @@ else
 end
 solvertime = etime(clock,solvertime);
 
-function problem = MosekYALMIPError(sol)
+function problem = MosekYALMIPError(res)
 
-if sol.rcode == 2001
+if res.rcode == 2001
     problem = 1;
     return
-elseif sol.rcode == 10007
+elseif res.rcode == 10007
     problem = 16;
     return
 end
 
-switch sol.sol.itr.prosta
+switch res.sol.itr.prosta
     case 'PRIMAL_AND_DUAL_FEASIBLE'        
         problem = 0;
     case 'DUAL_INFEASIBLE'

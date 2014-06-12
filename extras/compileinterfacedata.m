@@ -647,7 +647,7 @@ end
 % *************************************************************************
 %% CREATE OBJECTIVE FUNCTION c'*x+x'*Q*x
 % *************************************************************************
-showprogress('Processing objective h(x)',options.showprogress);
+showprogress('Processing objective function',options.showprogress);
 try
     % If these solvers, the Q term is placed in c, hence quadratic terms
     % are treated as any other nonlinear term
@@ -672,7 +672,7 @@ end
 % *************************************************************************
 %% Convert {F(x),G(x)} to a numerical SeDuMi-like format
 % *************************************************************************
-showprogress('Processing F(x)',options.showprogress);
+showprogress('Processing constraints',options.showprogress);
 F = lmi(F);
 [F_struc,K,KCut,schur_funs,schur_data,schur_variables] = lmi2sedumistruct(F);
 % We add a field to remember the dimension of the logarithmic cost.
