@@ -181,7 +181,7 @@ if enumerationfailed
         nv = yalmip('nvars');
         F_filter = filter_duality(F_lp,Uncertainty.Zmodel,x,w,ops);
         if ops.verbose
-            if isa(F_filter','lmi')
+            if isa(F_filter,'lmi')
              disp([' - Duality introduced ' num2str(yalmip('nvars')-nv') ' variables, ' num2str(nnz(is(F_filter,'equality'))) ' equalities, ' num2str(nnz(is(F_filter,'elementwise'))) ' LP inqualities and ' num2str(nnz(is(F_filter,'sdp'))+nnz(is(F_filter,'socp'))) ' conic constraints']);
             end
         end
