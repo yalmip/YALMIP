@@ -14,7 +14,7 @@ parametric = full((~isempty(ParametricIndicies) & any(any(exponent_p_parametric)
 
 % For problems with a lot of similar cones, this saves some time
 reuse = 0;
-if ~isempty(saveData) & isequal(saveData.N,N) & ~FirstRun
+if ~isempty(saveData) && isequal(saveData.N,N) & ~FirstRun
     n = saveData.n;
     ind = saveData.ind;
     if  isequal(saveData.N_unique,N_unique) & isequal(saveData.exponent_m2,exponent_m2)% & isequal(saveData.epm,exponent_p_monoms)
