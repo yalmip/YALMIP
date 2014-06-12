@@ -244,7 +244,7 @@ function [x,D_struc,problem,res,sol,solvertime,prob] = call_mosek_lpqpsocpsdpdua
 
 % Convert if the caller is bnb or bmibnb which might have appended bounds
 % Sure, we could setup model with bounds, but... 
-[F_struc,K] = addbounds(F_struc,K,ub,lb)
+[F_struc,K] = addbounds(F_struc,K,ub,lb);
 
 param = options.mosek;
 
@@ -311,16 +311,13 @@ function problem = MosekYALMIPError(sol)
 if sol.rcode == 2001
     problem = 1;
     return
-elseif sol.rcode == 10006
-    problem = 4;
-    return
 elseif sol.rcode == 10007
     problem = 16;
     return
 end
 
 switch sol.sol.itr.prosta
-    case 'PRIMAL_AND_DUAL_FEASIBLE'
+    case 'PRIMAL_AND_DUAL_FEASIBLE'        
         problem = 0;
     case 'DUAL_INFEASIBLE'
         problem = 1;
