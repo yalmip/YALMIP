@@ -181,6 +181,10 @@ if ~isequal(options.solver,'')
     end
 end
 
+if options.removeequalities
+    error('''removeequalities'' in optimizer objects not allowed.');
+end
+
 if ~isempty(Constraints) & any(is(Constraints,'uncertain'))
     [Constraints,Objective,failure] = robustify(Constraints,Objective,options);
     [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);
@@ -197,7 +201,7 @@ if ~isempty(aux3)
 end
 
 if norm(model.F_struc(1:nIn*mIn,1)-repmat(pi,length(x),1),inf) > 1e-10
-    error('Failed exporting the model (try to specify another solver)')    
+    error('Failed exporting the model (try to specify another solver)')        
 end
 
 % Try to set up an optimal way to compute the output
