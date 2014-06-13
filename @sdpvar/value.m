@@ -144,7 +144,7 @@ if ~isempty(allextended)
                         if ~any(any(isnan(val)))
                             [n,m] = size(val);
                             if n == m
-                                if ishermitian(val)
+                                if isessentiallyhermitian(val)
                                     val = max(0,real(det(val)))^(1/n);
                                 else
                                     val = geomean(val);
