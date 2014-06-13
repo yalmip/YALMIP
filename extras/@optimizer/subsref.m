@@ -67,8 +67,10 @@ elseif isequal(subs.type,'{}')
     if ~isnan(dimBlocks) & ~all(dimBlocks == dimBlocks(i))
         error('Dimension mismatch on the input arguments compared to definition');
     end
-    if any(dimBlocks ~= fix(dimBlocks))
-        error('Dimension mismatch on the input arguments compared to definition');
+    if ~isnan(dimBlocks)
+        if any(dimBlocks ~= fix(dimBlocks))
+            error('Dimension mismatch on the input arguments compared to definition');
+        end
     end
     
     
