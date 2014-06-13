@@ -191,7 +191,7 @@ for i = 1:Counter
     else
         % Can be nonlinear stuff
         vars = getvariables(Fi.data);
-        usednonlins = find(ismembc(nonlinear_variables,vars));
+        usednonlins = find(ismembcYALMIP(nonlinear_variables,vars));
         if ~isempty(usednonlins)
             usedsigmonials = find(ismember(sigmonial_variables,vars));
             if ~isempty(usedsigmonials)

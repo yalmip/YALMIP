@@ -6,8 +6,8 @@ function y = times(X,Y)
 
 % Check dimensions
 [n,m]=size(X);
-if ~((prod(size(X))==1) | (prod(size(Y))==1))
-    if ~((n==size(Y,1) & (m ==size(Y,2))))
+if ~((prod(size(X))==1) || (prod(size(Y))==1))
+    if ~((n==size(Y,1) && (m ==size(Y,2))))
         error('Matrix dimensions must agree.')
     end
 end;
@@ -32,10 +32,10 @@ elseif isempty(Y)
     return
 end
 
-if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
+if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
     X = flush(X);
     Y = flush(Y);
-    if (X.typeflag==5) & (Y.typeflag==5)
+    if (X.typeflag==5) && (Y.typeflag==5)
         error('Product of norms not allowed');
     end
 
@@ -150,10 +150,10 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
         y_base_not_zero = nnz(Ybase)>0;
         for i = 1:length(all_lmi_variables)
             base = 0;
-            if index_Y(i) & x_base_not_zero
+            if index_Y(i) && x_base_not_zero
                 base = Xbase.*getbasematrixwithoutcheck(Y,index_Y(i));
             end
-            if index_X(i) & y_base_not_zero
+            if index_X(i) && y_base_not_zero
                 base = base + getbasematrixwithoutcheck(X,index_X(i)).*Ybase;
             end
             Z.basis(:,i+1) = base(:);
@@ -184,9 +184,9 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
 
             y_basis = Y.basis(:,1+index_Y(theyvars));
             x_basis = repmat(Xibase,1,length(theyvars(:)'));
-            if y_isscalar & ~x_isscalar
+            if y_isscalar && ~x_isscalar
                 y_basis = repmat(y_basis,nx*mx,1);
-            elseif  x_isscalar & ~y_isscalar
+            elseif  x_isscalar && ~y_isscalar
                 x_basis = repmat(x_basis,ny*my,1);
             end
             allBase = x_basis.*y_basis;
@@ -240,7 +240,7 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
 
         yalmip('setmonomtable',mt);
 
-        if ~(x_isscalar | y_isscalar)
+        if ~(x_isscalar || y_isscalar)
             Z.dim(1) = X.dim(1);
             Z.dim(2) = Y.dim(2);
         else
@@ -283,7 +283,7 @@ y = clean(y);
 function y = check_for_special_case(Y,X);
 y = [];
 
-if (min(size(X))>1) | (min(size(Y))>1)
+if (min(size(X))>1) || (min(size(Y))>1)
     return
 end
 

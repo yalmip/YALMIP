@@ -1,4 +1,4 @@
-function [b,ndx,pos] = unique(a,flag)
+function [b,ndx,pos] = uniquesafe(a,flag)
 % Ripped unique
 % For safety, we use 7.0 (6.1 sort differently...)
 

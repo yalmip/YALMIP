@@ -41,7 +41,7 @@ nonlinears = lmi_variables(find(variabletype(X.lmi_variables)));
 
 % FIXME: This code does not work
 % if ~isempty(solution.values)
-%     if max(lmi_variables) <= length(solution.values) & isempty(nonlinears)
+%     if max(lmi_variables) <= length(solution.values) && isempty(nonlinears)
 %         if ~any(isnan(solution.values(lmi_variables(:))))
 %             % Yihoo, we can do this really fast by
 %             % re-using the old values
@@ -65,7 +65,7 @@ if nargin == 1
     allStruct = yalmip('extstruct');
 end
 
-if isempty(nonlinears) & isempty(allextended)
+if isempty(nonlinears) && isempty(allextended)
     
     members = ismembcYALMIP(lmi_variables,solution.variables);
     
@@ -284,7 +284,7 @@ function extstruct = getExtStruct(allStruct,extvar)
 found = 0;
 extstruct = [];
 i = 1;
-while ~found & i <=length(allStruct)
+while ~found && i <=length(allStruct)
     if extvar == getvariables(allStruct(i).var)
         found = 1;
         extstruct = allStruct(i);

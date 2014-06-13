@@ -394,7 +394,7 @@ B = [0.4;0.08];
 L = [1.9034 1.1501];
 
 Y = sdpvar(2,2);
-F = [Y Y*(A-B*L)';(A-B*L)*Y Y];
+F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
 F = F+[L*Y*L'<=1];
 sol = solvesdp(F,-logdet(Y),ops);
 Y = double(Y);
@@ -427,7 +427,7 @@ x = sdpvar(1,1);
 y = sdpvar(1,1);
 z = sdpvar(1,1);
 
-X = [x 1 2;1 y 3;2 3 100];
+X = [[x 1 2];[1 y 3];[2 3 100]];
 
 F = [X>=0,x>=10,y>=0,z>=0, x<=1000, y<=1000,z<=1000];
 sol = solvesdp(F,x+y+z,ops);
@@ -445,10 +445,11 @@ end
 
 
 function [pass,sol,result] = complete_2(ops)
+yalmip('clear')
 x = sdpvar(1,1);
 z = sdpvar(1,1);
 
-X = [x 2;2 z];
+X = [[x 2];[2 z]];
 
 F = [X>=0, x>=0,z>=0,x<=10,z<=10];
 sol = solvesdp(F,x+z,ops);
@@ -478,9 +479,9 @@ Q = 0.25*(diag(Q*ones(n,1))-Q);
 t = sdpvar(1,1);
 tau = sdpvar(n,1);
 
-F = set('t>=0');
+F = t>=0;
 
-M = [-Q zeros(n,1);zeros(1,n) t];
+M = [[-Q zeros(n,1)];[zeros(1,n) t]];
 
 for i = 1:n
     ei = zeros(n,1);ei(i,1) = 1;
@@ -502,6 +503,7 @@ end
 
 
 function [pass,sol,result] = socptest1(ops)
+yalmip('clear')
 x = sdpvar(2,1);
 a = [0;1];
 b = [1;1];

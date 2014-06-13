@@ -15,7 +15,7 @@ if ~X_is_spdvar
     elseif isa(X,'intval')
         X_is_spdvar = 0;
         Y.basis = intval(Y.basis);
-    elseif isa(X,'uint8')| isa(X,'uint16') | isa(X,'uint32') | isa(X,'uint64')
+    elseif isa(X,'uint8') || isa(X,'uint16') || isa(X,'uint32') || isa(X,'uint64')
         X = double(X);
     end
 end
@@ -27,7 +27,7 @@ if ~Y_is_spdvar
     elseif isa(Y,'intval')
         Y_is_spdvar = 0;
         X.basis = intval(X.basis);
-    elseif isa(Y,'uint8') | isa(Y,'uint16') | isa(Y,'uint32') | isa(Y,'uint64')
+    elseif isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
         Y = double(Y);
     end
 end
@@ -66,7 +66,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         any_scalar = x_isscalar | y_isscalar;
 
         % Speeeeeeed
-        if x_isscalar & y_isscalar
+        if x_isscalar && y_isscalar
             y.basis = -y.basis;
             y.basis(1) = y.basis(1)+X;
             % Reset info about conic terms
@@ -76,7 +76,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             return
         end
 
-        if any_scalar | ([n_Y m_Y]==[n_X m_X])
+        if any_scalar || all([n_Y m_Y]==[n_X m_X])
             if y_isscalar
                 y.basis = repmat(y.basis,n_X*m_X,1);
                 y.dim(1) = n_X;
@@ -114,12 +114,12 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Silly hack
         % Taking X-scalar(0) takes unnecessary time
         % and is used in most definitions of LMIs
-        if (y_isscalar & (Y==0))
+        if (y_isscalar && (Y==0))
             return
         end
 
         % Speeeeeeed
-        if x_isscalar & y_isscalar
+        if x_isscalar && y_isscalar
             y.basis(1) = y.basis(1)-Y;
             % Reset info about conic terms
             y.conicinfo = [0 0];
@@ -128,7 +128,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             return
         end
 
-        if any_scalar | ([n_Y m_Y]==[n_X m_X])
+        if any_scalar || all([n_Y m_Y]==[n_X m_X])
             if x_isscalar
                 y.basis = repmat(y.basis,n_Y*m_Y,1);
                 y.dim(1) = n_Y;
@@ -146,7 +146,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % speeds up checking for symmetry in some other code
         % Ugly, but the best way at the moment
         % For a description of this field, check SDPVAR code
-        % if (y.conicinfo(1)~=0) & isequal(Y,Y') & (y.conicinfo(2) ~= 2)
+        % if (y.conicinfo(1)~=0) && isequal(Y,Y') && (y.conicinfo(2) ~= 2)
         %     y.conicinfo(2) = max(1,y.conicinfo(2));
         % else
         y.conicinfo = [0 0];
@@ -157,7 +157,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
 
     case 3
 
-        %	if (X.typeflag~=0) | (Y.typeflag~=0)
+        %	if (X.typeflag~=0) || (Y.typeflag~=0)
         %		error('Relational objects cannot be manipulated')
         %	end
 
@@ -170,7 +170,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         any_scalar = x_isscalar | y_isscalar;
 
         if ~any_scalar
-            if (~((n_X==n_Y) & (m_X==m_Y)))
+            if (~((n_X==n_Y) && (m_X==m_Y)))
                 error('Matrix dimensions must agree.')
             end
         end
@@ -202,7 +202,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             in_Y = find(in_Y_logical);
         end
                 
-        if isequal(X.lmi_variables,Y.lmi_variables) & n_Y==n_X & m_Y==m_X
+        if isequal(X.lmi_variables,Y.lmi_variables) && n_Y==n_X && m_Y==m_X
             y.basis = y.basis - Y.basis;
             % Super special case f(scalar)-f(scalar)
             if length(X.lmi_variables)==1
@@ -215,10 +215,10 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
                 return
             end
-        elseif max(X.lmi_variables) < min(Y.lmi_variables) &  n_Y==n_X & m_Y==m_X
+        elseif max(X.lmi_variables) < min(Y.lmi_variables) &&  n_Y==n_X && m_Y==m_X
             % Disjoint variables in X - Y
             y.basis = [y.basis(:,1) - Y.basis(:,1) y.basis(:,2:end) -Y.basis(:,2:end)];
-        elseif max(Y.lmi_variables) < min(X.lmi_variables) &  n_Y==n_X & m_Y==m_X
+        elseif max(Y.lmi_variables) < min(X.lmi_variables) &&  n_Y==n_X && m_Y==m_X
             % Disjoint variables in X - Y
             y.basis = [y.basis(:,1) - Y.basis(:,1) -Y.basis(:,2:end) y.basis(:,2:end)];
         else
@@ -265,8 +265,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
 end
 
 % Update info on KYP objects
-if X_is_spdvar & Y_is_spdvar 
-  if  X.typeflag==9  & Y.typeflag==9
+if X_is_spdvar && Y_is_spdvar 
+  if  X.typeflag==9  && Y.typeflag==9
     error('Substraction of KYP objects currently not supported')
   end
 end

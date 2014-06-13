@@ -62,7 +62,7 @@ function options = sdpsettings(varargin)
 % $Id: sdpsettings.m,v 1.80 2010-04-27 14:25:05 joloef Exp $
 
 % Print out possible values of properties.
-if (nargin == 0) & (nargout == 0)
+if (nargin == 0) && (nargout == 0)
     help sdpsettings
     return;
 end

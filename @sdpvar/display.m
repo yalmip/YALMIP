@@ -41,7 +41,7 @@ switch(X.typeflag)
                 monomtable = yalmip('monomtable');
                 s = sum((monomtable(variables,:)),2);
                % s = sum(full(monomtable(variables,:)),2);
-                if ((nnz(getbasematrix(X,0))==0) ) & all(s==s(1))
+                if ((nnz(getbasematrix(X,0))==0) ) && all(s==s(1))
                     classification = [classification ', homogeneous'];
                 end
             end
@@ -148,7 +148,7 @@ switch(X.typeflag)
             n = X.dim(1);
             m = X.dim(2);
             
-            if (n<100) & (n==m)
+            if (n<100) && (n==m)
                 x = recover(xvars);
                 if ~any(any(isnan(double(x))))
                     doubleX = double(X);

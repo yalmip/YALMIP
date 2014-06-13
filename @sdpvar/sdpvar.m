@@ -92,12 +92,12 @@ if ischar(varargin{1})
                 varcmd{k}='(1,1)';
                 lp=findstr(varargin{k},'(');
                 rp=findstr(varargin{k},')');
-                if isempty(lp) & isempty(rp)
+                if isempty(lp) && isempty(rp)
                     if ~isvarname(varargin{k})
                         error('Not a valid variable name.')
                     end
                 else
-                    if (~isempty(lp))&(~isempty(rp))
+                    if (~isempty(lp)) && (~isempty(rp))
                         if min(lp)<max(rp)
                             varnames{k} = varargin{k}(1:lp-1);
                             varcmd{k}=varargin{k}(lp:rp);
@@ -110,7 +110,7 @@ if ischar(varargin{1})
                 end
             end
             for k = 1:n
-                if isequal(varnames{k},'i') | isequal(varnames{k},'j')
+                if isequal(varnames{k},'i') || isequal(varnames{k},'j')
                     if length(dbstack) == 1
                         assignin('caller',varnames{k},eval(['sdpvar' varcmd{k}]));
                     else
@@ -128,7 +128,7 @@ end
 % Maybe new NDSDPVAR syntax
 % *************************************************************************
 if nargin > 2
-    if isa(varargin{3},'double') & ~isempty(varargin{3})
+    if isa(varargin{3},'double') && ~isempty(varargin{3})
         sys = ndsdpvar(varargin{:});
         return
     end
@@ -450,7 +450,7 @@ switch nargin
         error('Wrong number of arguments in sdpvar creation');
 end
 
-if isempty(n) | isempty(m)
+if isempty(n) || isempty(m)
     error('Size must be integer valued')
 end;
 if ~((abs((n-ceil(n)))+ abs((m-ceil(m))))==0)
