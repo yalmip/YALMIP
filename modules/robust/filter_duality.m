@@ -24,8 +24,8 @@ b = [];
 A = [];
 % Some pre-calc
 xw = [x;w];
-xind = find(ismembc(getvariables(xw),getvariables(x)));
-wind = find(ismembc(getvariables(xw),getvariables(w)));
+xind = find(ismembcYALMIP(getvariables(xw),getvariables(x)));
+wind = find(ismembcYALMIP(getvariables(xw),getvariables(w)));
 [Qs,cs,fs,dummy,nonquadratic] = vecquaddecomp(X,xw);
 c_wTbase = [];
 AAA = [];

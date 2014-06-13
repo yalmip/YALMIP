@@ -1,10 +1,5 @@
-function F = gt(X,Y)
+function F = ge(X,Y)
 % Internal class for constraint lists
-
-% Author Johan Löfberg
-
-superiorto('sdpvar');
-superiorto('double');
 
 try
     % Try to evaluate

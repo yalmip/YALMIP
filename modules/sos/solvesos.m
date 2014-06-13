@@ -263,7 +263,7 @@ switch sol.problem
         % *********************************************
         for constraint = 1:length(p)
 
-            if constraint > 1 & isequal(BlockedN{constraint},BlockedN{constraint-1}) & isequal(Blockedx{constraint},Blockedx{constraint-1}) & isequal(Blockedvarchange{constraint},Blockedvarchange{constraint-1}) & isequal(sizep(constraint),sizep(constraint-1))
+            if constraint > 1 && isequal(BlockedN{constraint},BlockedN{constraint-1}) && isequal(Blockedx{constraint},Blockedx{constraint-1}) && isequal(Blockedvarchange{constraint},Blockedvarchange{constraint-1}) && isequal(sizep(constraint),sizep(constraint-1))
                 monoms{constraint} = monoms{constraint-1};
             else
                 monoms{constraint} = [];

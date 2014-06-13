@@ -165,7 +165,7 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
             expression = arguments(j);
             expressionvariables = unique([depends(expression) getvariables(expression)]);
         end
-        index_in_expression = find(ismembc(expressionvariables,extendedvariables));
+        index_in_expression = find(ismembcYALMIP(expressionvariables,extendedvariables));
 
         if ~isempty(index_in_expression)
             for i = index_in_expression

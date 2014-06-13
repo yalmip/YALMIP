@@ -40,7 +40,7 @@ if isa(p,'double')
     return
 end
 
-if nargin<2 | isempty(y)
+if nargin<2 || isempty(y)
     y = recover(depends(p));   
 end
 

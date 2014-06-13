@@ -213,8 +213,8 @@ try
      %                 
                 
                 all_lmi_variables = union(lmi_variables,y_lmi_variables);
-                in_z = ismembc(all_lmi_variables,lmi_variables);
-                in_y = ismembc(all_lmi_variables,y_lmi_variables);
+                in_z = ismembcYALMIP(all_lmi_variables,lmi_variables);
+                in_y = ismembcYALMIP(all_lmi_variables,y_lmi_variables);
                 z_ind = 2;
                 y_ind = 2;
                 basis = spalloc(size(z.basis,1),1+length(all_lmi_variables),0);

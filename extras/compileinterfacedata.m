@@ -89,7 +89,7 @@ if options.expand
             variables = h1v;
         end
         extendedvariables = yalmip('extvariables');
-        index_in_extended = find(ismembc(variables,extendedvariables));
+        index_in_extended = find(ismembcYALMIP(variables,extendedvariables));
         if ~isempty(index_in_extended)
             extstruct = yalmip('extstruct',variables(index_in_extended));
             if ~isa(extstruct,'cell')
@@ -725,7 +725,7 @@ else
     nonlinearvariables = find(variabletype);
     linearvariables = used_variables(find(variabletype(used_variables)==0));
 end
-needednonlinear = nonlinearvariables(ismembc(nonlinearvariables,used_variables));
+needednonlinear = nonlinearvariables(ismembcYALMIP(nonlinearvariables,used_variables));
 linearinnonlinear = find(sum(abs(monomtable(needednonlinear,:)),1));
 missinglinear = setdiff(linearinnonlinear(:),linearvariables);
 used_variables = uniquestripped([used_variables(:);missinglinear(:)]);
@@ -775,7 +775,7 @@ if length(used_variables)<yalmip('nvars')
         Q = Q(:,used_variables);Q = Q(used_variables,:);
     else
         [i,j,s] = find(Q);
-        keep = ismembc(i,used_variables) & ismembc(j,used_variables);
+        keep = ismembcYALMIP(i,used_variables) & ismembcYALMIP(j,used_variables);
         i = i(keep);
         j = j(keep);
         s = s(keep);
@@ -1125,7 +1125,7 @@ if ~isempty(evalVariables)
             nonlinearvariables = find(variabletype);
             linearvariables = used_variables(find(variabletype(used_variables)==0));
         end
-        needednonlinear = nonlinearvariables(ismembc(nonlinearvariables,used_variables));
+        needednonlinear = nonlinearvariables(ismembcYALMIP(nonlinearvariables,used_variables));
         linearinnonlinear = find(sum(abs(monomtable(needednonlinear,:)),1));
         missinglinear = setdiff(linearinnonlinear(:),linearvariables);
         used_variables = uniquestripped([used_variables(:);missinglinear(:)]);

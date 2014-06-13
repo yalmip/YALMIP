@@ -1,4 +1,4 @@
-function X = expanded(F,state)
+function X = lifted(F,state)
 
 if nargin == 1
     if length(F.clauses) == 0

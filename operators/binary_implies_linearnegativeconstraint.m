@@ -1,7 +1,7 @@
 function F = binary_implies_linearnegativeconstraint(f,X,M,m,eps);
 % Big-M for f<=0 iff X==1. Assumes f and X vectors of same size
 
-if nargin < 3 | isempty(M)
+if nargin < 3 || isempty(M)
     [M,m,infbound] = derivebounds(f);
     if infbound
         warning('You have unbounded variables in IFF leading to a lousy big-M relaxation.');

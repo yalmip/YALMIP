@@ -133,7 +133,7 @@ switch class(X)
 
     case {'struct','constraint'}      
         [Fi,strict,LMIIdentifiers,tags] = getlist(X); 
-        if isempty(handlestring) | length(handlestring)==0
+        if isempty(handlestring) || length(handlestring)==0
             handlestring = tags{1};
         end
         X='Numeric value';
@@ -180,9 +180,9 @@ while i <= length(Fi)
             TypeofConstraint(i) = 1;
         end
 
-        if (TypeofConstraint(i)==1) & (symmetryKnown == 0)
+        if (TypeofConstraint(i)==1) && (symmetryKnown == 0)        
             [n,m]=size(thisFi);
-            if (n~=m) | ((TypeofConstraint(i) == 1) & (n*m==1)) | ~ishermitian(thisFi)
+            if (n~=m) || ((TypeofConstraint(i) == 1) && (n*m==1)) || ~ishermitian(thisFi)
                 TypeofConstraint(i) = 2;
             end
         end
@@ -219,7 +219,7 @@ if ~exist('LMIIdentifiers','var')
    LMIIdentifiers = yalmip('lmiid');
 end
 
-if all(TypeofConstraint == 2) & all(strict==strict(1))
+if all(TypeofConstraint == 2) && all(strict==strict(1))
     if length(Fi)>1
         vecF = [];
         sizes = zeros(length(Fi),1);

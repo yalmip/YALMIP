@@ -181,7 +181,7 @@ if enumerationfailed
         nv = yalmip('nvars');
         F_filter = filter_duality(F_lp,Uncertainty.Zmodel,x,w,ops);
         if ops.verbose
-            if isa(F_filter','lmi')
+            if isa(F_filter,'lmi')
              disp([' - Duality introduced ' num2str(yalmip('nvars')-nv') ' variables, ' num2str(nnz(is(F_filter,'equality'))) ' equalities, ' num2str(nnz(is(F_filter,'elementwise'))) ' LP inqualities and ' num2str(nnz(is(F_filter,'sdp'))+nnz(is(F_filter,'socp'))) ' conic constraints']);
             end
         end
@@ -306,8 +306,8 @@ function [VariableType,h_fixed,F_xw] = reformatObjective(h,F_xw,VariableType)
 x = recover(VariableType.x_variables);
 w = recover(VariableType.w_variables);
 xw = [x;w];
-xind = find(ismembc(getvariables(xw),getvariables(x)));
-wind = find(ismembc(getvariables(xw),getvariables(w)));
+xind = find(ismembcYALMIP(getvariables(xw),getvariables(x)));
+wind = find(ismembcYALMIP(getvariables(xw),getvariables(w)));
 % Analyze the objective and try to rewrite any uncertainty into the format
 % assumed by YALMIP
 if ~isempty(h)

@@ -60,6 +60,10 @@ if isempty(internal_sdpvarstate)
     
     internal_sdpvarstate.nonCommutingTable = [];
     internal_sdpvarstate.nonHermitiannonCommutingTable = [];
+    try
+      warning off Octave:possible-matlab-short-circuit-operator   
+    catch
+    end
 end
 if isempty(internal_setstate)
     internal_setstate.LMIid = 0;
@@ -452,7 +456,7 @@ switch varargin{1}
                                 
             otherwise
                 % This is the standard operators. INPUTS -> 1 scalar output
-                if isequal(varargin{2},'or') | isequal(varargin{2},'xor') | isequal(varargin{2},'and')
+                if isequal(varargin{2},'or') || isequal(varargin{2},'xor') || isequal(varargin{2},'and')
                     y = binvar(1,1);
                 else
                     y = sdpvar(nout(1),nout(2));
@@ -488,7 +492,7 @@ switch varargin{1}
         return
         
     case 'setdependence'
-        if ~isempty(varargin{2}) & ~isempty(varargin{3})
+        if ~isempty(varargin{2}) && ~isempty(varargin{3})
             if isa(varargin{2},'sdpvar')
                 varargin{2} = getvariables(varargin{2});
             end
@@ -500,7 +504,7 @@ switch varargin{1}
             % nx = max(size(internal_sdpvarstate.DependencyMap,1),max(varargin{2}));
             % ny = max(size(internal_sdpvarstate.DependencyMap,2),max(varargin{3}));
             % index = sub2ind([nx ny], varargin{2},varargin{3});
-            % if size(internal_sdpvarstate.DependencyMap,1) < nx | size(internal_sdpvarstate.DependencyMap,2) < ny
+            % if size(internal_sdpvarstate.DependencyMap,1) < nx || size(internal_sdpvarstate.DependencyMap,2) < ny
             %     internal_sdpvarstate.DependencyMap(nx,ny) = 0;
             % end
             % internal_sdpvarstate.DependencyMap(index) = 1;            
@@ -515,7 +519,7 @@ switch varargin{1}
         end
         
     case 'setdependenceUser'
-        if ~isempty(varargin{2}) & ~isempty(varargin{3})
+        if ~isempty(varargin{2}) && ~isempty(varargin{3})
             if isa(varargin{2},'sdpvar')
                 varargin{2} = getvariables(varargin{2});
             end
@@ -535,14 +539,14 @@ switch varargin{1}
     case 'getdependence'
         varargout{1} =   internal_sdpvarstate.DependencyMap;
         n =  size(internal_sdpvarstate.monomtable,1);
-        if size(varargout{1},1) < n | size(varargout{1},2)<n
+        if size(varargout{1},1) < n || size(varargout{1},2)<n
             varargout{1}(n,n) = 0;
         end
         
     case 'getdependenceUser'
         varargout{1} =   internal_sdpvarstate.DependencyMapUser;
         n =  size(internal_sdpvarstate.monomtable,1);
-        if size(varargout{1},1) < n | size(varargout{1},2)<n
+        if size(varargout{1},1) < n || size(varargout{1},2)<n
             varargout{1}(n,n) = 0;
         end
         
@@ -566,7 +570,7 @@ switch varargin{1}
             found = 0;
             varargout{1} = [];
             i = 1;
-            while ~found & i <=length(internal_sdpvarstate.ExtendedMap)
+            while ~found && i <=length(internal_sdpvarstate.ExtendedMap)
                 if varargin{2} == getvariables(internal_sdpvarstate.ExtendedMap(i).var)
                     found = 1;
                     varargout{1} = internal_sdpvarstate.ExtendedMap(i);
@@ -578,7 +582,7 @@ switch varargin{1}
             found = zeros(1,length(varargin{2}));
             varargout{1} = cell(0,length(varargin{2}));
             i = 1;
-            while ~all(found) & i <=length(internal_sdpvarstate.ExtendedMap)
+            while ~all(found) && i <=length(internal_sdpvarstate.ExtendedMap)
                 j = find(varargin{2} == getvariables(internal_sdpvarstate.ExtendedMap(i).var));
                 if ~isempty(j)
                     found(j) = 1;
@@ -618,7 +622,7 @@ switch varargin{1}
     case {'clear'}
         W = evalin('caller','whos');
         for i = 1:size(W,1)
-            if strcmp(W(i).class,'sdpvar') | strcmp(W(i).class,'lmi')
+            if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'lmi')
                 evalin('caller', ['clear ' W(i).name ';']);
             end
         end
@@ -1088,7 +1092,7 @@ switch varargin{1}
         logicextvariables = [];
         for i = 1:length(internal_sdpvarstate.ExtendedMap)
             %            if ismember(internal_sdpvarstate.ExtendedMap(i).fcn,{'or','and'})
-            if isequal(internal_sdpvarstate.ExtendedMap(i).fcn,'or') | isequal(internal_sdpvarstate.ExtendedMap(i).fcn,'and')
+            if isequal(internal_sdpvarstate.ExtendedMap(i).fcn,'or') || isequal(internal_sdpvarstate.ExtendedMap(i).fcn,'and')
                 logicextvariables = [logicextvariables internal_sdpvarstate.extVariables(i)];
             end
         end
@@ -1108,7 +1112,7 @@ switch varargin{1}
         if ~isempty(internal_sdpvarstate.ExtendedMap)
             i = 1;
             while i<=length(internal_sdpvarstate.ExtendedMap)
-                if isequal(varargin{2},internal_sdpvarstate.ExtendedMap(i).fcn) & isequal({varargin{3:end}}, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}})
+                if isequal(varargin{2},internal_sdpvarstate.ExtendedMap(i).fcn) && isequal({varargin{3:end}}, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}})
                     varargout{1} =  internal_sdpvarstate.ExtendedMap(i).var;
                     return
                 end

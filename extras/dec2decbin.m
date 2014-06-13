@@ -1,4 +1,4 @@
-function s=dec2bin(d,n)
+function s=dec2decbin(d,n)
 %DEC2BIN Internal function generate binary matrices
 
 % Author Johan Löfberg

@@ -1,4 +1,4 @@
-function [F_xw,F_polya] = polya_constraints(F_xw,w,N)
+function [F_xw,F_polya] = filter_polya(F_xw,w,N)
 
 F_polya = [];
 Fvars = getvariables(F_xw);

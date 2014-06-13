@@ -1,7 +1,4 @@
-function output = callfmincon(model)
-
-% Author Johan Löfberg
-% $Id: callfminsearch.m,v 1.3 2007-08-07 06:55:57 joloef Exp $
+function output = callfminsearch(model)
 
 % Retrieve needed data
 options = model.options;
@@ -72,8 +69,10 @@ if (model.SimpleQuadraticObjective | model.SimpleNonlinearObjective) & isempty(m
     options.fmincon.GradObj = 'on';    
 end
 
+fun = @(x,m)fmincon_fun(x,m);
+
 solvertime = clock;
-[xout,fmin,flag,output] = fminsearch('fmincon_fun',x0,options.fminsearch,model);
+[xout,fmin,flag,output] = fminsearch(@(x)fun(x,model),x0,options.fminsearch);
 solvertime = etime(clock,solvertime);
 
 if isempty(nonlinearindicies)

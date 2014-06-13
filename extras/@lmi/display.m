@@ -62,7 +62,9 @@ if nlmi>0
               
         else
             classification = '';
-            if any(ismembc(getvariables(X.clauses{i}.data),yalmip('intvariables')))
+           
+            members = ismembcYALMIP(getvariables(X.clauses{i}.data),yalmip('intvariables'));
+            if any(members)
                 classification = [classification ',integer'];
             end
 
@@ -91,8 +93,9 @@ if nlmi>0
             if ~isreal(X.clauses{i}.data)                
                 classification = [classification ',complex'];
             end
-            %if ~isempty(intersect(getvariables(X.clauses{i}.data),extVariables))
-            if any(ismembc(getvariables(X.clauses{i}.data),extVariables))
+            %if ~isempty(intersect(getvariables(X.clauses{i}.data),extVariables))            
+            members = ismembcYALMIP(getvariables(X.clauses{i}.data),extVariables);          
+            if any(members)
                 classification = [classification ',derived'];
             end
             
@@ -101,7 +104,7 @@ if nlmi>0
                 data{i,3} = [data{i,3} ' (' classification(2:end) ')'];
             end
 
-            if ismembc(X.clauses{i}.type,[1 2 3 4 5 9])
+            if ismember(X.clauses{i}.type,[1 2 3 4 5 9]);
                 data{i,3} = [data{i,3} ' ' num2str(size(X.clauses{i}.data,1)) 'x' num2str(size(X.clauses{i}.data,2))];
             end
         end

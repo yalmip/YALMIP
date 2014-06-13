@@ -1,4 +1,4 @@
-function LIST = constraintlcass(F,property)
+function LIST = constraintclass(F,property)
 %CONSTRAINTCLASS   Returns a list describing the constraints
 
 % Author Johan Löfberg 

@@ -4,9 +4,6 @@ function [F,strict,LMIIdentifiers,tags] = getlist(X)
 % Author Johan Löfberg
 % $Id: getlist.m,v 1.5 2009-04-29 07:48:12 joloef Exp $
 
-superiorto('sdpvar');
-superiorto('double');
-
 F = X.Evaluated;
 strict = X.strict;
 LMIIdentifiers = X.ConstraintID;

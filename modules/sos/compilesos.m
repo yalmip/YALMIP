@@ -387,7 +387,7 @@ for constraint = 1:length(p)
     % *********************************************
     exponent_p_monoms = uniquesafe(exponent_p_monoms,'rows');
 
-    if options.sos.reuse & constraint > 1 & isequal(previous_exponent_p_monoms,exponent_p_monoms)
+    if options.sos.reuse & constraint > 1 && isequal(previous_exponent_p_monoms,exponent_p_monoms)
         % We don't have to do anything, candidate monomials can be-used
         if options.verbose>1;disp(['Re-using all candidate monomials (same problem structure)']);end
     else
@@ -506,7 +506,7 @@ switch options.sos.model
 end
 
 for constraint = 1:length(p)
-    if constraint > 1 & isequal(BlockedN{constraint},BlockedN{constraint-1}) & isequal(Blockedx{constraint},Blockedx{constraint-1}) & isequal(Blockedvarchange{constraint},Blockedvarchange{constraint-1}) & isequal(sizep(constraint),sizep(constraint-1))
+    if constraint > 1 && isequal(BlockedN{constraint},BlockedN{constraint-1}) && isequal(Blockedx{constraint},Blockedx{constraint-1}) && isequal(Blockedvarchange{constraint},Blockedvarchange{constraint-1}) && isequal(sizep(constraint),sizep(constraint-1))
         monoms{constraint} = monoms{constraint-1};
     else
         monoms{constraint} = [];

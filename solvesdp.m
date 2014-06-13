@@ -39,14 +39,18 @@ function diagnostic = solvesdp(varargin)
 yalmiptime = clock; % Let us see how much time we spend
 
 % Avoid warning
-if length(varargin)>=2 & isa(varargin{2},'double')
-	varargin{2} = [];
+if length(varargin)>=2
+    if isa(varargin{2},'double')
+        varargin{2} = [];
+    end
 end
 
-if length(varargin)>=2 & isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>1
-    % Several objectives
-     diagnostic = solvesdp_multiple(varargin{:});
-     return
+if length(varargin)>=2
+    if isa(varargin{2},'sdpvar') && prod(size(varargin{2}))>1
+        % Several objectives
+        diagnostic = solvesdp_multiple(varargin{:});
+        return
+    end
 end
 
 % Arrrgh, new format with logdet much better, but we have to
@@ -410,7 +414,7 @@ diagnostic.yalmiptime = etime(clock,yalmiptime)-output.solvertime;
 diagnostic.solvertime = output.solvertime;
 try
     diagnostic.info = output.infostr;
-catch
+catch   
     diagnostic.info = yalmiperror(output.problem,solver.tag);
 end
 diagnostic.problem = output.problem;
@@ -438,7 +442,7 @@ if interfacedata.options.saveyalmipmodel
     diagnostic.yalmipmodel = interfacedata;
 end
 
-if options.warning & warningon & isempty(findstr(output.infostr,'No problems detected'))
+if options.warning & warningon & isempty(findstr(diagnostic.info,'No problems detected'))
     disp(['Warning: ' output.infostr]);
 end
 
@@ -513,21 +517,21 @@ classification = 0;
 m = length(varargin);
 if m==1
     classification = 2;
-elseif m>=3 & isstruct(varargin{3})
+elseif m>=3 && isstruct(varargin{3})
     classification = 2;
-elseif m>=4 & isstruct(varargin{4})
+elseif m>=4 && isstruct(varargin{4})
     classification = 1;
-elseif m>=2 & isa(varargin{2},'lmi')
+elseif m>=2 && isa(varargin{2},'lmi')
     classification = 1;
-elseif m>=3 & isa(varargin{3},'sdpvar')
+elseif m>=3 && isa(varargin{3},'sdpvar')
     classification = 1;
-elseif m>=2 & isa(varargin{2},'sdpvar') & min(size(varargin{2}))==1
+elseif m>=2 && isa(varargin{2},'sdpvar') & min(size(varargin{2}))==1
     classification = 2;
-elseif m>=2 & isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>=1
+elseif m>=2 && isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>=1
     classification = 1;
-elseif m>=2 & isa(varargin{2},'logdet')
+elseif m>=2 && isa(varargin{2},'logdet')
     classification = 2;
-elseif m==2 & isempty(varargin{2})
+elseif m==2 && isempty(varargin{2})
     classification = 2;
 end
 

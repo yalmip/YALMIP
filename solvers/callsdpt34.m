@@ -43,6 +43,7 @@ else
      end
 end
 options.sdpt3.printyes=double(options.verbose);
+options.sdpt3.printlevel=double(options.verbose)*3;
 options.sdpt3.expon=options.sdpt3.expon(1);
 
 % Setup the logarithmic barrier cost. We exploit the fact that we know that
@@ -148,11 +149,8 @@ end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 solvertime = clock;
-if options.verbose==0 % SDPT3 does not run silent despite printyes=0!
-   evalc('[obj,X,y,Z,info,runhist] =  sdpt3(blk,A,C,b,options.sdpt3,[],x0,[]);');
-else
-    [obj,X,y,Z,info,runhist] =  sdpt3(blk,A,C,b,options.sdpt3,[],x0,[]);            
-end
+[obj,X,y,Z,info,runhist] =  sdpt3(blk,A,C,b,options.sdpt3,[],x0,[]);            
+
 
 % Create YALMIP dual variable and slack
 Dual = [];

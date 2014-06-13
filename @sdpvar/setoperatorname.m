@@ -1,3 +1,3 @@
-function Z=clean(Z,name)
+function Z=setoperatorname(Z,name)
 
 Z.extra.opname=name;

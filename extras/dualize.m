@@ -498,21 +498,21 @@ if isequal(all_variables,Xx_variables)
     t = [];
 else
     t_variables = setdiff(all_variables,Xx_variables);
-    ind = ismembc(all_variables,t_variables);
+    ind = ismembcYALMIP(all_variables,t_variables);
     t_in_all = find(ind);
     t = recover(t_variables);
 end
 
-ind = ismembc(all_variables,x_variables);
+ind = ismembcYALMIP(all_variables,x_variables);
 x_in_all = find(ind);
-ind = ismembc(all_variables,X_variables);
+ind = ismembcYALMIP(all_variables,X_variables);
 X_in_all = find(ind);
 
 vecF1 = [];
 nvars = length(all_variables);
 for i = 1:length(F_AXb)
     AXb = sdpvar(F_AXb(i));
-    mapper = find(ismembc(all_variables,getvariables(AXb)));
+    mapper = find(ismembcYALMIP(all_variables,getvariables(AXb)));
 
     [n,m] = size(AXb);
     data = getbase(AXb);
@@ -542,7 +542,7 @@ if isempty(obj)
     vecF1(end+1,1) = 0;
 else
     if is(obj,'linear')
-        mapper = find(ismembc(all_variables,getvariables(obj)));
+        mapper = find(ismembcYALMIP(all_variables,getvariables(obj)));
         [n,m] = size(obj);
         data = getbase(obj);
         [iF,jF,sF] = find(data);
@@ -559,7 +559,7 @@ else
         % min c'x+0.5x'Qx, Ax==b, x>=0
         % max b'y-0.5x'Qx, c-A'y+Qx >=0
         [Q,c,xreally,info] = quaddecomp(obj,recover(all_variables))
-        mapper = find(ismembc(all_variables,getvariables(c'*xreally)));
+        mapper = find(ismembcYALMIP(all_variables,getvariables(c'*xreally)));
         [n,m] = size(c'*xreally);
         data = getbase(c'*xreally);
         F_structemp  = spalloc(n*m,1+nvars,nnz(data));
@@ -651,7 +651,7 @@ for j = 1:1:n_cones
             end
             % Fix diagonal term
             diags = find(diag(1:ns(j)));
-            id = find(ismembc(iA,diags));
+            id = find(ismembcYALMIP(iA,diags));
             sA(id) = 2*sA(id);
             Ai = sparse(iA,jA,sA,ns(j)^2,length(b));
 
