@@ -20,9 +20,9 @@ if all(isinf(p.lb(usedVariables))) & all(isinf(p.ub(usedVariables)))
 end
 
 if p.K.f >0
-    interestingRows = find(p_F_struc(:,1));
+    interestingRows = find(p_F_struc(1:p.K.f,1));
     if ~isempty(interestingRows)
-        for j = interestingRows(:)'  
+        for j = interestingRows(:)'
             thisrow = p_F_struc(j,:);
             if thisrow(1)<0
                 thisrow = -thisrow;
