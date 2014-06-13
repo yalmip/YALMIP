@@ -118,7 +118,7 @@ for i = 1:length(h)
         diagnostic.yalmipmodel = model;
     end
     
-    if ops.warning & warningon & isempty(findstr(output.infostr,'No problems detected'))
+    if ops.warning && warningon && isempty(findstr(output.infostr,'No problems detected'))
         disp(['Warning: ' output.infostr]);
     end
     

@@ -1008,7 +1008,7 @@ p0 = p;
 p1 = p;
 
 variable = p.binary_variables(index);
-tf = ~(ismembc(p0.binary_variables,variable));
+tf = ~(ismembcYALMIP(p0.binary_variables,variable));
 new_binary = p0.binary_variables(tf);
 
 friends = [];

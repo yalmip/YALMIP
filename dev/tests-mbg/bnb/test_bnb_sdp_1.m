@@ -1,4 +1,4 @@
-function misdp
+function test_bnb_sdp_1
 
 % Test two regression bugs
 % 1. quadratic costs in binary SDP

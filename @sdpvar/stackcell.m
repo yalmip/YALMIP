@@ -60,7 +60,7 @@ basis_s = [];
 shft = 0;
 for j = 1:nblocks
     if isasdpvar(j)
-        in_this = find(ismembc(all_lmi_variables,blocks{j}.lmi_variables));
+        in_this = find(ismembcYALMIP(all_lmi_variables,blocks{j}.lmi_variables));
         dummy = [1 1+in_this];
         [i2,j2,s2] = find(blocks{j}.basis);
         j2 = dummy(j2);

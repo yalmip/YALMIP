@@ -22,20 +22,27 @@ mbg_asserttolequal(sol1.problem, 0, 1e-4);
 mbg_asserttolequal(obj1+obj2,0, 1e-4);
 
 % 2 balls
-sdpvar x w(3,1) q(2,1);
+x = sdpvar(1);
+w = sdpvar(3,1); 
+q = sdpvar(2,1);
 sol = solvesdp([x+sum(w)+sum(q)<=1,-1<=w<=3,uncertain(w),uncertain(q),q'*q<=2],-x)
 mbg_asserttolequal(sol.problem, 0, 1e-5);
 mbg_asserttolequal(double(x),-10,1e-5);
 
 % 2 polytopic
-sdpvar x w(3,1) q(2,1);
+x = sdpvar(1);
+w = sdpvar(3,1); 
+q = sdpvar(2,1);
 sol = solvesdp([x+sum(w)+sum(q)<=1,-1<=w<=3,uncertain(w),uncertain(q),q'*q<=2,q>=0,w>=0],-x)
 mbg_asserttolequal(sol.problem, 0, 1e-5);
 mbg_asserttolequal(double(x),-10, 1e-5);
 
 % Messy with uncertain auxilliary variables
 yalmip('clear')
-sdpvar x w1 w2 t
+x = sdpvar(1);
+w1 = sdpvar(1);
+w2 = sdpvar(1);
+t = sdpvar(1);
 A = randn(5,2);
 b = rand(5,1)*0.1;
 c = randn(2,1);
@@ -56,7 +63,10 @@ mbg_asserttolequal(o1-o2,0, 1e-5);
 
 % Messy with uncertain auxilliary variables
 yalmip('clear')
-sdpvar x w1 w2 t
+x = sdpvar(1);
+w1 = sdpvar(1);
+w2 = sdpvar(1);
+t = sdpvar(1);
 A = randn(5,2);
 b = rand(5,1)*0.1;
 c = randn(2,1);
@@ -75,7 +85,8 @@ mbg_asserttolequal(o1-o2,0, 1e-5);
 
 % Should yield 27
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+norm(w+1,1) <= 30]
 W = [uncertain(w),norm(w+.5,1) + norm(w,1)<=3];
 solvesdp([C,W],-x,ops);
@@ -84,21 +95,24 @@ mbg_asserttolequal(double(x),27,1e-5)
 
 % Simple explicit maximization
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+w(1)+w(2) <= 1]
 W = [uncertain(w),norm(w,1)<=2];
 solvesdp([C,W],-x)
 mbg_asserttolequal(double(x),-1,1e-5)
 
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+w(1)+w(2) <= 1]
 W = [uncertain(w),norm(w,2)<=2];
 solvesdp([C,W],-x)
 mbg_asserttolequal(double(x),-1.8284,1e-2)
 
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+w(1)+w(2) <= 1]
 W = [uncertain(w),norm(w,inf)<=2];
 solvesdp([C,W],-x)
@@ -106,19 +120,22 @@ mbg_asserttolequal(double(x),-3,1e-2)
 
 % Missing term in explicit expression
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+2*w(2) <= 1]
 W = [uncertain(w),norm(w,1)<=2];
 solvesdp([C,W],-x)
 mbg_asserttolequal(double(x),-3,1e-5)
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+2*w(1) <= 1]
 W = [uncertain(w),norm(w,2)<=2];
 solvesdp([C,W],-x)
 mbg_asserttolequal(double(x),-3,1e-5)
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+2*w(1) <= 1]
 W = [uncertain(w),norm(w,inf)<=2];
 solvesdp([C,W],-x)
@@ -127,7 +144,8 @@ mbg_asserttolequal(double(x),-3,1e-5)
 
 % Enumeration of 6 vertices
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1]
 W = [uncertain(w),norm(w,1)<=2];
 solvesdp([C,W],-x)
@@ -136,7 +154,8 @@ mbg_asserttolequal(double(x),-1,1e-1)
 
 % Projection + explicit maximization
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+norm(w,1) <= 1]
 W = [uncertain(w),norm(w,2)<=2];
 solvesdp([C,W],-x,sdpsettings('robust.auxreduce','projection'))
@@ -144,27 +163,31 @@ mbg_asserttolequal(double(x),-1.8284,1e-3)
 
 
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1]
 W = [uncertain(w),norm(w,2)<=2];
 solvesdp([C,W],-x,sdpsettings('robust.auxreduce','projection'))
 mbg_asserttolequal(double(x),-1,1e-1)
 
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+norm(w,2)+norm(w,1) <= 1]
 W = [uncertain(w),norm(w,2)+norm(w,1)<=2];
 solvesdp([C,W],-x,sdpsettings('robust.auxreduce','projection'))
 mbg_asserttolequal(double(x),-1,1e-1)
 
 yalmip('clear')
-sdpvar x w(2,1)
+x = sdpvar(1);
+w = sdpvar(2,1);
 C = [x+norm(w,1)+norm(w,2) <= 1]
 W = [uncertain(w),norm(w,2)<=2];
 solvesdp([C,W],-x,sdpsettings('robust.auxreduce','projection'))
 mbg_asserttolequal(double(x),-3.8284,1e-1)
 
-sdpvar x w
+x = sdpvar(1);
+w = sdpvar(1);
 C = [1<=x<=4];
 W = [uncertain(w),-10<=w<=2];
 sol = solvesdp([C,W],x*w^2)

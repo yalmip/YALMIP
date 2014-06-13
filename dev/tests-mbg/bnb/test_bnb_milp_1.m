@@ -1,4 +1,4 @@
-function milp
+function test_bnb_milp_1
 
 rand('seed',1234);
 

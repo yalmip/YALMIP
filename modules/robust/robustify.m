@@ -306,8 +306,8 @@ function [VariableType,h_fixed,F_xw] = reformatObjective(h,F_xw,VariableType)
 x = recover(VariableType.x_variables);
 w = recover(VariableType.w_variables);
 xw = [x;w];
-xind = find(ismembc(getvariables(xw),getvariables(x)));
-wind = find(ismembc(getvariables(xw),getvariables(w)));
+xind = find(ismembcYALMIP(getvariables(xw),getvariables(x)));
+wind = find(ismembcYALMIP(getvariables(xw),getvariables(w)));
 % Analyze the objective and try to rewrite any uncertainty into the format
 % assumed by YALMIP
 if ~isempty(h)

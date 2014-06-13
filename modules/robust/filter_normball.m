@@ -32,8 +32,8 @@ end
 % Create a bilinear decomposition of the constraints
 
 xw = [x;w];
-xind = find(ismembc(getvariables(xw),getvariables(x)));
-wind = find(ismembc(getvariables(xw),getvariables(w)));
+xind = find(ismembcYALMIP(getvariables(xw),getvariables(x)));
+wind = find(ismembcYALMIP(getvariables(xw),getvariables(w)));
 [Qs,cs,fs,dummy,nonquadratic] = vecquaddecomp(X,xw);
 all_f = [];
 all_c_w = [];

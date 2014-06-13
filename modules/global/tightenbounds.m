@@ -27,8 +27,8 @@ AG0A  = (A<0).*A;
 At = A';
 use_indicies=ones(length(b),1);
 used = full(any(A(:,find(changed_bounds)),2));
-isbinary  = ismembc(1:length(lb),binary_variables);
-isinteger = ismembc(1:length(lb),binary_variables);
+isbinary  = ismembcYALMIP(1:length(lb),binary_variables);
+isinteger = ismembcYALMIP(1:length(lb),binary_variables);
 
 goon = all(lb<=ub);
 infeasible = ~goon;

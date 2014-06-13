@@ -1,4 +1,4 @@
-function micp
+function test_bnb_yongyouhu
 
 
 Loc_n=4;
