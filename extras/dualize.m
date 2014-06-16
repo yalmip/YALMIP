@@ -1,4 +1,4 @@
-function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend)
+function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend,options)
 % DUALIZE Create the dual of an SDP given in primal form
 %
 % [Fd,objd,X,t,err] = dualize(F,obj,auto)
@@ -71,12 +71,14 @@ if p1 | p2 | p3
     end
 end
 
-if nargin<5
+if nargin<5 || isempty(extend)
     extend = 1;
 end
 
-if extend
-    options = sdpsettings;
+if extend    
+    if nargin < 6 || isempty(options)    
+        options = sdpsettings;
+    end
     options.dualize = 1;
     options.allowmilp = 0;
     options.solver = '';
@@ -86,11 +88,11 @@ if extend
     end
 end
 
-if nargin<3
+if nargin<3 || isempty(auto)
     auto = 1;
 end
 
-if nargin<4
+if nargin<4 || isempty(extlp)
     extlp = 1;
 end
 

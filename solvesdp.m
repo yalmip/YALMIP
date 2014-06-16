@@ -229,7 +229,7 @@ if ~isempty(F)
     end
 end
 if options.dualize == 1   
-    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h);
+    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options);
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
     if ~isempty(complexInfo)
