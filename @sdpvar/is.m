@@ -168,7 +168,7 @@ switch property
     case 'sigmonial'
           monomtable = yalmip('monomtable');
           monomtable = monomtable(getvariables(X),:);
-          YESNO = any(find(any(0>monomtable,2) || any(monomtable-fix(monomtable),2)));   
+          YESNO = any(find(any(0>monomtable,2) | any(monomtable-fix(monomtable),2)));   
           
     case 'general'
         evalvariables = yalmip('extvariables');
