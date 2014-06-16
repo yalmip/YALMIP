@@ -1,5 +1,9 @@
 function [F,feasible] = filter_norm_inf(all_f,all_c_w,all_c_x,all_Q_xw,x,Zmodel,allw,X,Q_xx,VariableType)
 
+if any(Zmodel.lb > Zmodel.ub)
+    error('The uncertainty model is weird. Some of the lower bounds on the uncertainty are larger than the upper bounds. In other words, the feasible set for the uncertainty is empty.');    
+end
+
 feasible = 1;
 lower = Zmodel.lb;
 upper = Zmodel.ub;
