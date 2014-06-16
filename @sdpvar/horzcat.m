@@ -89,8 +89,13 @@ basis_s = [];
 shft = 0;
 for j = 1:nblocks
     if isasdpvar(j)        
-        members = ismembcYALMIP(all_lmi_variables,varargin{j}.lmi_variables);
-        in_this = find(members);
+        if length(all_lmi_variables)==length(varargin{j}.lmi_variables) && all_lmi_variables(1)==varargin{j}.lmi_variables(1) &&  all_lmi_variables(end)==varargin{j}.lmi_variables(end)
+            % Avoid call to ismember and find
+            in_this = 1:length(all_lmi_variables);
+        else
+            members = ismembcYALMIP(all_lmi_variables,varargin{j}.lmi_variables);
+            in_this = find(members);
+        end        
         dummy = [1 1+in_this];
         [i2,j2,s2] = find(varargin{j}.basis);
         j2 = dummy(j2);

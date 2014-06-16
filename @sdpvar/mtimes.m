@@ -89,8 +89,28 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
             end
 
+            % Are the involved variables disjoint
+            if X.lmi_variables(end) < Y.lmi_variables(1)
+                disconnected = 1;
+            elseif Y.lmi_variables(end) < X.lmi_variables(1)
+                disconnected = 2;
+            elseif isequal(Y.lmi_variables,X.lmi_variables)
+                disconnected = -1; % Same 
+            else
+                disconnected = 0;  % Tangled up
+            end
+            
             % Optimized unique
-            all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
+            switch disconnected
+                case -1
+                    all_lmi_variables = [X.lmi_variables];
+                case 1
+                    all_lmi_variables = [X.lmi_variables Y.lmi_variables];
+                case 2
+                    all_lmi_variables = [Y.lmi_variables X.lmi_variables];
+                otherwise
+                    all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
+            end
 
             % Create clean SDPVAR object
             Z = X;Z.dim(1) = 1;Z.dim(2) = 1;Z.lmi_variables = all_lmi_variables;Z.basis = [];
@@ -105,8 +125,20 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 Ybase = sparse(full(Ybase));
             end
            
-            index_X = double(ismembcYALMIP(all_lmi_variables,X.lmi_variables));
-            index_Y = double(ismembcYALMIP(all_lmi_variables,Y.lmi_variables));
+            switch disconnected
+                case -1
+                    index_X = [ones(1,length(X.lmi_variables))];
+                    index_Y = index_X;
+                case 1
+                    index_X = [ones(1,length(X.lmi_variables)) zeros(1,length(Y.lmi_variables))];
+                    index_Y = [zeros(1,length(X.lmi_variables)) ones(1,length(Y.lmi_variables))];
+                case 2
+                    index_X = [zeros(1,length(Y.lmi_variables)) ones(1,length(X.lmi_variables))];
+                    index_Y = [ones(1,length(Y.lmi_variables)) zeros(1,length(X.lmi_variables))];
+                otherwise
+                    index_X = double(ismembcYALMIP(all_lmi_variables,X.lmi_variables));
+                    index_Y = double(ismembcYALMIP(all_lmi_variables,Y.lmi_variables));
+            end
             
             iX=find(index_X);
             iY=find(index_Y);
@@ -162,8 +194,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
             candofastlocation  = 0;
             if all(oldvariabletype(X.lmi_variables)==0) && all(oldvariabletype(Y.lmi_variables)==0)
                 % if isempty(intersect(X.lmi_variables,Y.lmi_variables))             
-                members = ismembcYALMIP(X.lmi_variables,Y.lmi_variables);              
-                if ~any(members)
+                % members = ismembcYALMIP(X.lmi_variables,Y.lmi_variables);              
+                if disconnected == 1 || disconnected == 2%~any(members)
                     bilinearproduct = 1;
                     try
                         dummy = ismembc2(1,1); % Not available in all versions (needed in ismember)
