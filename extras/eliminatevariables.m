@@ -120,8 +120,13 @@ if model.K.s(1) > 0
         n = model.K.s(i);
         rows = top:top+n^2-1;
         v = model.F_struc(rows,:);
-        if nnz(v(:,2:end))==0
-            [~,p] = chol(reshape(v(:,1),n,n));
+        if nnz(v)==0
+            removeqs = [removeqs;i];
+            removeRows = [removeRows;rows];
+        elseif nnz(v(:,2:end))==0
+            Q = reshape(v(:,1),n,n);
+            used = find(any(Q));Qred=Q(:,used);Qred = Qred(used,:);
+            [~,p] = chol(Qred);
             if p
                 infeasible = 1;
                 return

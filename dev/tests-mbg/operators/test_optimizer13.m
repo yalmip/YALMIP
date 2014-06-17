@@ -18,3 +18,8 @@ M = optimizer(C,trace(Q*P),sdpsettings('solver','+sdpt3'),{A,Q},P);
 P0 = M{{A0,Q0}};
 solvesdp([A0'*P+P*A0 <= -eye(3), P>=0],trace(Q0*P));
 mbg_asserttolequal(trace(Q0*P0),trace(Q0*double(P)),1e-3)
+
+% Test a case where an SDP constraint boils down to a semidefinite constant
+sdpvar x y
+P = optimizer([[y*x y;y 1] >=0, [x 1;1 2]>=0],x,sdpsettings('solver','+sdpt3'),y,x);
+mbg_asserttolequal(P{0},.5,1e-4);
