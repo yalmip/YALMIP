@@ -84,7 +84,7 @@ end
 temp_ProblemClass.constraint.binary = 0;
 temp_ProblemClass.constraint.integer = 0;
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc);
-if ~isempty(uppersolver) & strcmpi(uppersolver.tag,'bnb')
+if ~isempty(uppersolver) && strcmpi(uppersolver.tag,'bnb')
     temp_options.solver = 'none';
     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc);
 end
