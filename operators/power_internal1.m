@@ -1,9 +1,7 @@
-function varargout = power_internal(varargin)
+function varargout = power_internal1(varargin)
 %power_internal1
 % Used for cases such as 2^x, and is treated as evaluation-based operators
 
-% Author Johan Löfberg
-% $Id: power_internal1.m,v 1.7 2007-08-07 11:16:18 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
