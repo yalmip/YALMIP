@@ -117,7 +117,7 @@ if model.K.s(1) > 0
     top = model.K.f + model.K.l + sum(model.K.q) + 1;
     removeqs = [];
     removeRows = [];
-    for i = 1:length(model.K.q)
+    for i = 1:length(model.K.s)
         n = model.K.s(i);
         rows = top:top+n^2-1;
         v = model.F_struc(rows,:);
