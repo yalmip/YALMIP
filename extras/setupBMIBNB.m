@@ -38,14 +38,14 @@ temp_options.solver = options.bmibnb.lowersolver;
 % this will typically allow us to solver better lower bounding problems
 % (we don't have to linearize the cost)
 [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
-if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb') | strcmpi(lowersolver.tag,'bnb')
+if isempty(lowersolver)|| strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     % No, probably non-convex cost. Pick a linear solver instead and go
     % for lower bound based on a complete "linearization"
     tempProblemClass.objective.quadratic.convex = 0;
     [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
 end
 
-if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb') | strcmpi(lowersolver.tag,'bnb')
+if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     tempbinary = tempProblemClass.constraint.binary;
     tempinteger = tempProblemClass.constraint.integer;
     tempsemicont = tempProblemClass.constraint.semicont;
@@ -58,7 +58,7 @@ if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb') | strcmpi(lowersolver
     tempProblemClass.constraint.semicont = tempsemicont;
 end
 
-if isempty(lowersolver) | strcmpi(lowersolver.tag,'bmibnb') | strcmpi(lowersolver.tag,'bnb')
+if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     diagnostic.solvertime = 0;
     diagnostic.info = yalmiperror(-2,'YALMIP');
     diagnostic.problem = -2;
@@ -88,7 +88,7 @@ if ~isempty(uppersolver) & strcmpi(uppersolver.tag,'bnb')
     temp_options.solver = 'none';
     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc);
 end
-if isempty(uppersolver) | strcmpi(uppersolver.tag,'bmibnb')
+if isempty(uppersolver) || strcmpi(uppersolver.tag,'bmibnb')
     diagnostic.solvertime = 0;
     diagnostic.info = yalmiperror(-2,'YALMIP');
     diagnostic.problem = -2;
@@ -136,7 +136,7 @@ if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb')
     tempProblemClass.constraint.binary = tempbinary;
 end
 
-if isempty(lpsolver) | strcmpi(lpsolver.tag,'bmibnb')
+if isempty(lpsolver) || strcmpi(lpsolver.tag,'bmibnb')
     diagnostic.solvertime = 0;
     diagnostic.info = yalmiperror(-2,'YALMIP');
     diagnostic.problem = -2;

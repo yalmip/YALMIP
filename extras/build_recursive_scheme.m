@@ -74,8 +74,8 @@ stillM = find(remainingMonoms);
 % Extract arguments in first layer
 if any(remainingEvals)
     for i = 1:length(model.evalMap)
-        composite_eval_expression(i) = any(ismembc(model.evalMap{i}.variableIndex,model.evalVariables(stillE)));
-        composite_eval_expression(i) = composite_eval_expression(i) | any(ismembc(model.evalMap{i}.variableIndex,model.monomials(stillM)));
+        composite_eval_expression(i) = any(ismembcYALMIP(model.evalMap{i}.variableIndex,model.evalVariables(stillE)));
+        composite_eval_expression(i) = composite_eval_expression(i) | any(ismembcYALMIP(model.evalMap{i}.variableIndex,model.monomials(stillM)));
     end
 end
 if any(remainingMonoms)    
@@ -83,7 +83,7 @@ if any(remainingMonoms)
         for i = 1:length(model.monomials)
     %    composite_monom_expression(i) = any(ismember(model.monomialMap{i}.variableIndex,model.monomials(stillM)));
     %    composite_monom_expression(i) = composite_monom_expression(i) | any(ismember(model.monomialMap{i}.variableIndex,model.evalVariables(stillE)));    
-        composite_monom_expression(i) = any(ismembc(model.monomialMap{i}.variableIndex,model.evalVariables(stillE)));
+        composite_monom_expression(i) = any(ismembcYALMIP(model.monomialMap{i}.variableIndex,model.evalVariables(stillE)));
     end
     else
     for i = 1:length(model.monomials)
