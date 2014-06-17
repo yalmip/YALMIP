@@ -1,4 +1,3 @@
-%function [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU)
 function [Ax,Ay,b,K] = convexhullConvex(varargin)
 % Two upper bounds from tangents
 % y > f(xL) + (x-xL)*df(xL)
