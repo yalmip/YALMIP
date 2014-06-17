@@ -65,14 +65,16 @@ if p.bilinears~=0
                             rest = (b+a([indPOS(:);indNEG(:)])*[UB(indPOS);LB(indNEG)]);
                             center = -cij/2;
                             radii2 = -rest + (cij/2)^2;
-                            left  = center-sqrt(radii2);
-                            right = center+sqrt(radii2);
-                            if p.ub(x) < right
-                                p.ub(x) = min(p.ub(x),left);
+                            if radii2 > 0
+                                left  = center-sqrt(radii2);
+                                right = center+sqrt(radii2);
+                                if p.ub(x) < right
+                                    p.ub(x) = min(p.ub(x),left);
+                                end
+                                if p.lb(x) > left
+                                    p.lb(x) = max(p.lb(x),right);
+                                end
                             end
-                            if p.lb(x) > left
-                                p.lb(x) = max(p.lb(x),right);
-                            end     
                         end                                
                     end
                     
