@@ -1,4 +1,4 @@
-function [Ax,Ay,b,K] = convexhullConvex(varargin)
+function [Ax,Ay,b,K] = convexhullConcave(varargin)
 
 %function [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU)
 % Two lower bounds from tangents

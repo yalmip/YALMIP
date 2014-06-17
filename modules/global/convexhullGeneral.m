@@ -1,4 +1,4 @@
-function [Ax,Ay,b,K] = convexhullConvex(xL,xU,f)
+function [Ax,Ay,b,K] = convexhullGeneral(xL,xU,f)
 
 z = linspace(xL,xU,100);
 fz = f(z);
