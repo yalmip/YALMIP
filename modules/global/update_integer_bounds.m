@@ -10,10 +10,10 @@ if ~isempty(model.integer_variables)
     model.lb(model.integer_variables) = ceil(model.lb(model.integer_variables)-1e-4);
     model.ub(model.integer_variables) = floor(model.ub(model.integer_variables)+1e-4);
     if ~isempty(fixlb)
-        model.lb(fixlb) = lbfixed(fixlb);
+        model.lb(model.integer_variables(fixlb)) = lbfixed(fixlb);
     end
     if ~isempty(fixub)
-        model.ub(fixub) = ubfixed(fixub);
+        model.ub(model.integer_variables(fixub)) = ubfixed(fixub);
     end
 end
 if ~isempty(model.binary_variables)

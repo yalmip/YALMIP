@@ -10,7 +10,7 @@ if ~isempty(p.integer_variables)
     end
     if p.K.f > 0
         for i = 1:p.K.f
-            if all(p.F_struc(i,:) == fix(p.F_struc(i,:)))
+            if all(ismember(p.F_struc(i,:),[0 1 -1]))
                 involved = find(p.F_struc(i,2:end));
                 % One variable is linear combination of  integer variables
                 if (nnz(ismember(involved,p.integer_variables)) == length(involved)-1) & length(involved)>1
