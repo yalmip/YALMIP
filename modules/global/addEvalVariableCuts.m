@@ -13,24 +13,12 @@ if ~isempty(p.evalMap)
         if xL<xU
             if ~isempty(p.evalMap{i}.properties.convexhull)
                 % A convex hull generator function is available!
-                % However, some hull generators don't suppport a 4th output
-                K = [];
-               % try
-                    if isfield(p.evalMap{i},'oldhull') && isequal(p.evalMap{i}.oldhull.xL,xL) && isequal(p.evalMap{i}.oldhull.xU,xU)
-                        [Ax,Ay,b,K] = getOldHull(p,i);                        
-                    else
-                        [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
-                     %   [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-                     %   p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);                       
-                    end
-                %catch
-                %    if isfield(p.evalMap{i},'oldhull') && isequal(p.evalMap{i}.oldhull.xL,xL) && isequal(p.evalMap{i}.oldhull.xU,xU)
-                %        [Ax,Ay,b,K] = getOldHull(p,i);        
-                %    else
-                %        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-                %        p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
-                %    end
-                %end
+                % Might be able to reuse hull from last run node
+                if isfield(p.evalMap{i},'oldhull') && isequal(p.evalMap{i}.oldhull.xL,xL) && isequal(p.evalMap{i}.oldhull.xU,xU)
+                    [Ax,Ay,b,K] = getOldHull(p,i);
+                else
+                    [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
+                end              
             else
                 if length(xL)>1
                     disp(['The ' p.evalMap{i}.fcn ' operator does not have a convex hull operator'])
