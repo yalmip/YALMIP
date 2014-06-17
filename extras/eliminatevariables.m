@@ -111,8 +111,7 @@ if model.K.q(1) > 0
         end
     end
 end
-if model.K.s(1) > 0
-    % This code cannot occur yet, so untested
+if model.K.s(1) > 0  
     % Nonlinear semidefinite program with parameter
     top = model.K.f + model.K.l + sum(model.K.q) + 1;
     removeqs = [];
