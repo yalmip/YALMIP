@@ -135,8 +135,8 @@ if model.K.s(1) > 0
     end
     model.K.s(removeqs)=[];
     model.F_struc(removeRows,:)=[];
-    if isempty(model.K.q)
-        model.K.q = 0;
+    if isempty(model.K.s)
+        model.K.s = 0;
     end
 end
 
