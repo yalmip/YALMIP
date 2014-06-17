@@ -1,10 +1,7 @@
 function pcut = addEvalVariableCuts(p)
 
 pcut = p;
-if ~isempty(p.evalMap)
-   % temp = p.F_struc(1:p.K.f,:);
-   % p.F_struc(1:p.K.f,:) = [];
-    %pcut = p;
+if ~isempty(p.evalMap) 
     pcut = emptyNumericalModel;
     for i = 1:length(p.evalMap)
         y = p.evalVariables(i);
@@ -16,38 +13,24 @@ if ~isempty(p.evalMap)
         if xL<xU
             if ~isempty(p.evalMap{i}.properties.convexhull)
                 % A convex hull generator function is available!
+                % However, some hull generators don't suppport a 4th output
                 K = [];
-                try
-                    if isfield(p.evalMap{i},'oldhull') & isequal(p.evalMap{i}.oldhull.xL,xL) & isequal(p.evalMap{i}.oldhull.xU,xU)
-                        Ax = p.evalMap{i}.oldhull.Ax;
-                        Ay = p.evalMap{i}.oldhull.Ay;
-                        b = p.evalMap{i}.oldhull.b;
-                        K = p.evalMap{i}.oldhull.K;
+               % try
+                    if isfield(p.evalMap{i},'oldhull') && isequal(p.evalMap{i}.oldhull.xL,xL) && isequal(p.evalMap{i}.oldhull.xU,xU)
+                        [Ax,Ay,b,K] = getOldHull(p,i);                        
                     else
-                        [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-                        p.evalMap{i}.oldhull.xL = xL;
-                        p.evalMap{i}.oldhull.xU = xU;
-                        p.evalMap{i}.oldhull.Ax = Ax;
-                        p.evalMap{i}.oldhull.Ay = Ay;
-                        p.evalMap{i}.oldhull.b = b;
-                        p.evalMap{i}.oldhull.K = K;
+                        [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
+                     %   [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+                     %   p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);                       
                     end
-                catch
-                    if isfield(p.evalMap{i},'oldhull') & isequal(p.evalMap{i}.oldhull.xL,xL) & isequal(p.evalMap{i}.oldhull.xU,xU)
-                        Ax = p.evalMap{i}.oldhull.Ax;
-                        Ay = p.evalMap{i}.oldhull.Ay;
-                        b = p.evalMap{i}.oldhull.b;
-                        K = p.evalMap{i}.oldhull.K;
-                    else
-                        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-                        p.evalMap{i}.oldhull.xL = xL;
-                        p.evalMap{i}.oldhull.xU = xU;
-                        p.evalMap{i}.oldhull.Ax = Ax;
-                        p.evalMap{i}.oldhull.Ay = Ay;
-                        p.evalMap{i}.oldhull.b = b;
-                        p.evalMap{i}.oldhull.K = K;
-                    end
-                end
+                %catch
+                %    if isfield(p.evalMap{i},'oldhull') && isequal(p.evalMap{i}.oldhull.xL,xL) && isequal(p.evalMap{i}.oldhull.xU,xU)
+                %        [Ax,Ay,b,K] = getOldHull(p,i);        
+                %    else
+                %        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+                %        p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
+                %    end
+                %end
             else
                 if length(xL)>1
                     disp(['The ' p.evalMap{i}.fcn ' operator does not have a convex hull operator'])
@@ -84,8 +67,6 @@ if ~isempty(p.evalMap)
                     fz = fz(ii);
                 end
                 
-                %                    fz = feval(p.evalMap{i}.fcn,z);
-                %   end
                 % create 4 bounding planes
                 % f(z) < k1*(x-XL) + f(xL)
                 % f(z) > k2*(x-XL) + f(xL)
@@ -111,15 +92,36 @@ if ~isempty(p.evalMap)
                 F_structemp(:,1+x) = -Ax;
                 F_structemp(:,1) = b;
                 localModel = createNumericalModel(F_structemp,K);
-                pcut = mergeNumericalModels(pcut,localModel);
-              %  pcut.F_struc = [F_structemp; pcut.F_struc];
-              %  pcut.K.l = pcut.K.l + K.l;%length(b);
-              %  pcut.K.f = pcut.K.f + K.f;%length(b);
+                pcut = mergeNumericalModels(pcut,localModel);             
             end
         end
     end
     
     pcut = mergeNumericalModels(p,pcut);
-    %pcut.F_struc = [temp;pcut.F_struc];
 end
+
+function [Ax,Ay,b,K] = getOldHull(p,i);
+
+Ax = p.evalMap{i}.oldhull.Ax;
+Ay = p.evalMap{i}.oldhull.Ay;
+b = p.evalMap{i}.oldhull.b;
+K = p.evalMap{i}.oldhull.K;
+
+function [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
+
+try
+    [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+catch
+    [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+    K = [];
+end
+p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
+
+function p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i)
+p.evalMap{i}.oldhull.xL = xL;
+p.evalMap{i}.oldhull.xU = xU;
+p.evalMap{i}.oldhull.Ax = Ax;
+p.evalMap{i}.oldhull.Ay = Ay;
+p.evalMap{i}.oldhull.b = b;
+p.evalMap{i}.oldhull.K = K;
 
