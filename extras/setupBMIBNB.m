@@ -38,14 +38,14 @@ temp_options.solver = options.bmibnb.lowersolver;
 % this will typically allow us to solver better lower bounding problems
 % (we don't have to linearize the cost)
 [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
-if isempty(lowersolver)|| strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
+if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     % No, probably non-convex cost. Pick a linear solver instead and go
     % for lower bound based on a complete "linearization"
     tempProblemClass.objective.quadratic.convex = 0;
     [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
 end
 
-if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
+if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     tempbinary = tempProblemClass.constraint.binary;
     tempinteger = tempProblemClass.constraint.integer;
     tempsemicont = tempProblemClass.constraint.semicont;
@@ -94,19 +94,19 @@ if isempty(uppersolver) || strcmpi(uppersolver.tag,'bmibnb')
     diagnostic.problem = -2;
     return
 end
-if strcmpi(uppersolver.version,'geometric') &  strcmpi(uppersolver.tag,'fmincon')
+if strcmpi(uppersolver.version,'geometric') &&  strcmpi(uppersolver.tag,'fmincon')
     uppersolver.version = 'standard';
     uppersolver.call = 'callfmincon';
 end
-if strcmpi(uppersolver.version,'geometric') &  strcmpi(uppersolver.tag,'ipopt')
+if strcmpi(uppersolver.version,'geometric') &&  strcmpi(uppersolver.tag,'ipopt')
     uppersolver.version = 'standard';
     uppersolver.call = 'callipoptmex';
 end
-if strcmpi(uppersolver.version,'geometric') &  strcmpi(uppersolver.tag,'snopt')
+if strcmpi(uppersolver.version,'geometric') &&  strcmpi(uppersolver.tag,'snopt')
     uppersolver.version = 'standard';
     uppersolver.call = 'callsnopt';
 end
-if strcmpi(uppersolver.version,'geometric') &  strcmpi(uppersolver.tag,'pennon')
+if strcmpi(uppersolver.version,'geometric') &&  strcmpi(uppersolver.tag,'pennon')
     uppersolver.version = 'standard';
     uppersolver.call = 'callpennonm';
 end
@@ -129,7 +129,7 @@ tempProblemClass.objective.sigmonial = 0;
 
 [lpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
 
-if isempty(lowersolver)| strcmpi(lowersolver.tag,'bmibnb')
+if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb')
     tempbinary = tempProblemClass.constraint.binary;
     tempProblemClass.constraint.binary = 0;
     [lpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
