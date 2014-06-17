@@ -68,15 +68,12 @@ if p.bilinears~=0
                             radii2 = -rest + (cij/2)^2;
                             left  = center-sqrt(radii2);
                             right = center+sqrt(radii2);
-                            if p.ub(x) <= left
-                                % OK
-                            elseif p.lb(x)>= right
-                                % OK
-                            elseif p.lb(x) <= left & p.ub(x) < right
-                                p.ub(x) = right;
-                            elseif p.lb(x) <= right & p.lb(x) >= left
-                                p.lb(x) = right;
+                            if p.ub(x) < right
+                                p.ub(x) = min(p.ub(x),left);
                             end
+                            if p.lb(x) > left
+                                p.lb(x) = max(p.lb(x),right);
+                            end     
                         end
                         %
                         %                         if aij > 0
