@@ -1,4 +1,4 @@
-function problematicQP = analyzeQuadratic(Q)
+function problematicQP = nonconvexQuadratic(Q)
 problematicQP=0;
 % Try to figure out if the quadratic part is convex or not.
 % Avoid eigenvalue check etc as far as possible. This matrix might be huge!
@@ -20,12 +20,25 @@ if ~p
     return
 end
 
+zeroDiag = find(diag(Q)==0);
+if ~isempty(zeroDiag)
+    if any(Q(:,zeroDiag))
+        problematicQP = 1;
+        return
+    end
+end
+
 % A common case is that the matrix is block diagonal. Hence, we detect the
 % blocks, and then check the blocks
 [p,q,r,s,cc,rr] = dmperm(Q);
+
+if ~all(p==q)
+    problematicQP = 1;
+    return
+end
+
 Q = Q(p,p);
 block = 1;
-%for block = 1:length(r)-1
 while block <= length(r)-1
     
     if r(block)+1 == r(block+1)
