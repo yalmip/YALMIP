@@ -1,6 +1,6 @@
 function C = intvpower(A,p)
 if p>0
-    if nnz(rem(p,2))==0
+    if nnz(rem(full(p),2))==0
         if A(1)<0 & A(2)>0
             C = [0 max([A(1)^p A(2)^p])];
         else
@@ -8,7 +8,7 @@ if p>0
             C = [min([a b]) max([a b])];
         end
     else
-        if  isequal(-inf,A(1)) & isequal(inf,A(2))
+        if  isequal(-inf,A(1)) && isequal(inf,A(2))
             C = A;
         elseif p~=fix(p) & A(1)<0
             C = [-inf inf];
@@ -18,7 +18,7 @@ if p>0
         end
     end
 else
-    if A(1)<0 & A(2)>0
+    if A(1)<0 && A(2)>0
         % Nasty crossing
         if even(p)
             C = [min([A(1)^p A(2)^p]) inf];
