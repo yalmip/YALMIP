@@ -1,7 +1,7 @@
-function A=accumarray(subs,val)
+function A=accumarray(subs,val,varargin)
 %ACCUMARRAY (overloaded)
 
-if size(subs,2)>1 || min(size(val))>1
+if size(subs,2)>1 || min(size(val))>1 || nargin > 2
     error('SDPVAR/ACCUMARRAY currently only supports simple cases (subs=column, val=vector)');
 end
 
