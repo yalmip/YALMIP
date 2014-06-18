@@ -101,6 +101,7 @@ p = presolve_sortrows(p);
 % *************************************************************************
 % Improve the bounds by performing some standard propagation
 % *************************************************************************
+p = update_sumsepquad_bounds(p);
 p = propagate_bounds_from_equalities(p); 
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
