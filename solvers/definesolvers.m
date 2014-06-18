@@ -579,7 +579,6 @@ solver(i).version = '0.1';
 solver(i).checkfor= {'sdpnal'};
 solver(i).call    = 'callsdpnal';
 solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
