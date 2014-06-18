@@ -1691,7 +1691,7 @@ while i <= nargin
     arg = varargin{i};
     
     if ~expectval
-        if ~isstr(arg)
+        if ~ischar(arg)
             error(sprintf('Expected argument %d to be a string property name.', i));
         end
         
