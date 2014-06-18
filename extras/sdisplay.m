@@ -51,7 +51,7 @@ for pi = 1:size(pvec,1)
             % these names to YALMIPs variable indicies
             W = evalin('caller','whos');
             for i = 1:size(W,1)
-                if strcmp(W(i).class,'sdpvar') | strcmp(W(i).class,'ncvar')
+                if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
                     % Get the SDPVAR variable
                     thevars = evalin('caller',W(i).name);
 
@@ -60,7 +60,7 @@ for pi = 1:size(pvec,1)
                     % 2: Vector variable x(i)
                     % 3: Matrix variable x(i,j)
                     % 4: Variable not really defined
-                    if is(thevars,'scalar') & is(thevars,'linear') & length(getvariables(thevars))==1 & isequal(getbase(thevars),[0 1])
+                    if is(thevars,'scalar') && is(thevars,'linear') && length(getvariables(thevars))==1 & isequal(getbase(thevars),[0 1])
                         index_in_p = find(ismember(LinearVariables,getvariables(thevars)));
 
                         if ~isempty(index_in_p)
