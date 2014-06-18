@@ -16,22 +16,13 @@ function out = yalmiptest(prefered_solver,auto)
 
 
 if ~exist('sedumi2pen.m')
-    disp('Add /yalmip/extras to your path first...')
-    return
-end
-
-if ~exist('bmibnb.m')
-    disp('Add /yalmip/modules/ with sub-directories to your path first...')
-    return
-end
-
-if ~exist('pwa_yalmip.m')
-    disp('Add /yalmip/operators to your path first...')
+    disp('Add /yalmip/extras etc to your path first...')
+    disp('Read the <a href="http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Tutorials.Installation">Installation notes</a>.')    
     return
 end
 
 if ~exist('callsedumi.m')
-    disp('Add /yalmip/solvers to your path first...')
+    disp('Still missing paths...Just do an addpath(genpath(''yalmiprootdirectory''));')
     return
 end
 
