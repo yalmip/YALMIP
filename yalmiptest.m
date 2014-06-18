@@ -269,6 +269,31 @@ formats{3}.header.just = 'right';
 clc
 yalmiptable([],header,data,formats)
 
+% Test if any LMI solver is installed.
+x = sdpvar(2);[p,~,~,m] = export(x>=0,[],[],[],[],0);
+if ~isempty(m)
+  only_lmilab = strcmpi(m.solver.tag,'lmilab');
+else
+  only_lmilab = 0;
+end
+x = binvar(1);[p,~,~,m] = export(x>=0,[],[],[],[],0);
+if ~isempty(m)
+  only_bnb = strcmpi(m.solver.tag,'bnb');
+else
+  only_bnb = 0;
+end
+if only_lmilab 
+ disp('You do not have any efficient LMI solver installed (only found <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers.LMILAB">LMILAB</a>).')
+ disp('If you intend to solve LMIs, please install a better solver.')
+end
+if only_bnb 
+ disp('You do not have any efficient MILP solver installed (only found internal <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers.BNB">BNB</a>).')
+ disp('If you intend to solve MILPs, please install a better solver.')
+end
+if only_lmilab  || only_bnb
+  disp('See <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers">Interfaced solvers in YALMIP</a>')
+end
+
 
 function [pass,sol,result] = testsdpvar(ops)
 
