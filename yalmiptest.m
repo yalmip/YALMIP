@@ -36,6 +36,21 @@ if isa(detected,'cell')
     end
 end
 
+try
+    s = page_screen_output;
+    if s
+        disp('You are running Octave with pagination turned on.');
+        disp('This does not work well with most solvers (printouts delayed)');
+        disp('You are recommended to turn it off ("more off").');
+        disp('I am turning it off now...Feel free to turn it on again, but I warned you...');
+        more off
+        disp('Press any key to continue test')
+        pause
+    end
+catch
+    % Running MATLAB, so no problems
+end
+
 donttest = 0;
 if (nargin==1) && isa(prefered_solver,'char') && strcmp(prefered_solver,'test')
     donttest = 0;
