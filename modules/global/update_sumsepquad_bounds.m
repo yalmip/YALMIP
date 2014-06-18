@@ -7,7 +7,7 @@ data = [];
 if all(p.variabletype(used) == 2 | p.variabletype(used) == 0)
     % Only linear or quadratic
     nonlinears = find(p.variabletype(used)==2);
-    if nnz(a) > length(nonlinears)
+    if nnz(a) > length(nonlinears) && length(nonlinears) > 0
         data = [];
         for i = 1:length(nonlinears)
             linear = find(p.monomtable(nonlinears(i),:));
