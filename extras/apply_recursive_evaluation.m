@@ -18,35 +18,35 @@ indicies = p.monomials(indicies);
 try
     % Do bilinears and quadratics directly
     if max(p.variabletype(indicies))==2
-        Bilinears = p.variabletype(indicies)==1;
-        if any(Bilinears)
-            Bilinears = indicies(p.variabletype(indicies)==1);
+        BilinearIndex = p.variabletype(indicies)==1;
+        if any(BilinearIndex)
+            Bilinears = indicies(BilinearIndex);
             x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));
         end
-        Quadratics = p.variabletype(indicies)==2;
-        if any(Quadratics)
-            Quadratics = indicies(p.variabletype(indicies)==2);
+        QuadraticIndex = p.variabletype(indicies)==2;
+        if any(QuadraticIndex)
+            Quadratics = indicies(QuadraticIndex);
             x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).^2;
         end
     else
         % Mixed stuff. At least do bilinear and quadratics efficiently        
         BilinearIndex = p.variabletype(indicies)==1;
-        if any(BilinearIndex)
+        if any(BilinearIndex)              
             Bilinears = indicies(BilinearIndex);
-            x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));       
-            indicies(BilinearIndex) = [];
+            x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));                
+            indicies(BilinearIndex) = [];            
         end
         QuadraticIndex = p.variabletype(indicies)==2;
         if any(QuadraticIndex)
             Quadratics = indicies(QuadraticIndex);
-            x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).*x(p.QuadraticsList(Quadratics,2));
-            indicies(QuadraticIndex);
+            x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).^2;
+            indicies(QuadraticIndex)=[];
         end
         
         V = p.monomtable(indicies,:);
         r = find(any(V,1));
         V = V(:,r);
-        x(indicies) = prod(repmat(x(r),length(indicies),1).^V,2);
+        x(indicies) = prod(repmat(x(r),length(indicies),1).^V,2);                
     end
 catch
    

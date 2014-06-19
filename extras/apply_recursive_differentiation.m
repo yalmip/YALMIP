@@ -63,24 +63,23 @@ if 1 % USE NEW
                 % quadratic and bilinear expressions in the bottom layer of
                 % the computational tree can be differentiated very easily
                 if i == 1
-                    Bilinears = computed(find(model.variabletype(computed)==1));
+                    BilinearIndex = find(model.variabletype(computed)==1);
+                    Bilinears = computed(BilinearIndex);
                     if ~isempty(Bilinears)
                         x1 = model.BilinearsList(Bilinears,1);
                         x2 = model.BilinearsList(Bilinears,2);
                         dX(sub2ind(size(dX),Bilinears',x1))=x(x2);
                         dX(sub2ind(size(dX),Bilinears',x2))=x(x1);
                     end
-                    Quadratics = computed(find(model.variabletype(computed)==2));
+                    QuadraticIndex = find(model.variabletype(computed)==2);
+                    Quadratics = computed(QuadraticIndex);
                     if ~isempty(Quadratics)
                         x1 =  model.QuadraticsList(Quadratics,1);
                         dX(sub2ind(size(dX),Quadratics',x1))=2*x(x1);
-                    end
-                    Alreadydone = [Bilinears Quadratics];
-                else
-                    Alreadydone=[];
+                    end                   
+                    computed([BilinearIndex QuadraticIndex])=[];
                 end
-                               
-                computed = setdiff(computed,Alreadydone);
+                                           
                 if i > 1
                     % We might have inner derivatives from earlier
                     isBilinear = model.variabletype==1;
