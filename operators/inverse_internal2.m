@@ -1,10 +1,5 @@
-function varargout = power_internal2(varargin)
-%power_internal2 (overloaded)
-% Used for cases such as x^x and 2^x, which is treated as evaluation-based
-% operators
+function varargout = inverse_internal2(varargin)
 
-% Author Johan Löfberg
-% $Id: inverse_internal2.m,v 1.1 2007-08-21 20:35:47 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
