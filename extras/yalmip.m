@@ -26,6 +26,7 @@ if nargin==0
 end
 
 if isempty(internal_sdpvarstate)
+    more off
     internal_sdpvarstate.monomtable = spalloc(0,0,0);   % Polynomial powers table
     internal_sdpvarstate.hashedmonomtable = [];         % Hashed polynomial powers table
     internal_sdpvarstate.hash = [];
