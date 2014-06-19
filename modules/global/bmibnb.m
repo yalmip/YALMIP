@@ -83,6 +83,11 @@ p = convert_perspective_log(p);
 n_in = length(p.c);
 
 % *************************************************************************
+% Save information about the applicability of some bound propagation
+% *************************************************************************
+p.boundpropagation.sepquad = 1;
+
+% *************************************************************************
 % Extract bounds from model using direct information available
 % *************************************************************************
 p = compile_nonlinear_table(p);
@@ -101,14 +106,14 @@ p = presolve_sortrows(p);
 % *************************************************************************
 % Improve the bounds by performing some standard propagation
 % *************************************************************************
-p = update_sumsepquad_bounds(p);
 p = propagate_bounds_from_equalities(p); 
 p = update_eval_bounds(p);
+p = update_sumsepquad_bounds(p);
 p = update_monomial_bounds(p);
 p = presolve_bounds_from_inequalities(p);
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
-
+p = update_sumsepquad_bounds(p);
 % *************************************************************************
 % For quadratic nonconvex programming over linear constraints, we
 % diagonalize the problem to obtain less number of bilinear terms. Not
