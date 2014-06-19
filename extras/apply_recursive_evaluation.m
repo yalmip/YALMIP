@@ -29,18 +29,18 @@ try
             x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).^2;
         end
     else
-        % Mixed stuff. At least do bilinear and quadratics efficiently
-        Bilinears = p.variabletype(indicies)==1;
-        if any(Bilinears)
-            Bilinears = indicies(p.variabletype(indicies)==1);
-            x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));
-            indicies = setdiff1D(indicies,Bilinears);
+        % Mixed stuff. At least do bilinear and quadratics efficiently        
+        BilinearIndex = p.variabletype(indicies)==1;
+        if any(BilinearIndex)
+            Bilinears = indicies(BilinearIndex);
+            x(Bilinears) = x(p.BilinearsList(Bilinears,1)).*x(p.BilinearsList(Bilinears,2));       
+            indicies(BilinearIndex) = [];
         end
-        Quadratics = p.variabletype(indicies)==2;
-        if any(Quadratics)
-            Quadratics = indicies(p.variabletype(indicies)==2);
+        QuadraticIndex = p.variabletype(indicies)==2;
+        if any(QuadraticIndex)
+            Quadratics = indicies(QuadraticIndex);
             x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).*x(p.QuadraticsList(Quadratics,2));
-            indicies = setdiff1D(indicies,Quadratics);
+            indicies(QuadraticIndex);
         end
         
         V = p.monomtable(indicies,:);
