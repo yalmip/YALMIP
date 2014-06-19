@@ -40,7 +40,7 @@ try
         if any(Quadratics)
             Quadratics = indicies(p.variabletype(indicies)==2);
             x(Quadratics) = x(p.QuadraticsList(Quadratics,1)).*x(p.QuadraticsList(Quadratics,2));
-            indicies = setdiff1D(indicies,Bilinears);
+            indicies = setdiff1D(indicies,Quadratics);
         end
         
         V = p.monomtable(indicies,:);
