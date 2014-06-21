@@ -33,9 +33,6 @@ function diagnostic = solvesdp(varargin)
 %
 %   See also DUAL, @SDPVAR/DOUBLE, SDPSETTINGS, YALMIPERROR
 
-% Author Johan Löfberg
-% $Id: solvesdp.m,v 1.75 2010-04-06 06:32:49 joloef Exp $
-
 yalmiptime = clock; % Let us see how much time we spend
 
 % Avoid warning
@@ -119,14 +116,6 @@ if nargin>=2
     if isa(h,'logdet')
         logdetStruct.P     = getP(h);
         logdetStruct.gain  = getgain(h);
-%         if any(logdetStruct.gain>0)
-%             warning('Nonconvex terms! Perhaps you mean -logdet(P)...')
-%             diagnostic.yalmiptime = etime(clock,yalmiptime);
-%             diagnostic.solvertime = 0;
-%             diagnostic.info = yalmiperror(-2,'YALMIP');
-%             diagnostic.problem = -2;
-%             return
-%         end
         h = getcx(h);
         if isempty(F)
             F = set([]);
@@ -237,7 +226,6 @@ if options.dualize == 1
             n = size(complexInfo.replaced{i},1);
             re = 2*double(complexInfo.new{i}(1:n,1:n));            
             im = 2*double(complexInfo.new{i}(1:n,n+1:end));
-            %im = im-diag(diag(im));
             im=triu((im-im')/2)-(triu((im-im')/2))';
             assign(complexInfo.replaced{i},re + sqrt(-1)*im);
         end
