@@ -29,10 +29,10 @@ n_var = 0;
 Foriginal = [];
 for i = 1:nargin
     switch class(varargin{i})
-        case 'sdpvar'
-            [n(i),m(i)] = size(varargin{i});
+        case {'sdpvar','ndsdpvar'}
+            dims{i} = size(varargin{i});
             p = [p;varargin{i}(:)];
-            if degree(varargin{i}) > 1
+            if degree(varargin{i}(:)) > 1
                 all_linear = 0;
             end
             n_var = n_var + 1;
@@ -183,8 +183,8 @@ plinear = basis*[1;vecvar];
 % And now get the original sizes
 top = 1;
 for i = 1:n_var
-    varargout{i} = reshape(plinear(top:top+n(i)*m(i)-1),n(i),m(i));
-    top = top + n(i)*m(i);
+    varargout{i} = reshape(plinear(top:top+prod(dims{i})-1),dims{i});
+    top = top + prod(dims{i});
 end
 varargout{end+1} = F;
 
