@@ -1,6 +1,6 @@
-function [solvers,keep] = getavailablesolvers(findallsolvers,options);
+function [solvers,keep,allsolvers] = getavailablesolvers(findallsolvers,options);
     
-solvers = definesolvers;
+solvers = definesolvers;allsolvers = solvers;
 keep = ones(length(solvers),1);
 
 if ~findallsolvers
@@ -20,6 +20,6 @@ if ~findallsolvers
     end
 end
 
-if nargout == 1
+if nargout == 1 || nargout==3
     solvers = solvers(find(keep));
 end

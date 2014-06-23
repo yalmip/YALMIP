@@ -139,7 +139,7 @@ end
 % *************************************************************************
 if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
     getsolvertime = clock;
-    solvers = getavailablesolvers(findallsolvers,options);
+    [solvers,kept,allsolvers] = getavailablesolvers(findallsolvers,options);
     getsolvertime = etime(clock,getsolvertime);
     % CODE TO INFORM USERS ABOUT SLOW NETWORKS!
     if isempty(EXISTTIME)
@@ -270,7 +270,7 @@ end
 [solver,problem] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
 if isempty(solver)
     diagnostic.solvertime = 0;
-    if problem == -4 | problem == -3 
+    if problem == -4 || problem == -3 || problem == -9 
         diagnostic.info = yalmiperror(problem,options.solver);
     else
         diagnostic.info = yalmiperror(problem,'YALMIP');

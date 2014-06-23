@@ -6,12 +6,13 @@ function error_string = yalmiperror(errorcode,solver)
 %
 %   The complete set of error codes are
 %
+%    -9 Specified solver name not recognized
 %    -8 Problem does not satisfy geometric programming rules
 %    -7 Solver does not return error codes
 %    -6 Search space not bounded (bound all variables)
 %    -5 License problems in solver
 %    -4 Solver not applicable
-%    -3 Solver not found
+%    -3 Solver not found in MATLAB path
 %    -2 Successfully solved
 %    -1 Unknown error
 %     0 Successfully solved
@@ -45,10 +46,12 @@ end
 if nargin==1
     solver = '';
 else
-    solver = ['(' solver ')'];
+    solver = ['(' strrep(solver,'+','') ')'];
 end
 
 switch errorcode
+case -9
+  error_string = ['Specified solver name not recognized ' solver];          
 case -8
   error_string = ['Problem does not satisfy geometric programming rules'];      
 case -7

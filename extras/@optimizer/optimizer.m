@@ -194,7 +194,7 @@ end
 
 if ~isempty(aux3)
     if isstruct(aux3)
-        if ismember(aux3.problem, [-5 -4 -3 -2 -1 14])
+        if ismember(aux3.problem, [-9 -5 -4 -3 -2 -1 14])
             error(['Failed exporting the model: ' aux3.info])
         end
     end
