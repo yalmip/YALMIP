@@ -821,6 +821,9 @@ if ~isempty(K.sos)
     end
 end
 
+% if ~isempty(semicont_variables) &&  ~solver.constraint.semivar
+%     [F_struc,K,binary_variables] = expandsemivar(F_struc,K,semicont_variables);
+% end
 % *************************************************************************
 %% Equality constraints not supported or supposed to be removed
 % *************************************************************************
