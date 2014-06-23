@@ -332,8 +332,7 @@ end
 if ProblemClass.constraint.sos2
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-         %keep(i) = solvers(i).constraint.integer | solvers(i).constraint.binary | solvers(i).constraint.sos2;            
-         keep(i) = solvers(i).constraint.sos2;            
+         keep(i) = solvers(i).constraint.integer | solvers(i).constraint.binary | solvers(i).constraint.sos2;                       
     end
     solvers = solvers(find(keep));
 end  

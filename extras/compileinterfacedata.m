@@ -490,13 +490,13 @@ if strcmpi(solver.tag,'cutsdp')
 end
 
 showprogress(['Solver chosen : ' solver.tag],options.showprogress);
-% 
-% % *************************************************************************
-% %% CONVERT SOS2 to binary constraints
-% % *************************************************************************
-% if  ProblemClass.constraint.sos2 & ~solver.constraint.sos2
-%     [F,binary_variables] = convertsos2(F,binary_variables);
-% end
+ 
+% *************************************************************************
+%% CONVERT SOS2 to binary constraints for solver not supporting sos2
+% *************************************************************************
+if  ProblemClass.constraint.sos2 & ~solver.constraint.sos2
+    [F,binary_variables] = expandsos2(F,binary_variables);
+end
 
 % *************************************************************************
 %% CONVERT MAXDET TO SDP USING GEOMEAN?
@@ -1169,25 +1169,6 @@ for i = 1:length(operators)
         evalVariables = [evalVariables operators{i}.properties.models];
     end
 end
-
-
-function  [Fout,binary_variables] = convertsos2(F,binary_variables)
-Fout = [];
-for i = 1:length(F)
-    sos2i = is(F,'sos2');
-    Fout = [Fout,F(find(~sos2i))];
-    for i = find(sos2i(:))'
-        lambda = recover(getvariables(F(i)));
-        n = length(lambda)-1;
-        r = binvar(n,1);binary_variables = [binary_variables,getvariables(r)];
-        Fout = [Fout,lambda(0+1) <= r(1), sum(r)==1];
-        for l =1:n-1
-            Fout = [Fout,lambda(l+1)-r(l)-r(l+1) < 0];
-        end
-        Fout = [Fout,lambda(end)<r(end)];
-    end
-end
-
 
 function [Fnew,changed] = convertsocp2NONLINEAR(F);
 changed = 0;
