@@ -537,20 +537,6 @@ if ~isempty(logdetStruct)
     end
 end
 
-% % *************************************************************************
-% %% Change SOS2 to binary model
-% % *************************************************************************
-% old_binary_variables = binary_variables;
-% if ~isempty(binary_variables) & (solver.constraint.binary==0)
-%     x_bin = recover(binary_variables(ismember(binary_variables,unique([getvariables(h) getvariables(F)]))));
-%     F = F + set(x_bin<1)+set(x_bin>0);
-%     integer_variables = union(binary_variables,integer_variables);
-%     binary_variables = [];
-% end
-% if  ProblemClass.constraint.semicont & ~solver.constraint.semivar
-%      [F,binary_variables] = convertsos2(F,binary_variables);
-% end
-
 % *************************************************************************
 %% Change binary variables to integer?
 % *************************************************************************
