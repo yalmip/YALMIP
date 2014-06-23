@@ -70,7 +70,7 @@ if any(model.variabletype > 3)
             if ~isempty(model.x0)
                 model.x0 = [model.x0;model.x0(sigs).^powers(:)];
             end
-            for j = 1:length(sigs)
+            for j = 1:length(sigs)                
                 model.evalVariables = [model.evalVariables n_old_monoms+j];
                 model.isevalVariable(model.evalVariables)=1;               
                 model.evalMap{end+1}.fcn = 'power_internal2';
@@ -107,15 +107,15 @@ if any(model.variabletype > 3)
 end
 
 function  model = add_sigmonial_eval(model,monosig,variable,power)
-if power == -1
-    model.evalVariables = [model.evalVariables monosig];
+model.evalVariables = [model.evalVariables monosig];
+model.evalMap{end+1}.variableIndex = find(model.monomtable(monosig,:));
+model.evalMap{end}.argumentIndex = 1;
+model.evalMap{end}.computes = monosig;
+if power == -1   
     model.isevalVariable(model.evalVariables)=1;   
-    model.evalMap{end+1}.fcn = 'inverse_internal2';
+    model.evalMap{end}.fcn = 'inverse_internal2';
     model.evalMap{end}.arg{1} = recover(variable);
-    model.evalMap{end}.arg{2} = [];
-    model.evalMap{end}.variableIndex = find(model.monomtable(monosig,:));
-    model.evalMap{end}.argumentIndex = 1;    
-    model.evalMap{end}.computes = monosig;
+    model.evalMap{end}.arg{2} = [];   
     model.evalMap{end}.properties.bounds = @inverse_bound;
     model.evalMap{end}.properties.convexhull = @inverse_convexhull;
     model.evalMap{end}.properties.derivative = @(x) -1./(x.^2);
@@ -123,31 +123,23 @@ if power == -1
         model.evalMap{end}.properties.monotonicity = 'decreasing';
         model.evalMap{end}.properties.inverse = @(x)(1./x);
     end
-    model.monomtable(monosig,variable) = 0;
-    model.monomtable(monosig,monosig) = 1;
-    model.variabletype(monosig) = 0;
-else
-    model.evalVariables = [model.evalVariables monosig];
+else   
     model.isevalVariable(model.evalVariables)=1;   
-    model.evalMap{end+1}.fcn = 'power_internal2';
+    model.evalMap{end}.fcn = 'power_internal2';
     model.evalMap{end}.arg{1} = recover(variable);
     model.evalMap{end}.arg{2} = power;
-    model.evalMap{end}.arg{3} = [];
-    % Trial
-    model.evalMap{end}.computes = monosig;
-    model.evalMap{end}.variableIndex = find(model.monomtable(monosig,:));
-    model.evalMap{end}.argumentIndex = 1;
+    model.evalMap{end}.arg{3} = [];        
     model.evalMap{end}.properties.bounds = @power_bound;
     model.evalMap{end}.properties.convexhull = @power_convexhull;
     if power==fix(power)
         model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-1);']);
     else
         model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(power) '*max(1e-8,x).^(' num2str(power) '-1);']);
-    end
-    model.monomtable(monosig,variable) = 0;
-    model.monomtable(monosig,monosig) = 1;
-    model.variabletype(monosig) = 0;
+    end    
 end
+model.monomtable(monosig,variable) = 0;
+model.monomtable(monosig,monosig) = 1;
+model.variabletype(monosig) = 0;
 
 % This should not be hidden here....
 function [L,U] = power_bound(xL,xU,power)
@@ -262,7 +254,6 @@ if ~isempty(Ax)
     end
 end
 
-
 function df = power_derivative(x,power)
 fL = xL^power;
 fU = xU^power;
@@ -288,42 +279,3 @@ if ~isempty(Ax)
     end
 end
 
-function [Ax,Ay,b] = fraction_convexhull(xL,xU)
-yL = xL(2);
-yU = xU(2);
-xL = xL(1);
-xU = xU(1);
-
-xbar = (xL + xU)/2;
-ybar = (yL + yU)/2;
-
-sdpvar x y z
-
-C = [z >= x*(2*(xbar + sqrt(xL*xU)))/((sqrt(xL)+sqrt(xU))^2*ybar) - y*(2*(xbar + sqrt(xL*xU))^2)/((sqrt(xL)+sqrt(xU))^2*ybar^2) + 2*(xbar + sqrt(xL*xU))*sqrt(xL*xU)/(ybar*(sqrt(xL) + sqrt(xU))^2)];
-C = [C, z>= xbar/yL - xU/ybar^2*y - (ybar-2*yL)*xU/(ybar*yL)];
-C = [C, z>= xbar/yU - xL/ybar^2*y - (ybar-2*yU)*xL/(ybar*yU)];
-C = [C, xL<=x<=xU,yL <= y <= yU, z <= xU/yL]
-C = [z >= (x*yU - y*xL + xL*yU)/yU^2, z >= (x*yL-y*xU+xU*yL)/yL^2]
-
-
-for i = 1:100
-    for j = 1:100
-        xx(i,j) = xL + (xU - xL)*(i-1)/99;
-        yy(i,j) = yL + (yU - yL)*(j-1)/99;
-        zz(i,j) = xx(i,j)/yy(i,j);
-    end
-end
-Ax = [];
-Ay = [];
-b = [];
-
-function [L,U] = fraction_bound(xL,xU)
-p1 = [xL(1)/xL(2)];
-p2 = [xU(1)/xL(2)];
-p3 = [xL(1)/xU(2)];
-p4 = [xU(1)/xU(2)];
-L = min([p1 p2 p3 p4]);
-U = max([p1 p2 p3 p4]);
-
-function df =fraction_derivative(xy)
-df = [1/xy(2);-xy(1)./xy(2)^2];

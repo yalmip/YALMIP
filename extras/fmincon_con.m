@@ -39,11 +39,8 @@ if nargout == 2 || ~model.derivative_available
 elseif ~isempty(dgAll_test) & isempty(model.evalMap)
     dgAll = dgAll_test;
 elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities)
-   % allA = [model.Anonlineq;model.Anonlinineq];
-   % dgAll = [];
     n = length(model.c);
-    linearindicies = model.linearindicies;
-    %mtNonlinear = model.monomtable(model.nonlinearindicies,:);
+    linearindicies = model.linearindicies;    
     xevaled = zeros(1,n);
     xevaled(linearindicies) = x;
     % FIXME: This should be vectorized
@@ -62,66 +59,23 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         O(nz) = x(ceil(nz/length(c))).^allDerivemt(nz);        
         zzz = c.*prod(O,2);               
     end
-    
-    if 1
-        if 0
-        a1 = news(1:length(c),2);
-        a2 = model.nonlinearindicies(news(1:length(c),1))';
-        nn = max(max(length(linearindicies)),max(news(:,2)));
-        mm = max(max(linearindicies),max(model.nonlinearindicies(news(:,1))));
-        %  newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
-        %   newdxx = spalloc(nn,mm,length(linearindicies));
-        %   iii = sub2ind(size(newdxx),a1(:),a2(:));
-        %   newdxx(iii) = zzz;
-        
-        % Moved from the for-loop below*
-        a1 = [a1(:);(1:length(linearindicies))'];
-        a2 = [a2(:);linearindicies(:)];
-        %zzz = [zzz;repmat(1,length(linearindicies),1)];
-        zzz = [zzz;ones(length(linearindicies),1)];
-        newdxx = sparse(a1,a2,zzz,nn,mm);
-        else
-            newdxx = model.fastdiff.newdxx;
-            newdxx(model.fastdiff.linear_in_newdxx) = zzz;
-        end
-        
-        %    newdxx = spalloc(length(linearindicies),max(a2),length(linearindicies));
-        %    iii = sub2ind(size(newdxx),a1,a2);
-        %    newdxx(iii) = zzz;
-        %    newdxx = sparse(a1,a2,zzz);
-    else
-        newdxx = spalloc(length(linearindicies),max(linearindicies),length(linearindicies));
-        for i = 1:length(c)
-            newdxx(news(i,2),model.nonlinearindicies(news(i,1)))=zzz(i);%c(i)*prod(x(:)'.^allDerivemt(i,:));
-        end
-    end
-
-    % * moved up
-    %ii = sub2ind(size(newdxx),1:length(linearindicies),linearindicies);
-%     %newdxx(ii) = 1;
-%     for i = 1:length(linearindicies)
-%        newdxx(i,linearindicies(i)) = 1;
-%     end
-    
+                          
+    newdxx = model.fastdiff.newdxx;
+    newdxx(model.fastdiff.linear_in_newdxx) = zzz;                
     newdxx = newdxx';
-    if ~isempty(model.Anonlineq)
-    %    newdxx = newdxx';
+    
+    if ~isempty(model.Anonlineq)    
         dgAll = model.Anonlineq*newdxx;
     else
         dgAll = [];
     end
-    if ~isempty(model.Anonlinineq)
-    %    newdxx = newdxx';
+    if ~isempty(model.Anonlinineq)    
         aux = model.Anonlinineq*newdxx;
         dgAll = [dgAll;aux];
     end    
-  %  dgAll = allA*newdxx';
     
 else
     allA = [model.Anonlineq;model.Anonlinineq];
-  %  requested = any(allA',2);
-  %  [i,j,k] = find((model.deppattern(find(requested),:)));
-  %  requested(j) = 1;
     requested = model.fastdiff.requested;
     dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);
     dgAll = allA*dx;
