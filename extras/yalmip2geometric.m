@@ -12,7 +12,7 @@ h = []; % coefficients in equalities
 % Initial sanity check for posynomial problem structure
 % **********************************************************
 if any(ub<0)
-    problem = -4;
+    problem = -8;
     return
 end
 
@@ -21,7 +21,7 @@ end
 % Fix: Add code for the case min -x1*x2 ===> min 1/x1x2
 % **********************************************************
 if any(any(Q<0))
-    problem = -4;
+    problem = -8;
     return
 end
 
@@ -42,7 +42,7 @@ if any(b<0)
         b(find(b)) = -1/b(find(b));
         A = -A;
     else
-        problem = -4;
+        problem = -8;
         return
     end
 end
@@ -66,7 +66,7 @@ if ~isempty(k)
             return
         else
             % Not posynomial at least
-            problem = -4;
+            problem = -8;
             return
         end
     end
@@ -122,16 +122,16 @@ A = A';
 for j = 1:1:K.f
     k = find(F_struc(j,:)>0);
     if length(k)>1
-        disp('Nonpositive terms in fractional expression in geometric program?')
-        error('Nonpositive terms in fractional expression in geometric program?')
+        problem = -8;
+        return        
     else
         if k==1 | ~ismember(k-1,extended_variables)
             % Monomial equality ok!
         else
             if all(A(:,find(ismember(linear_variables,k-1)))>=0)
             else
-                disp('Negative powers in fractional term in geometric program?')
-                error('Negative powers in fractional term in geometric program?')
+                problem = -8;
+                return                    
             end
         end
     end

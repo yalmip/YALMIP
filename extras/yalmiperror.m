@@ -6,6 +6,7 @@ function error_string = yalmiperror(errorcode,solver)
 %
 %   The complete set of error codes are
 %
+%    -8 Problem does not satisfy geometric programming rules
 %    -7 Solver does not return error codes
 %    -6 Search space not bounded (bound all variables)
 %    -5 License problems in solver
@@ -48,6 +49,8 @@ else
 end
 
 switch errorcode
+case -8
+  error_string = ['Problem does not satisfy geometric programming rules'];      
 case -7
   error_string = ['Solver does not return error codes ' solver];
 case -6
