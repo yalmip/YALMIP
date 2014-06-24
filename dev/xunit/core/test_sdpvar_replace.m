@@ -1,9 +1,9 @@
 function test_sdpvar_replace
-sdpvar t
 
+sdpvar t
 p = 1+t^2;
 p2 = replace(p,t,2*t);
-assertequal(isequal(p2-(1+4*t^2),0))
+assertTrue(isequal(p2-(1+4*t^2),0))
 
 % Checks that the 0^0 bug in MATLAB6.5 LINUX
 % is avoided
