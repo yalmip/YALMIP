@@ -1,9 +1,6 @@
 function F = lmi(X,handlestring,dummy,noprune,symmetryKnown)
 % The command lmi is obsolete, see help sdpvar/set
 
-% Author Johan Löfberg
-% $Id: lmi.m,v 1.34 2009-05-29 08:05:12 joloef Exp $
-
 superiorto('sdpvar')
 
 fast = 0;
