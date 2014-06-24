@@ -21,11 +21,11 @@ function YESNONA = isconvex(p)
 YESNONA = NaN;
 [F,failure,cause] = expandmodel([],p,sdpsettings('allownonconvex',0,'allowmilp',0));
 if failure == 0
-    YESNONA = 1;
+    YESNONA = true;
 else
     [F,failure,cause] = expandmodel([],-p,sdpsettings('allownonconvex',0));
     if failure == 0
         % p is nonconvex
-        YESNONA = 0;
+        YESNONA = false;
     end
 end
