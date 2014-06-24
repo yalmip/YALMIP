@@ -1,9 +1,6 @@
 function [solver,problem,forced_choice] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
 %SELECTSOLVER Internal function to select solver based on problem category
 
-% Author Johan Löfberg
-% $Id: selectsolver.m,v 1.18 2008-04-24 11:15:13 joloef Exp $
-
 problem = 0;
 
 % UNDOCUMENTED
