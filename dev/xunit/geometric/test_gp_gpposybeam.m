@@ -41,4 +41,4 @@ obj
 
 mbg_asserttolequal(sol.problem,0);
 
-mbg_asserttolequal(double(obj),42.39654132455499,1e-4);
+mbg_asserttolequal(double(obj),42.39654132455499,1e-3);
