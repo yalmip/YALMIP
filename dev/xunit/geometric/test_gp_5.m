@@ -11,5 +11,5 @@ F = F + set((2*t1+3*t2^-1)^0.5 <= 2);
 sol = solvesdp(F,obj);
 
 mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj),2.359439050512407e+002,1e-5);
+mbg_asserttolequal(double(obj),2.359439050512407e+002,1e-3);
 mbg_asserttolequal(double([t1 t2 t3]), [0.76467168678701   1.23304260692267   4.24155022707061], 1e-3);

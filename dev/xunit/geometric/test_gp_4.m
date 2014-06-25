@@ -10,4 +10,4 @@ sol = solvesdp(F,obj);
 
 mbg_asserttolequal(sol.problem,0);
 mbg_asserttolequal( double([t1 t2 t3]), [ 1.10978618937192   1.10978618937162   1.57815225707513], 1e-5);
-mbg_asserttolequal( double(obj),  1.344555694227871e+002, 1e-5);
+mbg_asserttolequal( double(obj),  1.344555694227871e+002, 1e-3);
