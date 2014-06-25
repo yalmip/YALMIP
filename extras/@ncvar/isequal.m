@@ -7,6 +7,6 @@ function  out = isequal(X,Y)
 if (isa(X,'ncvar') & isa(Y,'ncvar'))
     out = isequal(struct(X),struct(Y));
 else
-	out = 0;
+	out = false;
 end
 	
