@@ -23,12 +23,16 @@ assertTrue(ok)
 ok = all(all(double(toeplitz(r,c'))-toeplitz(double(r),double(c')) == 0));
 assertTrue(ok)
 
-c = sdpvar(2,3);
-r = sdpvar(4,1);
-assign(c,[1 2 3;4 5 6]);
-assign(r,[1 2 3 4]');
-ok = all(all(double(toeplitz(c,r))-toeplitz(double(c),double(r))==0));
-assertTrue(ok)
+if 0
+    % This case is not well-defined. Gives different answers in different
+    % versions
+    c = sdpvar(2,3);
+    r = sdpvar(4,1);
+    assign(c,[1 2 3;4 5 6]);
+    assign(r,[1 2 3 4]');
+    ok = all(all(double(toeplitz(c,r))-toeplitz(double(c),double(r))==0));
+    assertTrue(ok)
+end
 
 c = sdpvar(2,3);
 r = sdpvar(4,1);
@@ -60,12 +64,16 @@ assertTrue(ok)
 ok = all(all(double(toeplitz(r,c'))-toeplitz(double(r),double(c')) == 0));
 assertTrue(ok)
 
-c = sdpvar(2,3);
-r = sdpvar(4,1);
-assign(c,[1 2 3;4 5 6]);
-assign(r,[1 2 3 4]'*sqrt(-1));
-ok = all(all(double(toeplitz(c,r))-toeplitz(double(c),double(r))==0));
-assertTrue(ok)
+if 0
+    % This case is not well-defined. Gives different answers in different
+    % versions
+    c = sdpvar(2,3);
+    r = sdpvar(4,1);
+    assign(c,[1 2 3;4 5 6]);
+    assign(r,[1 2 3 4]'*sqrt(-1));
+    ok = all(all(double(toeplitz(c,r))-toeplitz(double(c),double(r))==0));
+    assertTrue(ok)
+end
 
 c = sdpvar(2,3);
 r = sdpvar(4,1);
