@@ -65,24 +65,24 @@ ops = sdpsettings('quadprog.Algorithm','interior-point-convex');
 x = sdpvar(2,1);
 sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x+.1)'*(x+.1),ops)
 assertTrue(sol.problem == 0)
-mbg_asserttolequal(double(u),0.2,1e-4);
+mbg_asserttolequal(double(u),0.2,1e-3);
 
 sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x-.1)'*(x-.1),ops);
 assertTrue(sol.problem == 0)
-mbg_asserttolequal(double(u),-.1,1e-4);
+mbg_asserttolequal(double(u),-.1,1e-3);
 
 
 sol = solvesdp([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x-[.1;-.1])'*(x-[.1;-.1])+u^2,ops);
 assertTrue(sol.problem == 0)
-mbg_asserttolequal(double(x),[.1;-0.1],1e-4);
-mbg_asserttolequal(double(u),0,1e-4);
+mbg_asserttolequal(double(x),[.1;-0.1],1e-3);
+mbg_asserttolequal(double(u),0,1e-3);
 
 sdpvar x y u
 sol = solvesdp([-10<=u<=10,-1<=x<=1,-5<=y<=5,implies([x>=0, u==0],y == 4)],(x-1)^2 + u^2,ops);
 assertTrue(sol.problem == 0)
-mbg_asserttolequal(double(x),1,1e-3);
-mbg_asserttolequal(double(u),0,1e-3);
-mbg_asserttolequal(double(y),4,1e-3);
+mbg_asserttolequal(double(x),1,2e-3);
+mbg_asserttolequal(double(u),0,2e-3);
+mbg_asserttolequal(double(y),4,2e-3);
 
 binvar d1
 sdpvar x y
