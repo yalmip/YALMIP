@@ -32,4 +32,4 @@ F=[F,0<=x3];
 % Solve problem
 sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), -229.7222 , 1e-1);
+mbg_asserttolequal(double(objective), -229.7222 , 1);
