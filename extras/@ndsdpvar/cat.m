@@ -37,7 +37,7 @@ B = sparse(find(locy),1:prod(dimy),1,prod(zdim),prod(dimy));
 
 % Perform z = A*sdpvar(x(:)) + B*sdpvar(y(:));
 x.basis = A*x.basis;x.dim = [prod(zdim) 1];
-y.basis = A*y.basis;y.dim = [prod(zdim) 1];
+y.basis = B*y.basis;y.dim = [prod(zdim) 1];
 z = x+y;
 
 z = reshape(z,zdim);
