@@ -31,8 +31,7 @@ zindex = zindex(:);
 [~,locx]=ismember(zindex,xindex(:));
 [~,locy]=ismember(zindex,yindex(:));
 
-z = sdpvar(length(zindex),1);
-z(find(locx))=sdpvar(x(:));
-z(find(locy))=sdpvar(y(:));
-z = reshape(z,zdim);
+A = sparse(find(locx),1:prod(dimx),1,prod(zdim),prod(dimx));
+B = sparse(find(locy),1:prod(dimy),1,prod(zdim),prod(dimy));
+z = A*sdpvar(x(:)) + B*sdpvar(y(:));
        
