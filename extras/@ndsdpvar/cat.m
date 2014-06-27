@@ -13,12 +13,9 @@ end
 dimx = size(x);
 dimy = size(y);
 
-if length(dimx) < along
-    error('First argument does not have sufficiently many dimensions');
-end
-if length(dimy) < along
-    error('Second argument does not have sufficiently many dimensions');
-end
+m = max([length(dimx) length(dimy) along]);
+dimx = [dimx ones(1,m-length(dimx))];
+dimy = [dimy ones(1,m-length(dimy))];
 
 aux1 = dimx;aux1(along)=[];
 aux2 = dimy;aux2(along)=[];
