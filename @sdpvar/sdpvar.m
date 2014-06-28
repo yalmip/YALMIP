@@ -50,10 +50,6 @@ function sys = sdpvar(varargin)
 % $Id: sdpvar.m,v 1.58 2010-02-25 11:00:23 joloef Exp $
 
 superiorto('double');
-try
-    superiorto('intval');
-catch
-end
 if nargin==0
     sys = sdpvar(1,1);
     return
