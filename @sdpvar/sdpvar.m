@@ -477,12 +477,8 @@ for blk = 1:length(n)
                 Y = reshape(1:n(blk)^2,n(blk),n(blk));
                 Y = tril(Y);
                 Y = (Y+Y')-diag(sparse(diag(Y)));
-                [uu,oo,pp] = unique(Y(:));
-                if 1
-                    basis{blk} = sparse(1:n(blk)^2,pp+1,1);
-                else
-                    basis{blk} = lazybasis(n^2,1+(n*(n+1)/2),1:n(blk)^2,pp+1,ones(n(blk)^2,1));
-                end
+                [uu,oo,pp] = unique(Y(:));                
+                basis{blk} = sparse(1:n(blk)^2,pp+1,1);               
             end
 
         case 'symm complex'

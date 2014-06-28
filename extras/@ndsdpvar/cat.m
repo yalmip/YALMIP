@@ -2,7 +2,6 @@ function z = cat(varargin)
 % cat (overloaded)
 
 along = varargin{1};
-
 x = varargin{2};
 if nargin > 3
     y = cat(along,varargin{3:end});
@@ -35,12 +34,42 @@ zindex = zindex(:);
 A = sparse(find(locx),1:prod(dimx),1,prod(zdim),prod(dimx));
 B = sparse(find(locy),1:prod(dimy),1,prod(zdim),prod(dimy));
 
-% Perform z = A*sdpvar(x(:)) + B*sdpvar(y(:));
-x.basis = A*x.basis;x.dim = [prod(zdim) 1];
-y.basis = B*y.basis;y.dim = [prod(zdim) 1];
+if isa(x,'sdpvar')
+    x = ndsdpvar(x);
+end
+if isa(y,'sdpvar')
+    y = ndsdpvar(y);
+end
+if isa(x,'ndsdpvar') && isa(y,'ndsdpvar')
+    if max(x.lmi_variables) < min(y.lmi_variables)
+        z = x;
+        z.basis = [A*x.basis(:,1)+B*y.basis(:,1) A*x.basis(:,2:end) B*y.basis(:,2:end)];
+        z.lmi_variables = [x.lmi_variables y.lmi_variables];
+        z.dim = zdim;
+        z = flush(z);
+        return
+    elseif max(y.lmi_variables) < min(x.lmi_variables)
+        z = x;
+        z.basis = [A*x.basis(:,1)+B*y.basis(:,1) B*y.basis(:,2:end) A*x.basis(:,2:end)];
+        z.lmi_variables = [y.lmi_variables x.lmi_variables];
+        z.dim = zdim;
+        z = flush(z);
+        return
+    end
+end
+switch class(x)
+    case 'double'
+        x = A*x;
+    case 'ndsdpvar'
+        x.basis = A*x.basis;x.dim = [prod(zdim) 1];   
+    otherwise
+end
+switch class(y)
+    case 'double'
+        y = B*y;
+    case 'ndsdpvar'
+        y.basis = B*y.basis;y.dim = [prod(zdim) 1];  
+    otherwise
+end
 z = x+y;
-
 z = reshape(z,zdim);
-
-
-       
