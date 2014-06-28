@@ -474,11 +474,16 @@ for blk = 1:length(n)
                 basis{blk} = sparse([0 1]);
             else
                 % Hrm...fast but completely f*d up
-                Y = reshape(1:n(blk)^2,n(blk),n(blk));
-                Y = tril(Y);
-                Y = (Y+Y')-diag(sparse(diag(Y)));
-                [uu,oo,pp] = unique(Y(:));                
-                basis{blk} = sparse(1:n(blk)^2,pp+1,1);               
+                % Resuse old basis
+                if blk > 1 && n(blk) == n(blk-1)
+                    basis{blk} = basis{blk-1};
+                else
+                    Y = reshape(1:n(blk)^2,n(blk),n(blk));
+                    Y = tril(Y);
+                    Y = (Y+Y')-diag(sparse(diag(Y)));
+                    [uu,oo,pp] = unique(Y(:));
+                    basis{blk} = sparse(1:n(blk)^2,pp+1,1);
+                end
             end
 
         case 'symm complex'
