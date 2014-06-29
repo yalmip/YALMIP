@@ -24,9 +24,6 @@ function [model,recoverdata,diagnostic,interfacedata] = export(varargin)
 %   The RECOVERYMODEL is used to relate a solution of the exported model
 %   to the original variables in YALMIP.
 
-% Arrrgh, new format with logdet much better, but we have to
-% take care of old code, requires some testing...
-varargin = combatible({varargin{:}});
 nargin = length(varargin);
 % *********************************
 % CHECK INPUT
@@ -239,66 +236,3 @@ switch lower(solver.tag)
     otherwise
         model = [];
 end
-
-
-function newinputformat = combatible(varargin)
-
-varargin = varargin{1};
-
-classification = 0;
-% 0 : Ambigious
-% 1 : Old
-% 2 : New
-
-% Try some fast methods to determine...
-m = length(varargin);
-if m==1
-    classification = 2;
-elseif m>=3 & isstruct(varargin{3})
-    classification = 2;
-elseif m>=4 & isstruct(varargin{4})
-    classification = 1;
-elseif m>=2 & isa(varargin{2},'lmi')
-    classification = 1;
-elseif m>=3 & isa(varargin{3},'sdpvar')
-    classification = 1;
-elseif m>=2 & isa(varargin{2},'sdpvar') & min(size(varargin{2}))==1
-    classification = 2;
-elseif m>=2 & isa(varargin{2},'sdpvar') & prod(size(varargin{2}))>=1
-    classification = 1;
-elseif m>=2 & isa(varargin{2},'logdet')
-    classification = 2;
-elseif m==2 & isempty(varargin{2})
-    classification = 2;
-elseif m>=3 & isempty(varargin{2}) & isempty(varargin{3})
-    classification = 2;
-end
-
-if classification==0
-    warning('I might have interpreted this problem wrong due to the new input format in version 3. To get rid of this warning, use an options structure');
-    classification = 2;
-end
-
-if classification==2
-    newinputformat = varargin;
-else
-    newinputformat = varargin;
-    P = varargin{2};
-    % 99.9% of the cases....
-    if isempty(P)
-        newinputformat = {newinputformat{[1 3:end]}};
-    else
-        if isa(P,'lmi')
-            P = sdpvar(P);
-        end
-        if m>=3
-            cxP = newinputformat{3}-logdet(P);
-            newinputformat{3}=cxP;
-        else
-            cxP = -logdet(P);
-            newinputformat{3}=cxP;
-        end
-        newinputformat = {newinputformat{[1 3:end]}};
-    end
-end
-

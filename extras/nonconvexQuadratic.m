@@ -49,7 +49,7 @@ while block <= length(r)-1
         end
         diagend = diagend-1;
         Qblock = Q(r(block):r(diagend),r(block):r(diagend));
-        if any(diag(Qblock))<-1e-14
+        if any(diag(Qblock)<-1e-14)
             problematicQP = 1;
             return
         end

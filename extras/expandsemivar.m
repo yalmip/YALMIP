@@ -1,4 +1,4 @@
-function  [F_struc,K,binary_variables] = expandsemivar(F_struc,K,semicont_variables);
+function  [F_struc,K,binary_variables] = expandsemivar(F_struc,K,semicont_variables)
 
 model.F_struc = F_struc;
 model.K = K;
@@ -13,10 +13,6 @@ end
 % m new binaries required. 
 m = length(semicont_variables);
 
-% Original variables
-n = size(F_struc,2)-1;
-binary_variables = [binary_variables 
-model.F_struc = [model.F_struc spalloc(size(model.F_struc,1),m,0)];
 
 
 
