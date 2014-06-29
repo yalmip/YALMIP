@@ -28,8 +28,14 @@ zindex = cat(along,xindex,yindex);
 zdim = size(zindex);
 zindex = zindex(:);
 
-[~,locx]=ismember(zindex,xindex(:));
-[~,locy]=ismember(zindex,yindex(:));
+try
+    locx=ismembc2(zindex,xindex(:));
+    locy=ismembc2(zindex,yindex(:));
+catch
+    % Octave
+    [~,locx]=ismember(zindex,xindex(:));
+    [~,locy]=ismember(zindex,yindex(:));
+end
 
 A = sparse(find(locx),1:prod(dimx),1,prod(zdim),prod(dimx));
 B = sparse(find(locy),1:prod(dimy),1,prod(zdim),prod(dimy));
