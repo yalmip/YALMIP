@@ -8,6 +8,10 @@ assertTrue(isequal(double(cat(1,x,x)),cat(1,p,p)))
 assertTrue(isequal(double(cat(2,x,x)),cat(2,p,p)))
 assertTrue(isequal(double(cat(3,x,x)),cat(3,p,p)))
 
+assertTrue(isequal(double(cat(1,x,x,x)),cat(1,p,p,p)))
+assertTrue(isequal(double(cat(2,x,x,x)),cat(2,p,p,p)))
+assertTrue(isequal(double(cat(3,x,x,x)),cat(3,p,p,p)))
+
 y = sdpvar(1,2,3);
 q = randn(1,2,3);
 assign(y,q);
