@@ -153,25 +153,3 @@ for i = 1:length(varargin)
 end
 y = cleandoublefactors(y);
 y = flushmidfactors(y);
-
-% if length(y.midfactors)>1
-%     keep = ones(1,length(y.midfactors));
-%     for i = 1:length(y.midfactors)-1
-%         for j = 2:length(y.midfactors)
-%             if keep(j)
-%                 if isequal(y.midfactors{j},y.midfactors{i})
-%                     if isequal(y.leftfactors{j},y.leftfactors{i})
-%                         keep(j) = 0;
-%                         y.rightfactors{i} = y.rightfactors{i}+y.rightfactors{j};
-%                     end
-%                 end
-%             end
-%         end
-%     end
-%     if ~all(keep)
-%         y.leftfactors = {y.leftfactors{find(keep)}};
-%         y.midfactors = {y.midfactors{find(keep)}};
-%         y.rightfactors = {y.rightfactors{find(keep)}};
-%     end        
-% end
-
