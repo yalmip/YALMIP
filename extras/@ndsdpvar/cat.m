@@ -65,14 +65,14 @@ if isa(x,'ndsdpvar') && isa(y,'ndsdpvar')
 end
 switch class(x)
     case 'double'
-        x = A*x;
+        x = A*x(:);
     case 'ndsdpvar'
         x.basis = A*x.basis;x.dim = [prod(zdim) 1];   
     otherwise
 end
 switch class(y)
     case 'double'
-        y = B*y;
+        y = B*y(:);
     case 'ndsdpvar'
         y.basis = B*y.basis;y.dim = [prod(zdim) 1];  
     otherwise
