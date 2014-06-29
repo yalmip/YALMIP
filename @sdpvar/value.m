@@ -152,10 +152,12 @@ if ~isempty(allextended)
                                 if isessentiallyhermitian(val)
                                     val = max(0,real(det(val)))^(1/n);
                                 else
-                                    val = geomean(val);
+                                    val =  prod(val).^(1./(size(val,1)));
                                 end
+                            elseif min(n,m)>1
+                                val = prod(val).^(1./(size(val,1)));
                             else
-                                val = geomean(val);
+                                val = prod(val).^(1./(length(val)));
                             end
                         else
                             val = nan;
