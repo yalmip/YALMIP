@@ -3,9 +3,6 @@ function varargout = asec(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/ACOT CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
