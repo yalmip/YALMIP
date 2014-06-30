@@ -1,8 +1,6 @@
 function varargout = asec(varargin)
-%ACOT (overloaded)
+%ASEC (overloaded)
 
-% Author Johan Löfberg
-% $Id: asec.m,v 1.4 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
@@ -23,7 +21,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ACOT called with CHAR argument?');
+        error('SDPVAR/ASEC called with CHAR argument?');
 end
 
 function [L,U] = bounds(xL,xU)
