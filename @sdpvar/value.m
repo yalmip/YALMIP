@@ -232,6 +232,9 @@ if ~isempty(nonlinears)
                     
                     switch extstruct.fcn
 
+                        case 'abs'
+                            val = feval(extstruct.fcn,extstruct.arg{1:end-2});
+                        
                         case 'sort'
                             w = sort(extstruct.arg{1});
                             val = w(extstruct.arg{2});
