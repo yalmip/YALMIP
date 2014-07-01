@@ -71,6 +71,10 @@ if ~isempty(k)
         end
     end
 end
+% remove those redundant constraints
+F_struc(K.f + k,:)=[];
+k = [];
+
 if any(F_struc(:,1) < 0 & all(F_struc(:,2:end)<=0,2))
     % This is something like x + y < -1
     problem = 1;
