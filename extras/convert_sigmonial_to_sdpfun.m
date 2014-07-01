@@ -102,8 +102,23 @@ if any(model.variabletype > 3)
             end
         end
     end
-
+    
     model = update_eval_bounds(model);
+    for i = 1:length(model.evalMap)
+        if isequal(model.evalMap{i}.fcn,'power_internal2')
+            if isequal(model.evalMap{i}.arg{2},-1)
+                if model.lb(model.evalMap{i}.variableIndex) > 0
+                    model.evalMap{i}.properties.convexity = 'convex';                    
+                    model.evalMap{i}.properties.monotonicity='decreasing';
+                    model.evalMap{i}.properties.inverse=@(x)1./x;
+                elseif model.ub(model.evalMap{i}.variableIndex) < 0                    
+                    model.evalMap{i}.properties.convexity = 'concave';
+                    model.evalMap{i}.properties.monotonicity='increasing';
+                    model.evalMap{i}.properties.inverse=@(x)1./x;
+                end
+            end
+        end
+    end
 end
 
 function  model = add_sigmonial_eval(model,monosig,variable,power)
