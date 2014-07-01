@@ -1,26 +1,28 @@
 function display(X)
 %DISPLAY (overloaded)
 
-% Author Johan Löfberg
-% $Id: display.m,v 1.20 2010-01-18 15:07:29 joloef Exp $
-
 switch(X.typeflag)
     case {0,9,40}
         n = X.dim(1);
         m = X.dim(2);
         if (n*m==1)
 
-            linearbilinearquadraticsigmonial = is(X,'LBQS');            
-            if linearbilinearquadraticsigmonial(1)
-                classification = 'Linear scalar ';
-            elseif linearbilinearquadraticsigmonial(4)
-                classification = 'Sigmonial scalar ';
-            elseif linearbilinearquadraticsigmonial(2)
-                classification = 'Bilinear scalar ';
-            elseif linearbilinearquadraticsigmonial(3)
-                classification = 'Quadratic scalar ';
-            else
-                classification = 'Polynomial scalar ';
+            vars = depends(X);
+            if any(ismember(vars,yalmip('extvariables')))
+                classification = 'Nonlinear scalar ';
+            else                
+                linearbilinearquadraticsigmonial = is(X,'LBQS');
+                if linearbilinearquadraticsigmonial(1)
+                    classification = 'Linear scalar ';
+                elseif linearbilinearquadraticsigmonial(4)
+                    classification = 'Sigmonial scalar ';
+                elseif linearbilinearquadraticsigmonial(2)
+                    classification = 'Bilinear scalar ';
+                elseif linearbilinearquadraticsigmonial(3)
+                    classification = 'Quadratic scalar ';
+                else
+                    classification = 'Polynomial scalar ';
+                end
             end
 
             if ~isreal(X.basis)
@@ -29,8 +31,7 @@ switch(X.typeflag)
                 classification = [classification '(real'];
             end
 
-            if is(X,'compound')
-                classification = [classification ', derived'];
+            if is(X,'compound')               
                 if ~isequal(X.extra.opname,'')
                     classification = [classification ', models ''' X.extra.opname ''''];
                 end
@@ -79,16 +80,21 @@ switch(X.typeflag)
             disp([classification]);
         else
 
-            if islinear(X)
-                classification = 'Linear matrix variable ';
-            elseif is(X,'sigmonial')
-                classification = 'Sigmonial matrix variable ';
-            elseif is(X,'bilinear')
-                classification = 'Bilinear matrix variable ';
-            elseif is(X,'quadratic')
-                classification = 'Quadratic matrix variable ';
+            vars = depends(X);
+            if any(ismember(vars,yalmip('extvariables')))
+                classification = 'Nonlinear matrix variable ';
             else
-                classification = 'Polynomial matrix variable ';
+                if islinear(X)
+                    classification = 'Linear matrix variable ';
+                elseif is(X,'sigmonial')
+                    classification = 'Sigmonial matrix variable ';
+                elseif is(X,'bilinear')
+                    classification = 'Bilinear matrix variable ';
+                elseif is(X,'quadratic')
+                    classification = 'Quadratic matrix variable ';
+                else
+                    classification = 'Polynomial matrix variable ';
+                end
             end
 
             if isreal(X.basis)
@@ -109,15 +115,10 @@ switch(X.typeflag)
                 info = [info 'complex'];
             end;
 
-            if is(X,'compound')
-                info = [info ', derived'];
-            end
-
             if X.typeflag==9
                 info = [info ', KYP'];
             end
             
-
             if X.typeflag==40
                 info = [info ', Generalized KYP'];
             end            
@@ -133,6 +134,7 @@ switch(X.typeflag)
                     end
                 end
             end
+            
             if any(ismember(depends(X),yalmip('parvariables')))
                 info = [info ', parametric'];
             end
