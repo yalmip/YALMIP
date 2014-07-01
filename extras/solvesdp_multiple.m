@@ -8,6 +8,10 @@ if ~is(h,'linear')
     error('Parts of your matrix objective is not linear (multiple solutions can currently only be obtained for linear objectives)');
 end
 
+if is(h,'complex')
+    error('Parts of your matrix objective is complex-valued (which makes no sense since complex numbers have no natural ordering');
+end
+
 if nargin<3
     ops = sdpsettings('saveyalmipmodel',1);
     varargin{3} = ops;
