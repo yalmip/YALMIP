@@ -87,9 +87,8 @@ end
 j = 1;
 while feasible & j<=length(jj)
     i = p_test.linears(jj(j));
-    %if abs(p.ub(i)-p.lb(i)>0.1) & improvethese(i)
     if abs(p.ub(i)-p.lb(i)>p.options.bmibnb.vartol) & improvethese(i)    
-        p_test.c = eyev(length(p_test.c),i);
+        p_test.c = eyev(length(p_test.c),i);        
         output = feval(lpsolver,removenonlinearity(p_test));
 
         if output.problem == 0 | output.problem == 2 | output.problem == 12
@@ -99,8 +98,8 @@ while feasible & j<=length(jj)
                     p_test = updateonenonlinearbound(p_test,i);
                 end
             end
-            p_test.c = -p_test.c;
-            output = feval(lpsolver,removenonlinearity(p_test));
+            p_test.c = -p_test.c;          
+            output = feval(lpsolver,removenonlinearity(p_test));         
             if output.problem == 0
                 if p_test.ub(i) > output.Primal(i)+1e-5
                     p_test.ub(i) = output.Primal(i);
