@@ -1,12 +1,7 @@
 function varargout = acosh(varargin)
 %ACOSH (overloaded)
 
-% Author Johan Löfberg
-% $Id: acosh.m,v 1.4 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
-
-    case 'double'
-        error('Overloaded SDPVAR/ASIN CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
@@ -27,11 +22,11 @@ end
 
 function [L,U] = bounds(xL,xU)
 if xU<=-1
-    L = asinh(xU);
-    U = asinh(xL);
+    L = acosh(xU);
+    U = acosh(xL);
 elseif xL>=1
-    L = asinh(xL);
-    U = asinh(xU);
+    L = acosh(xL);
+    U = acosh(xU);
 else
     L = -inf;
     U = inf;
