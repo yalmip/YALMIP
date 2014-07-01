@@ -1,8 +1,6 @@
 function varargout = acos_internal(varargin)
 %ACOS (overloaded)
 
-% Author Johan Löfberg
-% $Id: acos_internal.m,v 1.1 2008-12-11 12:02:41 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

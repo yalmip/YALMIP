@@ -1,12 +1,7 @@
 function varargout = asin(varargin)
 %ASIN (overloaded)
 
-% Author Johan Löfberg
-% $Id: asin.m,v 1.5 2008-09-05 07:29:15 joloef Exp $
 switch class(varargin{1})
-
-    case 'double'
-        error('Overloaded SDPVAR/ASIN CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});

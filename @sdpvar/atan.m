@@ -1,12 +1,7 @@
 function varargout = atan(varargin)
 %ATAN (overloaded)
 
-% Author Johan Löfberg
-% $Id: atan.m,v 1.8 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
-
-    case 'double'
-        error('Overloaded SDPVAR/ATAN CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
