@@ -94,8 +94,7 @@ if problem == 0
         prob.b = [prob.b;prob.h;1./prob.h];
         prob.map = [prob.map;max(prob.map) + (1:2*length(prob.h))'];
     end
-
-    prob.param = options.mosek.param;
+    
 else
     prob = [];
 end

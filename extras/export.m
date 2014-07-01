@@ -192,6 +192,7 @@ switch lower(solver.tag)
         else
             model.prob = yalmip2mosek(interfacedata);
         end
+        model.param = interfacedata.options.mosek;
                     
     case 'quadprog'
         model = yalmip2quadprog(interfacedata);
