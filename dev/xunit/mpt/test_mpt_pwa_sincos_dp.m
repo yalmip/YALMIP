@@ -1,12 +1,13 @@
 function test_mpt_pwa_sincos_dp
 % Prediction horizon
-N = 4;
+N = 2;
 
 opt_sincos
-
 probStruct.N=N-1;
-
-ctrl=mpt_control(sysStruct,probStruct)
+ctrl = mpt_control(sysStruct, probStruct, 'online');
+Y = ctrl.toYALMIP();
+Y.constraints = Y.constraints + [ sysStruct.ymin <= sysStruct.C{1}*Y.variables.x(:, end) <= sysStruct.ymax ];
+new = ctrl.fromYALMIP(Y).toExplicit();
 
 nx = 2;
 nu = 1;
@@ -55,6 +56,6 @@ for k = N-1:-1:1
 
 end
 
-mpsol{1} = mpt_removeOverlaps(mpsol{1})
-
-mbg_asserttolequal(mpt_isPWAbigger(mpsol{1},ctrl),0);
+fun1 = mpt_mpsol2pu(mpsol{1});
+result =  fun1.join().compare(new.optimizer.join(), 'obj');
+assertTrue(result == 0);
