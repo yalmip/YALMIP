@@ -1,4 +1,3 @@
-exit
 function n=ndims(X)
 %NDIM (overloaded)
 
