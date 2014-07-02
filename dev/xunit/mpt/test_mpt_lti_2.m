@@ -14,33 +14,6 @@ x = sdpvar(repmat(nx,1,N),repmat(1,1,N));
 % Inputs u(k), ..., u(k+N) (last one not used)
 u = sdpvar(repmat(nu,1,N),repmat(1,1,N));
 
-% MPT implementation
-sysStruct.A= A;
-sysStruct.B= B;
-sysStruct.C= C;
-sysStruct.D= [0];
-
-%set constraints on output
-sysStruct.ymin    =   -1;
-sysStruct.ymax    =    1;
-
-%set constraints on input
-sysStruct.umin    =   -1;
-sysStruct.umax    =   1;
-
-sysStruct.xmin    =   [-5;-5];
-sysStruct.xmax    =   [5;5];
-
-probStruct.norm=1;
-probStruct.Q=eye(2);
-probStruct.R=1;
-probStruct.N=N-1;
-probStruct.P_N=zeros(2);
-probStruct.subopt_lev=0;
-probStruct.y0bounds=1;
-probStruct.Tconstraint=0;
-ctrl=mpt_control(sysStruct,probStruct)
-
 % States x(k), ..., x(k+N)
 x = sdpvar(repmat(nx,1,N),repmat(1,1,N));
 
@@ -69,9 +42,40 @@ for k = N-1:-1:1
     obj = obj + norm([x{k};u{k}],1);
 end
 mpsol{1}  = solvemp(F,obj,[],x{k},u{k});
- 
-mbg_asserttolequal(mpt_isPWAbigger(mpsol{1}{1},ctrl),0);
 
+% MPT implementation
+sysStruct.A= A;
+sysStruct.B= B;
+sysStruct.C= C;
+sysStruct.D= [0];
+
+%set constraints on output
+sysStruct.ymin    =   -1;
+sysStruct.ymax    =    1;
+
+%set constraints on input
+sysStruct.umin    =   -1;
+sysStruct.umax    =   1;
+
+sysStruct.xmin    =   [-5;-5];
+sysStruct.xmax    =   [5;5];
+
+probStruct.norm=1;
+probStruct.Q=eye(2);
+probStruct.R=1;
+probStruct.N=N-1;
+probStruct.P_N=zeros(2);
+probStruct.subopt_lev=0;
+probStruct.Tconstraint=0;
+ 
+ctrl = mpt_control(sysStruct, probStruct, 'online');
+Y = ctrl.toYALMIP();
+Y.constraints = Y.constraints + [ -1 <= C*Y.variables.x(:, end) <= 1 ];
+new = ctrl.fromYALMIP(Y).toExplicit();
+
+fun1 = mpt_mpsol2pu(mpsol{1});
+result = fun1.compare(new.optimizer, 'obj');
+assertTrue(result == 0);
 
 
 

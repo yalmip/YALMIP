@@ -50,9 +50,11 @@ probStruct.R=1;
 probStruct.N=N-1;
 probStruct.P_N=zeros(2);
 probStruct.subopt_lev=0;
-probStruct.y0bounds=1;
 probStruct.Tconstraint=0;
-ctrl=mpt_control(sysStruct,probStruct)
+ctrl = mpt_control(sysStruct, probStruct, 'online');
+Y = ctrl.toYALMIP();
+Y.constraints = Y.constraints + [ -1 <= C*Y.variables.x(:, end) <= 1 ];
+new = ctrl.fromYALMIP(Y).toExplicit();
 
 % Online
 obj = 0;
@@ -81,5 +83,7 @@ for k = N-1:-1:1
     obj = obj + norm([x{k};u{k}],1);
 end
 mpsol{k} = solvemp(F,obj,sdpsettings('debug',1),x{k},u{k});
-mpsol{1} = mpt_removeOverlaps(mpsol{1})
-mbg_asserttolequal(mpt_isPWAbigger(mpsol{1},ctrl),0);
+fun1 = mpt_mpsol2pu(mpsol{1});
+result =  fun1.join().compare(new.optimizer.join(), 'obj')
+assertTrue(result == 0);
+
