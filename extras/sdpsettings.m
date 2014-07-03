@@ -3,7 +3,7 @@ function options = sdpsettings(varargin)
 %
 %   OPTIONS = SDPSETTINGS with no input arguments returns
 %   setting structure with default values
-%c
+%
 %   OPTIONS = SDPSETTINGS('NAME1',VALUE1,'NAME2',VALUE2,...) creates a
 %   solution options structure OPTIONS in which the named properties have
 %   the specified values.  Any unspecified properties have default values.
@@ -13,6 +13,10 @@ function options = sdpsettings(varargin)
 %   OPTIONS = SDPSETTINGS(OLDOPTS,'NAME1',VALUE1,...) alters an existing options
 %   structure OLDOPTS.
 %
+%   The OPTIONS structure is a simple struct and can thus easily be
+%   manipulated after its creation
+%   OPTIONS = sdpsettings;OPTIONS.verbose = 0;
+%
 %
 %   SDPSETTINGS PROPERTIES
 %
@@ -20,8 +24,7 @@ function options = sdpsettings(varargin)
 %
 %    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|none ('')]
 %    verbose            - Display-level [0|1|2|...(0)] (0-silent, 1-normal, >1-loud)
-%    usex0              - Use the current values obtained from double as initial iterate [0|1 (0)]
-%    dimacs             - Compute DIMACS error measures [0|1(0)]
+%    usex0              - Use the current values obtained from double as initial iterate if solver supports that [0|1 (0)]
 %
 %    showprogress       - Show progress of YALMIP (suitable for large problems) [0|1 (0)]
 %    cachesolvers       - Check for available solvers only first time solvesdp is called [0|1 (0)]
@@ -92,9 +95,6 @@ Names = {'solver'
     'allownonconvex'
     'savedebug'
     'debug'
-    %  'plot.colormap'
-    %  'plot.gradcolor'
-    %'kkt.primalbounds'
     'kkt.dualbounds'
     'kkt.minnormdual'
     'kkt.licqcut'
@@ -187,25 +187,7 @@ Names = {'solver'
     'robust.auxreduce'
     'robust.polya'
     'robust.reducedual'
-    'robust.reducesemiexplicit'
-    'global.branchmethod'
-    'global.branchrule'
-    'global.lpreduce'
-    'global.roottight'
-    'global.lowrank'
-    'global.lowersolver'
-    'global.uppersolver'
-    'global.lpsolver'
-    'global.target'
-    'global.vartol'
-    'global.relgaptol'
-    'global.absgaptol'
-    'global.pdtol'
-    'global.eqtol'
-    'global.inttol'
-    'global.maxiter'
-    'global.maxtime'
-    
+    'robust.reducesemiexplicit'       
     'gurobi.BarIterLimit'
     'gurobi.Cutoff'
     'gurobi.IterationLimit'
@@ -296,14 +278,12 @@ Names = {'solver'
     'gurobi.PreSparsify'
     'gurobi.ResultFile'
     'gurobi.Threads'
-    
     'filtersd.maxiter'
     'filtersd.maxtime'
     'filtersd.maxfeval'        
     'filtersd.rho'
     'filtersd.htol'
-    'filtersd.rgtol'
-         
+    'filtersd.rgtol'      
     'mpcvx.solver'
     'mpcvx.relgaptol'
     'mpcvx.absgaptol'
@@ -379,13 +359,11 @@ Names = {'solver'
     'sedumi.cg.restol'
     'sedumi.cg.stagtol'
     'sedumi.cg.maxiter'
-    'sedumi.cg.refine'
-    
+    'sedumi.cg.refine'    
     'sparsecolo.SDPsolver'
     'sparsecolo.domain'
     'sparsecolo.range'
-    'sparsecolo.EQorLMI'
-    
+    'sparsecolo.EQorLMI'    
     'sparsepop.relaxOrder'
     'sparsepop.sparseSW'
     'sparsepop.multiCliquesFactor'
@@ -489,9 +467,7 @@ Names = {'solver'
     'qsopt.dualprice'
     'qsopt.scale'
     'qsopt.maxiter'
-    'qsopt.maxtime'
-    %'xpress.presol'
-    %'xpress.niter'
+    'qsopt.maxtime'   
     'lpsolve.scalemode'
     'cdd.method'
     'clp.solver'
@@ -541,8 +517,7 @@ Names = {'solver'
     'penbmi.ALPHA_UP'
     'penbmi.PRECISION'
     'penbmi.PRECISION_2'
-    'penbmi.CG_TOL_DIR'
-    
+    'penbmi.CG_TOL_DIR'    
     'pennlp.maxit'
     'pennlp.nwtiters'
     'pennlp.hessianmode'
@@ -570,8 +545,7 @@ Names = {'solver'
     'pennlp.cgtolmin'
     'pennlp.cgtolup'
     'pennlp.uinitbox'
-    'pennlp.uinitnc'
-    
+    'pennlp.uinitnc'    
     'lmirank.solver'
     'lmirank.maxiter'
     'lmirank.eps'
@@ -579,23 +553,19 @@ Names = {'solver'
     'lmilab.reltol'
     'lmilab.maxiter'
     'lmilab.feasradius'
-    'lmilab.L'
-    
+    'lmilab.L'    
     'vsdp.solver'
     'vsdp.verifiedupper'
     'vsdp.verifiedlower'
     'vsdp.prove_D_infeasible'
-    'vsdp.prove_P_infeasible'
-    
+    'vsdp.prove_P_infeasible'    
     'qpip.mu'
-    'qpip.method'
-    
+    'qpip.method'    
     'quadprogbb.max_time'
     'quadprogbb.fathom_tol'
     'quadprogbb.tol'
     'quadprogbb.use_quadprog'
-    'quadprogbb.use_single_processor'
-    
+    'quadprogbb.use_single_processor'    
     'lindo.LS_IPARAM_NLP_SOLVER'
     'lindo.LS_IPARAM_NLP_MAXLOCALSEARCH'
     'lindo.METHOD'   
@@ -626,8 +596,7 @@ Names = {'solver'
     'csdp.minstepp'
     'csdp.minstepd'
     'csdp.usexzgap'
-    'csdp.tweakgap'
-    
+    'csdp.tweakgap'    
     'sdpnal.tol'
     'sdpnal.sigma'
     'sdpnal.maxiter'
@@ -638,8 +607,7 @@ Names = {'solver'
     'sdpnal.stagnate_check_psqmr'
     'sdpnal.scale_data'
     'sdpnal.plotyes'
-    'sdpnal.proximal'
-    
+    'sdpnal.proximal'    
     'specsdp.gatol1'
     'specsdp.gatol2'
     'specsdp.niter=20'
@@ -671,8 +639,7 @@ Names = {'solver'
     'moment.rceftol'
     'ipopt.tol'
     'ipopt.mu_strategy'
-    'ipopt.hessian_approximation'
-    
+    'ipopt.hessian_approximation'    
     'logdetppa.tol'
     'logdetppa.sig'
     'logdetppa.maxiter'
@@ -683,8 +650,7 @@ Names = {'solver'
     'logdetppa.scale_data'
     'logdetppa.plotyes'
     'logdetppa.use_proximal'
-    'logdetppa.switch_alt_newton_tol'
-    
+    'logdetppa.switch_alt_newton_tol'    
     'powersolver'
     };
 
@@ -750,8 +716,6 @@ else
     options.shift = 0;
     options.dimacs = 0;
     options.beeponproblem = [-5 -4 -3 -2 -1];
-    % options.plot.colormap = 'hsv';
-    % options.plot.gradcolor = 0;
     options.plot.edgecolor = 'k';
     options.plot.wirestyle = '-';
     options.plot.wirecolor = 'k';
@@ -759,7 +723,6 @@ else
     options.plot.shade = 1;
     options.plot.waitbar = 1;
     
-    %options.kkt.primalbounds = 1;
     options.kkt.dualbounds = 1;
     options.kkt.dualpresolve.passes = 1;
     options.kkt.dualpresolve.lplift = 1;
@@ -1208,40 +1171,8 @@ else
         names = lower(Names);
     catch
         options.penlab = [];
-    end
-    
-    
-%     options.csdp.axtol  = 1e-8;
-%     options.csdp.atytol = 1e-8;
-%     options.csdp.objtol = 1e-8;
-%     options.csdp.pinftol = 1e8;
-%     options.csdp.dinftol = 1e8;
-%     options.csdp.maxiter = 100;
-%     options.csdp.minstepfrac = 0.90;
-%     options.csdp.maxstepfrac = 0.97;
-%     options.csdp.minstepp = 1e-8;
-%     options.csdp.minstepd = 1e-8;
-%     options.csdp.usexzgap = 1;
-%     options.csdp.tweakgap = 0;    
-  %  options.mosek.param = [];
-    
-%     % Options for DSDP 5.6
-%     options.dsdp.r0 = -1;
-%     options.dsdp.zbar = 0;
-%     options.dsdp.penalty  = 1e8;
-%     options.dsdp.boundy  = 1e6;
-%     options.dsdp.gaptol = 1e-7;
-%     options.dsdp.maxit  = 500;
-%     options.dsdp.steptol=5e-2;
-%     options.dsdp.inftol=1e-8;
-%     options.dsdp.dual_bound = 1e20;
-%     options.dsdp.rho = 3;
-%     options.dsdp.dynamicrho = 1;
-%     options.dsdp.bigM = 0;
-%     options.dsdp.mu0 = -1;
-%     options.dsdp.reuse = 4;
-%     options.dsdp.lp_barrier = 1;
-    
+    end        
+        
     % Older versions
     options.dsdp.objectiveconstant = 0;
     options.dsdp.matrixfreesize = 3000;
@@ -1252,8 +1183,7 @@ else
     options.dsdp.max_infeasible_mu_reduction = 2;
     options.dsdp.max_mu_reduction = 1e8;
     options.dsdp.maxlanczos = 20;
-    
-    
+        
     options.filtersd.maxiter = 1500;
     options.filtersd.maxtime = 1000;
     options.filtersd.maxfeval = 10000;         
@@ -1388,8 +1318,7 @@ else
     options.lmirank.maxiter = 1000;
     options.lmirank.eps = 1e-9;
     options.lmirank.itermod = 1;
-    
-    
+        
     options.logdetppa.tol = 1e-6;
     options.logdetppa.sig = 10;
     options.logdetppa.maxiter    = 100;
@@ -1414,7 +1343,6 @@ else
     
     options.lpsolve.scalemode = 0;
     
-    % Options for MAXDET solver
     options.maxdet.AbsTol = 1e-6;
     options.maxdet.RelTol = 1e-6;
     options.maxdet.gam    = 25;
@@ -1440,7 +1368,6 @@ else
     options.penbmi.U0 = 1;
     options.penbmi.MU = 0.7;
     options.penbmi.MU2 = 0.5;          %!0.1
-    % options.penbmi.PBM_EPS = 1e-6;     %!1e-7
     options.penbmi.PRECISION = 1e-6;     %!1e-7
     options.penbmi.P_EPS = 1e-4;       %!1e-6
     options.penbmi.UMIN = 1e-14;
@@ -1500,17 +1427,13 @@ else
     options.pensdp.P0 = 0.9;
     
     options.powersolver = [];
-    
-    
+       
     options.quadprogbb.max_time = 86400;
     options.quadprogbb.fathom_tol = 1e-6;
     options.quadprogbb.tol = 1e-8;
     options.quadprogbb.use_quadprog = 1;
     options.quadprogbb.use_single_processor = 0;
-    
-    
-    
-    % Options for SDPA
+        
     options.sdpa.maxIteration = 100 ;
     options.sdpa.epsilonStar = 1.0E-7;
     options.sdpa.lambdaStar  = 1.0E2  ;
@@ -1532,7 +1455,6 @@ else
     options.sdplr.soln_factored = 0;
     options.sdplr.maxrank = 0;
     
-    % Options for SDPT3 (2.3 -> 3.01)
     options.sdpt3.vers     = 1;
     options.sdpt3.gam      = 0;
     options.sdpt3.predcorr = 1;
@@ -1581,7 +1503,6 @@ else
     options.sparsepop.POPsolver = '';
     options.sparsepop.detailedInfFile = '';
     options.sparsepop.printFileName = 1;
-    %  options.sparsepop.printLevel = [2 0];
     options.sparsepop.errorBdIdx = '';
     options.sparsepop.fValueUbd = '';
     options.sparsepop.symbolicMath = 1;
@@ -1599,7 +1520,6 @@ else
     options.sdpnal.plotyes = 0;
     options.sdpnal.proximal = 1;
     
-    % Options for SeDuMi (1.03 -> 1.05)
     options.sedumi.alg    = 2;
     options.sedumi.beta   = 0.5;
     options.sedumi.theta  = 0.25;
@@ -1640,10 +1560,7 @@ else
     
     options.qpip.mu = 0.0;
     options.qpip.method = 1;
-    
-    %  options.xpress.presol = 1;
-    %  options.xpress.niter  = 1;
-    
+        
     try
         % Maybe we already created these above
         if exist('fminconops','var')
