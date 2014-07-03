@@ -72,25 +72,16 @@ if any(model.variabletype > 3)
             end
             for j = 1:length(sigs)                
                 model.evalVariables = [model.evalVariables n_old_monoms+j];
-                model.isevalVariable(model.evalVariables)=1;               
-                model.evalMap{end+1}.fcn = 'power_internal2';
-                model.evalMap{end}.arg{1} = recover(n_old_monoms+j);
-                model.evalMap{end}.arg{2} = powers(j);
-                model.evalMap{end}.arg{3} = [];
-                model.evalMap{end}.variableIndex = sigs(j);
-                model.evalMap{end}.argumentIndex = 1;
-                model.evalMap{end}.properties.bounds = @power_bound;
-                model.evalMap{end}.properties.convexhull = @power_convexhull;
-                % TRIAL
-                model.evalMap{end}.computes = n_old_monoms+j;
-                model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(powers(j)) '*x.^(' num2str(powers(j)) '-1);']);
-                if even(powers(j))
-                    model.evalMap{end}.properties.range = [0 inf];
+                model.isevalVariable(model.evalVariables)=1; 
+                if powers(j)==-1
+                    model.evalMap{end+1} = inverse_internal2_operator(model,variable,n_old_monoms+j);    
                 else
-                    model.evalMap{end}.properties.range = [-inf inf];
-                end
-                model.evalMap{end}.properties.domain = [-inf inf];                                  
-                % Save information about this new variable 
+                    model.evalMap{end+1} = power_internal2_operator(model,variable,powers(j));    
+                end    
+                model.evalMap{end}.properties.domain = [-inf inf];
+                model.evalMap{end}.variableIndex = sigs(j);
+                model.evalMap{end}.argumentIndex = 1;                
+                model.evalMap{end}.computes = n_old_monoms+j;                
                 found_and_converted = [found_and_converted;sigs(j) powers(j) n_old_monoms+j];
             end
         end
@@ -123,35 +114,15 @@ end
 
 function  model = add_sigmonial_eval(model,monosig,variable,power)
 model.evalVariables = [model.evalVariables monosig];
-model.evalMap{end+1}.variableIndex = find(model.monomtable(monosig,:));
+model.isevalVariable(model.evalVariables)=1;  
+if power == -1       
+    model.evalMap{end+1} = inverse_internal2_operator(model,variable,variable);    
+else       
+    model.evalMap{end+1} = power_internal2_operator(model,variable,power);
+end
+model.evalMap{end}.variableIndex = find(model.monomtable(monosig,:));
 model.evalMap{end}.argumentIndex = 1;
 model.evalMap{end}.computes = monosig;
-if power == -1   
-    model.isevalVariable(model.evalVariables)=1;   
-    model.evalMap{end}.fcn = 'inverse_internal2';
-    model.evalMap{end}.arg{1} = recover(variable);
-    model.evalMap{end}.arg{2} = [];   
-    model.evalMap{end}.properties.bounds = @inverse_bound;
-    model.evalMap{end}.properties.convexhull = @inverse_convexhull;
-    model.evalMap{end}.properties.derivative = @(x) -1./(x.^2);
-    if model.lb(variable)>0 | model.ub(variable) < 0
-        model.evalMap{end}.properties.monotonicity = 'decreasing';
-        model.evalMap{end}.properties.inverse = @(x)(1./x);
-    end
-else   
-    model.isevalVariable(model.evalVariables)=1;   
-    model.evalMap{end}.fcn = 'power_internal2';
-    model.evalMap{end}.arg{1} = recover(variable);
-    model.evalMap{end}.arg{2} = power;
-    model.evalMap{end}.arg{3} = [];        
-    model.evalMap{end}.properties.bounds = @power_bound;
-    model.evalMap{end}.properties.convexhull = @power_convexhull;
-    if power==fix(power)
-        model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-1);']);
-    else
-        model.evalMap{end}.properties.derivative = eval(['@(x) ' num2str(power) '*max(1e-8,x).^(' num2str(power) '-1);']);
-    end    
-end
 model.monomtable(monosig,variable) = 0;
 model.monomtable(monosig,monosig) = 1;
 model.variabletype(monosig) = 0;
@@ -294,3 +265,33 @@ if ~isempty(Ax)
     end
 end
 
+function  f = inverse_internal2_operator(model,variable,in);
+f.fcn = 'inverse_internal2';
+f.arg{1} = recover(in);
+f.arg{2} = [];
+f.properties.bounds = @inverse_bound;
+f.properties.convexhull = @inverse_convexhull;
+f.properties.derivative = @(x) -1./(x.^2);
+if model.lb(variable)>0 | model.ub(variable) < 0
+    f.properties.monotonicity = 'decreasing';
+    f.properties.inverse = @(x)(1./x);
+end
+if model.lb(variable) >= 0
+    f.properties.convexity = 'convex';
+elseif model.ub(variable) <= 0
+    f.properties.convexity = 'concave';
+end
+
+function f = power_internal2_operator(model,variable,power);
+f.fcn = 'power_internal2';
+f.arg{1} = recover(variable);
+f.arg{2} = power;
+f.arg{3} = [];
+f.properties.bounds = @power_bound;
+f.properties.convexhull = @power_convexhull;
+f.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-1);']);
+if even(power)
+    f.properties.range = [0 inf];
+else
+    f.properties.range = [-inf inf];
+end
