@@ -15,14 +15,24 @@ function [p,c,v] = polynomial(x,dmax,dmin)
 %
 % See also MONOLIST, COEFFICIENTS
 
-% Author Johan Löfberg 
-% $Id: polynomial.m,v 1.3 2006-08-16 15:57:36 joloef Exp $
+if any(dmax < 0)
+    error('Only non-negative polynomial degrees possible')
+end
 
 if nargin<3
     dmin = 0;
 end
 
+if any(dmin > dmax)
+    error('Third argument (dmin) should not be larger than second argument (dmax)');
+end
+
+if any(dmin < 0)
+    error('Only non-negative polynomial degrees possible')
+end
+
 v = monolist(x,dmax);
+
 if dmin <= dmax & dmin>0
     s = nchoosek(length(x) + dmin-1,dmin-1);
     v = extsubsref(v,s+1:length(v));
