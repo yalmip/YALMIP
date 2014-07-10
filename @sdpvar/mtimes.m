@@ -1,9 +1,11 @@
 function Z = mtimes(X,Y)
 %MTIMES (overloaded)
 
-% Check classes
-X_is_spdvar = isa(X,'sdpvar');
-Y_is_spdvar = isa(Y,'sdpvar');
+% Cannot use isa here since blkvar is marked as sdpvar
+X_class = class(X);
+Y_class = class(Y);
+X_is_spdvar = strcmp(X_class,'sdpvar');
+Y_is_spdvar = strcmp(Y_class,'sdpvar');
 
 % Convert block objects
 if ~X_is_spdvar
