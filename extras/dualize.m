@@ -396,12 +396,12 @@ if any(AXbset)
     F = F(find(~AXbset));
 end
 
-% Is thee something we missed in our tests?
+% Is there something we missed in our tests?
 if length(F)>0
     error('DUALIZE can only treat standard SDPs (and LPs) at the moment.')
 end
 
-% If complex SDP cone, we make reformulate and call again on a real
+% If complex SDP cone, we reformulate and call again on a real-valued
 % problem. This leads to twice the amount of work, but it is a quick fix
 % for the moment
 if any(is(F_CONE,'complexsdpcone'))
@@ -438,9 +438,6 @@ if any(is(F_CONE,'complexsdpcone'))
             if ~isempty(F_AXb)
                 F_AXb = remap(F_AXb,[s0r s0i],replacement);
             end
-            if ~isempty(F_SOC)
-                F_SOC = remap(F_AXb,[s0r s0i],replacement);
-            end
             if ~isempty(obj)
                 obj = remap(obj,[s0r s0i],replacement);
             end
@@ -448,9 +445,13 @@ if any(is(F_CONE,'complexsdpcone'))
             X{i} = Xnew{top};
             top = top + 1;
         end
-        F_NEWCONES = [F_NEWCONES, X{i} >= 0];
+        if is(X{i},'hermitian')
+            F_NEWCONES = [F_NEWCONES, X{i} >= 0];
+        else 
+            F_NEWCONES = [F_NEWCONES, cone(X{i})];
+        end
     end  
-    F_reformulated = [F_NEWCONES, F_AXb, F_SOC, x>=0];
+    F_reformulated = [F_NEWCONES, F_AXb, x>=0];
     complexInfo.replaced = Xreplace;
     complexInfo.new = Xnew;
     [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend);
