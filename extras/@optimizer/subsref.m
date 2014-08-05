@@ -104,6 +104,9 @@ elseif isequal(subs.type,'{}')
         if self.nonlinear & ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
+            % Turn off equality presolving for simple programs. equality
+            % presolve has benefits when the are stuff like log
+            self.model.presolveequalities = length(self.model.evalMap > 0);
             if ~infeasible                          
                 eval(['output = ' self.model.solver.call '(self.model);']);
                 x = originalModel.c*0;

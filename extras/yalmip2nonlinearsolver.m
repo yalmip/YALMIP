@@ -47,7 +47,7 @@ else
 end
 
 % Find nonlinear eualities implied by lower and upper bounds
-if ~isempty(ub) & ~isempty(lb)
+if ~isempty(ub) && ~isempty(lb)
     nonlinearequality = find(lb(nonlinearindicies) == ub(nonlinearindicies));
     if ~isempty(nonlinearequality)
         for i = 1:length(nonlinearequality)
@@ -80,7 +80,7 @@ end
 
 % This helps with robustness in bnb in some cases
 x0candidate = zeros(length(c),1);
-if ~isempty(lb) & ~isempty(ub)
+if ~isempty(lb) && ~isempty(ub)
     bounded = find(~isinf(lb) & ~isinf(ub));
     x0candidate(bounded) = (lb(bounded) + ub(bounded))/2;
     bounded_below = find(~isinf(lb) & isinf(ub));
@@ -92,7 +92,7 @@ end
 if isempty(x0)
     x0 = x0candidate(linearindicies);
 else
-    if ~isempty(lb) & ~isempty(ub)
+    if ~isempty(lb) && ~isempty(ub)
         x0((x0 < lb) | (x0 > ub)) = x0candidate((x0 < lb) | (x0 > ub));
     end
     x0 = x0(linearindicies);
@@ -127,19 +127,21 @@ if size(beq,1) == 0
     beq = [];
 end
 
-if ~isempty(beq) &  (~model.equalitypresolved | ~(isequal(lb,lb_old) & isequal(ub,ub_old)))
-    % This helps when there are artificial variables introduced to model
-    % nonlinear operators such as log(2*x+1)
-    p.F_struc = [beq -Aeq];
-    p.K.f = size(beq,1);
-    p.lb = lb;
-    p.ub = ub;
-    p.variabletype = zeros(1,length(lb));
-    p.binary_variables = [];
-    p.integer_variables = [];
-    p = propagate_bounds_from_equalities(p);
-    lb = p.lb;
-    ub = p.ub;
+if model.presolveequalities
+    if ~isempty(beq) &  (~model.equalitypresolved | ~(isequal(lb,lb_old) & isequal(ub,ub_old)))
+        % This helps when there are artificial variables introduced to model
+        % nonlinear operators such as log(2*x+1)
+        p.F_struc = [beq -Aeq];
+        p.K.f = size(beq,1);
+        p.lb = lb;
+        p.ub = ub;
+        p.variabletype = zeros(1,length(lb));
+        p.binary_variables = [];
+        p.integer_variables = [];
+        p = propagate_bounds_from_equalities(p);
+        lb = p.lb;
+        ub = p.ub;
+    end
 end
 
 model.A = A;

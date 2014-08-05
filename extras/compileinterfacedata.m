@@ -1034,8 +1034,10 @@ interfacedata.evalVariables = evalVariables;
 interfacedata.evaluation_scheme = [];
 if strcmpi(solver.tag,'bmibnb')
     interfacedata.equalitypresolved = 0;
+    interfacedata.presolveequalities = 1;
 else
     interfacedata.equalitypresolved = 1;
+    interfacedata.presolveequalities = 1;
 end
 interfacedata.ProblemClass = ProblemClass;
 
