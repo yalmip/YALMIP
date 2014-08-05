@@ -3,9 +3,10 @@ function test_dualize_sdp_11
 yalmip('clear')
 N = 2;
 X = sdpvar(N,N,'hermitian','complex');
+x = sdpvar(3,1);
 t = sdpvar;
 obj = t;
-F = [X>=0];
+F = [X>=0,x>=1, X(1)+x(3) == 7];
 F = [F,cone([1;t])];
 opts = sdpsettings('dualize',0);
 sol1 = solvesdp(F,-obj,opts);
