@@ -767,6 +767,9 @@ if n_free>0
 end
 
 % Create dual
+if length(b) == 0
+    error('Dual program is somehow trivial (0 variables in dual)');
+end
 y = sdpvar(length(b),1);
 yvars = getvariables(y);
 cf = [];
