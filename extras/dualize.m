@@ -338,8 +338,19 @@ if nnz(isSDP) > 0
         Fi = sdpvar(F(SDPindicies(i)));
         ns(i) = size(Fi,1);
         ms(i) = ns(i);
+        isc(i) = is(Fi,'complex');
     end
-    Slacks = sdpvar(ns,ms);
+    if any(isc)
+        for i = 1:length(ns)
+            if isc(i)
+                Slacks{i} = sdpvar(ns(i),ns(i),'hermitian','complex');
+            else
+                Slacks{i} = sdpvar(ns(i),ns(i));
+            end
+        end
+    else
+        Slacks = sdpvar(ns,ms);
+    end
     if ~isa(Slacks,'cell')
         Slacks = {Slacks};
     end
@@ -354,7 +365,11 @@ for i = 1:length(F)
         S  = Slacks{prei};prei = prei + 1;
         slack = Fi-S;
         ind = find(triu(reshape(1:n^2,n,n)));
-        F_AXb =  F_AXb + set(slack(ind)==0);
+        if is(slack,'complex')
+            F_AXb =  F_AXb + set(real(slack(ind))==0) + set(imag(slack(ind))==0);
+        else
+            F_AXb =  F_AXb + set(slack(ind)==0);
+        end
         F_CONE = F_CONE + lmi(S,[],[],[],1);
         shiftMatrix{end+1} = spalloc(n,n,0);
         X{end+1}=S;
@@ -366,7 +381,11 @@ for i = 1:length(F)
         S  = sdpvar(n,1);
         %        S = Slacks{i};
         slack = Fi-S;
-        F_AXb =  F_AXb + set(slack==0);
+        if is(slack,'complex')
+            F_AXb =  F_AXb + set(real(slack)==0) + set(imag(slack)==0);
+        else
+            F_AXb =  F_AXb + set(slack==0);
+        end
         F_CONE = F_CONE + set(cone(S(2:end),S(1)));
         shiftMatrix{end+1} = spalloc(n,1,0);
         X{end+1}=S;
@@ -377,7 +396,11 @@ for i = 1:length(F)
         [n,m]  = size(Fi);
         S  = sdpvar(n,m,'full');        
         slack = Fi-S;
-        F_AXb =  F_AXb + set(slack==0);
+        if is(slack,'complex')
+            F_AXb =  F_AXb + set(real(slack)==0) + set(imag(slack)==0);
+        else
+            F_AXb =  F_AXb + set(slack==0);
+        end
         F_CONE = F_CONE + set(cone(S));
         shiftMatrix{end+1} = spalloc(n,m,0);
         X{end+1}=S;
