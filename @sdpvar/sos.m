@@ -42,7 +42,13 @@ if ~is(X,'symmetric')
         I.type = '()';
         I.subs = {[i]};
         x = subsref(X,I);
-        Z = [Z,sos(x)];
+        if isa(x,'double')
+            if x < 0
+                error('You are trying to enforce a negative constant to be SOS!');
+            end
+        else
+            Z = [Z,sos(x)];
+        end
     end
     X = Z;
 else
