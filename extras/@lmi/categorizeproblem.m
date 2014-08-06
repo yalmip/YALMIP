@@ -30,6 +30,7 @@ gkyp_prob  = 0;
 problem.objective.linear = 0;
 problem.objective.quadratic.convex = 0;
 problem.objective.quadratic.nonconvex = 0;
+problem.objective.quadratic.nonnegative = 0;
 problem.objective.polynomial = 0;
 problem.objective.maxdet.convex = 0;
 problem.objective.maxdet.nonconvex = 0;
@@ -412,6 +413,11 @@ if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
         if info==0
             % OK, we have some kind of quadratic expression
             % Find involved variables
+            if all(Q>=0)
+                problem.objective.quadratic.nonnegative = 1;
+            else
+                problem.objective.quadratic.nonnegative = 0;
+            end
             index = find(any(Q,2));
             if length(index) < length(Q)
                 Qsub = Q(index,index);
