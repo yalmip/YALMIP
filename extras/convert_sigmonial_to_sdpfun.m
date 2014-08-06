@@ -74,9 +74,9 @@ if any(model.variabletype > 3)
                 model.evalVariables = [model.evalVariables n_old_monoms+j];
                 model.isevalVariable(model.evalVariables)=1; 
                 if powers(j)==-1
-                    model.evalMap{end+1} = inverse_internal2_operator(model,variable,n_old_monoms+j);    
+                    model.evalMap{end+1} = inverse_internal2_operator(model,sigs(j),n_old_monoms+j);    
                 else
-                    model.evalMap{end+1} = power_internal2_operator(model,variable,powers(j));    
+                    model.evalMap{end+1} = power_internal2_operator(model,sigs(j),powers(j));    
                 end    
                 model.evalMap{end}.properties.domain = [-inf inf];
                 model.evalMap{end}.variableIndex = sigs(j);
