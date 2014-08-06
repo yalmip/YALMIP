@@ -15,6 +15,16 @@ function [p,c,v] = polynomial(x,dmax,dmin)
 %
 % See also MONOLIST, COEFFICIENTS
 
+if (length(dmax) > 1) && (length(dmax) ~= length(x))
+    error('Dimension mismatch: The second argument should be the max degree for each variable, or a sclar');
+end
+
+if nargin > 2
+    if (length(dmin) > 1) && (length(dmin) ~= length(x))
+        error('Dimension mismatch: The second argument should be the max degree for each variable, or a sclar');
+    end
+end
+
 if any(dmax < 0)
     error('Only non-negative polynomial degrees possible')
 end
