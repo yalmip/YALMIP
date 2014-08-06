@@ -29,9 +29,20 @@ else
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);
     if relaxed_feasible
-        upper = p.f+p.c'*z+z'*p.Q*z;
-        x_min = z;
-        x0 = x_min;
+        infs = isinf(z);
+        if isempty(infs)
+            upper = p.f+p.c'*z+z'*p.Q*z;
+            x_min = z;
+            x0 = x_min;
+        else
+            % Allow inf solutions if variables aren't used in objective
+            if all(p.c(infs)==0) & nnz(p.Q(infs,:))==0
+                ztemp = z;ztemp(infs)=0;
+                upper = p.f+p.c'*ztemp+ztemp'*p.Q*ztemp;
+                x_min = z;
+                x0 = x_min;
+            end
+        end
     end
     p.x0 = (p.lb + p.ub)/2;
     if ~isempty(p.integer_variables)
