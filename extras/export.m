@@ -152,20 +152,10 @@ switch lower(solver.tag)
  
     case 'cplex-ibm'
         
-        % Hack to handle CPLEX slow treatment of paramters. Remove all
-        % default settings, so optimizer runs fast
-        try
-            o1 = cplexoptimset('cplex');
-            o2 = interfacedata.options.cplex;
-            n = fieldnames(o1);
-            for i = 1:length(n)
-                if isequal(o1.(n{i}),o2.(n{i}))
-                    interfacedata.options.cplex = rmfield(interfacedata.options.cplex,n{i});                    
-                end
-            end
-            model = yalmip2cplex(interfacedata);
-        catch
-        end
+        % Hack to handle CPLEX slow treatment of parameters. Remove all
+        % default settings, so optimizer runs fast        
+        interfacedata.options = prunecplexoptions(interfacedata.options);        
+        model = yalmip2cplex(interfacedata);
 
     case 'ecos'
         model = yalmip2ecos(interfacedata);      

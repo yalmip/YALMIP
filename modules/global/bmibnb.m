@@ -49,6 +49,10 @@ otherwise
     p.options.verbose = 0;
 end
 
+% CPLEX handles options insanely slow, so we remove all default values in
+% case cplex will be used
+p.options = prunecplexoptions(p.options);
+
 timing.total = tic;
 timing.uppersolve = 0;
 timing.lowersolve = 0;
