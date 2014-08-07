@@ -108,9 +108,9 @@ for i = 1:length(model.evaluation_scheme)
                                             r = monoms(k);
                                             monoms(k) = r-1;
                                             s = find(monoms);
-                                            z = prod((x(s)').^(monoms(s)));
+                                            ztemp = prod((x(s)').^(monoms(s)));
                                             aux = dX(k,variable);
-                                            dp = dp + r*aux*z;
+                                            dp = dp + r*aux*ztemp;
                                         end
                                     end
                                     dX(j,variable) = real(dp);
