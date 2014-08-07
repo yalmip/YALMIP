@@ -26,7 +26,7 @@ for i = 1:length(model.evaluation_scheme)
 end
 
 % Apply chain-rule. This code is horrible
-ss = any(model.deppattern(requested,model.linearindicies),2);
+ss = any(model.deppattern(requested,model.linearindicies),1);
 
 monomTablePattern = sparse(double(model.monomtable | model.monomtable));
 mtT = model.monomtable';
