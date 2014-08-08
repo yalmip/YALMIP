@@ -3,6 +3,20 @@ function [p,feasible,lower] = lpbmitighten(p,lower,upper,lpsolver,xmin,improveth
 if nargin<6
     improvethese = ones(length(p.lb),1);
 end
+
+% Don't use LP to propagate variables which only enter as x + other in one
+% single equality. 
+ind = sum(p.F_struc(1:p.K.f,:) | p.F_struc(1:p.K.f,:),1);
+oneterm = find(ind(2:end) == 1);
+for i = 1:length(oneterm)
+    a = p.F_struc(1:p.K.f,oneterm(i)+1);
+    j = find(a);
+    b = p.F_struc(j,:);
+    if nnz(b(2:end))==2
+        improvethese(oneterm(i))=0;
+    end
+end
+
 % Construct problem with only linear terms
 % and add cuts from lower/ upper bounds
 
