@@ -225,6 +225,26 @@ if ~isempty(model.semicont_variables)
     model.semicont_variables = find(temp);  
 end
 
+% Check if there are remaining strange terms. This occurs in #152
+if ~model.solver.objective.sigmonial & any(model.variabletype == 4)
+    % Bugger. There are signomial terms left, despite elimination, and the
+    % solver does not handle this. YALMIP has introduced an intermediate
+    % variable which is a nasty function of the parameter.      
+    signomials = find(model.variabletype == 4);
+    involved = [];
+    for i = 1:length(signomials)
+        m = model.monomtable(signomials(i),:);
+        involved = [involved;find(m ~= fix(m) | m < 0)];
+    end
+    involved = unique(involved);
+    [lb,ub] = findulb(model.F_struc,model.K,model.lb,model.ub)
+    if all(lb(involved) == ub(involved))
+        [model,keptvariables,infeasible] = eliminatevariables(model,involved,lb(involved))
+    else
+        error('Did not manage to instatiate model. Complicating terms remaining');
+    end
+end
+
 function model = compressModel(model)
 model.variabletype = zeros(size(model.monomtable,1),1)';
 nonlinear = sum(model.monomtable,2)~=1 | sum(model.monomtable~=0,2)~=1;
