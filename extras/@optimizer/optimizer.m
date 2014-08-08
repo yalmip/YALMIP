@@ -279,7 +279,7 @@ if nnz(Q)>0
 else
     problematicQP = 0;
 end
-if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1) | problematicQP | ~isempty(sys.model.evalMap)
+if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1) | problematicQP | ~isempty(sys.model.evalMap) | any(any(sys.model.monomtable<0))
     sys.nonlinear = 1;
 else
     sys.nonlinear = 0;
@@ -299,17 +299,11 @@ sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
 sys.model.precalc.Qmap = [];
 % R2012b...
 try
-   % [ii,jj,kk] = unique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1),'rows','stable');
     [ii,jj,kk] = stableunique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1));
- %   [ii,jj,kk] = unique(sys.model.precalc.newmonomtable,'rows','stable');
     sys.model.precalc.S = sparse(kk,1:length(kk),1);
     sys.model.precalc.skipped = setdiff(1:length(kk),jj);    
     sys.model.precalc.blkOneS = blkdiag(1,sys.model.precalc.S');     
-catch
-    % Optimizer should crash on old versions when trying to solve nonlinear
-    % replacement problems
-   % sys.model.precalc.S=[];
-   % sys.model.precalc.skipped=[];
+catch  
 end
 
 sys.complicatedEvalMap = 0;
@@ -324,7 +318,7 @@ for i = 1:length(sys.model.evalMap)
     end
 end
     
-if sys.nonlinear & ~sys.complicatedEvalMap%isempty(sys.model.evalMap)
+if sys.nonlinear & ~sys.complicatedEvalMap
     % These artificial equalities are removed if we will use eliminate variables
     sys.model.F_struc(1:length(sys.parameters),:) = [];
     sys.model.K.f = sys.model.K.f - length(sys.parameters);
@@ -358,9 +352,6 @@ if sys.nonlinear & ~sys.complicatedEvalMap%isempty(sys.model.evalMap)
    
     sys.model.removethese = find(~any(sys.model.newmonomtable,2));
     sys.model.keepingthese = find(any(sys.model.newmonomtable,2));    
-    
-  %  sys.model.removethese = unique(sys.model.removethese);
-  %  sys.model.keepingthese = setdiff(sys.model.keepingthese,sys.model.removethese);
 end
 
 sys = class(sys,'optimizer');
