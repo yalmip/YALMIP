@@ -60,8 +60,6 @@ if isstruct(varargin{1})
     return
 end
 
-%if nargin == 1
-
 % To speed up dualization, we keep track of primal SDP cones
 % [0 0] :  Nothing known (cleared in some operator, or none-cone to start with)
 % [1 0] :  Primal cone
