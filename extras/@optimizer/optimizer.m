@@ -288,6 +288,33 @@ sys.F = Constraints;
 sys.h = Objective;
 sys.ops = options;
 
+sys.complicatedEvalMap = 0;
+% Are all nonlinear operators acting on simple parameters? Elimination
+% strategy will only be applied on simple problems such as x<=exp(par)
+for i = 1:length(sys.model.evalMap)
+    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
+       sys.complicatedEvalMap = 1;
+    end
+    if length(sys.model.evalMap{i}.arg)>2
+        sys.complicatedEvalMap = 1;
+    end
+end
+
+if sys.nonlinear & ~sys.complicatedEvalMap
+    % These artificial equalities are removed if we will use eliminate variables
+    sys.model.F_struc(1:length(sys.parameters),:) = [];
+    sys.model.K.f = sys.model.K.f - length(sys.parameters);
+    
+    % Which variables are simple nonlinear operators acting on parameters
+    evalParameters = [];
+    for i = 1:length(sys.model.evalMap)
+        if all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
+            evalParameters = [evalParameters;sys.model.evalMap{i}.computes(:)];
+        end
+    end
+    sys.model.evalParameters = evalParameters;
+end
+
 % This data is used in eliminatevariables (nonlinear parameterizations)
 % A lot of performance is gained by precomputing them
 % This will work as long as there a no zeros in the parameters, which might
@@ -305,32 +332,8 @@ try
     sys.model.precalc.blkOneS = blkdiag(1,sys.model.precalc.S');     
 catch  
 end
-
-sys.complicatedEvalMap = 0;
-% Are all nonlinear operators acting on simple parameters? Elimination
-% strategy will only be applied on simple problems such as x<=exp(par)
-for i = 1:length(sys.model.evalMap)
-    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
-       sys.complicatedEvalMap = 1;
-    end
-    if length(sys.model.evalMap{i}.arg)>2
-        sys.complicatedEvalMap = 1;
-    end
-end
     
 if sys.nonlinear & ~sys.complicatedEvalMap
-    % These artificial equalities are removed if we will use eliminate variables
-    sys.model.F_struc(1:length(sys.parameters),:) = [];
-    sys.model.K.f = sys.model.K.f - length(sys.parameters);
-    
-    % Which variables are simple nonlinear operators acting on parameters
-    evalParameters = [];
-    for i = 1:length(sys.model.evalMap)
-        if all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
-            evalParameters = [evalParameters;sys.model.evalMap{i}.computes(:)];
-        end
-    end
-    sys.model.evalParameters = evalParameters;
     
     % Precompute some structures
     newmonomtable = sys.model.monomtable;
