@@ -279,7 +279,7 @@ if nnz(Q)>0
 else
     problematicQP = 0;
 end
-if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1 | problematicQP) | ~isempty(sys.model.evalMap)
+if any(sum(sys.model.monomtable(used_in,:) | sys.model.monomtable(used_in,:),2) > 1) | problematicQP | ~isempty(sys.model.evalMap)
     sys.nonlinear = 1;
 else
     sys.nonlinear = 0;
