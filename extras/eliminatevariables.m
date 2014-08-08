@@ -226,6 +226,7 @@ if ~isempty(model.semicont_variables)
 end
 
 % Check if there are remaining strange terms. This occurs in #152
+% FIXME: Use code above recursively instead...
 if ~model.solver.objective.sigmonial & any(model.variabletype == 4)
     % Bugger. There are signomial terms left, despite elimination, and the
     % solver does not handle this. YALMIP has introduced an intermediate
@@ -237,9 +238,20 @@ if ~model.solver.objective.sigmonial & any(model.variabletype == 4)
         involved = [involved;find(m ~= fix(m) | m < 0)];
     end
     involved = unique(involved);
-    [lb,ub] = findulb(model.F_struc,model.K,model.lb,model.ub)
+    [lb,ub] = findulb(model.F_struc,model.K,model.lb,model.ub);
     if all(lb(involved) == ub(involved))
-        [model,keptvariables,infeasible] = eliminatevariables(model,involved,lb(involved))
+        % Now add equality constraints to enforce       
+        for i = signomials
+            m = model.monomtable(i,:);
+            involved = find(m ~= fix(m) | m < 0);
+            gain = lb(involved).^m(involved);
+            s = zeros(1,size(model.F_struc,2));
+            multiplies = setdiff(find(m),involved);
+            s(i+1) = 1;
+            s(multiplies+1) = -gain;
+            model.F_struc = [s;model.F_struc];
+            model.K.f = model.K.f + 1;
+        end
     else
         error('Did not manage to instatiate model. Complicating terms remaining');
     end
