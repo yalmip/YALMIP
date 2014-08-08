@@ -1,37 +1,38 @@
-function new_x = monolist(x,d,min)
+function new_x = monolist(x,dmax,dmin)
 % MONOLIST Generate monomials
 %
-% y = MONOLIST(x,d,f)
+% y = MONOLIST(x,dmax,dmin)
 %
-% Returns the monomials [1 x(1) x(1)^2 ... x(1)^d(1) x(2) x(1)x(2)  etc...]
-%
-% do
+% Returns the monomials [1 x(1) x(1)^2 ... x(1)^dmax(1) x(2) x(1)x(2)  etc...]
 %
 % >>sdpvar x y z
 % >>sdisplay(monolist([x y z],4))
 %
-% to see the logic!
-%
 %  Input
 %     x      : Vector with SDPVAR variables
-%     d      : Integers > 0
+%     dmax   : Integers > 0
 %
-%  See also SDPVAR, DEGREE
-
-% Author Johan Löfberg
-% $Id: monolist.m,v 1.25 2006-08-28 14:03:29 joloef Exp $
-
-% FIX : Optimal generation
+%  See also POLYNOMIAL, DEGREE
 
 % Flatten
 x = reshape(x,1,length(x));
 x_orig = x;
 
-if (length(d)==1 | all(d(1)==d)) & islinear(x) & ~isa(x,'ncvar')
-    d = d(1);
+if nargin == 3
+    if length(dmin)>1 || any(dmin > dmax) || ~isequal(dmin,fix(dmin))
+        error('dmin has to be an integer scalar larger than dmax');
+    end
+elseif nargin == 2
+    dmin = 0;
+end
+
+if (length(dmax)==1 | all(dmax(1)==dmax)) & islinear(x) & ~isa(x,'ncvar')
+    dmax = dmax(1);
     % Powers in monomials
-    powers = monpowers(length(x),d);
+    powers = monpowers(length(x),dmax);
    
+    powers = powers(find(sum(powers,2)>=dmin),:);
+    
     % Use fast method for x^alpha
     if isequal(getbase(x),[zeros(length(x),1) eye(length(x))])
         new_x = recovermonoms(powers,x);
@@ -44,12 +45,12 @@ if (length(d)==1 | all(d(1)==d)) & islinear(x) & ~isa(x,'ncvar')
     % FIX : Urgent, find underlying indexing...
     
     % Vectorize quadratic and quadrtic case
-    if d==2 & length(x)>1
+    if dmax==2 & length(x)>1
         V=x.'*[1 x];
         ind=funkyindicies(length(x));
         new_x = [1 V(ind(:)).'].';
         return
-    elseif (length(x)==4 & d==6)
+    elseif (length(x)==4 & dmax==6)
         
          ind =[    1           2           3           4           5           6           7           8,
 
@@ -117,7 +118,7 @@ if (length(d)==1 | all(d(1)==d)) & islinear(x) & ~isa(x,'ncvar')
         V=v(2:end)*v.';
         new_x = [1;V(ind(:))];
         return
-    elseif d==4 & (1<=length(x)) & length(x)<=4 %& length(x)>1
+    elseif dmax==4 & (1<=length(x)) & length(x)<=4 %& length(x)>1
         v=monolist(x,2);
         V=v(2:end)*v.';
 
@@ -154,7 +155,7 @@ if (length(d)==1 | all(d(1)==d)) & islinear(x) & ~isa(x,'ncvar')
     for i = 1:length(x)
         temp = x(i);
         precalc{i,1} = temp;
-        for j = 2:1:d
+        for j = 2:1:dmax
             temp = temp*x(i);
             precalc{i,j} = temp;
         end
@@ -176,13 +177,13 @@ if (length(d)==1 | all(d(1)==d)) & islinear(x) & ~isa(x,'ncvar')
 
 else
 
-    d = d(:)*ones(1,length(x_orig));
+    dmax = dmax(:)*ones(1,length(x_orig));
 
     x = [1 x];
 
     % Lame loop to generate all combinations
     new_x = 1;
-    for j = 1:1:max(d)
+    for j = 1:1:max(dmax)
         temp = [];
         for i = 1:length(x)
             temp = [temp x(i)*new_x];
@@ -191,17 +192,29 @@ else
         new_x = fliplr(unique(new_x));
         new_degrees = degree(new_x,x(2:end));
         remv = [];
-        for i = 1:length(d);
-            if new_degrees(i)>=d(i);
+        for i = 1:length(dmax);
+            if new_degrees(i)>=dmax(i)
                 x = recover(setdiff(getvariables(x),getvariables(x_orig(i))));
                 x = [1;x(:)];
                 remv = [remv i];
             end
         end
-        d = d(setdiff(1:length(d),remv));
+        dmax = dmax(setdiff(1:length(dmax),remv));
     end
 end
 new_x = reshape(new_x(:),length(new_x),1);
+if dmin > 0
+    for i = 1:length(new_x)
+        if degree(new_x(i)) < dmin
+            keep(i) = 0;
+        else
+            keep(i) = 1;
+        end
+    end
+    if any(keep==0)
+        new_x = new_x(find(keep));
+    end
+end
 
 function ind = funkyindicies(n)
 
