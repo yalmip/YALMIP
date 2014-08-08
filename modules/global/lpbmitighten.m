@@ -5,11 +5,11 @@ if nargin<6
 end
 
 % Don't use LP to propagate variables which only enter as x + other in one
-% single equality. 
-ind = sum(p.F_struc(1:p.K.f,:) | p.F_struc(1:p.K.f,:),1);
+% single (in)equality. 
+ind = sum(p.F_struc(1:p.K.f+p.K.l,:) | p.F_struc(1:p.K.f+p.K.l,:),1);
 oneterm = find(ind(2:end) == 1);
 for i = 1:length(oneterm)
-    a = p.F_struc(1:p.K.f,oneterm(i)+1);
+    a = p.F_struc(1:p.K.f+p.K.l,oneterm(i)+1);
     j = find(a);
     b = p.F_struc(j,:);
     if nnz(b(2:end))==2
