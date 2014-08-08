@@ -11,9 +11,11 @@ oneterm = find(ind(2:end) == 1);
 for i = 1:length(oneterm)
     a = p.F_struc(1:p.K.f+p.K.l,oneterm(i)+1);
     j = find(a);
-    b = p.F_struc(j,:);
-    if nnz(b(2:end))==2
-        improvethese(oneterm(i))=0;
+    if j <= p.K.f
+        b = p.F_struc(j,:);
+        if nnz(b(2:end))==2
+            improvethese(oneterm(i))=0;
+        end
     end
 end
 
