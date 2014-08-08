@@ -1,33 +1,34 @@
 function varargout = binmodel(varargin)
 %BINMODEL  Converts nonlinear mixed binary expression to linear model
 %
-% Applied to individual terms
+% Applied to individual terms p defined on domain D
 % [plinear1,..,plinearN,Cuts] = BINMODEL(p1,...,pN,D) 
 %
-% Alternative on complete constraint
+% Alternative on complete set of constraint
 % F = BINMODEL(F) 
 %
 % binmodel is used to convert nonlinear expressions involving a mixture of
 % continuous and binary variables to the correponding linear model, using
 % auxilliary variables  and constraints to model nonlinearities.
 %
-% The input arguments p are polynomial SDPVAR objects, or constraints
+% The input arguments are polynomial SDPVAR objects, or constraints
 % involving such terms. If all involved variables are binary (defined using
-% BINVAR), arbitrary polynomials can be  linearized. 
+% BINVAR), arbitrary polynomials can be linearized. 
 %
 % If an input contains continuous variables, the continuous variables
-% may only enter linearly (i.e. degree w.r.t continuous variables should
-% be at most 1). More over, all continuous variables must be explicitly
-% bounded. When submitting only the terms, the domain must be explicitly
-% sent as the last argument. When the argument is a set of
-% constraints, it is assumed that the domain is included and can be
-% extracted.
+% may only enter linearly in products with the binary variables (i.e.
+% degree w.r.t continuous variables should be at most 1). More over, all
+% continuous variables must be explicitly bounded. When submitting only the
+% terms, the domain must be explicitly sent as the last argument. When the
+% argument is a set of constraints, it is assumed that the domain is
+% included and can be extracted.
 %
 % Example
 %  binvar a b
 %  sdpvar x y
 %  [plinear1,plinear2,Cuts] = binmodel(a^3+b,a*b);
 %  [plinear1,plinear2,Cuts] = binmodel(a^3*x+b*y,a*b*x, -2 <=[x y] <=2);
+%
 %  F = binmodel([a^3*x+b*y + a*b*x >= 3, -2 <=[x y] <=2]);
 %
 % See also BINARY, BINVAR, SOLVESDP
