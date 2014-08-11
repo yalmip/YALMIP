@@ -13,7 +13,7 @@ switch class(varargin{1})
         operator.bounds = @bounds;
         operator.derivative = @(x)(1./(x.*(x.^2-1).^0.5));
 
-        varargout{1} = [];
+        varargout{1} = [varargin{3}.^2 >= 1]; % Disconnected domain
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
@@ -22,10 +22,16 @@ switch class(varargin{1})
 end
 
 function [L,U] = bounds(xL,xU)
-if xL<=-1 & xU >=1
-    L = -inf;
-    U = inf;
+if xU <= -1 || xL >= 1
+    L = asec(xL);
+    U = asec(xU);
+elseif xL < 0 & xU > 0
+    L = 0;
+    U = pi;
+elseif xU < 0 || xL > 0
+    L = real(asec(xL));
+    U = real(asec(xU));
 else
-    L = asec(xU);
-    U = asec(xL);
+    L = 0;
+    U = pi;
 end

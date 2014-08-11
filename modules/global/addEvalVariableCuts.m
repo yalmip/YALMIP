@@ -37,16 +37,16 @@ if ~isempty(p.evalMap)
                 else
                     arg = p.evalMap{i}.arg;
                     arg{1} = z;
-                    fz = feval(p.evalMap{i}.fcn,arg{1:end-1});
+                    fz = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
                     % end
                     [minval,minpos] = min(fz);
                     [maxval,maxpos] = max(fz);
                     xtestmin = linspace(z(max([1 minpos-5])),z(min([100 minpos+5])),100);
                     xtestmax = linspace(z(max([1 maxpos-5])),z(min([100 maxpos+5])),100);
                     arg{1} = xtestmin;
-                    fz1 = feval(p.evalMap{i}.fcn,arg{1:end-1});
+                    fz1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
                     arg{1} = xtestmax;
-                    fz2 = feval(p.evalMap{i}.fcn,arg{1:end-1});
+                    fz2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
                     z = [z(:);xtestmin(:);xtestmax(:)];
                     fz = [fz(:);fz1(:);fz2(:)];
                     [z,sorter] = sort(z);
