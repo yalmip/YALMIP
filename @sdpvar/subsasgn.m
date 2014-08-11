@@ -90,7 +90,7 @@ try
                 end
                 if length(I.subs)>1
                     if isa(I.subs{2},'char')
-                        I.subs{1} = 1:m;
+                        I.subs{2} = 1:m;
                     end
                 end
                 if length(I.subs)>1
@@ -109,8 +109,14 @@ try
                     LinearIndex = I.subs{1};
                 end
                 
-                X.basis(LinearIndex,2:end)=sparse(0);                
-                y.basis = [y.basis(:,1) X.basis(:,2:end)];
+                if isempty(Y)
+                    X.basis = X.basis(:,2:end);
+                    X.basis(LinearIndex,:) = [];
+                    y.basis = [y.basis(:,1) X.basis];
+                else
+                    X.basis(LinearIndex,2:end)=sparse(0);                
+                    y.basis = [y.basis(:,1) X.basis(:,2:end)];
+                end
                          
                 y.dim(1) = size(subX,1);
                 y.dim(2) = size(subX,2);
