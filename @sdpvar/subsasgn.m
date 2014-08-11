@@ -1,9 +1,6 @@
 function y = subsasgn(X,I,Y)
 %SUBASGN (overloaded)
 
-% Author Johan Löfberg 
-% $Id: subsasgn.m,v 1.18 2009-10-16 12:43:23 joloef Exp $   
-
 try
     if strcmp('()',I.type)
         X_is_spdvar = isa(X,'sdpvar') |  isa(X,'ndsdpvar');
@@ -24,22 +21,15 @@ try
                 [n_y,m_y] = size(Y);
                 y_lmi_variables = y.lmi_variables;
                 try
-                   % X0 = sparse(subsasgn(full(X),I,full(reshape(Y.basis(:,1),n_y,m_y))));
                     X0 = subsasgn(full(X),I,full(reshape(Y.basis(:,1),n_y,m_y)));
                     dim = size(X0);
-%                    [n_x,m_x] = size(X0);
-%                    y.basis = reshape(X0,n_x*m_x,1);
                     y.basis = reshape(X0,prod(dim),1);
                     X = full(X)*0;
                     for i = 1:length(y_lmi_variables)
-%                        X0 = full(sparse(subsasgn(X,I,full(reshape(Y.basis(:,i+1),n_y,m_y)))));
                         X0 = subsasgn(X,I,full(reshape(Y.basis(:,i+1),n_y,m_y)));
- %                       y.basis(:,i+1) = reshape(X0,n_x*m_x,1);
                         y.basis(:,i+1) = reshape(X0,prod(dim),1);
                     end
                     y.dim = dim;
-%                    y.dim(1) = n_x;
-%                    y.dim(2) = m_x;
                     % Reset info about conic terms
                     y.conicinfo = [0 0];
                     y.basis = sparse(y.basis);
@@ -90,8 +80,7 @@ try
                 
                 x_lmi_variables = X.lmi_variables;
                 lmi_variables = [];
-                
-                % y.basis = [];
+                           
                 n = y.dim(1);
                 m = y.dim(2);
                 subX = sparse(subsasgn(full(reshape(X.basis(:,1),n,m)),I,Y));
@@ -112,28 +101,17 @@ try
                     end
                 end
                 
-                if length(I.subs)>1
-                   % LinearIndex = sub2ind([n m],I.subs{1},I.subs{2});
+                if length(I.subs)>1                  
                     ii = kron(I.subs{1}(:),ones(length(I.subs{2}),1));
                     jj = kron(ones(length(I.subs{1}),1),I.subs{2}(:));
-                    LinearIndex = sub2ind([n m],ii,jj);%I.subs{1},I.subs{2});
+                    LinearIndex = sub2ind([n m],ii,jj);
                 else
                     LinearIndex = I.subs{1};
                 end
                 
                 X.basis(LinearIndex,2:end)=sparse(0);                
                 y.basis = [y.basis(:,1) X.basis(:,2:end)];
-                
-               % j = 1;
-               % Z = 0*Y;
-               % for i = 1:length(x_lmi_variables)
-               %     subX = sparse(subsasgn(full(reshape(X.basis(:,i+1),n,m)),I,Z));
-               %     if (norm(subX,inf)>0)
-               %         y.basis(:,j+1) = subX(:);
-               %         lmi_variables = [lmi_variables x_lmi_variables(i)];
-               %         j = j+1;
-               %     end
-               % end  
+                         
                 y.dim(1) = size(subX,1);
                 y.dim(2) = size(subX,2);
                 y = clean(y);
@@ -143,16 +121,6 @@ try
                     y = flush(y);
                 end
                 
-%                 if isempty(lmi_variables) % Convert back to double!!
-%                     y=full(reshape(y.basis(:,1),y.dim(1),y.dim(2)));
-%                     return
-%                 else %Nope, still a sdpvar
-%                     y.lmi_variables = lmi_variables;
-%                      % Reset info about conic terms
-%                     y.conicinfo = [0 0];
-%                     y = flush(y);
-%                 end
-%                 
             case 3
                 z = X;
                 
@@ -175,9 +143,7 @@ try
                
                 subX = subsasgn(reshape(X.basis(:,1),nx,mx),I,reshape(Y.basis(:,1),ny,my));
                 [newnx, newmx] = size(subX);
-                               
-               % z.basis = [subX(:) spalloc(length(subX(:)),length(x_lmi_variables),0)];
-               
+                                              
                 j = 1;
                 
                 yz = reshape(1:ny*my,ny,my);
@@ -190,16 +156,8 @@ try
                 A = reshape(1:nx*mx,nx,mx);
                 B = reshape(1:newnx*newmx,newnx,newmx);
                 
-             %   z2.basis(:,1) = subX(:); 
                 rm = B(1:nx,1:mx);rm = rm(:);
                 [iix,jjx,ssx] = find(X.basis(:,2:end));
-                z.basis = [subX(:) sparse(rm(iix),jjx,ssx,newnx*newmx,size(X.basis,2)-1)];
-                %(rm,2:end) = X.basis(1:nx*mx,2:end);
-                %z.basis(rm,2:end) = X.basis(1:nx*mx,2:end);
-                %if ~isequal(z2.basis,z.basis)
-                %    'fbvsdkjghsjkldhlöjjhsdkljfghjsdfjösd'
-                %end
-             %   z.basis(:,1) = subX(:);                                
                 z.basis(ix,2:end) = 0;
                                                
                 keep = find(any(z.basis(:,2:end),1));
@@ -208,9 +166,6 @@ try
 
                 z.lmi_variables = lmi_variables2;
                 lmi_variables = lmi_variables2;
-%               z.basis = z2.basis;
-
-     %                 
                 
                 all_lmi_variables = union(lmi_variables,y_lmi_variables);
                 in_z = ismembcYALMIP(all_lmi_variables,lmi_variables);
@@ -219,14 +174,9 @@ try
                 y_ind = 2;
                 basis = spalloc(size(z.basis,1),1+length(all_lmi_variables),0);
                 basis(:,1) = z.basis(:,1);
-               % basis = z.basis(:,1);
                 nz = size(subX,1);
                 mz = size(subX,2);
                 template = full(0*reshape(X.basis(:,1),nx,mx));
-                %only_in_z =  find(2*in_y+in_z==1);
-                %if ~isempty(only_in_z)
-                 %   basis(:,only_in_z+1) = z.basis(:,1+(1:length(only_in_z)));%);z_ind = z_ind+1;
-                %end
                 in_yin_z = 2*in_y + in_z;
                 if all(in_yin_z<3)
                     case1 = find(in_yin_z==1);
