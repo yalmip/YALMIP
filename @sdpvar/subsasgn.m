@@ -158,6 +158,7 @@ try
                 
                 rm = B(1:nx,1:mx);rm = rm(:);
                 [iix,jjx,ssx] = find(X.basis(:,2:end));
+                z.basis = [subX(:) sparse(rm(iix),jjx,ssx,newnx*newmx,size(X.basis,2)-1)];
                 z.basis(ix,2:end) = 0;
                                                
                 keep = find(any(z.basis(:,2:end),1));
