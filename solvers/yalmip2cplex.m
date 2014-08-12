@@ -22,7 +22,7 @@ end
 
 
 if any(interfacedata.variabletype)
-    error('Nonlinear monomials remain when calling CPLEX. If you are using OPTIMIZER, please report this and ask for a feature improvement.');
+    error('Nonlinear monomials remain when calling CPLEX. If you are using OPTIMIZER, ensure your model really is solvable by CPLEX for fixed parameters. If you still think so, please report this and ask for a feature improvement.');
 end
 
 % Notation used
