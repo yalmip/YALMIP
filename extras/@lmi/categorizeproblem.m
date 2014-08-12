@@ -341,15 +341,6 @@ if ~isempty(uncertain_variables)
     problem.uncertain = 1;
 end
 
-if (relax==1) | (relax==2)
-    problem.constraint.integer = 0;
-    problem.constraint.binary = 0;
-    problem.constraint.sos2 = 0;
-    problem.constraint.semicont = 0;
-    int_data = 0;
-    bin_data = 0;
-    scn_data = 0;
-end
 if (relax==1) | (relax==3)
     problem.constraint.equalities.linear = problem.constraint.equalities.linear | problem.constraint.equalities.quadratic | problem.constraint.equalities.polynomial | problem.constraint.equalities.sigmonial;
     problem.constraint.equalities.quadratic = 0;
@@ -467,6 +458,16 @@ if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
     end
 else
     problem.objective.linear = ~isempty(h);
+end
+
+if (relax==1) | (relax==2)
+    problem.constraint.integer = 0;
+    problem.constraint.binary = 0;
+    problem.constraint.sos2 = 0;
+    problem.constraint.semicont = 0;
+    int_data = 0;
+    bin_data = 0;
+    scn_data = 0;
 end
 
 function p = multipletermsInEquality(Fi);
