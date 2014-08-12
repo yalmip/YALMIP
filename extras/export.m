@@ -223,7 +223,11 @@ switch lower(solver.tag)
                 
     case 'penbmi-penopt'        
         model.penstruct = sedumi2penbmi(interfacedata.F_struc,interfacedata.c,interfacedata.Q,interfacedata.K,interfacedata.monomtable,interfacedata.options,interfacedata.x0);
-               
+        
+    case {'qpip','qpas'}
+        model = yalmip2quadprog(interfacedata);
+        model.options = interfacedata.options.qpip;
+        
     otherwise
         model = [];
 end
