@@ -920,6 +920,9 @@ end
 % *************************************************************************
 x0 = [];
 if options.usex0
+    if solver.supportsinitial == 0
+        error('You have specified an initial point, but the selected solver does not support warm-starts through YALMIP');
+    end
     if options.relax
         x0_used = relaxdouble(recover(used_variables));
     else
