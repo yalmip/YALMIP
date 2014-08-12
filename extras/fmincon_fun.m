@@ -45,17 +45,20 @@ elseif model.SimpleNonlinearObjective
     xevaled = zeros(1,n);
     xevaled(linearindicies) = x;
     X = repmat(xevaled,size(mtNonlinear,1),1);
-    r = find(mtNonlinear );
+    r = find(mtNonlinear);
+    used = find(any(mtNonlinear,1));
+    mtCompressed = mtNonlinear(:,used);
+    rCompressed = find(mtCompressed);
     X = X(r);
-    Xones = ones(size(mtNonlinear,1),size(mtNonlinear,2));
+    Xones = ones(size(mtNonlinear,1),size(mtCompressed,2));
     for i = 1:length(linearindicies)
         if requested(i)
             mt = mtNonlinear;
             oldpower = mtNonlinear(:,linearindicies(i));
             mt(:,linearindicies(i)) = mt(:,linearindicies(i))-1;
             Z = X.^mt(r);
-            XX = Xones;
-            XX(r) = Z;
+            XX = Xones;          
+            XX(rCompressed) = Z;
             xevaledNonLinear = prod(XX,2);
             xevaledNonLinear = xevaledNonLinear(:)'.*oldpower';xevaledNonLinear(isnan(xevaledNonLinear))=0;
             dx = zeros(1,n);
