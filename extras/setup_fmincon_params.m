@@ -15,6 +15,11 @@ if ~isempty(model.evalMap)
             model.evalinconstraint = 1;
         end
     end
+    if any(model.K.q)
+        if nnz(model.F_struc(1+model.K.f + model.K.l:end,evalInvolved)) > 0
+            model.evalinconstraint = 1;
+        end
+    end
     % Speed up callbacks by removing last marker argument (only used in
     % expandmodel etc) and figuring out what R^m -> R^n operators computes
     for i = 1:length(model.evalMap)
@@ -82,12 +87,21 @@ else
     model.SimpleNonlinearObjective = 0;
 end
 
-model.linearconstraints = isempty(model.Anonlinineq) & isempty(model.Anonlineq);
+model.linearconstraints = isempty(model.Anonlinineq) & isempty(model.Anonlineq) & nnz(model.K.q)==0;
 model.nonlinearinequalities = ~isempty(model.Anonlinineq);
 model.nonlinearequalities = ~isempty(model.Anonlineq);
+if any(model.K.q)
+    if nnz(model.F_struc(1+model.K.f + model.K.l:end,1+model.nonlinearindicies)) > 0
+        model.nonlinearcones = 1;
+    else
+        model.nonlinearcones = 0;
+    end
+else
+    model.nonlinearcones = 0;
+end
 
 % Structure for fast evaluation of monomial terms in differentiation
- if isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities) & ~isfield(model,'fastdiff')     
+ if isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) & ~isfield(model,'fastdiff')     
     allA = [model.Anonlineq;model.Anonlinineq];
     dgAll = [];
     n = length(model.c);
@@ -156,6 +170,9 @@ model.nonlinearequalities = ~isempty(model.Anonlineq);
     end
  else
       allA = [model.Anonlineq;model.Anonlinineq]; 
+      if any(model.K.q)
+          allA = [allA;model.F_struc(1+model.K.f + model.K.f:end,2:end)];
+      end
       requested = any(allA',2); 
       [i,j,k] = find((model.deppattern(find(requested),:))); 
       requested(j) = 1; 

@@ -28,6 +28,15 @@ if model.nonlinearinequalities
     g = full(model.Anonlinineq*xevaled(:)-model.bnonlinineq);
 end
 
+if nnz(model.K.q) > 0
+    top = 1;
+    for i = 1:length(model.K.q)
+        z = model.F_struc(top:top+model.K.q(i)-1,:)*[1;xevaled];
+        g = [g;-(z(1)^2 - z(2:end)'*z(2:end))];
+        top = top + model.K.q(i);
+    end
+end
+
 if model.nonlinearequalities
     geq = full(model.Anonlineq*xevaled(:)-model.bnonlineq);
 end
@@ -36,9 +45,11 @@ dgAll_test = [];
 
 if nargout == 2 || ~model.derivative_available
     return
-elseif ~isempty(dgAll_test) & isempty(model.evalMap)
+elseif ~isempty(dgAll_test) & isempty(model.evalMap) 
     dgAll = dgAll_test;
-elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities)
+elseif isempty(model.evalMap) & (model.nonlinearinequalities==0) & (model.nonlinearequalities==0) & (model.nonlinearcones==0) & any(model.K.q)
+    dgAll = computeConeDeriv(model,xevaled);
+elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) 
     n = length(model.c);
     linearindicies = model.linearindicies;    
     xevaled = zeros(1,n);
@@ -64,26 +75,62 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     newdxx(model.fastdiff.linear_in_newdxx) = zzz;                
     newdxx = newdxx';
     
-    if ~isempty(model.Anonlineq)    
+    if ~isempty(model.Anonlineq)
         dgAll = model.Anonlineq*newdxx;
     else
         dgAll = [];
     end
-    if ~isempty(model.Anonlinineq)    
+    if ~isempty(model.Anonlinineq)
         aux = model.Anonlinineq*newdxx;
         dgAll = [dgAll;aux];
+    end
+    if nnz(model.K.q)>0
+        dgAll = [dgAll;computeConeDeriv(model,xevaled,newdxx);];
     end    
-    
 else
-    allA = [model.Anonlineq;model.Anonlinineq];
+    %allA = [model.Anonlineq;model.Anonlinineq];
     requested = model.fastdiff.requested;
     dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);
-    dgAll = allA*dx;
+    %dgAll = allA*dx;
+    conederiv = computeConeDeriv(model,xevaled,dx);   
+    dgAll = [];
+    if ~isempty(model.Anonlineq)
+        dgAll = [dgAll;model.Anonlineq*dx];
+    end
+    if ~isempty(model.Anonlinineq)
+        dgAll = [dgAll;model.Anonlinineq*dx];
+    end    
+    dgAll = [dgAll;conederiv];
+    %dgAll = [model.Anonlineq*dx;model.Anonlinineq*dx;conederiv];
 end
 
-if  model.nonlinearequalities
+if model.nonlinearequalities
     dgeq = dgAll(1:size(model.Anonlineq,1),:)';
 end
-if model.nonlinearinequalities
+if model.nonlinearinequalities | any(model.K.q)
     dg = dgAll(size(model.Anonlineq,1)+1:end,:)';
+end
+    
+
+function conederiv = computeConeDeriv(model,z,dzdx)
+conederiv = [];
+z = z(:);
+if any(model.K.q)
+    top = 1 + model.K.f + model.K.l;  
+    for i = 1:length(model.K.q)
+        d = model.F_struc(top,1);
+        c = model.F_struc(top,2:end)';
+        b = model.F_struc(top+1:top+model.K.q(i)-1,1);
+        A = model.F_struc(top+1:top+model.K.q(i)-1,2:end);
+        
+        if nargin == 2
+            % No inner derivative
+            conederiv = [conederiv;(2*A'*(A*z+b)-2*c*(c'*z+d))'];
+        else
+            % inner derivative
+            aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
+            conederiv = [conederiv;aux];
+        end
+        top = top + model.K.q(i);
+    end
 end

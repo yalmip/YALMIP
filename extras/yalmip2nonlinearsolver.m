@@ -11,6 +11,19 @@ ub = model.ub;
 x0 = model.x0;
 c = model.c;
 
+% Pick out the positive conditions from cones ||Ax+b|| <= c'*x+d which will
+% be treated as (Ax+b)'*(ax+b) <= (c'*x+d)^2,  c'*x+d >= 0
+if any(K.q)
+    aux = [];
+    top = 1 + K.f + K.l;
+    for i = 1:length(K.q)
+        aux = [aux;model.F_struc(top,:)];
+        top = top + model.K.q(i);
+    end
+    model.F_struc = [model.F_struc(1:K.f+K.l,:);aux;model.F_struc(K.f+K.l+1:end,:)];
+    model.K.l = model.K.l + size(aux,1);
+end
+
 if isempty(model.evaluation_scheme)
     model = build_recursive_scheme(model);
 end
@@ -165,11 +178,14 @@ end
 
 % Some precomputation of computational scheme for Jacobian
 allA = [model.Anonlineq;model.Anonlinineq];
+if any(model.K.q)
+    allA = [allA;model.F_struc(1+model.K.f + model.K.f:end,2:end)];
+end
 requested = any(allA',2);
 [i,j] = find((model.deppattern(find(requested),:)));
 requested(j) = 1;
 if ~isempty(model.evalMap)
-    % Recursive stuff is only possible if we have avaluation-based
+    % Recursive stuff is only possible if we have evaluation-based
     % operators
     model.Crecursivederivativeprecompute = precomputeDerivative(model,requested);
 end
