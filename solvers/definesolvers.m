@@ -12,7 +12,7 @@ emptysolver.call    = '';
 emptysolver.subcall = '';
 emptysolver.show    = 1;
 emptysolver.usesother = 0;
-emptysolver.supportsinitial = 0;
+emptysolver.supportsinitial = 1;
 emptysolver.supportsinitialNAN = 0;
 
 emptysolver.objective.linear = 0;
@@ -723,7 +723,6 @@ solver(i).constraint.inequalities.semidefinite.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -737,7 +736,6 @@ solver(i).constraint.equalities.linear = 0;
 solver(i).constraint.inequalities.semidefinite.quadratic = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -765,7 +763,6 @@ solver(i).dual = 0;
 solver(i).constraint.inequalities.rank = 1;
 solver(i).objective.linear = 0;
 solver(i).constraint.equalities.linear = 0;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -863,7 +860,6 @@ solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -887,7 +883,6 @@ solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -903,7 +898,6 @@ solver(i).constraint.inequalities.semidefinite.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -930,7 +924,6 @@ solver(i).constraint.inequalities.semidefinite.quadratic = 1;
 solver(i).constraint.inequalities.semidefinite.nonlinear = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -948,7 +941,6 @@ solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -970,7 +962,6 @@ solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
-solver(i).supportsinitial = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
 i = i+1;
@@ -998,7 +989,6 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1022,7 +1012,6 @@ solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 
@@ -1047,7 +1036,6 @@ solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1073,7 +1061,6 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1098,7 +1085,6 @@ solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
 solver(i).constraint.integer = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1122,7 +1108,6 @@ solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1140,7 +1125,6 @@ solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -1167,7 +1151,6 @@ solver(i).objective.polynomial = 1;
 solver(i).objective.sigmonial = 1;
 solver(i).evaluation = 1;
 solver(i).dual = 0;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1194,7 +1177,6 @@ solver(i).constraint.binary = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitialNAN = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1220,7 +1202,6 @@ solver(i).constraint.binary = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitialNAN = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1301,7 +1282,6 @@ solver(i).constraint.semivar = 1;
 solver(i).constraint.semiintvar = 1;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -1313,6 +1293,29 @@ solver(i).constraint.binary = 1;
 solver(i).constraint.integer = 1;
 solver(i).dual = 0;
 i = i+1;
+
+% % ***************************************
+% % Experimental min-max solver
+% % ***************************************
+% solver(i) = emptysolver;
+% solver(i).tag     = 'minmax';
+% solver(i).version = '';
+% solver(i).checkfor= {'callminmax'};
+% solver(i).call    = 'callminmax';
+% solver(i).objective.linear = 1;
+% solver(i).objective.sigmonial = 0;
+% solver(i).objective.polynomial = 0;
+% solver(i).objective.quadratic.convex = 0;
+% solver(i).constraint.equalities.linear = 1;
+% solver(i).constraint.inequalities.elementwise.linear = 1;
+% solver(i).constraint.inequalities.elementwise.sigmonial = 0;
+% solver(i).constraint.inequalities.elementwise.polynomial = 0;
+% solver(i).constraint.inequalities.semidefinite.linear = 0;
+% solver(i).constraint.inequalities.secondordercone.linear = 0;
+% solver(i).constraint.inequalities.rotatedsecondordercone = 0;
+% solver(i).constraint.integer = 0;
+% solver(i).constraint.binary = 0;
+% i = i+1;
 
 % % ***************************************
 % % SOMEWHAT MORE COMPLEX DEFINITIONS OF
@@ -1369,7 +1372,6 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.semivar = 0;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
-solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = qpsolver;
