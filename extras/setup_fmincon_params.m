@@ -21,7 +21,7 @@ if ~isempty(model.evalMap)
         end
     end
     if any(model.K.q)
-        if nnz(model.F_struc(1+model.K.f + model.K.l:end,evalInvolved)) > 0
+        if nnz(model.F_struc(1+model.K.f + model.K.l:end,1+evalInvolved)) > 0
             model.evalinconstraint = 1;
         end
     end
