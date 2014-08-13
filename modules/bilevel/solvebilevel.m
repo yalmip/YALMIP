@@ -169,13 +169,13 @@ for i = 1:length(semi_variables)
     semi_var(i) = find(all_variables == semi_variables(i));
 end
 
-if ~isempty(intersect(y_var,binary_variables))
+if ~isempty(intersect(y_var,bin_var))
    error('Only LPs or convex QPs allowed as inner problem (inner variables can not be binary)');
 end
-if ~isempty(intersect(y_var,integer_variables))
+if ~isempty(intersect(y_var,int_var))
    error('Only LPs or convex QPs allowed as inner problem (inner variables can not be integer)');
 end
-if ~isempty(intersect(y_var,semi_variables))
+if ~isempty(intersect(y_var,semi_var))
    error('Only LPs or convex QPs allowed as inner problem (inner variables can not be semi-continuous)');
 end
 inner_p.binary_variables = bin_var;
