@@ -15,6 +15,11 @@ if ~isempty(model.evalMap)
             model.evalinconstraint = 1;
         end
     end
+    if size(model.Anonlinineq,1)>0
+        if nnz(model.Anonlinineq(:,evalInvolved))>0
+            model.evalinconstraint = 1;
+        end
+    end
     if any(model.K.q)
         if nnz(model.F_struc(1+model.K.f + model.K.l:end,evalInvolved)) > 0
             model.evalinconstraint = 1;
