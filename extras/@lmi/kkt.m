@@ -3,7 +3,11 @@ function [KKTConstraints, details] = kkt(F,h,parametricVariables,ops);
 %
 % [KKTConstraints, details] = kkt(Constraints,Objective,parameters,options)
 
-% Author Johan Löfberg
+if ~isempty(F)
+    if any(is(F,'sos2'))
+        error('SOS2 structures not allowed in KKT');
+    end
+end
 
 [aux1,aux2,aux3,model] = export(F,h,sdpsettings('solver','quadprog','relax',2));
 if isempty(model)
