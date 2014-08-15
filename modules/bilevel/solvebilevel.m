@@ -46,6 +46,12 @@ end
 
 y = InnerVariables;
 
+if ~isempty(InnerConstraints)
+    if any(is(InnerConstraints,'sos2'))
+        error('SOS2 structures not allowed in inner problem');
+    end
+end
+
 % User wants to use fmincon, cplex or something like
 if strcmp(options.bilevel.algorithm,'external')
     % Derive KKT conditions of inner problem, append with outer, and solve
