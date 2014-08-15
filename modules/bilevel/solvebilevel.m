@@ -62,7 +62,7 @@ end
 
 % Export the inner model, and select solver
 options.solver = options.bilevel.innersolver;
-if is(InnerObjective,'linear')
+if isa(InnerObjective, 'double') || is(InnerObjective,'linear')
     [Imodel,Iax1,Iax2,inner_p] = export(InnerConstraints,InnerObjective,options,[],[],0);
 elseif is(InnerObjective,'quadratic')
     % We have to be a bit careful about cases such as x'y. This is convex in
