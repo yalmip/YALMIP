@@ -59,7 +59,7 @@ for i = x
                 assign(X,[i;j]);
                 p = checkset(F);
                 if min(p) >= 0
-                    l = plot(i,j,'or','MarkerSize',size,'MarkerFaceColor','yellow')
+                    l = plot(i,j,'or','MarkerSize',size,'MarkerFaceColor','yellow');
                     set(l,'MarkerFaceColor',color);
                 end
             otherwise
