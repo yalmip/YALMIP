@@ -3,7 +3,7 @@ function x = value(x);
 
 x = value(x.Evaluated{1});
 
-if issymmetric(x)
+if isessentiallysymmetric(x)
     x = min(eig(x)) >= 0;
 else
     x = min(x(:)) >= 0;
