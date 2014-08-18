@@ -10,4 +10,4 @@ function x = false(x)
 %
 %   See also SDPVAR/TRUE, SDPVAR/AND, SDPVAR/OR, SDPVAR/NOT, BINVAR, BINARY
 
-x = set(x<=0);
+x = set(x<=.5);

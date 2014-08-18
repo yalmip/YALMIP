@@ -14,4 +14,4 @@ function x = true(x)
 %
 %   See also SDPVAR/FALSE, SDPVAR/AND, SDPVAR/OR, SDPVAR/NOT, BINVAR, BINARY
 
-x = set(x>=1);
+x = set(x>=.5);
