@@ -3,7 +3,8 @@ if p.K.l >0
     nnz_per_row = (p.F_struc | p.F_struc)*[0;ones(size(p.F_struc,2)-1,1)];
     valid_rows = find(nnz_per_row>1);
     valid_rows(valid_rows<=p.K.f)=[];
-    for j = valid_rows(:)'%(p.K.f + (1:p.K.l))
+    valid_rows(valid_rows>p.K.f + p.K.l)=[];
+    for j = valid_rows(:)'
         b = p.F_struc(j,1);
         a = p.F_struc(j,2:end);
         if nnz(p.F_struc(j,2:end))>1

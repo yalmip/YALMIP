@@ -87,6 +87,15 @@ p = convert_perspective_log(p);
 n_in = length(p.c);
 
 % *************************************************************************
+% Copy positivity terms in cones to LPs to use these in bound propagation
+% *************************************************************************
+if nnz(p.K.q)>0
+    pos = p.K.f + p.K.l + cumsum([1 p.K.q(1:end-1)]);
+    p.F_struc = [p.F_struc(1:p.K.f+p.K.l,:);p.F_struc(pos,:);p.F_struc(1+p.K.f+p.K.l:end,:)];
+    p.K.l = p.K.l + length(pos);
+end
+
+% *************************************************************************
 % Save information about the applicability of some bound propagation
 % *************************************************************************
 p.boundpropagation.sepquad = 1;
@@ -131,7 +140,7 @@ end
 % *************************************************************************
 % Try to generate a feasible solution, by using avialable x0 (if usex0=1),
 % or by trying the zero solution, or my trying the (lb+ub)/2 solution. Note
-% that we do this here before the problem possibly is bilinearized, thus
+% that we do this here b4efore the problem possibly is bilinearized, thus
 % avoiding to introduce possibly complicating bilinear constraints
 % *************************************************************************
 [p,x_min,upper] = initializesolution(p);
