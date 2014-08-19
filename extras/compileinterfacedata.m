@@ -61,6 +61,7 @@ if isa(options.radius,'sdpvar') | ~isinf(options.radius)
     else
         F = F + set(-options.radius <= x <= options.radius);
     end
+    F = flatten(F);
 end
 
 % *************************************************************************
@@ -68,6 +69,7 @@ end
 % *************************************************************************
 [F,changed] = convertlogics(F);
 if changed
+    F = flatten(F);
     options.saveduals = 0; % Don't calculate duals since we changed the problem
 end
 
@@ -111,6 +113,7 @@ if options.expand
     catch
     end
     [F,failure,cause,operators] = expandmodel(F,h,options);
+    F = flatten(F);
     if failure % Convexity propgation failed
         interfacedata = [];
         recoverdata = [];

@@ -63,6 +63,9 @@ else
     if isa(F,'constraint')
         F = set(F);
     end
+    if isa(F,'lmi')
+        F = flatten(F);
+    end
     
     if isa(F,'sdpvar')
         % We do allow sloppy coding of logic constraints, i.e writing a

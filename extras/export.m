@@ -112,6 +112,8 @@ if any(is(F,'uncertain'))
     [F,h] = robustify(F,h,options);
 end
 
+F = flatten(F);
+
 % ******************************************
 % Export SOS problem to SOS first
 % ******************************************

@@ -5,12 +5,12 @@ function YESNO = is(F,property)
 %   Properties possible to test are: 'elementwise', 'sdp', 
 %   'socc', 'equality', 'lmi', 'linear', 'kyp', 'sos'
 
-% Author Johan Löfberg
-% $Id: is.m,v 1.18 2008-04-24 11:15:13 joloef Exp $
-
 if isempty(F.clauses)
     YESNO = 0;
 else
+    if isa(F.clauses{1},'cell')
+        F = flatten(F);
+    end
     %   for i = 1:length(F.clauses)
     %       Fi = F.clauses{i};
     YESNO=zeros(length(F.clauses),1);
