@@ -63,15 +63,17 @@ else
         X.clauses{j}{end+1} = Y.clauses{i};
     end
 end
-
+aux = X.LMIid;
 X.LMIid = [X.LMIid Y.LMIid];
 
 % VERY FAST UNIQUE BECAUSE THIS IS CALLED A LOT OF TIMES....
-i = sort(X.LMIid);
-i = i(diff([i NaN])~=0); 
-if length(i)<nX+nY   
-    % Flatten first
-    X.clauses = [X.clauses{:}];
-    [i,j] = unique(X.LMIid);
-    X = subsref(X,struct('type','()','subs',{{j}}));
+if ~(max(aux) < min(Y.LMIid))
+    i = sort(X.LMIid);
+    i = i(diff([i NaN])~=0);
+    if length(i)<nX+nY
+        % Flatten first
+        X.clauses = [X.clauses{:}];
+        [i,j] = unique(X.LMIid);
+        X = subsref(X,struct('type','()','subs',{{j}}));
+    end
 end
