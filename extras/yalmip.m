@@ -26,7 +26,9 @@ if nargin==0
 end
 
 if isempty(internal_sdpvarstate)
-    more off
+    if exist('OCTAVE_VERSION', 'builtin') 
+        more off
+    end
     internal_sdpvarstate.monomtable = spalloc(0,0,0);   % Polynomial powers table
     internal_sdpvarstate.hashedmonomtable = [];         % Hashed polynomial powers table
     internal_sdpvarstate.hash = [];
