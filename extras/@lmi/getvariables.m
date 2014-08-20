@@ -1,5 +1,10 @@
 function used = getvariables(F)
 
+if length(F.clauses) == 0
+    used = [];
+    return
+end
+
 if isa(F.clauses{1},'cell')
     F = flatten(F);
 end

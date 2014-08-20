@@ -1,5 +1,7 @@
 function LinearVariables = depends(F)
 
+F = flatten(F);
+
 % Get all used variables in this LMI object
 used = [];
 for i = 1:length(F.clauses)  
