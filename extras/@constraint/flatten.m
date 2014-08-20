@@ -1,3 +1,7 @@
-function F = flatten(F)
+function sys = flatten(sys)
 
-F = flatten(set(F));
+% Go from an internal format which is hierarchical and performs better
+% when adding many constraint objects.
+if isa(sys.clauses{1},'cell')
+    sys.clauses = [sys.clauses{:}];
+end
