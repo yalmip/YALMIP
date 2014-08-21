@@ -32,6 +32,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    14 Convexity check failed.
 %    15 Problem either infeasible or unbounded
 %    16 User terminated
+%    17 Presolve recovery failed
 %
 %   See also SOLVESDP
 
@@ -101,7 +102,10 @@ case -3
  case 15
   error_string = ['Infeasible or unbounded problem ' solver ]; 
  case 16
-  error_string = ['User terminated ' solver ];         
+  error_string = ['User terminated ' solver ]; 
+ case 17
+  error_string = ['Presolve recovery failed ' solver ]; 
+  
   
  otherwise
 end

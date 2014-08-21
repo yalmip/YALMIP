@@ -353,6 +353,20 @@ if findstr(lower(solver.tag),'sparsecolo')
     solver.sdpsolver = localsolver;
 end
 
+if findstr(lower(solver.tag),'frlib')
+    temp_options = options;
+    temp_options.solver = options.frlib.solver;
+    tempProblemClass = ProblemClass;   
+    localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
+    if isempty(localsolver) | strcmpi(localsolver.tag,'frlib')
+        diagnostic.solvertime = 0;
+        diagnostic.info = yalmiperror(-2,'YALMIP');
+        diagnostic.problem = -2;
+        return
+    end
+    solver.solver = localsolver;
+end
+
 % *************************************************************************
 %% DID WE SELECT THE MPCVX SOLVER
 % IN THAT CASE, SELECT SOLVER TO SOLVE BOUND COMPUTATIONS

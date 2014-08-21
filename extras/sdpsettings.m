@@ -283,7 +283,10 @@ Names = {'solver'
     'filtersd.maxfeval'        
     'filtersd.rho'
     'filtersd.htol'
-    'filtersd.rgtol'      
+    'filtersd.rgtol'
+    'frlib.approximation'
+    'frlib.reduce'
+    'frlib.solver'
     'mpcvx.solver'
     'mpcvx.relgaptol'
     'mpcvx.absgaptol'
@@ -1187,6 +1190,10 @@ else
     options.filtersd.maxiter = 1500;
     options.filtersd.maxtime = 1000;
     options.filtersd.maxfeval = 10000;         
+    
+    options.frlib.approximation = 'd';
+    options.frlib.reduce = 'primal';
+    options.frlib.solver = '';
     
     % Options for GLPK
     options.glpk.lpsolver = 1;
