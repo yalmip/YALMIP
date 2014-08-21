@@ -90,7 +90,7 @@ if isvalidfield(K,'s')
         if all(off == round(off))
             X = c(top:top+K.s(i)^2-1)-At(top:top+K.s(i)^2-1,:)*x;
             if isa(X,'sdpvar')
-                F = F + set(diag(reshape(X,K.s(i),K.s(i))) > 0);
+                F = F + set(diag(reshape(X,K.s(i),K.s(i))) >= 0);
             else
                 X
                 i
@@ -101,7 +101,7 @@ if isvalidfield(K,'s')
             X = c(top:top+K.s(i)^2-1)-At(top:top+K.s(i)^2-1,:)*x;
             X = reshape(X,K.s(i),K.s(i));
             X = (X+X')/2;
-            F = F + set(X > 0);
+            F = F + set(X >= 0);
             top = top + K.s(i)^2;
         end
     end
