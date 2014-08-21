@@ -18,12 +18,25 @@ if ~exist(filename)
 end
    
 load(filename)
-try
-    b = b(:);
-    c = c(:);
+try   
     if ~exist('At')
         At = A;
     end
+    if ~exist('b')
+        b = zeros(size(At,1),1);
+    else
+        b = b(:);
+    end
+    if ~exist('c')
+        if exist('C')
+            c = C(:);
+        else
+            c = zeros(size(At,2),1);
+        end
+    else
+        c = c(:);
+    end
+    
     K = K;
 catch
     error('The file should contain the data At, b, c and K');
