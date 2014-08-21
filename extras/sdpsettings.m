@@ -286,7 +286,8 @@ Names = {'solver'
     'filtersd.rgtol'
     'frlib.approximation'
     'frlib.reduce'
-    'frlib.solver'
+    'frlib.solver'   
+    'frlib.useQR'
     'mpcvx.solver'
     'mpcvx.relgaptol'
     'mpcvx.absgaptol'
@@ -1193,7 +1194,8 @@ else
     
     options.frlib.approximation = 'd';
     options.frlib.reduce = 'primal';
-    options.frlib.solver = '';
+    options.frlib.solver = '';   
+    options.frlib.useQR = 0;
     
     % Options for GLPK
     options.glpk.lpsolver = 1;
