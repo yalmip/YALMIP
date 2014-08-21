@@ -5,6 +5,8 @@ basis = getbase(f);
 fvars = getvariables(f);
 if nargin == 1
     lowerupper = yalmip('getbounds',fvars);
+else
+    lowerupper = lowerupper(fvars,:);
 end
 
 if any(any(isinf(lowerupper)))
