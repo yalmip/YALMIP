@@ -398,6 +398,11 @@ pnew = p;
 pnew.V = [];
 pnew.diagonalized = 0;
 
+% No quadratic terms
+if all(p.variabletype == 0)
+    return
+end
+
 % Any polynomial terms or simple linear by some reason
 if any(p.variabletype > 2) & ~all(p.variabletype == 0) | p.options.bmibnb.diagonalize==0
     return
