@@ -150,9 +150,13 @@ model.c(removethese)=[];
 if nnz(model.Q)>0
     model.c = model.c + 2*model.Q(keepingthese,removethese)*value;
 end
-model.Q(removethese,:) = [];
-model.Q(:,removethese) = [];
 
+if nnz(model.Q)==0
+    model.Q = spalloc(length(model.c),length(model.c),0);
+else
+    model.Q(removethese,:) = [];
+    model.Q(:,removethese) = [];
+end
 model.c = model.c.*monomgain;
 keptvariables(removethese) = [];
 
@@ -188,8 +192,15 @@ model.lb(skipped) = [];
 model.ub(skipped) = [];
 newmonomtable(skipped,:) = [];
 newmonomtable(:,skipped) = [];
-model.Q(:,skipped)=[];
-model.Q(skipped,:)=[];
+
+
+if nnz(model.Q)==0
+    model.Q = spalloc(length(model.c),length(model.c),0);
+else
+    model.Q(:,skipped)=[];
+    model.Q(skipped,:)=[];
+end
+
 keptvariables(skipped) = [];
 
 model.monomtable = newmonomtable;
