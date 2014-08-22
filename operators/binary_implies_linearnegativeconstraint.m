@@ -4,7 +4,7 @@ function F = binary_implies_linearnegativeconstraint(f,X,M,m,eps);
 if nargin < 3 || isempty(M)
     [M,m,infbound] = derivebounds(f);
     if infbound
-        warning('You have unbounded variables in IFF leading to a lousy big-M relaxation.');
+        warning('You have unbounded variables in an implication leading to a lousy big-M relaxation.');
     end
 end
 
