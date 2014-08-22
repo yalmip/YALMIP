@@ -42,7 +42,7 @@ end
 
 % Back to YALMIP internal format to enable arbitrary solver
 model.F_struc = [prgR.c' -A'];
-model.c = -b;%prgR.b;
+model.c = -b;
 model.K = prgR.K;
 if any(model.K.s) && any(model.K.s == 0)
     model.K.s(model.K.s==0)=[];
@@ -54,19 +54,9 @@ end
 % Call SDP solver
 output = feval(model.solver.solver.call,model);
 
-try
-    [x,y,dual_recov_success] = prgR.Recover(output.Dual,T*output.Primal);
-    output.Dual = x;
-    output.Primal = y;
-catch
-    % Code around bug in frlib
-    if isequal(prgR.K,prgR.Korig)
-        dual_recov_success = 1;
-    else
-        output.problem = 17;    
-        dual_recov_success = 0;
-    end
-end
+[x,y,dual_recov_success] = prgR.Recover(output.Dual,T*output.Primal);
+output.Dual = x;
+output.Primal = y;
 
 output.infostr = yalmiperror(output.problem,[model.solver.tag ' -> ' model.solver.solver.tag]);
 
