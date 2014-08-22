@@ -211,7 +211,16 @@ for i = 1:Counter
                         error('Report bug in problem classification (sigmonial constraint)');
                 end
             else
-                deg = degree(Fi.data);
+                %deg = degree(Fi.data);
+                types = variabletype(getvariables(Fi.data));
+                if ~any(types)
+                    deg = 1;
+                elseif any(types==1) || any(types==2)
+                    deg = 2;
+                else
+                    deg = NaN;
+                end
+                
                 switch deg
                     
                     case 1
