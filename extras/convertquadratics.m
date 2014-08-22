@@ -21,6 +21,8 @@ if issigmonial(F)
     return
 end
 
+[monomtable,variabletype] = yalmip('monomtable');
+
 Fconv = lmi;
 no_changed = 0;
 i_changed = [];
@@ -39,7 +41,12 @@ for i = 1:1:length(F)
                 end
             end
            % Q = Qs{j};c = cs{j};f = fs{j};
-            [Q,c,f,x,info] = quaddecomp(fij);
+           if max(variabletype(getvariables(fij))) <= 1
+               % There are at most bilinear terms, so it cannot be convex
+               info = 1;
+           else
+               [Q,c,f,x,info] = quaddecomp(fij);
+           end
             if info==0
                 if nnz(Q)==0
                     % Oh, linear,...
