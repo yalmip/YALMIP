@@ -261,12 +261,12 @@ sys.output.z = z;
 % given (tested in test_optimizer2
 % [a,b,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end));
 % Could be done using
-% [b,a,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end)');
+[b,a,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end)');
 % but let us be safe
-b = [];
-for i = 1:prod(sys.dimin)
-    b = [b;find(sys.model.F_struc(i,2:end))];
-end
+%b = [];
+%for i = 1:prod(sys.dimin)
+%    b = [b;find(sys.model.F_struc(i,2:end))];
+%end
 sys.parameters = b;
 used_in = find(any(sys.model.monomtable(:,b),2));
 Q = sys.model.Q;
@@ -339,15 +339,24 @@ if sys.nonlinear & ~sys.complicatedEvalMap
     newmonomtable = sys.model.monomtable;
     rmvmonoms = newmonomtable(:,[sys.parameters;evalParameters]);
     % Linear indexation to fixed monomial terms which have to be computed
-    [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
-    sys.model.precalc.aux = rmvmonoms*0+1;
+    % [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
+    [ii1,jj1] = find( rmvmonoms < 0 | rmvmonoms > 1 | fix(rmvmonoms) ~= rmvmonoms);    
     sys.model.precalc.index1 = sub2ind(size(rmvmonoms),ii1,jj1);    
     sys.model.precalc.jj1 = jj1;    
-    
+            
     % Linear indexation to linear terms
-    [ii2,jj2] = find(rmvmonoms == 1);   
-    sys.model.precalc.index2 = sub2ind(size(rmvmonoms),ii2,jj2);    
-    sys.model.precalc.jj2 = jj2;    
+    linterms = rmvmonoms == 1;
+    if ~isempty(jj1) | any(sum(linterms,2))>1
+        [ii2,jj2] = find(linterms);
+        sys.model.precalc.index2 = sub2ind(size(rmvmonoms),ii2,jj2);
+        sys.model.precalc.jj2 = jj2;
+        sys.model.precalc.aux = rmvmonoms*0+1;
+    else
+        [ii2,jj2] = find(linterms);
+        sys.model.precalc.index2 = ii2;
+        sys.model.precalc.jj2 = jj2;
+        sys.model.precalc.aux = ones(size(rmvmonoms,1),1);
+    end
     
     sys.model.newmonomtable = model.monomtable;
     sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.parameters;evalParameters]);
@@ -361,5 +370,13 @@ sys = class(sys,'optimizer');
 
 function i = uniqueRows(x);
 B = getbase(x);
+% Quick check for trivially unique rows, typical 99% case
+[n,m] = size(B);
+if n == m-1 && nnz(B)==n
+    if isequal(B,[spalloc(n,1,0) speye(n)])
+        i = 1:n;
+        return
+    end
+end
 [temp,i,j] = unique(B,'rows');
 i = i(:);
