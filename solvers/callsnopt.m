@@ -25,12 +25,14 @@ xstate = zeros(length(xupp),1);
 
 Fupp = [ inf;
          repmat(0,length(model.bnonlinineq),1);
+         repmat(0,nnz(model.K.q),1);
          repmat(0,length(model.bnonlineq),1);
          repmat(0,length(model.b),1);
          repmat(0,length(model.beq),1)];
      
 Flow = [ -inf;
          repmat(-inf,length(model.bnonlinineq),1);
+         repmat(-inf,nnz(model.K.q),1);
          repmat(0,length(model.bnonlineq),1);
          repmat(-inf,length(model.b),1);
          repmat(0,length(model.beq),1)];

@@ -7,7 +7,17 @@ if nargin == 1
 end
 
 m = length(model.lb);
-allA=[model.Anonlinineq; model.Anonlineq];
+allA=[model.Anonlinineq];
+if any(model.K.q)
+    top = 1 + model.K.f + model.K.l;
+    allQ = [];
+    for i = 1:length(model.K.q)
+        allQ = [allQ;any(model.F_struc(top:top+model.K.q(i)-1,2:end))];
+        top = top + model.K.q(i);
+    end
+    allA = [allA;allQ];
+end
+allA = [allA;model.Anonlineq];
 jacobianstructure = spalloc(size(allA,1),m,0);
 depends = allA | allA;
 for i = 1:size(depends,1)
