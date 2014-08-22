@@ -51,6 +51,7 @@ A =-F_struc(:,2:end);
 if length(B)==0;
     A = C';
     B = 1e6;
+    K.l = 1;
 end
 % Optimized code, make a lot of difference when you make this call 10000
 % times in a branch and bound setting...
