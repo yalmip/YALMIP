@@ -97,4 +97,6 @@ for i = 1:1:length(F)
 end
 if ~isempty(i_changed)
     Forigquad = F(i_changed);
+else
+    Fconv = F;
 end
