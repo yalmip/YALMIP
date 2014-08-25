@@ -182,7 +182,7 @@ for pi = 1:size(pvec,1)
                     e = yalmip('extstruct',extVariables(v1));
                     inner = amplexpr(e.arg{1},depends(e.arg{1}),binvars,integervars);
                     names{i} = [e.fcn '(' inner{1} ')'];   
-                    names{1} = strrep(names{i},'mpower_internal','');
+                    names{i} = strrep(names{i},'mpower_internal','');
                 end
             end
 
