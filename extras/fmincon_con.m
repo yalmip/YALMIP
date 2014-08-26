@@ -75,7 +75,7 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     newdxx(model.fastdiff.linear_in_newdxx) = zzz;                
     %newdxx = newdxx';
     
-    if ~isempty(model.Anonlineq)
+    if ~isempty(model.Anonlineq)      
         dgeq = model.Anonlineq*newdxx; 
     end
     if ~isempty(model.Anonlinineq)

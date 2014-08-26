@@ -61,21 +61,26 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
                                     generated_monoms = mt(X.lmi_variables,:) +  mt(Y.lmi_variables,:);
                                     generated_hash = generated_monoms*hash;
                                     keep = zeros(1,numel(X));
-                                    for i = 1:numel(X)
-                                        if generated_hash(i)
-                                            before = find(abs(hashedMT-generated_hash(i))<eps);
-                                            if isempty(before)
-                                                %  mt = [mt;generated_monoms(i,:)];
-                                                keep(i) = 1;
-                                                Z.lmi_variables(i) = size(mt,1)+nnz(keep);
+                                    
+                                    if all(generated_hash) &&  all(diff(sort([generated_hash;hashedMT])))
+                                        Z.lmi_variables =  size(mt,1)+(1:numel(X));
+                                        keep = keep + 1;
+                                    else
+                                        for i = 1:numel(X)
+                                            if generated_hash(i)
+                                                before = find(abs(hashedMT-generated_hash(i))<eps);
+                                                if isempty(before)
+                                                    %  mt = [mt;generated_monoms(i,:)];
+                                                    keep(i) = 1;
+                                                    Z.lmi_variables(i) = size(mt,1)+nnz(keep);
+                                                else
+                                                    Z.lmi_variables(i) = before;
+                                                end
                                             else
-                                                Z.lmi_variables(i) = before;
+                                                Z.lmi_variables(i) = 0;
                                             end
-                                        else
-                                            Z.lmi_variables(i) = 0;
                                         end
                                     end
-                                    
                                     if any(keep)
                                         keep = find(keep);
                                         mt = [mt;generated_monoms(keep,:)];

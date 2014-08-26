@@ -143,6 +143,7 @@ end
     %model.fastdiff.linear_in_newdxx = sub2ind([nn mm],a1(:),a2(:));
     model.fastdiff.newdxx = sparse(a1f,a2f,zzzf,nn,mm)'; 
     model.fastdiff.linear_in_newdxx = sub2ind([mm nn],a2(:),a1(:));
+    model.fastdiff.newdxx(model.fastdiff.linear_in_newdxx)=1;
     
     if all(sum(allDerivemt | allDerivemt,2)==1)
         model.fastdiff.univariateDifferentiates = 1;
