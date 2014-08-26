@@ -102,7 +102,6 @@ else
     if ~isempty(conederiv)
         dgAll = [dgAll;conederiv];
     end
-    %dgAll = [model.Anonlineq*dx;model.Anonlinineq*dx;conederiv];
 end
 
 if model.nonlinearequalities
