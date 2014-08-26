@@ -1,5 +1,12 @@
 function dX = apply_recursive_differentiation(model,x,requested,recursivederivativeprecompute)
 
+global newmodel
+persistent dX0
+persistent index
+persistent mtT
+persistent monomTablePattern
+persistent ss
+
 % Compute all evaluation-based derivatives df(x)
 dxi = [];
 dxj = [];
@@ -26,15 +33,25 @@ for i = 1:length(model.evaluation_scheme)
 end
 
 % Apply chain-rule. This code is horrible
-ss = any(model.deppattern(requested,model.linearindicies),1);
 
-monomTablePattern = model.monomtable | model.monomtable;
-mtT = model.monomtable';
-[~,dxj] = ismember(dxj,model.linearindicies);
-dxi = [dxi model.linearindicies];
-dxj = [dxj 1:length(model.linearindicies)];
-dxs = [dxs(:)' ones(length(model.linearindicies),1)'];
-dX = sparse(dxi,dxj,dxs,length(model.c),length(model.linearindicies));
+if newmodel
+    % Some precalc save over iterations
+    ss = any(model.deppattern(requested,model.linearindicies),1);
+    monomTablePattern = model.monomtable | model.monomtable;
+    mtT = model.monomtable';
+    [~,dxj] = ismember(dxj,model.linearindicies);
+    dxi1 = [dxi model.linearindicies];
+    dxj1 = [dxj 1:length(model.linearindicies)];
+    dxs1 = [dxs(:)' ones(length(model.linearindicies),1)'];
+    dX = sparse(dxi1,dxj1,dxs1,length(model.c),length(model.linearindicies));    
+    dX0 = dX;
+    index = sub2ind([length(model.c),length(model.linearindicies)],dxi,dxj);   
+    newmodel = 0;
+else
+    dX = dX0;
+    dX(index) = dxs;
+end
+
 newMonoms = [];
 for i = 1:length(model.evaluation_scheme)
     switch model.evaluation_scheme{i}.group
