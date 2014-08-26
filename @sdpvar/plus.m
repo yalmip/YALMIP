@@ -36,14 +36,14 @@ if ~Y_is_spdvar
     end
 end
 
-if X_is_spdvar%isa(X,'sdpvar') 
-    if X.typeflag == 40%is(X,'gkyp') is(X,'gkyp') 
+if X_is_spdvar
+    if X.typeflag == 40
         y = addgkyp(X,Y);
         return
     end
 end
-if Y_is_spdvar%isa(Y,'sdpvar') 
-    if Y.typeflag == 40%is(Y,'gkyp') 
+if Y_is_spdvar
+    if Y.typeflag == 40
         y = addgkyp(Y,X);
         return
     end
@@ -168,18 +168,12 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 in_Y_logical = ismembcYALMIP(all_lmi_variables,Y.lmi_variables);
             end
         end
-       % all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
         y = X;
-   %     X.basis = [];
         y.lmi_variables = all_lmi_variables;
 
         % ismembc faster (buggy?)
-      %  in_X_logical = ismembc(all_lmi_variables,X.lmi_variables);
-      %  in_Y_logical = ismembc(all_lmi_variables,Y.lmi_variables);
         in_X = find(in_X_logical);
         in_Y = find(in_Y_logical);
-        % in_X = find(ismember(all_lmi_variables,X.lmi_variables));
-        % in_Y = find(ismember(all_lmi_variables,Y.lmi_variables));
 
         if isequal(X.lmi_variables,Y.lmi_variables) && n_Y==n_X && m_Y==m_X
             y.basis = y.basis + Y.basis;
@@ -232,8 +226,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
             if n_Y*m_Y<n_X*m_X
                 y.dim(1) = n_X;
-                y.dim(2) = m_X;
-               % basis_Y = repmat(basis_Y,n_X*m_X,1);
+                y.dim(2) = m_X;              
                 y.basis = basis_X;basis_X = [];
                 try                        
                     y.basis = bsxfun(@plus,y.basis,basis_Y);basis_Y = [];
