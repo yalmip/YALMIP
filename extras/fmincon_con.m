@@ -87,20 +87,21 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     if nnz(model.K.q)>0
         dgAll = [dgAll;computeConeDeriv(model,xevaled,newdxx);];
     end    
-else
-    %allA = [model.Anonlineq;model.Anonlinineq];
+else    
     requested = model.fastdiff.requested;
-    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);
-    %dgAll = allA*dx;
+    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);    
     conederiv = computeConeDeriv(model,xevaled,dx);   
-    dgAll = [];
     if ~isempty(model.Anonlineq)
-        dgAll = [dgAll;model.Anonlineq*dx];
+        dgAll = [model.Anonlineq*dx];
+    else
+        dgAll = [];
     end
     if ~isempty(model.Anonlinineq)
         dgAll = [dgAll;model.Anonlinineq*dx];
     end    
-    dgAll = [dgAll;conederiv];
+    if ~isempty(conederiv)
+        dgAll = [dgAll;conederiv];
+    end
     %dgAll = [model.Anonlineq*dx;model.Anonlinineq*dx;conederiv];
 end
 

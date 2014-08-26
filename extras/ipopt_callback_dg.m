@@ -13,7 +13,12 @@ else
     [g,geq,dg,dgeq] = fmincon_con(x,model);
 
     % Append with linear terms
-    G = [dg';dgeq'];
+    if isempty(dg)
+        G = dgeq';
+    else
+        G = [dg';dgeq'];
+    end
+    
     if ~isempty(model.A)
         G = [G;model.A];
     end
