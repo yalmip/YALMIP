@@ -6,6 +6,7 @@ persistent index
 persistent mtT
 persistent monomTablePattern
 persistent ss
+persistent lastrequested
 
 % Compute all evaluation-based derivatives df(x)
 dxi = [];
@@ -34,7 +35,7 @@ end
 
 % Apply chain-rule. This code is horrible
 
-if newmodel
+if newmodel || ~isequal(requested,lastrequested);
     % Some precalc save over iterations
     ss = any(model.deppattern(requested,model.linearindicies),1);
     monomTablePattern = model.monomtable | model.monomtable;
@@ -47,6 +48,7 @@ if newmodel
     dX0 = dX;
     index = sub2ind([length(model.c),length(model.linearindicies)],dxi,dxj);   
     newmodel = 0;
+    lastrequested = requested;
 else
     dX = dX0;
     dX(index) = dxs;
