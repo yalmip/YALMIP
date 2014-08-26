@@ -35,7 +35,6 @@ dxi = [dxi model.linearindicies];
 dxj = [dxj 1:length(model.linearindicies)];
 dxs = [dxs(:)' ones(length(model.linearindicies),1)'];
 dX = sparse(dxi,dxj,dxs,length(model.c),length(model.linearindicies));
-% dX = sparse(model.linearindicies,1:length(model.linearindicies),ones(length(model.linearindicies),1),length(model.c),length(model.linearindicies));
 newMonoms = [];
 for i = 1:length(model.evaluation_scheme)
     switch model.evaluation_scheme{i}.group
@@ -65,8 +64,6 @@ for i = 1:length(model.evaluation_scheme)
                 if ~isempty(Bilinears)
                     x1 = model.BilinearsList(Bilinears,1);
                     x2 = model.BilinearsList(Bilinears,2);
-                   % dX(sub2ind(size(dX),Bilinears',x1))=x(x2);
-                   % dX(sub2ind(size(dX),Bilinears',x2))=x(x1);
                     dX(sub2ind(size(dX),[Bilinears(:);Bilinears(:)],[x1;x2]))=x([x2;x1]);
                 end
                 QuadraticIndex = find(model.variabletype(computed)==2);
