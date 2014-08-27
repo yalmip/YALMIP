@@ -840,6 +840,8 @@ if LogDetTerm
     Fdual = Fdual - Fdual(1:length(Plogdet));
 end
 
+Fdual = setdualize(Fdual,1);
+
 function implicit_positive = detect_diagonal_terms(F)
 F = F(find(is(F,'sdp')));
 implicit_positive = [];

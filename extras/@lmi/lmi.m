@@ -11,6 +11,7 @@ switch nargin
         F.clauses={};
         F.LMIid    = [];
         F.savedata = [];
+        F.dualized = 0;
         F = class(F,'lmi');
         return
     case 1
@@ -34,6 +35,7 @@ end
 F.clauses  = {};
 F.LMIid    = [];
 F.savedata = [];
+F.dualized = 0;
 
 try
     F = class(F,'lmi');

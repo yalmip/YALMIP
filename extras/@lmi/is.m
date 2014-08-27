@@ -15,6 +15,9 @@ else
     %       Fi = F.clauses{i};
     YESNO=zeros(length(F.clauses),1);
     switch property
+        case 'dualized'
+            YESNO = F.dualized == 1;
+            
         case 'chance'
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
