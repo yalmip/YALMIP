@@ -1197,7 +1197,7 @@ else
     options.frlib.approximation = 'd';
     options.frlib.reduce = 'dual';
     options.frlib.solver = ''; 
-	options.frlib.solverPreProcess = ''; 
+    options.frlib.solverPreProcess = ''; 
     options.frlib.useQR = 0;
     options.frlib.removeDualEq = 1;
     
