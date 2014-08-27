@@ -34,15 +34,13 @@ switch options.frlib.reduce
         prgR = prg.ReduceDual(options.frlib.approximation);
     otherwise
 end
+
 if options.verbose
     PrintStats(prgR);
 end
-% Use frlibs clean to remove silly stuff
-[A,b,T] = CleanLinear(prgR.A,prgR.b,options.frlib.useQR);
-
 % Back to YALMIP internal format to enable arbitrary solver
-model.F_struc = [prgR.c' -A'];
-model.c = -b;
+model.F_struc = [prgR.c' -prgR.A'];
+model.c = -prgR.b;
 model.K = prgR.K;
 if any(model.K.s) && any(model.K.s == 0)
     model.K.s(model.K.s==0)=[];
@@ -54,7 +52,7 @@ end
 % Call SDP solver
 output = feval(model.solver.solver.call,model);
 
-[x,y,dual_recov_success] = prgR.Recover(output.Dual,T*output.Primal);
+[x,y,dual_recov_success] = prgR.Recover(output.Dual,output.Primal);
 output.Dual = x;
 output.Primal = y;
 

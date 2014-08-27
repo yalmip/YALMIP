@@ -61,7 +61,7 @@ function options = sdpsettings(varargin)
 %
 %   See also SOLVESDP, SET, SDPVAR
 
-% Author Johan Löfberg (ripped from odeset)
+% Author Johan LÃ¶fberg (ripped from odeset)
 % $Id: sdpsettings.m,v 1.80 2010-04-27 14:25:05 joloef Exp $
 
 % Print out possible values of properties.
@@ -287,6 +287,8 @@ Names = {'solver'
     'frlib.approximation'
     'frlib.reduce'
     'frlib.solver'   
+    'frlib.removeDualEq'
+    'frlib.solverPreProcess'
     'frlib.useQR'
     'mpcvx.solver'
     'mpcvx.relgaptol'
@@ -1193,9 +1195,11 @@ else
     options.filtersd.maxfeval = 10000;         
     
     options.frlib.approximation = 'd';
-    options.frlib.reduce = 'primal';
-    options.frlib.solver = '';   
+    options.frlib.reduce = 'dual';
+    options.frlib.solver = ''; 
+    options.frlib.solverPreProcess = ''; 
     options.frlib.useQR = 0;
+    options.frlib.removeDualEq = 1;
     
     % Options for GLPK
     options.glpk.lpsolver = 1;
