@@ -116,18 +116,21 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
    end
    end
 
-    % Now we might have to recurse
-    if isa(arguments,'sdpvar')
-        if max(size(arguments))>1
-            arguments = reshape(arguments,prod(size(arguments)),1);
-        else
-            try
-            %arguments = recover(depends(arguments)) ;     
-            arguments = recover(getvariables(arguments)); 
-            catch
-            end
-        end
-    end
+   % Now we might have to recurse
+   if isa(arguments,'sdpvar')
+       if max(size(arguments))>1
+           arguments = reshape(arguments,prod(size(arguments)),1);
+       else
+           try
+               %arguments = recover(depends(arguments)) ;
+               if length(getvariables(arguments)) == 1 && isequal(getbase(arguments),[0 1])
+               else
+                   arguments = recover(getvariables(arguments));
+               end
+           catch
+           end
+       end
+   end
 
     [ix,jx,kx] = find(monomtable(getvariables(variable),:));
     if ~isempty(jx) % Bug in 6.1
