@@ -610,11 +610,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     Z = addleftfactor(Z,X);
                     return
                 end
-            else
-                Z.dim(1) = n_Y;
-                Z.dim(2) = m_Y;
+            else               
                 try
-                    Z.basis = sparse(X)*Y.basis;
+                    Z.basis = X*Z.basis;
                 catch
                     % This works better when low on memory in some cases
                     [i,j,k] = find(Y.basis);
@@ -623,7 +621,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 Z.conicinfo = [0 0];
                 Z.extra.opname='';
                 Z = addleftfactor(Z,X);
-                Z = clean(Z);
+                if X==0
+                    Z = clean(Z);
+                end
                 return
             end
         elseif y_isscalar
