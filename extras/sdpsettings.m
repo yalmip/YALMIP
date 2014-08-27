@@ -1195,7 +1195,7 @@ else
     options.filtersd.maxfeval = 10000;         
     
     options.frlib.approximation = 'd';
-    options.frlib.reduce = 'dual';
+    options.frlib.reduce = 'auto';
     options.frlib.solver = ''; 
     options.frlib.solverPreProcess = ''; 
     options.frlib.useQR = 0;

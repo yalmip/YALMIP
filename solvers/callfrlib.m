@@ -16,6 +16,14 @@ b = -model.c;
 C = model.F_struc(:,1);
 K = model.K;
 
+if (strcmp(options.frlib.reduce,'') || strcmp(options.frlib.reduce,'auto'))
+    if model.dualized
+        options.frlib.reduce = 'primal';
+    else
+        options.frlib.reduce = 'dual';
+    end
+end
+
 if options.savedebug
     save frlibdebug A b C K
 end
@@ -25,19 +33,23 @@ end
 % *********************************************
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 solvertime = clock; 
+
 % Reduce
 prg = frlibPrg(A,b,C,K);
+
 switch options.frlib.reduce
     case 'primal'
         prgR = prg.ReducePrimal(options.frlib.approximation);
     case 'dual'
         prgR = prg.ReduceDual(options.frlib.approximation);
     otherwise
+       error('Wrong option ''reduce'' for frlib.');
 end
 
 if options.verbose
     PrintStats(prgR);
 end
+
 % Back to YALMIP internal format to enable arbitrary solver
 model.F_struc = [prgR.c' -prgR.A'];
 model.c = -prgR.b;

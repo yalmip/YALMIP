@@ -1057,6 +1057,7 @@ else
     interfacedata.presolveequalities = 1;
 end
 interfacedata.ProblemClass = ProblemClass;
+interfacedata.dualized = is(F,'dualized');
 
 % *************************************************************************
 %% GENERAL DATA EXCANGE TO RECOVER SOLUTION AND UPDATE YALMIP VARIABLES
