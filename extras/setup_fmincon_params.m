@@ -138,8 +138,11 @@ end
     a1f = [a1(:);(1:length(model.linearindicies))']; 
     a2f = [a2(:);model.linearindicies(:)];    
     zzzf = [zzz;ones(length(linearindicies),1)]; 
-    model.fastdiff.newdxx = sparse(a1f,a2f,zzzf,nn,mm); 
-    model.fastdiff.linear_in_newdxx = sub2ind([nn mm],a1(:),a2(:));
+    
+    %model.fastdiff.newdxx = sparse(a1f,a2f,zzzf,nn,mm); 
+    %model.fastdiff.linear_in_newdxx = sub2ind([nn mm],a1(:),a2(:));
+    model.fastdiff.newdxx = sparse(a1f,a2f,zzzf,nn,mm)'; 
+    model.fastdiff.linear_in_newdxx = sub2ind([mm nn],a2(:),a1(:));
     
     if all(sum(allDerivemt | allDerivemt,2)==1)
         model.fastdiff.univariateDifferentiates = 1;

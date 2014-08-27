@@ -1,5 +1,13 @@
 function dX = apply_recursive_differentiation(model,x,requested,recursivederivativeprecompute)
 
+global newmodel
+persistent dX0
+persistent index
+persistent mtT
+persistent monomTablePattern
+persistent ss
+persistent lastrequested
+
 % Compute all evaluation-based derivatives df(x)
 dxi = [];
 dxj = [];
@@ -26,16 +34,26 @@ for i = 1:length(model.evaluation_scheme)
 end
 
 % Apply chain-rule. This code is horrible
-ss = any(model.deppattern(requested,model.linearindicies),1);
 
-monomTablePattern = sparse(double(model.monomtable | model.monomtable));
-mtT = model.monomtable';
-[~,dxj] = ismember(dxj,model.linearindicies);
-dxi = [dxi model.linearindicies];
-dxj = [dxj 1:length(model.linearindicies)];
-dxs = [dxs(:)' ones(length(model.linearindicies),1)'];
-dX = sparse(dxi,dxj,dxs,length(model.c),length(model.linearindicies));
-% dX = sparse(model.linearindicies,1:length(model.linearindicies),ones(length(model.linearindicies),1),length(model.c),length(model.linearindicies));
+if newmodel || ~isequal(requested,lastrequested);
+    % Some precalc save over iterations
+    ss = any(model.deppattern(requested,model.linearindicies),1);
+    monomTablePattern = model.monomtable | model.monomtable;
+    mtT = model.monomtable';
+    [~,dxj] = ismember(dxj,model.linearindicies);
+    dxi1 = [dxi model.linearindicies];
+    dxj1 = [dxj 1:length(model.linearindicies)];
+    dxs1 = [dxs(:)' ones(length(model.linearindicies),1)'];
+    dX = sparse(dxi1,dxj1,dxs1,length(model.c),length(model.linearindicies));    
+    dX0 = dX;
+    index = sub2ind([length(model.c),length(model.linearindicies)],dxi,dxj);   
+    newmodel = 0;
+    lastrequested = requested;
+else
+    dX = dX0;
+    dX(index) = dxs;
+end
+
 newMonoms = [];
 for i = 1:length(model.evaluation_scheme)
     switch model.evaluation_scheme{i}.group
@@ -65,8 +83,6 @@ for i = 1:length(model.evaluation_scheme)
                 if ~isempty(Bilinears)
                     x1 = model.BilinearsList(Bilinears,1);
                     x2 = model.BilinearsList(Bilinears,2);
-                   % dX(sub2ind(size(dX),Bilinears',x1))=x(x2);
-                   % dX(sub2ind(size(dX),Bilinears',x2))=x(x1);
                     dX(sub2ind(size(dX),[Bilinears(:);Bilinears(:)],[x1;x2]))=x([x2;x1]);
                 end
                 QuadraticIndex = find(model.variabletype(computed)==2);

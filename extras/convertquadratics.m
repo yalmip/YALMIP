@@ -27,7 +27,11 @@ Fconv = lmi;
 no_changed = 0;
 i_changed = [];
 for i = 1:1:length(F)
-    if is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'sigmonial')
+    if max(variabletype(getvariables(F(i)))) <= 1
+        % Definitely no quadratic to model as all variables are bilinear at
+        % most
+         Fconv = Fconv + F(i);
+    elseif is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'sigmonial')
         % f-c'*x-x'*Q*x>0
         fi = sdpvar(F(i));fi = fi(:);
         %[Qs,cs,fs,x,info] = vecquaddecomp(fi);

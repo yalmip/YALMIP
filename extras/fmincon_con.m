@@ -48,12 +48,12 @@ if nargout == 2 || ~model.derivative_available
 elseif ~isempty(dgAll_test) & isempty(model.evalMap) 
     dgAll = dgAll_test;
 elseif isempty(model.evalMap) & (model.nonlinearinequalities==0) & (model.nonlinearequalities==0) & (model.nonlinearcones==0) & any(model.K.q)
-    dgAll = computeConeDeriv(model,xevaled);
+    dg = computeConeDeriv(model,xevaled);
 elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) 
     n = length(model.c);
     linearindicies = model.linearindicies;    
-    xevaled = zeros(1,n);
-    xevaled(linearindicies) = x;
+ %   xevaled = zeros(1,n);
+ %   xevaled(linearindicies) = x;
     % FIXME: This should be vectorized
     
     news = model.fastdiff.news;
@@ -73,42 +73,38 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
                           
     newdxx = model.fastdiff.newdxx;
     newdxx(model.fastdiff.linear_in_newdxx) = zzz;                
-    newdxx = newdxx';
+    %newdxx = newdxx';
     
     if ~isempty(model.Anonlineq)
-        dgAll = model.Anonlineq*newdxx;
-    else
-        dgAll = [];
+        dgeq = model.Anonlineq*newdxx; 
     end
     if ~isempty(model.Anonlinineq)
-        aux = model.Anonlinineq*newdxx;
-        dgAll = [dgAll;aux];
+        dg = model.Anonlinineq*newdxx;        
     end
+    
     if nnz(model.K.q)>0
-        dgAll = [dgAll;computeConeDeriv(model,xevaled,newdxx);];
+        dg = [dg;computeConeDeriv(model,xevaled,newdxx);];
     end    
-else
-    %allA = [model.Anonlineq;model.Anonlinineq];
+else    
     requested = model.fastdiff.requested;
-    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);
-    %dgAll = allA*dx;
+    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);    
     conederiv = computeConeDeriv(model,xevaled,dx);   
-    dgAll = [];
     if ~isempty(model.Anonlineq)
-        dgAll = [dgAll;model.Anonlineq*dx];
+        dgeq = [model.Anonlineq*dx];  
     end
     if ~isempty(model.Anonlinineq)
-        dgAll = [dgAll;model.Anonlinineq*dx];
+        dg = [model.Anonlinineq*dx];
     end    
-    dgAll = [dgAll;conederiv];
-    %dgAll = [model.Anonlineq*dx;model.Anonlinineq*dx;conederiv];
+    if ~isempty(conederiv)
+        dg = [dg;conederiv];
+    end
 end
 
 if model.nonlinearequalities
-    dgeq = dgAll(1:size(model.Anonlineq,1),:)';
+    dgeq = dgeq';
 end
 if model.nonlinearinequalities | any(model.K.q)
-    dg = dgAll(size(model.Anonlineq,1)+1:end,:)';
+    dg = dg';
 end
     
 

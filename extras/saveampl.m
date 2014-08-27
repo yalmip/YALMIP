@@ -11,13 +11,12 @@ function solution = saveampl(varargin)
 % Note that YALMIP changes the variable names. Continuous variables
 % are called x, binary are called y while z denotes integer variables.
 
-% Author Johan Löfberg
-
 F = varargin{1};
 h = varargin{2};
 
 % Expand nonlinear operators
-[F2,failure,cause] = expandmodel(F,h,sdpsettings);
+options = sdpsettings;
+[F2,failure,cause] = expandmodel(F,h,options);
 if failure % Convexity propgation failed
     interfacedata = [];
     recoverdata = [];
@@ -29,11 +28,7 @@ if failure % Convexity propgation failed
 end
 
 %% FIXME: SYNC with expandmodel etc. Same in compileinterfacedata
-nv = yalmip('nvars');
-yalmip('setbounds',1:nv,repmat(-inf,nv,1),repmat(inf,nv,1));
-LU = getbounds(F);
-LU = extract_bounds_from_abs_operator(LU,yalmip('extstruct'),yalmip('extvariables'));
-yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
+setupBounds(F,options,yalmip('extvariables'));
 solver.constraint.equalities.polynomial=0;
 solver.constraint.binary=1;
 solver.constraint.integer=0;
@@ -128,6 +123,7 @@ try
 
     if length(constraints)>0
         for i = 1:length(constraints)
+            constraints{i} = strrep(constraints{i},'mpower_internal','');
             fprintf(fid,['subject to constr%i: ' constraints{i} ';'],i);
             fprintf(fid,'\r\n');
         end
@@ -186,7 +182,7 @@ for pi = 1:size(pvec,1)
                     e = yalmip('extstruct',extVariables(v1));
                     inner = amplexpr(e.arg{1},depends(e.arg{1}),binvars,integervars);
                     names{i} = [e.fcn '(' inner{1} ')'];   
-                    names{1} = strrep(names{i},'mpower_internal','');
+                    names{i} = strrep(names{i},'mpower_internal','');
                 end
             end
 

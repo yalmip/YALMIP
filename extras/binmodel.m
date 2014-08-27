@@ -103,6 +103,37 @@ end
 non_binary = setdiff(1:size(mt,2),allbinary);
 if any(sum(mt(vars,non_binary),2) > 1)
     error('Expression has to be linear in the continuous variables')
+    violatingmonoms = find(sum(mt(vars,non_binary),2) > 1);
+    cuts = [];
+    replacelinear = [];
+    for i = 1:length(violatingmonoms)
+      
+            [~,idx,pwr] = find(mt(vars(violatingmonoms(i)),non_binary));
+            % [~,idxb,pwrb] = find(mt(vars(violatingmonoms),allbinary));
+            if isequal(pwr,2)
+                [~,idxb,pwrb] = find(mt(vars(violatingmonoms(i)),allbinary));
+                if isequal(pwrb,1)
+                    w = sdpvar(1);
+                    replacelinear = [replacelinear;getvariables(w)];
+                    cuts = [cuts, recover(non_binary(idx))*recover(allbinary(idxb)) == w];
+                    cuts = [cuts, LU(non_binary(idx),1) <= w <= LU(non_binary(idx),2)];
+                else
+                    error('Expression has to be linear in the continuous variables')
+                end
+            else
+                error('Expression has to be linear in the continuous variables')
+            end
+       
+    end
+    
+    b = getbase(p);
+    v = getvariables(p);
+    v(violatingmonoms) = replacelinear;
+    p = b*[1;recover(v)];
+    varargin{1} = p;
+    varargin{end} = [varargin{end},cuts];
+    [varargout{1:nargout}] = binmodel(varargin{:});
+    return
 end
 
 % These are the original monomials

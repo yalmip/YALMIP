@@ -213,32 +213,38 @@ switch varargin{1}
             availableHashes = [internal_sdpvarstate.ExtendedMap(correct_operator).Hash];
         end
         
+        if isempty(availableHashes) &&  length(vec_hashes)>1 && all(diff(sort(vec_hashes))>0)
+            simpleAllDifferentNew = 1;
+        else
+            simpleAllDifferentNew = 0;
+        end
+        
         for i = 1:numel(X)
             % we have to search through all scalar operators
             % to find this single element
-            found = 0;
-         %   Xi = X(i);
+            found = 0;            
             Xi = [];
-            if vec_isdoubles(i)%isa(Xi,'double')
-                found = 1;
-                y(i) = X(i);
-            else
-                if ~isempty(correct_operator)
-                    this_hash = vec_hashes(i);
-                    correct_hash = correct_operator(find(this_hash == availableHashes));
-                    %   for j = correct_operator
-                    if ~isempty(correct_hash)
-                         Xi = X(i);
-                    end
-                    for j = correct_hash(:)'
-                        % if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
-                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
-                            allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
-                            allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
-                            found = 1;
-                            break
+            
+            if ~simpleAllDifferentNew
+                if vec_isdoubles(i)
+                    found = 1;
+                    y(i) = X(i);
+                else
+                    if ~isempty(correct_operator)
+                        this_hash = vec_hashes(i);
+                        correct_hash = correct_operator(find(this_hash == availableHashes));
+                        
+                        if ~isempty(correct_hash)
+                            Xi = X(i);
                         end
-                        % end
+                        for j = correct_hash(:)'
+                            if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
+                                allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
+                                allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
+                                found = 1;
+                                break
+                            end
+                        end
                     end
                 end
             end
