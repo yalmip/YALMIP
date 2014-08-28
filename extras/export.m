@@ -39,7 +39,7 @@ else
     end
 
     if isa(F,'constraint')
-        F = set(F);
+        F = lmi(F);
     end
 end
 

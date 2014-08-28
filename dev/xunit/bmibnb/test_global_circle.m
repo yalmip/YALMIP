@@ -11,7 +11,7 @@ x2 = sdpvar(1);
 objvar = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,sqr(2.545724188-x1)+sqr(9.983058643-x2)-sqr(objvar)<=0];
 F=[F,sqr(8.589400372-x1)+sqr(6.208600402-x2)-sqr(objvar)<=0];
 F=[F,sqr(5.953378204-x1)+sqr(9.920197351-x2)-sqr(objvar)<=0];

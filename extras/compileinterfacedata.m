@@ -57,9 +57,9 @@ end
 if isa(options.radius,'sdpvar') | ~isinf(options.radius)
     x = recover(unique(union(depends(h),depends(F))));
     if length(x)>1
-        F = F + set(cone(x,options.radius));
+        F = F + (cone(x,options.radius));
     else
-        F = F + set(-options.radius <= x <= options.radius);
+        F = F + (-options.radius <= x <= options.radius);
     end
     F = flatten(F);
 end
@@ -546,7 +546,7 @@ end
 old_binary_variables = binary_variables;
 if ~isempty(binary_variables) & (solver.constraint.binary==0)
     x_bin = recover(binary_variables(ismember(binary_variables,unique([getvariables(h) getvariables(F)]))));
-    F = F + set(x_bin<=1)+set(x_bin>=0);
+    F = F + (x_bin<=1)+(x_bin>=0);
     integer_variables = union(binary_variables,integer_variables);
     binary_variables = [];
 end
@@ -612,7 +612,7 @@ end
 % *************************************************************************
 if ~isempty(logdetStruct) & solver.objective.maxdet.convex==1 & solver.constraint.inequalities.semidefinite.linear
     for i = 1:length(logdetStruct.P)
-        F = F + set(logdetStruct.P{i} >= 0);
+        F = F + (logdetStruct.P{i} >= 0);
         if ~isreal(logdetStruct.P{i})
             logdetStruct.gain(i) = logdetStruct.gain(i)/2;
             ProblemClass.complex = 1;

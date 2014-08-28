@@ -16,7 +16,7 @@ x5 = sdpvar(1);
 objective = -(-(42*x1-50*sqr(x1)-50*sqr(x2)+44*x2-50*sqr(x3)+45*x3-50*sqr(x4)+47*x4-50*sqr(x5)+47*x5)+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,20*x1+12*x2+11*x3+7*x4+4*x5<=40];
 F=[F,0<=x1<=1];
 F=[F,0<=x2<=1];

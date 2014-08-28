@@ -15,7 +15,7 @@ x4 = sdpvar(1);
 objective = -(-(x1*x3+x2*x4)+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,x1+3*x2>=30];
 F=[F,2*x1+x2>=20];
 F=[F,-1.6667*x3+x4>=10];

@@ -2,15 +2,15 @@ function X = plus(X,Y)
 %PLUS Merges two LMI objects to one LMI
 
 if isa(X,'constraint')
-    X = set(X);
+    X = lmi(X);
 elseif isa(X,'sdpvar')
-    X = set(X);
+    X = lmi(X);
 end
 
 if isa(Y,'constraint')
-    Y = set(Y);
+    Y = lmi(Y);
 elseif isa(Y,'sdpvar')
-    Y = set(Y);
+    Y = lmi(Y);
 end
 
 % Support set+[]

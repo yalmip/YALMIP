@@ -14,7 +14,7 @@ for i=1:1:nargin
         F = [varargin{i},F,varargin{i+1:end}];
         return;
     else
-        H = set(varargin{i});
+        H = lmi(varargin{i});
         F = F+H;
     end
 end

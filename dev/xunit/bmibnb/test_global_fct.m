@@ -22,7 +22,7 @@ x12 = sdpvar(1);
 objvar=(2*x6+x7)
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-(sqr(x8)+sqr(x9)+sqr(x10)+sqr(x11)+sqr(x12))+x7==0];
 F=[F,-x3-x5+x6==0];
 F=[F,-(sqr(sqr(x8)-x9)+sqr(x10)+2*sqr(x11)+sqr(x12-x9))+x2==0];

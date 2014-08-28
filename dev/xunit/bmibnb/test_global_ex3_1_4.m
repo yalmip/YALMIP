@@ -12,7 +12,7 @@ x3 = sdpvar(1);
 objvar = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,2*x1-x2+x3+objvar==0];
 F=[F,x1*(4*x1-2*x2+2*x3)+x2*(2*x2-2*x1-x3)+x3*(2*x1-x2+2*x3)-20*x1+9*x2-13*x3>=-24];
 F=[F,x1+x2+x3<=4];

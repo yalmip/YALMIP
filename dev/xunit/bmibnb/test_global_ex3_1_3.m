@@ -15,7 +15,7 @@ x6 = sdpvar(1);
 
 objvar = -(-(-25*sqr(x1-2)-sqr(x2-2)-sqr(x3-1)-sqr(x4-4)-sqr(x5-1)-sqr(x6-4)));
 % Define constraints 
-F = set([]);
+F = ([]);
 %F=[F,-(-25*sqr(x1-2)-sqr(x2-2)-sqr(x3-1)-sqr(x4-4)-sqr(x5-1)-sqr(x6-4))+objvar==0];
 F=[F,sqr(x3-3)+x4>=4];
 F=[F,sqr(x5-3)+x6>=4];

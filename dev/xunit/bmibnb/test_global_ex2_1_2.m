@@ -15,7 +15,7 @@ x6 = sdpvar(1);
 objvar = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-(-0.5*(x1*x1+x2*x2+x3*x3+x4*x4+x5*x5)-10.5*x1-7.5*x2-3.5*x3-2.5*x4-1.5*x5)+10*x6+objvar==0];
 F=[F,6*x1+3*x2+3*x3+2*x4+x5<=6.5];
 F=[F,10*x1+10*x3+x6<=20];

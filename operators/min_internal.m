@@ -17,13 +17,13 @@ function [F,properties,arguments] = min_model(X,method,options,extstruct)
 switch method
     case 'graph'
         arguments=[];
-        F = set([]);
+        F = ([]);
         basis = getbase(extstruct.arg{1});
         inf_row = find(basis(:,1) == inf);
         if length(inf_row)>0
             extstruct.arg{1}(inf_row) = [];
         end
-        F = F + set(extstruct.arg{1} - extstruct.var);
+        F = F + (extstruct.arg{1} - extstruct.var >= 0);
         arguments= [arguments;extstruct.arg{1}(:)];
         properties = struct('convexity','concave','monotonicity','increasing','definiteness','none');
         

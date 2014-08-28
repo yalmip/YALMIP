@@ -14,7 +14,7 @@ x3 = sdpvar(1);
 objective = 35*x1^0.6+35*x2^0.6;
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,600*x1-x1*x3-50*x3==-5000];
 F=[F,600*x2+50*x3==15000];
 F=[F,0<=x1<=34];

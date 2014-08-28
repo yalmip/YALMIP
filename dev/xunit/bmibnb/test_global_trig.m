@@ -10,7 +10,7 @@ x1 = sdpvar(1);
 objvar = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 objvar = (sin(11*x1)+cos(13*x1)-sin(17*x1)-cos(19*x1));
 F=[F,5*sin(x1)-x1<=0];
 F=[F,-2<=x1<=5];

@@ -1,4 +1,4 @@
-function regress_weird3
+function test_global_regress_weird3
 
 sdpvar x
 obj = sin(sin(x.^2) + x.^2)+0.01*x.^2-sin(x);

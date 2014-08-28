@@ -61,7 +61,7 @@ if nargin<1
 else
     F = varargin{1};
     if isa(F,'constraint')
-        F = set(F);
+        F = lmi(F);
     end
     if isa(F,'lmi')
         F = flatten(F);
@@ -97,7 +97,7 @@ else
             F = Fnew;
         end
     elseif isempty(F)
-        F = set([]);
+        F = lmi([]);
     elseif ~isa(F,'lmi')
         error('First argument (F) should be a constraint object.');      
     end

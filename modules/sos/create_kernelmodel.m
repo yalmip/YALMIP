@@ -19,7 +19,7 @@ for i = 1:length(Blockedb)
     for j = 1:length(BlockedA{i})
         n = sqrt(size(BlockedA{i}{j},2));
         BlockedQ{i}{j} = sdpvar(n*sizematrixSOS,n*sizematrixSOS);
-        F = F + set(BlockedQ{i}{j});
+        F = F + lmi(BlockedQ{i}{j});
         if sizematrixSOS>0
             % Matrix valued sum of sqaures
             % Loop over all elements

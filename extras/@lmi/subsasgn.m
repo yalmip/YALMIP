@@ -4,7 +4,9 @@ function F0 = subsasgn(F,Y,Z)
 % TODO : Implement lmi/subsasgn...
 %error('set/subsasgn not fully implemented yet. Contact author if you need this functionality')
 F = flatten(F);
-Z = flatten(Z);
+if ~isempty(Z)
+    Z = flatten(Z);
+end
 switch Y(1).type
     case '()'
         thelmi = Y.subs{1};

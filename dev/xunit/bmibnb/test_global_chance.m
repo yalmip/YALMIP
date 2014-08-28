@@ -13,7 +13,7 @@ x4 = sdpvar(1);
 x5 = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,objvar-24.55*x2-26.75*x3-39*x4-40.5*x5==0];
 F=[F,x2+x3+x4+x5==1];
 F=[F,12*x2-1.645*sqrtm(0.28*sqr(x2)+0.19*sqr(x3)+20.5*sqr(x4)+0.62*sqr(x5))+11.9*x3+41.8*x4+52.1*x5>=21];

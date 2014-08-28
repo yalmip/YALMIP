@@ -17,7 +17,7 @@ sdpvar yy zz ww
 objective = -(-(588600/power(yy,6)-1079.1/power(yy,3)+600800/power(zz,6)-1071.5/power(zz,3)+481300/power(ww,6)-1064.6/power(ww,3)));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,0<=x1<=6.2832,y==yy,z==zz,w==ww];
 
 % Solve problem

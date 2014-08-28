@@ -84,11 +84,11 @@ for i = 1:1:length(F)
                         no_changed = no_changed + 1;
                         i_changed = [i_changed i];                        
                     else
-                        Fconv = Fconv + set(fi(j));
+                        Fconv = Fconv + lmi(fi(j));
                     end
                 end
             else
-                Fconv = Fconv + set(fi(j));
+                Fconv = Fconv + lmi(fi(j));
             end
         end
     else

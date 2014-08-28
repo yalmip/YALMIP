@@ -22,7 +22,7 @@ x13 = sdpvar(1);
 objvar = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-(5*x1-0.5*(10*x1*x1+10*x2*x2+10*x3*x3+10*x4*x4)+5*x2+5*x3+5*x4)+x5+x6+x7+x8+x9+x10+x11+x12+x13+objvar==0];
 F=[F,2*x1+2*x2+x10+x11<=10];
 F=[F,2*x1+2*x3+x10+x12<=10];

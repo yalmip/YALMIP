@@ -10,7 +10,7 @@ objvar = sdpvar(1);
 x2 = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,0.25*objvar-0.0625*sqr(objvar)-0.0625*sqr(x2)+0.5*x2<=1];
 F=[F,0.0714285714285714*sqr(objvar)+0.0714285714285714*sqr(x2)-0.428571428571429*objvar-0.428571428571429*x2<=-1];
 F=[F,1<=objvar<=5.5];

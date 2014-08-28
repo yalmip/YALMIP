@@ -13,7 +13,7 @@ x2 = sdpvar(1);
 objective = -(-(4*sqr(x1)-2.1*power(x1,4)+0.333333333333333*power(x1,6)+x1*x2-4*sqr(x2)+4*power(x2,4)));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 % Solve problem
 x = recover(objective);
 sol = solvesdp(F+[-100<=x<=100],objective,sdpsettings('solver','bmibnb','allownonconvex',1))
