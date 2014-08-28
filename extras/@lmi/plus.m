@@ -63,12 +63,18 @@ else
     if length(X.clauses{end}) >= 100
         X.clauses{end+1} = {};
     end
-    % Assume Y isn't too big, as we now flatten it and put it in the last
-    % block of X
-    Y = flatten(Y);
-    j = length(X.clauses);
-    for i = 1:length(Y.clauses)
-        X.clauses{j}{end+1} = Y.clauses{i};
+    % Special case for performance
+    if isa(Y.clauses{1},'cell') && length(Y.clauses)==1
+        j = length(X.clauses);
+        for i = 1:length(Y.clauses{1})
+            X.clauses{j}{end+1} = Y.clauses{1}{i};
+        end        
+    else
+        Y = flatten(Y);
+        j = length(X.clauses);
+        for i = 1:length(Y.clauses)
+            X.clauses{j}{end+1} = Y.clauses{i};
+        end
     end
 end
 aux = X.LMIid;
