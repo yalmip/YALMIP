@@ -12,7 +12,7 @@ b = [size(B,1)-1;-ones(4,1)];
 
 t = sdpvar(1,1);
 x = sdpvar(10,1);
-F = set(0 <= t <= 1) + set(B*x == b) + set(0 <= x <= 10)
+F = (0 <= t <= 1) + (B*x == b) + (0 <= x <= 10)
 
 [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = solvemp(F,(t*c+(1-t)*d)'*x,sdpsettings('debug',1),t)
 

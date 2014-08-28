@@ -11,7 +11,7 @@ switch class(varargin{1})
         X = varargin{3};
         Y = varargin{4};        
       
-        F = set([]);                
+        F = ([]);                
         switch class(X)
             case 'sdpvar'
                 x = X;
@@ -23,7 +23,7 @@ switch class(varargin{1})
 
             case 'constraint'
                 x = binvar(1,1); 
-                F = F + set(implies_internal(x,X));
+                F = F + (implies_internal(x,X));
             otherwise
         end
         switch class(Y)
@@ -36,16 +36,16 @@ switch class(varargin{1})
                 end
             case 'constraint'
                 y = binvar(1,1);
-                F = F + set(implies_internal(y,Y));
+                F = F + (implies_internal(y,Y));
             otherwise
         end
 
         xy = [x y];
         [M,m] = derivebounds(z);
         if m>=1
-            varargout{1} = F + set(sum(xy) >= 1);
+            varargout{1} = F + (sum(xy) >= 1);
         else
-            varargout{1} = F + set(sum(xy) >= z) + set(z >= xy) +set(binary(z));
+            varargout{1} = F + (sum(xy) >= z) + (z >= xy) +(binary(z));
         end
         varargout{2} = struct('convexity','none','monotonicity','exact','definiteness','none','model','integer');
         varargout{3} = xy;
@@ -75,7 +75,7 @@ if isequal(xmodel.fcn,'or')
 
         case 'constraint'
             x1 = binvar(1,1);
-            F = F + set(iff_internal(X1,x1));
+            F = F + (iff_internal(X1,x1));
         otherwise
     end
     switch class(X2)
@@ -87,7 +87,7 @@ if isequal(xmodel.fcn,'or')
             end
         case 'constraint'
             x2 = binvar(1,1);
-            F = F + set(iff_internal(X2,x2));
+            F = F + (iff_internal(X2,x2));
         otherwise
     end
     x = [x1 x2];

@@ -8,7 +8,7 @@ y = sdpvar(1,1);
 t = sdpvar(1,1);
 s = sdpvar(1,1);
 sdpvar u
-F = set(sos(t*x^4+s*y^2-t))+set(sos(1+x^2-s));
+F = (sos(t*x^4+s*y^2-t))+(sos(1+x^2-s));
 obj = -t;
 for i = 1:length(ops)
     i

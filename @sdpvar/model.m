@@ -48,6 +48,9 @@ fcn = extstruct.fcn;
 try
     n = yalmip('nvars');
     [F,properties,arguments] = feval(fcn,method,extstruct.var,extstruct.arg{1:end-1});
+    if isa(F,'constraint')
+        F = lmi(F);
+    end
     newAux = n+1:yalmip('nvars');
     involved = [];
     for i = 1:length(extstruct.arg)-1

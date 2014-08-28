@@ -24,7 +24,7 @@ Vx = jacobian(V,x)
 HJI = [Vx*f + f'*Vx.' + h'*h, 1/gam*Vx*g;
        1/gam*g'*Vx.' -1]
    
-[sol,m,B,residuals] = solvesos( set(sos(-HJI)),[],[],c);
+[sol,m,B,residuals] = solvesos( (sos(-HJI)),[],[],c);
 residual = norm(getbase(replace(-HJI-m{1}'*B{1}*m{1},c,double(c))),'inf')
 
 mbg_asserttrue(residual < 1e-8);

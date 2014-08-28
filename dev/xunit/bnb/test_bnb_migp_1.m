@@ -1,4 +1,4 @@
-function migp
+function test_bnb_migp_1
 
 x = sdpvar(7,1);
 
@@ -27,14 +27,14 @@ D6 = R(6)*Cout6;
 D7 = R(7)*Cout7;
 
 % Constraints
-F = set(x >= 1) + set(P <= 20) + set(A <= 100);
+F = (x >= 1) + (P <= 20) + (A <= 100);
 
 % Objective
 D = max([(D1+D4+D6),(D1+D4+D7),(D2+D4+D6),(D2+D4+D7),(D2+D5+D7),(D3+D5+D6),(D3+D7)]);
 
 % Solve integer problem
 ops = sdpsettings('solver','bnb','verbose',1);
-sol = solvesdp(F+set(integer(x)),D,ops);
+sol = solvesdp(F+(integer(x)),D,ops);
 
 mbg_asserttolequal(sol.problem,0);
 mbg_asserttolequal(double(x),[ 2     3     3     3     2     3     3]', 1e-3);

@@ -40,7 +40,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = set(X >= 0);
+        F = (X >= 0);
 
         operator = struct('convexity','concave','monotonicity','none','definiteness','none','model','callback');
         operator.range = [-inf exp(-1)*length(X)];

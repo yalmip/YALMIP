@@ -56,7 +56,7 @@ ctrl=mpt_control(sysStruct,probStruct)
 
 % Online
 obj = 0;
-F = set([]);
+F = ([]);
 dd = [];
 for k = N-1:-1:1
     
@@ -65,19 +65,19 @@ for k = N-1:-1:1
     bounds(x{k+1},-5,5);
     
     % Feasible region
-    F = F + set(-1 <= u{k}     <= 1);
-    F = F + set(-1 <= C*x{k}   <= 1);
-    F = F + set(-5 <= x{k}     <= 5);
-    F = F + set(-1 <= C*x{k+1} <= 1);
-    F = F + set(-5 <= x{k+1}   <= 5);
+    F = F + (-1 <= u{k}     <= 1);
+    F = F + (-1 <= C*x{k}   <= 1);
+    F = F + (-5 <= x{k}     <= 5);
+    F = F + (-1 <= C*x{k+1} <= 1);
+    F = F + (-5 <= x{k+1}   <= 5);
 
     % PWA Dynamics
     d = binvar(2,1);dd = [dd;d];
-    F = F + set(implies(d(1),x{k+1} == (A*x{k}+B*u{k})));
-    F = F + set(implies(d(2),x{k+1} == (A*x{k}+pi*B*u{k})));
-    F = F + set(implies(d(1),x{k}(1) >= 0));
-    F = F + set(implies(d(2),x{k}(1) <= 0));
-    F = F + set(sum(d) == 1); 
+    F = F + (implies(d(1),x{k+1} == (A*x{k}+B*u{k})));
+    F = F + (implies(d(2),x{k+1} == (A*x{k}+pi*B*u{k})));
+    F = F + (implies(d(1),x{k}(1) >= 0));
+    F = F + (implies(d(2),x{k}(1) <= 0));
+    F = F + (sum(d) == 1); 
     obj = obj + norm([x{k};u{k}],1);
 end
 mpsol{k} = solvemp(F,obj,sdpsettings('debug',1),x{k},u{k});

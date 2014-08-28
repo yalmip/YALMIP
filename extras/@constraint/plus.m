@@ -1,3 +1,3 @@
 function F = plus(x,y)
 
-F = set(x) + set(y);
+F = lmi(x) + lmi(y);

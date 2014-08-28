@@ -10,7 +10,7 @@ LU(binary,1) = 0;
 LU(binary,2) = 1;
 F = flatten(F);
 is_interval = is(F,'interval');
-for i = 1:length(F.clauses)
+for i = 1:length(F.LMIid)
     if F.clauses{i}.type == 2
         X = F.clauses{i}.data;
         AB = getbase(X);

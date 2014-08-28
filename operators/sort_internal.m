@@ -27,20 +27,20 @@ loc = recover(vars+n);
 X = reshape(X,1,n);
 
 % Standard model
-F = set(sum(D,1) == 1) + set(sum(D,2) == 1);
-F = F + set(t == sum(V,2));
-F = F + set(diff(t) >= 0);
+F = (sum(D,1) == 1) + (sum(D,2) == 1);
+F = F + (t == sum(V,2));
+F = F + (diff(t) >= 0);
 for i = 1:n
    di = D(i,:);
    vi = V(i,:);
-   F = F + set(-(-m)'.*(1-di) <= X-vi <= (M)'.*(1-di));
-   F = F + set(m'.*di <=  vi <= M'.*di);   
+   F = F + (-(-m)'.*(1-di) <= X-vi <= (M)'.*(1-di));
+   F = F + (m'.*di <=  vi <= M'.*di);   
 end
 
 % Cuts
-F = F + set(X == sum(V,1));
-F = F + set(sum(t) == sum(X));
+F = F + (X == sum(V,1));
+F = F + (sum(t) == sum(X));
 
 % Definition of location
-F = F + set(loc == D*[(1:n)']) + set(1 <= loc <= n);
+F = F + (loc == D*[(1:n)']) + (1 <= loc <= n);
 

@@ -155,7 +155,7 @@ options.avoidequalitybounds=1;
 
 % Normalize...
 if isa(Constraints,'constraint')
-    Constraints = set(Constraints);
+    Constraints = lmi(Constraints);
 end
 
 if ~isempty(Constraints)

@@ -123,30 +123,30 @@ T = ( Lambda + ( no_planes * no_passes_per_plane * no_tiles_per_pass_per_plane )
 % -------------  Constraints ----------------------------
 
 % Lower bounds on the tile vars
-F = set(ti >= 1) ;
-F = F + set(tj >= 1) ;
-F = F + set(tk >= 1) ;
+F = (ti >= 1) ;
+F = F + (tj >= 1) ;
+F = F + (tk >= 1) ;
 
 % Upper bounds on the tile vars
-F = F + set(ti <= ( Ni  / Procs)) ;
-F = F + set(tj <= Nj) ;
+F = F + (ti <= ( Ni  / Procs)) ;
+F = F + (tj <= Nj) ;
 % Number of tiles per macro column is atleast 2
-% F = F + set( (Nj+ti+2tk) < 2*tj); 
-F = F + set(tk <= Nk)  ;
+% F = F + ( (Nj+ti+2tk) < 2*tj); 
+F = F + (tk <= Nk)  ;
 
 % No idle time between passes
 %F = F + set ( ((Procs-1)/Nj) * (ti+tj) <= 1)
 %F = F + set ( ((Procs-1)/ (2*Nj)) * (ti+tj) < 1)
 %F = F + set ( (Procs-1) * ( ti + tj ) * (1/(2*Nj)) < 1 );
-F = F + set(  (1/(Nj + 2*Nk) ) * ( (Procs-2) * ti + (Procs-1) * tj ) <= 1);
+F = F + (  (1/(Nj + 2*Nk) ) * ( (Procs-2) * ti + (Procs-1) * tj ) <= 1);
 % Not sure this is correct
-%F = F + set( tj <= ( Nj / (Procs-1) ) ) ; 
+%F = F + ( tj <= ( Nj / (Procs-1) ) ) ; 
 
 % solve an integer version of the problem
-intConstraints = set (integer(ti)) + set(integer(tj)) + set(integer(tk));
+intConstraints = set (integer(ti)) + (integer(tj)) + (integer(tk));
 F = F + intConstraints;
 
-% + set( (Procs-1) * tj <= Nj + 2*tk) ; 
+% + ( (Procs-1) * tj <= Nj + 2*tk) ; 
 % No idle time between passes
 
 % -------------  End of Constraints -------------------------
@@ -223,23 +223,23 @@ T = ( Lambda + ( no_planes * no_passes_per_plane * no_tiles_per_pass_per_plane )
 % -------------  Constraints ----------------------------
 
 % Lower bounds on the tile vars
-F = set(ti >= 1) ;
+F = (ti >= 1) ;
 
 % To avoid idle time between execution of successive planes
 % we need tj >= 2.
-F = F + set(tj >= 2 ) ;
+F = F + (tj >= 2 ) ;
 
 % Upper bounds on the tile vars
-F = F + set(ti <= ( Ni  / Procs)) ;
-F = F + set(tj <= Nj) ;
+F = F + (ti <= ( Ni  / Procs)) ;
+F = F + (tj <= Nj) ;
 
 % No idle time between passes
-%F = F + set(  ( (1/Nj) * tj * (Procs-1) * (ti+tj) ) <= 1 );
-%F = F + set(  ( (1/Nj) * (Procs-1) * (ti+tj) ) <= 1 );
-F = F + set(  (1/Nj) * ( (Procs-2) * ti + (Procs-1) * tj ) <= 1);
+%F = F + (  ( (1/Nj) * tj * (Procs-1) * (ti+tj) ) <= 1 );
+%F = F + (  ( (1/Nj) * (Procs-1) * (ti+tj) ) <= 1 );
+F = F + (  (1/Nj) * ( (Procs-2) * ti + (Procs-1) * tj ) <= 1);
 
 % solve an integer version of the problem
-intConstraints = set (integer(ti)) + set(integer(tj));
+intConstraints = set (integer(ti)) + (integer(tj));
 F = F + intConstraints;
 
 % -------------  End of Constraints -------------------------
@@ -313,16 +313,16 @@ T = ( Lambda + ( no_planes * no_passes_per_plane ) ) * TilePeriod ;
 % -------------  Constraints ----------------------------
 
 % Lower bounds on the tile vars
-%F = set(ti > 1) ;
+%F = (ti > 1) ;
 % To avoid idle time between execution of successive planes
 % we need ti >= 2.
-F = set(ti >= 2) ;
+F = (ti >= 2) ;
 
 % Upper bounds on the tile vars
-F = F + set(ti <= ( Ni  / Procs)) ;
+F = F + (ti <= ( Ni  / Procs)) ;
 
 % No idle time between passes
-%F = F + set( (Procs-1) <= Nk );
+%F = F + ( (Procs-1) <= Nk );
 
 % solve an integer version of the problem
 intConstraints = set (integer(ti)) ;

@@ -5,7 +5,7 @@ function YESNO = is(F,property)
 %   Properties possible to test are: 'elementwise', 'sdp', 
 %   'socc', 'equality', 'lmi', 'linear', 'kyp', 'sos'
 
-if isempty(F.clauses)
+if length(F.LMIid)==0
     YESNO = 0;
 else
     

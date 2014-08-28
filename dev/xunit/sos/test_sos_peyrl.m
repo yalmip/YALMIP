@@ -81,23 +81,23 @@ C12 = sdpvar(size(lm,1)); (C12); c12 = lm'*C12*lm;
 C13 = sdpvar(size(lm,1)); (C13); c13 = lm'*C13*lm;
 
 % Constraints:
-F = set(sos(V1 - a11*g11 - a12*g12));
-F = F + set(sos(V2 - a21*g21 ));
-F = F + set(sos(V3 - a31*g31 ));
+F = (sos(V1 - a11*g11 - a12*g12));
+F = F + (sos(V2 - a21*g21 ));
+F = F + (sos(V3 - a31*g31 ));
 
-F = F + set(sos(-jacobian(V1,x)*f1 - b11*g11 - b12*g12 ));
-F = F + set(sos(-jacobian(V2,x)*f2 - b21*g21) );
-F = F + set(sos(-jacobian(V3,x)*f3 - b31*g31) );
+F = F + (sos(-jacobian(V1,x)*f1 - b11*g11 - b12*g12 ));
+F = F + (sos(-jacobian(V2,x)*f2 - b21*g21) );
+F = F + (sos(-jacobian(V3,x)*f3 - b31*g31) );
 
-F = F + set(coefficients(V1+c12*h120-V2,x)==0);
-F = F + set(coefficients(V1+c13*h130-V3,x)==0);
+F = F + (coefficients(V1+c12*h120-V2,x)==0);
+F = F + (coefficients(V1+c13*h130-V3,x)==0);
 
 
-F = F + set(eps1>=0.1) + set(eps2>=0.1) + set(eps3>=0.1);
-F = F + set(eps4>=0.1) + set(eps5>=0.1) + set(eps6>=0.1);
+F = F + (eps1>=0.1) + (eps2>=0.1) + (eps3>=0.1);
+F = F + (eps4>=0.1) + (eps5>=0.1) + (eps6>=0.1);
 
-F = F + set(A11>=0) + set(A12>=0) + set(A21>=0) + set(A31>=0) + set(B11>=0) + ...
-    set(B12>=0) + set(B21>=0) + set(B31>=0); 
+F = F + (A11>=0) + (A12>=0) + (A21>=0) + (A31>=0) + (B11>=0) + ...
+    (B12>=0) + (B21>=0) + (B31>=0); 
 
 % Call solver:
 parametric=recover(setdiff(depends(F),depends(x)));

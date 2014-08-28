@@ -79,7 +79,7 @@ if ~isempty(F) & ~isa(F,'lmi') & ~isa(F,'constraint')
 end
 
 if isa(F,'constraint')
-    F = set(F);
+    F = lmi(F);
 end
 
 % Take care of rational expressions
@@ -98,7 +98,7 @@ sdpConstraints = [];
 isinequality = [];
 binaries = [];
 xvars = [];
-Fnew = set([]);
+Fnew = ([]);
 for i = 1:length(F)
     if is(F(i),'elementwise')
         X = sdpvar(F(i));
@@ -195,7 +195,7 @@ end
 % end
 
 % Lasserres relaxation (Lasserre, SIAM J. OPTIM, 11(3) 796-817)
-Fmoments = set(M{k+1}>=0);
+Fmoments = (M{k+1}>=0);
 for i = 1:length(vecConstraints)   
     if isinequality(i)
         v_k = floor((degree(vecConstraints(i))+1)/2);
@@ -207,7 +207,7 @@ for i = 1:length(vecConstraints)
                 continue
             end
         end
-        Fmoments = Fmoments+set(Localizer>=0);
+        Fmoments = Fmoments+(Localizer>=0);
     else
         if isa(vecConstraints(i),'double')
             if vecConstraints(i)~=0
@@ -217,12 +217,12 @@ for i = 1:length(vecConstraints)
             end
         end        
         Localizer = vecConstraints(i)*monolist(x,2*k-degree(vecConstraints(i)));      
-        Fmoments = Fmoments+set(Localizer==0);
+        Fmoments = Fmoments+(Localizer==0);
     end
 end
 for i = 1:length(sdpConstraints)
     v_k = floor((degree(sdpConstraints{i})+1)/2);
-    Fmoments = Fmoments+set(kron(M{k-v_k+1},sdpConstraints{i})>=0);
+    Fmoments = Fmoments+(kron(M{k-v_k+1},sdpConstraints{i})>=0);
 end
 
 % Add them all

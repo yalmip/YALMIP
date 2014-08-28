@@ -9,7 +9,7 @@ z = sdpvar(1,1);
 t = sdpvar(1,1);
 s = sdpvar(1,1);
 w = sdpvar(1,1);
-F = set(sos(x^4+z^6))+set(sos(x^2+(t+s+w-6)*x*z)) + set([w;s]>=0)+set(t>=3);
+F = (sos(x^4+z^6))+(sos(x^2+(t+s+w-6)*x*z)) + ([w;s]>=0)+(t>=3);
 obj = w;
 for i = 1:length(ops)
     i

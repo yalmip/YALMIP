@@ -5,7 +5,7 @@ ops{3} = sdpsettings('sos.cong',0,'sos.newton',0,'verbose',0,'sos.extlp',0);
 sdpvar x s t u
 
 sdpvar x s t u
-F = set(sos(1+x+s*x^2))+set(sos(2+2*s*x+u*x^4));
+F = (sos(1+x+s*x^2))+(sos(2+2*s*x+u*x^4));
 obj = s;
 for i = 1:length(ops)
     i

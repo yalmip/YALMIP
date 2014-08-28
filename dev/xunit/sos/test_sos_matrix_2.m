@@ -2,7 +2,7 @@ function test_sos_matrix_2
 
 sdpvar x1 x2
 P = [1+x1^2 -x1+x2+x1^2;-x1+x2+x1^2 2*x1^2-2*x1*x2+x2^2];
-[sol,v,Q] = solvesos(set(sos(P)));
+[sol,v,Q] = solvesos((sos(P)));
 
 diff = clean(v{1}'*Q{1}*v{1}-P,1e-6);
 

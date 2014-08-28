@@ -74,7 +74,7 @@ general_w = recover(general_w);
 cd    = b;
 Bbeta = -A;
 
-F = set([]);
+F = ([]);
 top = 1;
 
 % To speed up the construction, compute the ci vectors for all constraints
@@ -96,7 +96,7 @@ for i = 1:length(b)
         %row = Bbetai*x + cdi;
         row = X(i);
         if isa(row,'sdpvar')
-          %  F = F + set(row >= 0);
+          %  F = F + (row >= 0);
             simple_rows =  [simple_rows;i];
         else
             if row<0
@@ -130,17 +130,17 @@ for i = 1:length(b)
                         return
                     end
                 else
-                    F = F + set(bi'*x + (di+e'*ci) - norm(T*ci,1) >= 0);
+                    F = F + (bi'*x + (di+e'*ci) - norm(T*ci,1) >= 0);
                 end
             else
                 non_zeroBirow = find(sum(abs(Bi'),2));
                 zeroBirow = find(sum(abs(Bi'),2) == 0);
                 if length(non_zeroBirow)>1
                     t = sdpvar(length(non_zeroBirow),1);
-                    F = F + set((bi'+e'*Bi')*x + (di+e'*ci) - sum(t) >= 0) + set(-t <= T(non_zeroBirow,:)*(ci+Bi'*x) <= t);
+                    F = F + ((bi'+e'*Bi')*x + (di+e'*ci) - sum(t) >= 0) + (-t <= T(non_zeroBirow,:)*(ci+Bi'*x) <= t);
                 else
-                    F = F + set((bi'+e'*Bi')*x + (di+e'*ci) - T(non_zeroBirow,:)*(ci+Bi'*x) >= 0) ;
-                    F = F + set((bi'+e'*Bi')*x + (di+e'*ci) + T(non_zeroBirow,:)*(ci+Bi'*x) >= 0) ;
+                    F = F + ((bi'+e'*Bi')*x + (di+e'*ci) - T(non_zeroBirow,:)*(ci+Bi'*x) >= 0) ;
+                    F = F + ((bi'+e'*Bi')*x + (di+e'*ci) + T(non_zeroBirow,:)*(ci+Bi'*x) >= 0) ;
                 end
             end
 
@@ -161,7 +161,7 @@ for i = 1:length(b)
 
             if Zmodel.K.l > 0
                 zeta = sdpvar(Zmodel.K.l,1);
-                Flocal = Flocal + set(zeta >= 0);
+                Flocal = Flocal + (zeta >= 0);
                 lhs1 = lhs1 + Zmodel.F_struc(top:top + Zmodel.K.l-1,2:end)'*zeta;
                 lhs2 = lhs2 - Zmodel.F_struc(top:top + Zmodel.K.l-1,1)'*zeta;
                 top = top + Zmodel.K.l;
@@ -171,9 +171,9 @@ for i = 1:length(b)
                 for j = 1:length(Zmodel.K.q)
                     zeta = sdpvar(Zmodel.K.q(j),1);
                     if length(zeta)>2
-                        Flocal = Flocal + set(cone(zeta));
+                        Flocal = Flocal + (cone(zeta));
                     else
-                        Flocal = Flocal + set(zeta(2) <= zeta(1)) + set(-zeta(2) <= zeta(1));
+                        Flocal = Flocal + (zeta(2) <= zeta(1)) + (-zeta(2) <= zeta(1));
                     end
                     lhs1 = lhs1 + Zmodel.F_struc(top:top + Zmodel.K.q(j)-1,2:end)'*zeta(:);
                     lhs2 = lhs2 - Zmodel.F_struc(top:top + Zmodel.K.q(j)-1,1)'*zeta(:);
@@ -184,7 +184,7 @@ for i = 1:length(b)
             if Zmodel.K.s(1) > 0
                 for j = 1:length(Zmodel.K.s)
                     zeta = sdpvar(Zmodel.K.s(j));
-                    Flocal = Flocal + set(zeta >= 0);
+                    Flocal = Flocal + (zeta >= 0);
                     lhs1 = lhs1 + Zmodel.F_struc(top:top + Zmodel.K.s(j)^2-1,2:end)'*zeta(:);
                     lhs2 = lhs2 - Zmodel.F_struc(top:top + Zmodel.K.s(j)^2-1,1)'*zeta(:);
                     top = top + Zmodel.K.s(j)^2;
@@ -209,20 +209,20 @@ for i = 1:length(b)
                 Flocal = replace(Flocal,recover(depends(lhs1)),zeta2);
             else
                 Flocal = [Flocal,lhs1 == Bi'*x + ci]; 
-               % F = F + set(lhs1 == Bi'*x + ci);
+               % F = F + (lhs1 == Bi'*x + ci);
             end
             if isa(Bi,'double') & ops.robust.reducesemiexplicit
                 ops2=ops;ops2.verbose = 0;
                 sol = solvesdp([Flocal],-lhs2,ops);
                 if sol.problem == 0
-                    F = F + set(double(lhs2) >= - (bi'*x + di));
+                    F = F + (double(lhs2) >= - (bi'*x + di));
                 else
                     F = F + Flocal;
-                    F = F + set(lhs2 >= - (bi'*x + di));
+                    F = F + (lhs2 >= - (bi'*x + di));
                 end
             else
                 F = F + Flocal;
-                F = F + set(lhs2 >= - (bi'*x + di));
+                F = F + (lhs2 >= - (bi'*x + di));
             end
         end
     end

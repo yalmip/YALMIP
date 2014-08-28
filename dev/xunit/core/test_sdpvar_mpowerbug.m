@@ -1,4 +1,4 @@
-function test_mtimesbug
+function test_sdpvar_mpowerbug
 
 yalmip('clear')
 sdpvar x y

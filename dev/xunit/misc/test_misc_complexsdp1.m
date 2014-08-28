@@ -9,12 +9,12 @@ Z = Z-sqrt(-1)*diag(imag(diag(Z)));
 
 t = sdpvar(1,1);
 e = Z(:)-P(:);
-F = set(Z >= 0);
-F = F+set('||e||<t');
+F = (Z >= 0);
+F = F+ (norm(e) <= t);
 sol = solvesdp(F,t)
 assertTrue(sol.problem == 0);
 assertTrue(norm(Zmanual-double(Z)) < 1e-4)
 
-sol = solvesdp(set(Z >= 0),norm(e))
+sol = solvesdp((Z >= 0),norm(e))
 assertTrue(sol.problem == 0);
 assertTrue(norm(Zmanual-double(Z)) < 1e-4)

@@ -19,15 +19,15 @@ B=[1;1;1;1];
 h=[A*x-B];
 
 s = [];
-F= set([]);
+F= ([]);
 v= monolist(x,2); % all monomials of total degree<2
 
 for i = 1:4; 
  c = sdpvar(length(v));
  s = [s v'*c*v]
- F = F + set(c>=0);
+ F = F + (c>=0);
 end
 
-sol = solvesos(set(sos(p-f+s*h))+F,[],sdpsettings('sos.model',2));
+sol = solvesos((sos(p-f+s*h))+F,[],sdpsettings('sos.model',2));
 
 mbg_asserttolequal(sol.problem,2);

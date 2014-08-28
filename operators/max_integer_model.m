@@ -9,8 +9,8 @@ end
 
 n = length(X);
 d = binvar(n,1);
-F = set(sum(d)==1);
-F = F + set(-(max(M)-min(m))*(1-d) <= t-X <= (max(M)-min(m))*(1-d));
+F = (sum(d)==1);
+F = F + (-(max(M)-min(m))*(1-d) <= t-X <= (max(M)-min(m))*(1-d));
 kk = [];
 ii = [];
 for i = 1:n
@@ -22,4 +22,4 @@ end
 xii = extsubsref(X,ii);
 dii = extsubsref(d,ii);
 xkk = extsubsref(X,kk);
-F = F + set(xkk <= xii+(M(kk)-m(ii)).*(1-dii));
+F = F + (xkk <= xii+(M(kk)-m(ii)).*(1-dii));

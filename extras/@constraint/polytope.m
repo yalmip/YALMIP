@@ -3,4 +3,4 @@ function P = polytope(C)
 
 % Author Johan Löfberg
 
-P = polytope(set(C));
+P = polytope(lmi(C));

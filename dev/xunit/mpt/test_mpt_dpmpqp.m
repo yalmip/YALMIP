@@ -17,17 +17,17 @@ x = sdpvar(repmat(nx,1,N),repmat(1,1,N));
 u = sdpvar(repmat(nu,1,N),repmat(1,1,N));
 
 J{N} = 0;
-F = set([]);
+F = ([]);
 for k = N-1:-1:1
 
     % Feasible region
-    F = set(-1 <= u{k}     <= 1);
-    F = F + set(-1 <= C*x{k}   <= 1);
-    F = F + set(-5 <= x{k}     <= 5);
-    F = F + set(-1 <= C*x{k+1} <= 1);
-    F = F + set(-5 <= x{k+1}   <= 5);
+    F = (-1 <= u{k}     <= 1);
+    F = F + (-1 <= C*x{k}   <= 1);
+    F = F + (-5 <= x{k}     <= 5);
+    F = F + (-1 <= C*x{k+1} <= 1);
+    F = F + (-5 <= x{k+1}   <= 5);
     % Dynamics
-    F = F + set(x{k+1} == A*x{k}+B*u{k});
+    F = F + (x{k+1} == A*x{k}+B*u{k});
     % Cost in value iteration
     %  obj = obj + x{k}'*x{k} + u{k}'*u{k}
     obj = x{k}'*x{k} + u{k}'*u{k} + J{k+1};

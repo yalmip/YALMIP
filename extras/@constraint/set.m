@@ -1,16 +1,6 @@
 function F = set(varargin)
+%SET OBSOLETE
 
-switch nargin
-    case 0
-        F = lmi;
-    case 1
-        F = lmi(varargin{1});
-    case 2
-        F = lmi(varargin{1},varargin{2});
-    case 3
-        F = lmi(varargin{1},varargin{1},varargin{3});
-    case 4
-        F = lmi(varargin{1},[],[],1);
-        
-    otherwise
-end
+disp('SET has been considered obsolete for many years, and the time has come...');
+disp('Update your code. http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Commands.set');
+error('Obsolete command')

@@ -11,7 +11,7 @@ a_hat = intvar(6,1);
 
 residuals = y-x*a_hat;
 bound = sdpvar(length(residuals),1);
-F = set(-bound <= residuals <= bound);
+F = (-bound <= residuals <= bound);
 ops = sdpsettings('solver','bnb');
 
 % Test QP

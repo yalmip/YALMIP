@@ -12,10 +12,10 @@ if k >= 0
     v = monolist([x; y], 2*k);
     coeffVec = sdpvar(length(v), 1);
     t = coeffVec' * v;
-    constraints = set(sos(f - a - t * g)) + set(sos(t));
+    constraints = (sos(f - a - t * g)) + (sos(t));
 else
     coeffVec = [];
-    constraints = set(sos(f - a));
+    constraints = (sos(f - a));
 end
 F = constraints;
 obj = -a;

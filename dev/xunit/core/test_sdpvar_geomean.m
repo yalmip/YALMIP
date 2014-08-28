@@ -38,7 +38,7 @@ rand('seed',1234);
 D = randn(5,5);
 P = sdpvar(5,5);
 obj = geomean(P);
-solvesdp(set(P <= D*D'),-obj);
+solvesdp((P <= D*D'),-obj);
 assertElementsAlmostEqual(double(obj), 2.00333629658259, 'absolute',1e-4);
  
 % Test real matrix geomean, length == 2^n
@@ -47,7 +47,7 @@ rand('seed',1234);
 D = randn(8,8);
 P = sdpvar(8,8);
 obj = geomean(P);
-solvesdp(set(P <= D*D'),-obj);
+solvesdp((P <= D*D'),-obj);
 assertElementsAlmostEqual(double(obj), 3.32199302165511,'absolute', 1e-4);
 
 % Test real matrix geomean, length == 2
@@ -56,5 +56,5 @@ rand('seed',1234);
 D = randn(2,2);
 P = sdpvar(2,2);
 obj = geomean(P);
-solvesdp(set(P <= D*D'),-obj);
+solvesdp((P <= D*D'),-obj);
 assertElementsAlmostEqual(double(obj),  2.02896175488410,'absolute',1e-4);
