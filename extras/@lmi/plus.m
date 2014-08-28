@@ -35,13 +35,6 @@ if nY == 0
     return;
 end
 
-% X assumed to be a long list of constraint and Y short list to be added
-if nY > nX
-    Z = X;
-    X = Y;
-    Y = Z;
-end
-
 xBlock = isa(X.clauses{1},'cell');
 yBlock = isa(Y.clauses{1},'cell');
 if yBlock && xBlock && length(X.clauses{1})>1  && length(Y.clauses{1})>1
