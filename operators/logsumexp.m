@@ -9,8 +9,6 @@ function varargout = logsumexp(varargin)
 % of this function is exploited to perform convexity analysis and rigorous
 % modelling.
 
-% Author Johan Löfberg
-% $Id: logsumexp.m,v 1.3 2009-02-12 10:31:47 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

@@ -9,9 +9,6 @@ function varargout = huber(varargin)
 %
 % The Hüber functions is convex and non-monotonic.
 
-% Author Johan Löfberg
-% $Id: huber.m,v 1.6 2009-05-29 08:05:12 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

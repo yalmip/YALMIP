@@ -1,7 +1,5 @@
 function varargout = fraction_internal2(varargin)
 
-% Author Johan Löfberg
-% $Id: fraction_internal2.m,v 1.1 2007-08-22 11:31:19 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

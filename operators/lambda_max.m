@@ -5,8 +5,6 @@ function varargout = lambda_max(varargin)
 %
 % See also LAMBDA_MIN
 
-% Author Johan Löfberg
-% $Id: lambda_max.m,v 1.1 2009-02-25 12:29:25 joloef Exp $
 switch class(varargin{1})
 
     case 'double' % What is the numerical value of this argument (needed for displays etc)
@@ -33,7 +31,7 @@ switch class(varargin{1})
         if isequal(varargin{1},'graph')
             t = varargin{2}; % Second arg is the extended operator variable
             X = varargin{3}; % Third arg and above are the args user used when defining t.
-            varargout{1} = set(t*eye(size(X,1)) >= X);
+            varargout{1} = (t*eye(size(X,1)) >= X);
             varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','none','model','graph');
             varargout{3} = X;
         else

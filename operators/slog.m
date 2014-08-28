@@ -10,7 +10,6 @@ function varargout = slog(varargin)
 % modelling. Implemented in order to avoid singularities in logarithm
 % evaluation.
 
-% Author Johan Löfberg
 switch class(varargin{1})
     case 'double'
         x = varargin{1};       

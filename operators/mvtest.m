@@ -1,8 +1,6 @@
 function varargout=mvtest(varargin)
 %EIG (overloaded)
 
-% Author Johan Löfberg
-% $Id: mvtest.m,v 1.3 2007-08-02 22:28:44 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

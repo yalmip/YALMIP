@@ -1,8 +1,6 @@
 function varargout = sdpfun(varargin)
 %SDPFUN Gateway to general (elementwise) functions on SDPVAR variables (overloaded)
 
-% Author Johan Löfberg
-
 if ~isa(varargin{1},'char')
     for i = 1:length(varargin)
         % we don't know in which order arguments are applied. If some argument

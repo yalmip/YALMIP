@@ -11,8 +11,6 @@ function varargout = entropy(varargin)
 %
 % See also crossentropy.
 
-% Author Johan Löfberg
-% $Id: entropy.m,v 1.11 2007-08-02 20:57:53 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

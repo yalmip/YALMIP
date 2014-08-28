@@ -12,16 +12,13 @@ function varargout = geomean2(varargin)
 % or to add lower bound constraints on the determinant.
 %
 % When GEOMEAN2 is used in a problem, the domain constraint
-% set(X>0) is automatically added to the problem.
+% X>=0 is automatically added to the problem.
 %
 % Note that the function is the geometric mean of
 % the elements (or eigenvalues) if the dimension of 
 % X is a power of 2, hence the name GEOMEAN2.
 %
 % See also SDPVAR, SDPVAR/GEOMEAN, SUMK, SUMABSK
-
-% Author Johan Löfberg
-% $Id: geomean2.m,v 1.3 2007-08-02 19:17:36 joloef Exp $
 
 switch class(varargin{1})
     

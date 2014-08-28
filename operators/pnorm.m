@@ -11,9 +11,6 @@ function varargout = pnorm(varargin)
 % Note, the pnorm is implemented using cpower, which adds
 % a large number of variables and constraints
 
-% Author Johan Löfberg
-% $Id: pnorm.m,v 1.1 2010-03-26 11:35:23 joloef Exp $
-
 switch class(varargin{1})
     
     case 'double'

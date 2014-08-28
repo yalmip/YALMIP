@@ -1,7 +1,5 @@
 function varargout = eig_yalmip_internal(varargin)
 
-% Author Johan Löfberg
-% $Id: eig_yalmip_internal.m,v 1.6 2007-08-03 11:41:16 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

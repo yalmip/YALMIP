@@ -1,7 +1,6 @@
 function varargout = xexpintinv(varargin)
-%EXPINT (overloaded)
+%XEXPINTINV EXPINT(1/Z)/Z
 
-% Author Johan Löfberg
 switch class(varargin{1})
 
     case 'double'

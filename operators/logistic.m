@@ -5,9 +5,6 @@ function varargout = logistic(varargin)
 %
 % For a real vector x, LOGISTIC returns (1+exp(-x)).^-1
 
-% Author Johan Löfberg
-% $Id: logistic.m,v 1.1 2009-02-12 10:31:47 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

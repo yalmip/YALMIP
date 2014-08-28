@@ -8,7 +8,6 @@ switch class(varargin{1})
         varargout{1} = all(diff(x) > 0);
 
     case 'sdpvar'
-        %varargout{1} = (yalmip('define',mfilename,varargin{:}) == 1);
         varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
 
     case 'char'

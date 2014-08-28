@@ -1,8 +1,5 @@
 function varargout = optimizer_operator(varargin)
 
-% Author Johan Löfberg
-% $Id: optimizer_operator.m,v 1.6 2007-08-03 11:17:33 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

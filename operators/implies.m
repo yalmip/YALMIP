@@ -35,10 +35,6 @@ function varargout = implies(varargin)
 %
 %   See also @SDPVAR/AND, @SDPVAR/OR, IFF
 
-% Author Johan Löfberg
-% $Id: implies.m,v 1.6 2009-05-15 10:32:42 joloef Exp $
-
-
 % There are some cases to take care of...
 %
 % X --> Y     binary/binary :                     Implemented
@@ -48,22 +44,6 @@ function varargout = implies(varargin)
 
 X = varargin{1};
 Y = varargin{2};
-
-% % Call recursicely on X -> (A,B,...)
-% if isa(varargin{1},'sdpvar') & (isa(varargin{2},'lmi') | isa(varargin{2},'constraint'))
-%     if length(varargin{1})==1 & length(varargin{2})>1
-%         F = set([]);
-%         for i = 1:length(varargin{2})
-%             if nargin == 3
-%                 F = F + implies(varargin{1},varargin{2}(i),varargin{3});
-%             else
-%                 F = F + implies(varargin{1},varargin{2}(i));
-%             end
-%         end
-%         varargout{1} = F;
-%         return
-%     end
-% end
 
 if isempty(X)
     varargout{1} = [];

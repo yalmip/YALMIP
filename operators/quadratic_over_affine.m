@@ -5,9 +5,6 @@ function varargout=quadratic_over_affine(varargin)
 %
 % Returns p = (x.^2)./t
 
-% Author Johan Löfberg
-% $Id: quadratic_over_affine.m,v 1.28 2008-11-11 13:29:20 joloef Exp $
-
 switch class(varargin{1})
     case 'double'
         varargout{1} = varargin{1}/varargin{2};
