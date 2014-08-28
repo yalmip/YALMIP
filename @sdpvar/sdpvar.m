@@ -46,8 +46,8 @@ function sys = sdpvar(varargin)
 %
 %   See also INTVAR, BINVAR, methods('sdpvar'), SEE
 
-% Author Johan Löfberg
-% $Id: sdpvar.m,v 1.58 2010-02-25 11:00:23 joloef Exp $
+% Turn this on if you want to use factor tracking (i.e, the solver STRUL)
+FACTORTRACKING = 0;
 
 superiorto('double');
 if nargin==0
@@ -383,8 +383,13 @@ switch nargin
         sys.extra.opname = '';
         sys.conicinfo = 0;
         sys.originalbasis = 'unknown';
-        sys.leftfactors{1} = speye(sys.dim(1));
-        sys.rightfactors{1} = speye(sys.dim(2));
+        if FACTORTRACKING
+            sys.leftfactors{1} = speye(sys.dim(1));
+            sys.rightfactors{1} = speye(sys.dim(2));
+        else
+            sys.leftfactors = [];
+            sys.rightfactors = [];
+        end        
         sys.midfactors = [];
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
@@ -398,7 +403,9 @@ switch nargin
         else
             sys = class(sys,'sdpvar');
         end
-        sys.midfactors{1} = sys;
+        if FACTORTRACKING
+            sys.midfactors{1} = sys;
+        end
         return
     case 6 % Fast version for internal use
         sys.basis = varargin{5};
@@ -412,8 +419,13 @@ switch nargin
         sys.extra.opname = '';
         sys.conicinfo = 0;
         sys.originalbasis = 'unknown';
-        sys.leftfactors{1} = speye(sys.dim(1));
-        sys.rightfactors{1} = speye(sys.dim(2));
+        if FACTORTRACKING
+            sys.leftfactors{1} = speye(sys.dim(1));
+            sys.rightfactors{1} = speye(sys.dim(2));
+        else
+            sys.leftfactors = [];
+            sys.rightfactors = [];
+        end
         sys.midfactors = [];
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
@@ -427,7 +439,9 @@ switch nargin
         else
             sys = class(sys,'sdpvar');
         end
-        sys.midfactors{1} = sys;
+        if FACTORTRACKING
+            sys.midfactors{1} = sys;
+        end
         return
     case 7 % Fast version for internal use
         sys.basis = varargin{5};
@@ -441,8 +455,13 @@ switch nargin
         sys.extra.opname = '';
         sys.conicinfo = varargin{7};
         sys.originalbasis = 'unknown';
-        sys.leftfactors{1} =  speye(sys.dim(2));
-        sys.rightfactors{1} =  speye(sys.dim(2));
+        if FACTORTRACKING
+            sys.leftfactors{1} =  speye(sys.dim(2));
+            sys.rightfactors{1} =  speye(sys.dim(2));
+        else
+            sys.leftfactors = [];
+            sys.rightfactors = [];
+        end
         sys.midfactors = [];
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
@@ -456,7 +475,9 @@ switch nargin
         else
             sys = class(sys,'sdpvar');
         end
-        sys.midfactors{1} = sys;
+        if FACTORTRACKING
+            sys.midfactors{1} = sys;
+        end
         return
 
     otherwise
@@ -684,11 +705,18 @@ if isa(basis,'cell')
         sys{blk}.extra.opname = '';
         sys{blk}.conicinfo = conicinfo;
         sys{blk}.originalbasis = matrix_type;
-        sys{blk}.leftfactors{1} = speye(n(blk));
-        sys{blk}.rightfactors{1} = speye(m(blk));
-        sys{blk}.midfactors{1} = [];
+        if FACTORTRACKING
+            sys{blk}.leftfactors{1} = speye(n(blk));
+            sys{blk}.rightfactors{1} = speye(m(blk));
+        else
+            sys{blk}.leftfactors = [];
+            sys{blk}.rightfactors = [];
+        end
+        sys{blk}.midfactors = [];
         sys{blk} = class(sys{blk},'sdpvar');
-        sys{blk}.midfactors{1} = sys{blk};
+        if FACTORTRACKING
+            sys{blk}.midfactors{1} = sys{blk};
+        end
     end
     if length(n)==1
         sys = sys{1};
@@ -705,24 +733,35 @@ else
     sys.extra.opname = '';
     sys.conicinfo = conicinfo;
     sys.originalbasis = matrix_type;
-    sys.leftfactors{1} = speye(n);
-    sys.rightfactors{1} = speye(m);
-    sys.midfactors{1} = [];
+    if FACTORTRACKING
+        sys.leftfactors{1} = speye(n);
+        sys.rightfactors{1} = speye(m);
+    else
+        sys.leftfactors = [];
+        sys.rightfactors = [];
+    end
+    sys.midfactors = [];
     sys = class(sys,'sdpvar');
-    sys.midfactors{1} = sys;
+    if FACTORTRACKING
+        sys.midfactors{1} = sys;
+    end
     if isequal(matrix_type,'hankel')
         % To speed up generation, we have just created a vector, and now
         % hankelize it
         sys.dim(2) = 1;
         sys = hankel(sys);
-        sys.leftfactors{1} = eye(sys.dim(1));
-        sys.midfactors{1} = sys;
-        sys.rightfactors{1} = eye(sys.dim(1));
+        if FACTORTRACKING
+            sys.leftfactors{1} = eye(sys.dim(1));
+            sys.midfactors{1} = sys;
+            sys.rightfactors{1} = eye(sys.dim(1));
+        end
     elseif isequal(matrix_type,'toeplitz')
         sys.dim(2) = 1;
         sys = toeplitz(sys);
-        sys.leftfactors{1} = eye(sys.dim(1));
-        sys.midfactors{1} = sys;
-        sys.rightfactors{1} = eye(sys.dim(1));
+        if FACTORTRACKING
+            sys.leftfactors{1} = eye(sys.dim(1));
+            sys.midfactors{1} = sys;
+            sys.rightfactors{1} = eye(sys.dim(1));
+        end
     end
 end
