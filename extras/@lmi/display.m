@@ -1,10 +1,6 @@
 function sys = display(X)
 %display           Displays a SET object.
 
-% Author Johan Löfberg
-% $Id: display.m,v 1.12 2009-05-29 08:05:12 joloef Exp $
-
-nlmi = size(X.clauses,2);
 nlmi = length(X.LMIid);
 
 if (nlmi == 0)
@@ -93,7 +89,6 @@ if nlmi>0
             if ~isreal(X.clauses{i}.data)                
                 classification = [classification ',complex'];
             end
-            %if ~isempty(intersect(getvariables(X.clauses{i}.data),extVariables))            
             members = ismembcYALMIP(getvariables(X.clauses{i}.data),extVariables);          
             if any(members)
                 classification = [classification ',derived'];
