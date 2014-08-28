@@ -4,6 +4,7 @@ function F = lmi(X,handlestring,dummy,noprune,symmetryKnown)
 superiorto('sdpvar')
 
 persistent temp
+persistent F0
 
 fast = 0;
 noprune = 0;
@@ -14,6 +15,7 @@ switch nargin
         F.LMIid    = [];
         F.savedata = [];
         F = class(F,'lmi');
+        F0 = F;
         return
     case 1
         handlestring = '';
@@ -33,14 +35,18 @@ switch nargin
         error('Wrong number of arguments')
 end
 
-F.clauses  = {};
-F.LMIid    = [];
-F.savedata = [];
-
-try
-    F = class(F,'lmi');
-catch
-    disp('Failure in creating SET object. Restart MATLAB and try again, or type clear classes')
+if isempty(F0)
+    F.clauses  = {};
+    F.LMIid    = [];
+    F.savedata = [];
+    try
+        F = class(F,'lmi');
+    catch
+        disp('Failure in creating SET object. Restart MATLAB and try again, or type clear classes')
+    end
+    F0 = F;
+else
+    F = F0;
 end
 
 % Return empty LMI in degenerate case
