@@ -1,6 +1,7 @@
 function sys = display(X)
 %display           Displays a SET object.
 
+X = flatten(X);
 nlmi = length(X.LMIid);
 
 if (nlmi == 0)
