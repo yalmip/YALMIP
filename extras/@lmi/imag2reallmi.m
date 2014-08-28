@@ -1,8 +1,6 @@
 function Freal = imag2reallmi(F)
 
-% Author Johan Löfberg
-% $Id: imag2reallmi.m,v 1.6 2006-12-18 14:42:28 joloef Exp $
-
+F = flatten(F);
 Counter = size(F.clauses,2);
 Freal = F;
 j=1;

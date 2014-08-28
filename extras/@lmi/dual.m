@@ -5,10 +5,8 @@ function sys = dual(X)
 % 
 %   See also SOLVESDP
   
-% Author Johan Löfberg
-% $Id: dual.m,v 1.4 2009-04-29 12:44:40 joloef Exp $
-
-nlmi = size(X.clauses,2);
+X = flatten(X);
+nlmi = length(X.LMIid);
 
 % Is it an empty SET
 if (nlmi == 0) 

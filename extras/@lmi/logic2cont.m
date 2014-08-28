@@ -1,11 +1,9 @@
 function Fcont = logic2cont(Flogic)
 
-% Author Johan Löfberg
-% $Id: logic2cont.m,v 1.1 2004-08-06 14:23:37 johanl Exp $
-
 Fcont = set([]);
 M = 1e3;
 % How many elements in this clause
+Flogic = flatten(Flogic);
 n = size( Flogic.clauses{1},2);
 % Are all simple letters?
 all_letters = 1;

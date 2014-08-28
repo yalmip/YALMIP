@@ -1,13 +1,11 @@
 function [F_struc,K,KCut,schur_funs,schur_data,schur_variables] = lmi2sedumistruct(F)
 %lmi2sedumistruct   Internal function: Converts LMI to format needed in SeDuMi
-%
-% % Author Johan Löfberg
-% % $Id: lmi2sedumistruct.m,v 1.35 2009-09-29 12:02:40 joloef Exp $
 
 nvars = yalmip('nvars'); %Needed lot'sa times...
 
 % We first browse to see what we have got and the
 % dimension of F_struc (massive speed improvement)
+F = flatten(F);
 type_of_constraint = zeros(length(F.LMIid),1);%zeros(size(F.clauses,2),1);
 any_cuts = 0;
 for i = 1:length(F.LMIid)%size(F.clauses,2)

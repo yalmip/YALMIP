@@ -1,5 +1,6 @@
 function X = expanded(F,state)
 
+F = flatten(F);
 if nargin == 1
     if length(F.clauses) == 0
         X = [];

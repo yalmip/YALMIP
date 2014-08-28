@@ -1,11 +1,9 @@
 function [F,changed] = linearize(F)
 %LINEARIZE Linearizes all constraints
 
-% Author Johan Löfberg
-% $Id: linearize.m,v 1.3 2005-02-04 10:10:27 johanl Exp $
-
 changed = 0;
-Counter = size(F.clauses,2);
+F = flatten(F);
+Counter = length(F.LMIid);
 for i = 1:Counter
     switch F.clauses{i}.type
         case {1,2,3}

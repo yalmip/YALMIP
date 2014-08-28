@@ -1,9 +1,7 @@
 function YESNO = isinterval(F)
 %ISINTERVAL (overloaded)
 
-% Author Johan Löfberg 
-% $Id: isinterval.m,v 1.1 2007-03-23 12:36:02 joloef Exp $   
-
+F = flatten(F);
 if isempty(F.clauses)
     YESNO = 1;
 else

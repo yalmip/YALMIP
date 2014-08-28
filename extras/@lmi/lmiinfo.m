@@ -1,16 +1,13 @@
 function info = lmiinfo(F)
 
-% Author Johan Löfberg
-% $Id: lmiinfo.m,v 1.6 2009-05-29 08:05:12 joloef Exp $
-
 info.sdp = [];
 info.lin = [];
 info.equ = [];
 info.soc = [];
 info.rlc = [];
 info.pow = [];
-
-Counter = size(F.clauses,2);
+F = flatten(F);
+Counter = length(F.LMIid);
 for i = 1:Counter
     Fi = F.clauses{i}.data;
     switch  F.clauses{i}.type;

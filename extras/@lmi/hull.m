@@ -57,7 +57,7 @@ yalmip('addauxvariables',nInitial+1:nNow);
 
 Fhull = set([]);
 for i = 1:nargin
-    Fi = varargin{i};
+    Fi = flatten(varargin{i});
     tvariable = getvariables(t(i));
     for j = 1:length(Fi.clauses)
         local_variables = getvariables(Fi);

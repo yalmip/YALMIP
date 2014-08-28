@@ -1,9 +1,6 @@
 function sys = minus(X,Y)
 %MINUS (overloaded)
 
-% Author Johan Löfberg
-% $Id: minus.m,v 1.1 2004-12-07 08:46:53 johanl Exp $
-
 if isempty(X)
     sys = set([]);
     return

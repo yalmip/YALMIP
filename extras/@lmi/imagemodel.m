@@ -22,10 +22,8 @@ function [Fimage,objimage,x,y] = imagemodel(F,obj,options)
 %
 % See also DUALIZE, PRIMALIZE
 
-% Author Johan Löfberg
-% $Id: imagemodel.m,v 1.1 2007-03-23 11:46:57 joloef Exp $
-
 % Check for unsupported problems
+F = flatten(F);
 err = 0;
 p1 = ~(isreal(F) & isreal(obj));
 p2 = ~(islinear(F) & islinear(obj));

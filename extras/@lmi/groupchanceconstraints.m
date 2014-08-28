@@ -1,6 +1,7 @@
 function S = groupchanceconstraints(F)
 G = {};
 S = {};
+F = flatten(F);
 for i = 1:length(F.clauses)
     if ~isempty(F.clauses{i}.confidencelevel)
         G = addgroup(G,F.clauses{i}.jointprobabilistic);

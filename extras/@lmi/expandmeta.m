@@ -1,5 +1,6 @@
 function F = expandmeta(F)
 
+F = flatten(F);
 meta = find(is(F,'meta'));
 Fnew = [];
 for i = meta(:)'

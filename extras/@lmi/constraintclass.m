@@ -4,6 +4,7 @@ function LIST = constraintclass(F,property)
 % Author Johan Löfberg 
 % $Id: constraintclass.m,v 1.2 2005-02-04 10:10:26 johanl Exp $   
 
+F = flatten(F);
 if isempty(F.clauses)
     LIST = [];   
 else

@@ -3,7 +3,8 @@ function F = lowrank(F,x)
 % Used in combination with the solver SDPLR
 
 identifiers = [];
-for i = 1:size(F.clauses,2)
+F = flatten(F);
+for i = 1:length(F.LMIid)
     switch F.clauses{i}.type
         case 1
             identifiers = [identifiers F.LMIid(i)];

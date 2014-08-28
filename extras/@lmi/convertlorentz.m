@@ -2,7 +2,8 @@ function [F,changed] = convertlorentz(F)
 %convertlorentz          Internal function: converts rotated Lorentz to SOCC
   
 changed = 0;
-Counter = size(F.clauses,2);
+F = flatten(F);
+Counter = length(F.LMIid);
 for i = 1:Counter
     % Yep, Lorentz
     if  (F.clauses{i}.type==5)

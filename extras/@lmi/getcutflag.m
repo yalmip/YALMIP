@@ -1,7 +1,6 @@
 function c = getcutflag(X)
 
-% Author Johan Löfberg
-
+X = flatten(X);
 c = [];
 for i = 1:length(X.clauses)
     c = [c;X.clauses{i}.cut];

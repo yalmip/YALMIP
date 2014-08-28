@@ -1,9 +1,7 @@
 function S = spy(X)
 %SPY (overloaded)
 
-% Author Johan Löfberg 
-% $Id: spy.m,v 1.3 2005-11-25 14:15:14 joloef Exp $   
-
+F = flatten(F);
 if length(X)>1
     S = [];
     for i = 1:length(X)

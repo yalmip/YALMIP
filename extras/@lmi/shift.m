@@ -1,8 +1,6 @@
 function F = shift(F,shifttol)
   
-% Author Johan Löfberg 
-% $Id: shift.m,v 1.4 2005-02-04 10:10:27 johanl Exp $
-  
+F = flatten(F);
 for i = 1:size(F.clauses,2)
     switch F.clauses{i}.type
     case {1,9}

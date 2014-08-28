@@ -33,7 +33,8 @@ if isempty(currsol)
     return
 end
 
-nlmi = size(F.clauses,2);
+F = flatten(F);
+nlmi = length(F.LMIid);
 spaces = ['                                    '];
 if (nlmi == 0)
     if nargout == 0

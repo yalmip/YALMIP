@@ -1,9 +1,7 @@
 function YESNO = isreal(F)
 %ISREAL (overloaded)
 
-% Author Johan Löfberg 
-% $Id: isreal.m,v 1.3 2007-03-23 12:36:02 joloef Exp $   
-
+F = flatten(F);
 if isempty(F.clauses)
     YESNO = 1;
 else

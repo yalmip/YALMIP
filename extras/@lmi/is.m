@@ -8,12 +8,10 @@ function YESNO = is(F,property)
 if isempty(F.clauses)
     YESNO = 0;
 else
-    if isa(F.clauses{1},'cell')
-        F = flatten(F);
-    end
-    %   for i = 1:length(F.clauses)
-    %       Fi = F.clauses{i};
-    YESNO=zeros(length(F.clauses),1);
+    
+    F = flatten(F);
+      
+    YESNO=zeros(length(F.LMIid),1);
     switch property
         case 'chance'
             for i = 1:length(F.clauses)

@@ -1,5 +1,6 @@
 function used = getvariables(F)
 
+F = flatten(F);
 if length(F.clauses) == 0
     used = [];
     return

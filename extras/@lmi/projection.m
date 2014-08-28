@@ -7,9 +7,6 @@ function F = projection(F,x,method,alreadyprojected)
 % x      : Variables to project on
 % method : See HELP PROJECTION
 
-% Author Johan Löfberg
-% $Id: projection.m,v 1.13 2006-08-05 20:45:22 joloef Exp $
-
 if nargin<2
     error('Not enough input arguments.')
 end

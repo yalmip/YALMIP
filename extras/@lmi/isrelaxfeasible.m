@@ -1,9 +1,5 @@
 function res = isrelaxfeasible(F)
 
-
-% Author Johan Löfberg
-% $Id: isrelaxfeasible.m,v 1.3 2005-02-04 10:10:27 johanl Exp $
-
 % Check if solution avaliable
 currsol = evalin('caller','sdpvar(''getSolution'')');
 if isempty(currsol)
@@ -11,7 +7,9 @@ if isempty(currsol)
     return
 end
 
-nlmi = size(F.clauses,2);
+F = flatten(F);
+
+nlmi = length(F.LMIid);
 spaces = ['                                    '];
 if (nlmi == 0) & (neq == 0)
     disp('empty LMI')

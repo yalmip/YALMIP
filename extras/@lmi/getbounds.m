@@ -8,7 +8,7 @@ LU =  yalmip('getbounds',1:yalmip('nvars'));
 binary = yalmip('binvariables');
 LU(binary,1) = 0;
 LU(binary,2) = 1;
-
+F = flatten(F);
 is_interval = is(F,'interval');
 for i = 1:length(F.clauses)
     if F.clauses{i}.type == 2

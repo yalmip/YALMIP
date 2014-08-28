@@ -1,5 +1,5 @@
 function lrdata = getlrdata(F)
-
+F = flatten(F);
 k = 1;
 lrdata = [];
 for i = 1:length(F.clauses)
