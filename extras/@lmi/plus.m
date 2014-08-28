@@ -65,7 +65,7 @@ else
     end
     % Assume Y isn't too big, as we now flatten it and put it in the last
     % block of X
-    Y.clauses = [Y.clauses{:}];
+    Y = flatten(Y);
     j = length(X.clauses);
     for i = 1:length(Y.clauses)
         X.clauses{j}{end+1} = Y.clauses{i};
