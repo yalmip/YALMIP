@@ -70,9 +70,9 @@ if length(e)>0
 
         [ii,jj] = sort(x_vars);
         x = recover(x_vars(jj));
-        F = set(H(:,jj)*x <= K);
+        F = (H(:,jj)*x <= K);
     else
-        F=set(sum(x) <= -1) + set(sum(x) >= 1);
+        F=(sum(x) <= -1) + (sum(x) >= 1);
     end
 else
 
@@ -90,5 +90,5 @@ else
 
     [ii,jj] = sort(x_vars);
     x = recover(x_vars(jj));
-    F = set(H(:,jj)*x < K);
+    F = (H(:,jj)*x <= K);
 end
