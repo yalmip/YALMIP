@@ -5,9 +5,6 @@ function Y=sdpvarfun(varargin)
 %
 % Example : Y = sdpvarfun('triu',X)  Extracts upper triangluar part
 
-% Author Johan Löfberg 
-% $Id: sdpvarfun.m,v 1.4 2006-07-26 20:17:58 joloef Exp $  
-
 op = varargin{1};
 if ~isa(op,'char')
   error('First argument must be a string with the function name')

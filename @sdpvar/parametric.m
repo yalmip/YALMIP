@@ -11,7 +11,7 @@ function x = parametric(x)
 %    x : SDPVAR object
 %
 %   OUTPUT
-%    F : SET object
+%    F : Constraint
 %
 %   EXAMPLE
 %    F = parametric(x);               % Short notation

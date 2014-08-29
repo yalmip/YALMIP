@@ -8,5 +8,5 @@ end
 if level < 0 | level > 1
     error('The confidence level must be between 0 and 1');
 end
-ChanceConstraint = chanceconstraint(set(P.Constraint),level);
+ChanceConstraint = chanceconstraint(lmi(P.Constraint),level);
 

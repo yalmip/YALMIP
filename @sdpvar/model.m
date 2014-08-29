@@ -11,11 +11,7 @@ function [properties,F,arguments,fcn]=model(X,method,options,extstruct,w)
 % sdpvar x y;
 % t = min(x,y);
 % [properties,F] = model(t)
-% Gives F = [t<x, t<y]
-
-% Author Johan Löfberg
-% $Id: model.m,v 1.62 2009-05-05 07:20:46 joloef Exp $
-
+% Gives F = [t<=x, t<=y]
 
 extvar = getvariables(X);
 arguments   = cell(1,length(extvar));

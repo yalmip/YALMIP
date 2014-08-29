@@ -6,16 +6,16 @@ S = [0,0,1,9,0,0,0,0,8;6,0,0,0,8,5,0,3,0;0,0,7,0,6,0,1,0,0;...
 
 p = 3;
 A = ndsdpvar(p^2,p^2,p^2,'full');
-F = set(binary(A));
-F = F + set(sum(A,1) == 1);
-F = F + set(sum(A,2) == 1);
-F = F + set(sum(A,3) == 1);
+F = (binary(A));
+F = F + (sum(A,1) == 1);
+F = F + (sum(A,2) == 1);
+F = F + (sum(A,3) == 1);
 
 for m = 1:p
     for n = 1:p
         for k = 1:9
             s = sum(sum(A((m-1)*p+(1:p),(n-1)*p+(1:p),k)));  
-            F = F + set(s == 1);
+            F = F + (s == 1);
         end
     end
 end
@@ -23,7 +23,7 @@ end
 for i = 1:p^2 
     for j = 1:p^2 
         if S(i,j)
-            F = F + set(A(i,j,S(i,j)) == 1);
+            F = F + (A(i,j,S(i,j)) == 1);
         end
     end
 end

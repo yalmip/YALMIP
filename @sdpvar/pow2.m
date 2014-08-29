@@ -1,8 +1,6 @@
 function varargout = pow2(varargin)
 %POW2 (overloaded)
 
-% Author Johan Löfberg
-% $Id: pow2.m,v 1.8 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

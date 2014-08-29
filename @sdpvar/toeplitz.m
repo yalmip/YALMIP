@@ -1,19 +1,13 @@
 function t = toeplitz(c,r)
 %TOEPLITZ (overloaded)
 
-% Author Johan Löfberg
-% $Id: toeplitz.m,v 1.5 2006-02-05 13:21:29 joloef Exp $
-
 % direct 1-to-1 copy of MATLAB double code
 if nargin < 2,
     c.basis(1,:) = conj(c.basis(1,:));
     r = c;
     c.basis = conj(c.basis);
-    %  c(1) = conj(c(1));
-    %  r = c;
-    %  c = conj(c);
 end
-r = reshape(r,prod(size(r)),1);%r(:)
+r = reshape(r,prod(size(r)),1);
 p = length(r);
 m = length(c);
 x = [extsubsref(r,p:-1:2) ; reshape(c,prod(size(c)),1)];

@@ -11,9 +11,6 @@ function varargout = sqrt(varargin)
 %
 % See also SDPVAR, SDPVAR/GEOMEAN
 
-% Author Johan Löfberg
-% $Id: sqrt.m,v 1.15 2009-10-02 09:09:13 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double' % What is the numerical value of this argument (needed for displays etc)

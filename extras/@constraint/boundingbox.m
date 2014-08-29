@@ -23,9 +23,9 @@ if nargin < 2
 end
 
 if nargin < 3
-    [B,L,U] = boundingbox(set(F),ops);
+    [B,L,U] = boundingbox(lmi(F),ops);
 else
-    [B,L,U] = boundingbox(set(F),ops,x);
+    [B,L,U] = boundingbox(lmi(F),ops,x);
 end
 switch nargout
     case 0

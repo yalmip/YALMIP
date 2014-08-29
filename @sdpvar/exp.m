@@ -1,7 +1,6 @@
 function varargout = exp(varargin)
 %EXP (overloaded)
 
-% Author Johan Löfberg
 switch class(varargin{1})
 
     case 'sdpvar'

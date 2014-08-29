@@ -1,8 +1,6 @@
 function varargout = cot(varargin)
 %COT (overloaded)
 
-% Author Johan Löfberg
-% $Id: cot.m,v 1.4 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

@@ -1,9 +1,6 @@
 function Z=conv(X,Y)
 %CONV (overloaded)
 
-% Author Johan Löfberg 
-% $Id: conv.m,v 1.4 2006-10-18 08:48:14 joloef Exp $   
-
 if isa(X,'double')
     temp = X;
     X = Y;

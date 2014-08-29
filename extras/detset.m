@@ -1,21 +1,18 @@
 function F = detset(t,P)
 %DETSET Internal function used in construction of MAXDET formulations
 %
-% F = detset(t,P) creates the SET t < det(P)^(1/(2^ceil(log2(length(P)))))
-
-% Author Johan Löfberg 
-% $Id: detset.m,v 1.6 2006-01-23 11:13:15 joloef Exp $  
+% F = detset(t,P) creates the model t <= det(P)^(1/(2^ceil(log2(length(P)))))
 
 [n,m]=size(P);
 
 if max(n,m)==1
-    F = set(P>=0) + set(t<=P);
+    F = (P>=0) + (t<=P);
 else
     if min(n,m)==1
         % Vector version (copy and pasted from below)
         p = 2^ceil(log2(max(n,m)));
         x = [P(:);ones(p-max(n,m),1)];
-        F = set([]);
+        F = ([]);
     else
         % This code should never run!! (Taken care of in geomean.m)
         % Is P square?
@@ -34,7 +31,7 @@ else
 
         D = tril(sdpvar(n,n));
         delta = diag(D);
-        F = set([P D;D' diag(delta)] >= 0);
+        F = ([P D;D' diag(delta)] >= 0);
         p = 2^ceil(log2(n));
         x = [delta;ones(p-n,1)];
     end

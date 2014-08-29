@@ -1,9 +1,6 @@
 function monom = recovermonoms(newton_m,x)
 %RECOVERMONOMS Internal function used in SOS programs
 
-% Author Johan Löfberg
-% $Id: recovermonoms.m,v 1.15 2009-10-08 11:04:01 joloef Exp $
-
 if size(newton_m,1)==1 & nnz(newton_m)==0
     monom = 1;
     return

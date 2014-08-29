@@ -5,7 +5,7 @@ vars = p.lmi_variables;
 
 
 mt = mt(vars,:);
-mt(:,binaries) = min(mt(:,binaries),1);%rem(mt(:,binaries),2);
+mt(:,binaries) = min(mt(:,binaries),1);
 
 used_variables = find(any(mt,1));
 x = recover(used_variables)';

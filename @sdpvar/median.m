@@ -5,9 +5,6 @@ function varargout=median(varargin)
 %
 % MEDIAN is implemented using the overloaded SORT operator.
 
-% Author Johan Löfberg
-% $Id: median.m,v 1.3 2007-07-29 17:32:28 joloef Exp $
-
 x = varargin{1};
 
 if nargin > 1 | min(size(x))>1

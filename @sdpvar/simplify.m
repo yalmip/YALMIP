@@ -1,9 +1,6 @@
 function Y=simplify(X,how)
 %SIMPLIFY  Reduce PWA complexity
 
-% Author Johan Löfberg
-% $Id: simplify.m,v 1.1 2006-06-08 15:35:19 joloef Exp $
-
 if nargin <2
     how = 'greedy';
 end

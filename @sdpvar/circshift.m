@@ -1,8 +1,6 @@
 function X = circshift(varargin)
 % CIRCSHIFT (overloaded)
 
-% Author Johan Löfberg
-
 Y = varargin{1};
 X = Y;
 X.basis = [];

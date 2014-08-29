@@ -24,7 +24,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = set(X >= -1+eps);
+        F = (X >= -1+eps);
 
         operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');
         operator.convexhull = @convexhull;

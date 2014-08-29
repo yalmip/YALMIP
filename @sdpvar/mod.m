@@ -1,9 +1,6 @@
 function varargout=mod(varargin)
 %MOD (overloaded)
 
-% Author Johan Löfberg
-% $Id: mod.m,v 1.4 2007-07-29 17:32:28 joloef Exp $
-
 switch class(varargin{1})
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
@@ -46,7 +43,7 @@ switch class(varargin{1})
 
         % t = mod(x,y), i.e. t = x - n*y, n = floor(x/y)
         n = intvar(1,1);
-        F = set(t == x - y*n)  + set((x/y) - 1 <= n <= (x/y));
+        F = (t == x - y*n)  + ((x/y) - 1 <= n <= (x/y));
 
         varargout{1} = F;
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

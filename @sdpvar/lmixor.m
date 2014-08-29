@@ -1,9 +1,6 @@
 function varargout = lmixor(varargin)
 %XOR (overloaded)
 
-% Author Johan Löfberg
-% $Id: lmixor.m,v 1.3 2007-07-29 17:32:28 joloef Exp $
-
 % Models XOR using a nonlinear operator definition
 switch class(varargin{1})
     case 'char'
@@ -18,21 +15,21 @@ switch class(varargin{1})
             end
         end
 
-        F = set([]);
+        F = ([]);
         x = binvar(length(X),1);
 
         for i = 1:length(X)
-            F = F + set(implies_internal(extsubsref(x,i),X{i}));
+            F = F + (implies_internal(extsubsref(x,i),X{i}));
         end
 
-        varargout{1} = F + set(sum(x) == 1);
+        varargout{1} = F + (sum(x) == 1);
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','extra','marker','model','integer');
         varargout{3} = recover(depends(F));
 
     case {'lmi'}
         x = varargin{1};
         y = varargin{2};
-        varargout{1} = set(yalmip('define','lmior',varargin{:}) == 1);
+        varargout{1} = (yalmip('define','lmior',varargin{:}) == 1);
 
     otherwise
 end

@@ -1,14 +1,11 @@
 function varargout = bounds(x,lower,upper,aux)
 %BOUNDS Adds implicit bounds on variables.
 %
-% BOUNDS IS OBSOLETE: Use standard SET constraints
+% BOUNDS IS OBSOLETE: Use standard constraints
 %
 % BOUNDS(x,Lower,Upper)   Adds bound constraints on variables.
 %                         These bounds are used when performing
 %                         big M formulations and similar things.
-
-% Author Johan Löfberg 
-% $Id: bounds.m,v 1.6 2006-05-11 10:49:13 joloef Exp $   
 
 variables = getvariables(x);
 if nargin == 1

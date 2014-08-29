@@ -1,9 +1,6 @@
 function y = kron(X,Y)
 %KRON (overloaded)
 
-% Author Johan Löfberg
-% $Id: kron.m,v 1.8 2009-09-28 12:06:34 joloef Exp $
-
 if isequal(X,1)
     y = Y;
     return;

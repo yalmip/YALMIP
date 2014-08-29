@@ -69,16 +69,16 @@ switch class(varargin{1})
             i = varargin{4}.subs{1};
             M = length(X);
             m = 1;
-            F = set(integer(i)); % just to be sure
+            F = (integer(i)); % just to be sure
             d = binvar(length(X),1);
             [Mx,mx]=derivebounds(X);
             for j = m:M
                 di = d(j);
-                %                        F = F + set(mx*(1-di) <= Y-X(j) <= Mx*(1-di));
-                F = F + set(-(max(Mx)-min(mx))*(1-di) <= Y-X(j) <= (max(Mx)-min(mx))*(1-di));
-                F = F + set(-(1+M-m)*(1-di) <= i-j <= (1+M-m)*(1-di));
+                %                        F = F + (mx*(1-di) <= Y-X(j) <= Mx*(1-di));
+                F = F + (-(max(Mx)-min(mx))*(1-di) <= Y-X(j) <= (max(Mx)-min(mx))*(1-di));
+                F = F + (-(1+M-m)*(1-di) <= i-j <= (1+M-m)*(1-di));
             end
-            F = F + set(sum(d)==1);
+            F = F + (sum(d)==1);
         else
             i1 = varargin{4}.subs{1};
             i2 = varargin{4}.subs{2};
@@ -87,30 +87,30 @@ switch class(varargin{1})
             m1 = 1;
             m2 = 1;
             if isa(i1,'sdpvar')
-                F = set(integer(i1)); % just to be sure
+                F = (integer(i1)); % just to be sure
             end
             if isa(i2,'sdpvar')
-                F = set(integer(i2)); % just to be sure
+                F = (integer(i2)); % just to be sure
             end
             d = binvar(size(X,1),size(X,2),'full');
             [Mx,mx]=derivebounds(X);
             for i = m1:M1
                 for j = m2:M2
                     di = d(i,j);
-                    F = F + set(-(max(Mx)-min(mx))*(1-di) <= Y-X(i,j) <= (max(Mx)-min(mx))*(1-di));
+                    F = F + (-(max(Mx)-min(mx))*(1-di) <= Y-X(i,j) <= (max(Mx)-min(mx))*(1-di));
                     if isa(i1,'sdpvar')
-                        F = F + set(-(1+M1-m1)*(1-di) <= i1-i <= (1+M1-m1)*(1-di));
+                        F = F + (-(1+M1-m1)*(1-di) <= i1-i <= (1+M1-m1)*(1-di));
                     elseif i1~=i
                         F = [F, sum(d(i,:))==0];
                     end
                     if isa(i2,'sdpvar')
-                        F = F + set(-(1+M2-m2)*(1-di) <= i2-j <= (1+M2-m2)*(1-di));
+                        F = F + (-(1+M2-m2)*(1-di) <= i2-j <= (1+M2-m2)*(1-di));
                     elseif i2~=j
                         F = [F, sum(d(:,j))==0];
                     end
                 end
             end
-            F = F + set(sum(sum(d))==1);
+            F = F + (sum(sum(d))==1);
 
         end
         varargout{1} = F;

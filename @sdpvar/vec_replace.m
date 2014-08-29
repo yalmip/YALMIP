@@ -10,9 +10,6 @@ function Z = replace(X,Y,W,expand)
 %  Y = [1+t;1+x+t];
 %  Y = replace(Y,x,2) generates Y=[1+t;3+t]
 
-% Author Johan Löfberg
-% $Id: vec_replace.m,v 1.1 2007-03-02 09:51:35 joloef Exp $
-
 % if nargin<4
 %     expand = 1;
 % end

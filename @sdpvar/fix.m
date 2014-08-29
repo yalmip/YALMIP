@@ -1,9 +1,6 @@
 function varargout=fix(varargin)
 %FIX (overloaded)
 
-% Author Johan Löfberg
-% $Id: fix.m,v 1.2 2007-07-26 17:10:13 joloef Exp $
-
 switch class(varargin{1})
     
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.

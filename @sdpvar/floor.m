@@ -1,9 +1,6 @@
 function varargout=floor(varargin)
 %FLOOR (overloaded)
 
-% Author Johan Löfberg
-% $Id: floor.m,v 1.7 2008-09-05 07:29:15 joloef Exp $
-
 switch class(varargin{1})
     
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
@@ -23,7 +20,7 @@ switch class(varargin{1})
         t = varargin{2};
         X = varargin{3};
         
-        F = set([X-1 <= t <= X]) + set(integer(t));
+        F = ([X-1 <= t <= X]) + (integer(t));
         
         varargout{1} = F;
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

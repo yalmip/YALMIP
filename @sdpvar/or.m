@@ -18,12 +18,6 @@ function varargout = or(varargin)
 %
 %   See also SDPVAR/AND, BINVAR, BINARY
 
-% Author Johan Löfberg 
-% $Id: or.m,v 1.15 2007-08-02 19:17:36 joloef Exp $   
-
-% Author Johan Löfberg 
-% $Id: or.m,v 1.15 2007-08-02 19:17:36 joloef Exp $   
-
 % Models OR using a nonlinear operator definition
 switch class(varargin{1})
     case 'char'
@@ -48,7 +42,7 @@ switch class(varargin{1})
                  
         xy=[x y];
         
-        varargout{1} = set(sum(xy) >= z) + set(z >= xy) +set(binary(z));
+        varargout{1} = (sum(xy) >= z) + (z >= xy) +(binary(z));
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = xy;
 

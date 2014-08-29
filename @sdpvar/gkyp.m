@@ -14,9 +14,6 @@ function sys = gkyp(K,S,P,M)
 % The knowledge about the underlying KYP structure can be exploited by some
 % solvers.
 
-% Author Johan Löfberg
-% $Id: gkyp.m,v 1.2 2009-05-29 08:05:11 joloef Exp $
-
 if nargin<4
     M = 0;
 elseif isempty(M)

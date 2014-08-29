@@ -7,13 +7,10 @@ function y = rcone(z,x,y)
 %
 % Example
 %
-%    F = set(rcone(z,x,y)) 
+%    F = (rcone(z,x,y)) 
 %
-% See also  SET, CONE
+% See also CONE
 
-
-% Author Johan Löfberg
-% $Id: rcone.m,v 1.2 2008-05-27 13:03:12 joloef Exp $
 
 if size(z,2)>1
   error('z must be a column vector')
@@ -29,7 +26,7 @@ end
 try
   y = [x;y;z];
   y.typeflag = 5;
-  y = set(y);
+  y = lmi(y);
 catch
   error(lasterr)
 end

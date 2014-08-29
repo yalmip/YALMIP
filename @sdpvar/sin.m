@@ -1,8 +1,6 @@
 function varargout = sin(varargin)
 %SIN (overloaded)
 
-% Author Johan Löfberg
-% $Id: sin.m,v 1.22 2009-05-07 14:14:01 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

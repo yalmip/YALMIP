@@ -1,9 +1,6 @@
 function X = imag(X)
 %IMAG (overloaded)
 
-% Author Johan Löfberg
-% $Id: imag.m,v 1.4 2006-04-13 12:12:38 joloef Exp $
-
 X.basis = imag(X.basis);
 X = clean(X);
 if isa(X,'sdpvar')

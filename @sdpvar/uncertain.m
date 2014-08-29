@@ -17,9 +17,6 @@ function x = uncertain(x,varargin)
 %
 %   See also SOLVESDP, ROBUSTIFY
 
-% Author Johan Löfberg
-% $Id: uncertain.m,v 1.3 2006-08-18 15:01:04 joloef Exp $
-
 if nargin == 1 || ((nargin == 2) && strcmpi(varargin{1},'deterministic'))
     x.typeflag = 15;
     x.extra.distribution.name = 'deterministic';

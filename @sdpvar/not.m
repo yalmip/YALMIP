@@ -11,7 +11,4 @@ function varargout = not(varargin)
 %
 %    See also SDPVAR/OR, SDPVAR/AND, BINVAR, BINARY
 
-% Author Johan Löfberg 
-% $Id: not.m,v 1.6 2005-02-10 12:26:38 johanl Exp $   
-
 varargout{1}=1-varargin{1};

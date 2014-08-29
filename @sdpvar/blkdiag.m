@@ -1,9 +1,6 @@
 function y = blkdiag(varargin)
 %BLKDIAG (overloaded)
 
-% Author Johan Löfberg
-% $Id: blkdiag.m,v 1.13 2010-01-13 13:49:20 joloef Exp $
-
 if nargin<2
     y=varargin{1};
     return

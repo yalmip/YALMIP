@@ -16,9 +16,6 @@ function y=min(varargin)
 %
 % See built-in MIN for syntax.
 
-% Author Johan Löfberg
-% $Id: min.m,v 1.15 2008-05-08 12:28:54 joloef Exp $
-
 % MIN is implemented as a nonlinear operator.
 % However, for performance issues, it is not
 % implemented in the default high-level way.

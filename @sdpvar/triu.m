@@ -1,10 +1,6 @@
 function X=triu(X,r)
 %TRIU (overloaded)
 
-% Author Johan Löfberg 
-% $Id: triu.m,v 1.6 2006-07-26 20:17:58 joloef Exp $   
-
-
 if nargin==1
     r = 0;
 end

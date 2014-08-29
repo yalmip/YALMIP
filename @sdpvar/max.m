@@ -16,9 +16,6 @@ function y = max(varargin)
 %
 % See built-in MAX for syntax.
 
-% Author Johan Löfberg
-% $Id: max.m,v 1.23 2008-05-08 12:28:54 joloef Exp $
-
 % To simplify code flow, code for different #inputs
 switch nargin
     case 1

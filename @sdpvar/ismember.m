@@ -7,7 +7,7 @@ function varargout = ismember(varargin)
 %  x : SDPVAR object 
 %  P : MPT polytope object, double, or CONSTRAINT object
 % Output
-%  F : SET object
+%  F : Constraints
 %
 % Depending on the second argument P, different classes of constraint are
 % generated. 
@@ -29,8 +29,6 @@ function varargout = ismember(varargin)
 %
 % Since the two last constructions are based on big-M formulations, all
 % involved variable should have explicit variable bounds. 
-
-% Author Johan Löfberg 
 
 x = varargin{1};
 p = varargin{2};
@@ -78,7 +76,7 @@ switch class(varargin{1})
             P = minHRep(varargin{2});
             varargout{1} = [P.A*x <= P.b, P.Ae*x == P.be];
         else                            
-            varargout{1} = set(yalmip('define',mfilename,varargin{:}) == 1);            
+            varargout{1} = (yalmip('define',mfilename,varargin{:}) == 1);            
             varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
             if isa(varargin{2},'double')
                 if size(varargin{1},1) == size(varargin{2},1) % v in [v1 v2 v3]

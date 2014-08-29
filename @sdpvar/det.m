@@ -3,9 +3,6 @@ function varargout = geomean(varargin)
 %
 % t = DET(X)
 
-% Author Johan Löfberg
-% $Id: geomean.m,v 1.18 2007-08-02 19:17:36 joloef Exp $
-
 switch class(varargin{1})
        
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.

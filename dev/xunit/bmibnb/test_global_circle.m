@@ -25,6 +25,6 @@ F=[F,sqr(5.501896021-x1)+sqr(4.918207429-x2)-sqr(objvar)<=0];
 F=[F,0<=objvar];
 
 % Solve problem
-sol = solvesdp(F+set(recover(depends(F))<=100),objvar,sdpsettings('solver','bmibnb','allownonconvex',1))
+sol = solvesdp(F+(recover(depends(F))<=100),objvar,sdpsettings('solver','bmibnb','allownonconvex',1))
 mbg_asserttrue(sol.problem==0)
 mbg_asserttolequal(double(objvar),4.5742, 1e-2);

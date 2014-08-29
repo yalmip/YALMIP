@@ -6,9 +6,6 @@ function sys=islinear(x)
 % X : SDPVAR object
 % p : boolean 0/1
 
-% Author Johan Löfberg 
-% $Id: islinear.m,v 1.2 2004-07-02 08:17:29 johanl Exp $  
-
 try
     sys = is(x,'linear');
 catch

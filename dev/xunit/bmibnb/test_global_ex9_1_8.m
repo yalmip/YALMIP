@@ -55,6 +55,6 @@ F=[F,0<=x15];
 
 % Solve problem
 solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-sol = solvesdp(F+set(-100<=recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = solvesdp(F+(-100<=recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 mbg_asserttrue(sol.problem==0)
 mbg_asserttolequal(double(objective), -3.25, 1e-2);

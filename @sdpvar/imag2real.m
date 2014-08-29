@@ -1,8 +1,5 @@
 function Y = imag2real(Y)
-%KRON (overloaded)
-
-% Author Johan Löfberg
-% $Id: imag2real.m,v 1.1 2007-03-02 09:51:35 joloef Exp $
+%IMAG2REAL
 
 if isreal(Y)
     y = Y;

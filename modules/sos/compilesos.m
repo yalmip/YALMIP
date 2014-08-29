@@ -287,7 +287,7 @@ if options.sos.newton
     tempops.solver = 'cdd,glpk,*';  % CDD is generally robust on these problems
     tempops.verbose = 0;
     tempops.saveduals = 0;
-    [aux1,aux2,aux3,LPmodel] = export(set(temp>=0),temp,tempops);   
+    [aux1,aux2,aux3,LPmodel] = export((temp>=0),temp,tempops);   
 else
     LPmodel = [];
 end

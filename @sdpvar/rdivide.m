@@ -1,9 +1,6 @@
 function y = rdivide(X,Y)
 %RDIVIDE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: rdivide.m,v 1.7 2006-01-26 13:44:13 joloef Exp $   
-
 % Check dimensions
 [nx,mx] = size(X);
 [ny,my] = size(Y);

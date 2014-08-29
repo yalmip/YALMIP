@@ -1,8 +1,6 @@
 function varargout = sec(varargin)
 %SEC (overloaded)
 
-% Author Johan Löfberg
-% $Id: sec.m,v 1.4 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
