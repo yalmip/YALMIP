@@ -92,7 +92,7 @@ end
 %                 quadratic constraint in W
 
 % Robust model
-F_robust = set([]);
+F_robust = ([]);
 
 % We begin by checking to see if the user wants to apply Polyas theorem.
 % If that is the case, search for simplex structures, and apply Polyas.
@@ -337,7 +337,7 @@ if ~isempty(h)
             h_fixed = h;
         else
             sdpvar t
-            F_xw = F_xw + set(h < t);
+            F_xw = F_xw + (h <= t);
             h_fixed = t;
             x = [x;t];
         end
@@ -346,7 +346,7 @@ if ~isempty(h)
         h_uncertain = 2*w'*Q_xw'*x + c_w'*w;
         if ~isa(h_uncertain,'double')
             sdpvar t
-            F_xw = F_xw + set(h_uncertain < t);
+            F_xw = F_xw + (h_uncertain <= t);
             h_fixed = h_fixed + t;
             x = [x;t];
         end

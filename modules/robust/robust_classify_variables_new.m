@@ -1,25 +1,5 @@
 function [VariableType,F] = robust_classify_variables_newest(F,h,ops,w);
 
-% Dependency = yalmip('monomtable') | yalmip('getdependence');
-% 
-% DependsOnw = find(any(full(Dependency(:,getvariables(w))),2));
-% DoesNotDependOnw = find(~any(full(Dependency(:,getvariables(w))),2));
-% 
-% F_w = [];
-% F_x = [];
-% F_xw = [];
-% for i = 1:length(F)
-%     F_vars = getvariables(F(i))    
-%     if all(ismember(F_vars,DependsOnw))
-%         F_w = F_w + F(i);
-%     elseif all(ismember(F_vars,DoesNotDependOnw))
-%         F_x = F_x + F(i);
-%     else
-%         F_xw = F_xw + F(i);
-%     end            
-% end
-
-
 % Variables before expanding nonlinear operators
 initial_variables = unique([depends(F) depends(h)]);
 

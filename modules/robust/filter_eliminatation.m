@@ -1,5 +1,5 @@
 function [F_xw,F_robust] = filter_eliminatation(F_xw,w,order,ops)
-F_robust = set([]);
+F_robust = ([]);
 Fvars = getvariables(F_xw);
 wvars = getvariables(w);
 [mt,vt] = yalmip('monomtable');

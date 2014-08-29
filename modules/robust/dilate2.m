@@ -26,9 +26,6 @@ function varargout = dilate(F,w)
 %
 % See also ROBUSTIFY, SOLVEROBUST, UNCERTAIN
 
-% Author Johan Löfberg
-% $Id: dilate2.m,v 1.6 2006-11-20 14:36:24 joloef Exp $
-
 if isa(F,'sdpvar')
     [G,H,M] = matrix_dilate(F,w);
     varargout{1} = G;
@@ -49,7 +46,7 @@ elseif isa(F,'lmi')
         if (is(F(i),'sdp') | ((length(sdpvar(F(i))) == 1) & is(F(i),'elementwise'))) & max(degree(sdpvar(F(i)),w))>0
             [G,H,M] = matrix_dilate(sdpvar(F(i)),w);
             W = sdpvar(size(G,1),size(H,2));
-            Fnew = Fnew + set(G + W*H' + H*W' >= 0);
+            Fnew = Fnew + (G + W*H' + H*W' >= 0);
         else
             Fnew = Fnew + F(i);
         end
@@ -65,7 +62,7 @@ function [G,H,M] = matrix_dilate(F,w)
 
 % Parametric variables in SOS i.e. the certain variables
 x = recover(setdiff(depends(F),depends(w)));
-[G,dummy,m] = compilesos(set(sos(F)),[],sdpsettings('sos.newton',0,'sos.model',2,'sos.scale',0,'verbose',0,'sos.cong',0),x);
+[G,dummy,m] = compilesos((sos(F)),[],sdpsettings('sos.newton',0,'sos.model',2,'sos.scale',0,'verbose',0,'sos.cong',0),x);
 G = sdpvar(G);
 
 allvariables = getvariables(F);

@@ -63,7 +63,7 @@ for i = 1:length(all_f)
             if length(non_zeroBirow)>1 & nnz(Q_xx{i})==0
                 % This is what we are doing...
                 %t = sdpvar(length(non_zeroBirow),1);
-                %F = F + set((bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)-sum(t) >= 0) + set(-t < T(non_zeroBirow,:)*(ci+Bi'*x) < t);
+                %F = F + ((bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)-sum(t) >= 0) + (-t < T(non_zeroBirow,:)*(ci+Bi'*x) < t);
                 % However, to save over-head, we save information and
                 % post-pone the generation of a constraint 
                 % A*x+b+C*t>0,-t<d+E*x<t
@@ -72,7 +72,7 @@ for i = 1:length(all_f)
                 collectC = blkdiag(collectC,-sparse(ones(1,length(non_zeroBirow))));
                 collectE = [collectE; T(non_zeroBirow,:)*Bi'];
                 collectd = [collectd; T(non_zeroBirow,:)*ci];
-                %F = F + set((bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)-sum(t) >= 0) + set(-t < T(non_zeroBirow,:)*(ci+Bi'*x) < t);
+                %F = F + ((bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)-sum(t) >= 0) + (-t < T(non_zeroBirow,:)*(ci+Bi'*x) < t);
             else
                 % There is only one expression involving product between x
                 % and w. We explicitly construct the absolut value

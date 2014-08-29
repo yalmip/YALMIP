@@ -140,7 +140,7 @@ switch class(varargin{1})
                         
                         costs = S*[x;1];
                         %costs = reshape([pwa_struct{1}.Bi{:}]',length(x),[])'*x+reshape([pwa_struct{1}.Ci{:}]',[],1);
-                        F = (H* x <= K) + (costs<=t,'Epigraph of pwa');
+                        F = (H* x <= K) + ((costs<=t):'Epigraph of pwa');
 
                     case 'convexoverlapping'
 

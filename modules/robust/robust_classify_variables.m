@@ -78,9 +78,6 @@ if ~isempty(extended) & any(ismember(initial_variables,extended))
     w_variables = union(aux_variables_w, w_variables);
 end
 
-%x_variables = intersect([getvariables(F) getvariables(h)],x_variables);
-%w_variables = intersect([getvariables(F) getvariables(h)],w_variables);
-
 x_variables = intersect([depends(F) depends(h)],x_variables);
 w_variables = intersect([depends(F) depends(h)],w_variables);
 
@@ -88,25 +85,11 @@ x = recover(x_variables);
 x = recover(setdiff(depends(x),w_variables));
 x_variables = getvariables(x);
 
-% heh = intersect(w_variables,extended);
 % % Could be some of these two cases
-% % F = set(abs(x) + w < 1) + set(norm(w,1) < 0.3);
-% % F = set(x + abs(w) < 1) + set(-2 < w < 2) ;
+% % F = (abs(x) + w < 1) + (norm(w,1) < 0.3);
+% % F = (x + abs(w) < 1) + (-2 < w < 2) ;
 % 
 % w_variables = setdiff(w_variables,heh);
 % aux_variables = union(aux_variables,heh);
 
 w = recover(w_variables);
-
-% Fe = [];
-% for i = 1:length(F)
-%     if findstr('Expansion of',tag(F(i)))
-%         Fe = [Fe,F(i)];
-%     end
-% end
-% if ~isempty(Fe)
-%     auxVars = yalmip('auxvariables')
-% end
-
-
-

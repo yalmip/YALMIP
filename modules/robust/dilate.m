@@ -29,15 +29,12 @@ function varargout = dilate(F,w,options)
 %
 % See also ROBUSTIFY, SOLVEROBUST, UNCERTAIN
 
-% Author Johan Löfberg
-% $Id: dilate.m,v 1.9 2009-04-29 11:38:00 joloef Exp $
-
 if nargin < 3
     options = sdpsettings;
 end
 
 if isa(F,'constraint')
-    F = set(F);
+    F = (F);
 end
 
 if isa(F,'sdpvar')
@@ -60,7 +57,7 @@ elseif isa(F,'lmi')
         if (is(F(i),'sdp') | ((length(sdpvar(F(i))) == 1) & is(F(i),'elementwise'))) & max(degree(sdpvar(F(i)),w))>0
             [G,H,M] = matrix_dilate(sdpvar(F(i)),w,options);
             W = sdpvar(size(G,1),size(H,2));
-            Fnew = Fnew + set(G + W*H' + H*W' >= 0);
+            Fnew = Fnew + (G + W*H' + H*W' >= 0);
         else
             Fnew = Fnew + F(i);
         end
@@ -82,7 +79,7 @@ options.sos.model = 2;
 options.sos.scale = 0;
 options.verbose = 0;
 options.sos.conggruence = 0;
-[G,dummy,m] = compilesos(set(sos(F)),[],options,x,v);
+[G,dummy,m] = compilesos((sos(F)),[],options,x,v);
 G = sdpvar(G);
 
 allvariables = getvariables(F);

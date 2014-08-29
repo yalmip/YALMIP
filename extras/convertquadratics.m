@@ -1,9 +1,6 @@
 function [Fconv,no_changed,infeasible,Forigquad] = convertquadratics(F)
 %CONVERTQUADRATICS Internal function to extract quadratic constraints
 
-% Author Johan Löfberg
-% $Id: convertquadratics.m,v 1.17 2009-05-15 10:32:42 joloef Exp $
-
 % ******************************
 % LINEAR?
 % ******************************
@@ -43,7 +40,7 @@ for i = 1:1:length(F)
             if info==0
                 if nnz(Q)==0
                     % Oh, linear,...
-                    Fconv = Fconv + set(fi(j));
+                    Fconv = Fconv + (fi(j)>=0);
                 else
                     % Yes, quadratic, but convex?
                     % Change sign definitions
