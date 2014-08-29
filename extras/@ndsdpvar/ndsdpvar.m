@@ -1,9 +1,6 @@
 function X = ndsdpvar(varargin)
 % NDSDPVAR Constructor for multi-dimensional SDPVAR object
 
-% Author Johan Löfberg
-% $Id: ndsdpvar.m,v 1.10 2007-01-04 08:52:49 joloef Exp $
-
 % Sometimes it is convenient to cast a 2D SDPVAR variables as an nD
 % variable
 

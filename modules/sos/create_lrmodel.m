@@ -42,12 +42,12 @@ start = 1;
 % Get the cost, expressed in Z
 [Qi,ci,fi,xi,infoi] = quaddecomp(parobj,z);
 C = [fi ci'/2;ci/2 Qi];
-F = set([]);
+F = ([]);
 for i = 1:length(K.s)
     if i<length(K.s)
-        F = F + set(reshape(CminusAy(start:start+K.s(i)^2-1),K.s(i),K.s(i)));
+        F = F + (reshape(CminusAy(start:start+K.s(i)^2-1),K.s(i),K.s(i)) >= 0);
     else
-        F = F + set(reshape(C(:) + CminusAy(start:start+K.s(i)^2-1),K.s(i),K.s(i)));
+        F = F + (reshape(C(:) + CminusAy(start:start+K.s(i)^2-1),K.s(i),K.s(i))>=0);
     end
     start = start + K.s(i)^2;
 end

@@ -61,9 +61,6 @@ function options = sdpsettings(varargin)
 %
 %   See also SOLVESDP, SET, SDPVAR
 
-% Author Johan Löfberg (ripped from odeset)
-% $Id: sdpsettings.m,v 1.80 2010-04-27 14:25:05 joloef Exp $
-
 % Print out possible values of properties.
 if (nargin == 0) && (nargout == 0)
     help sdpsettings

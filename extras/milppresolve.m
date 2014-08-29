@@ -1,9 +1,6 @@
 function [lb,ub,redundant,psstruct,infeasible] = milppresolve(A,b,lb,ub,integer_variables,binary_variables,changed_bounds);
 %MILPPRESOLVE Internal function for presolving MILPs
 
-% Author Johan Löfberg
-% $Id: milppresolve.m,v 1.3 2005-10-05 14:54:55 joloef Exp $
-
 % Simple bound pre-processing (paper by Savelsbergh)
 % No code optimization at all
 

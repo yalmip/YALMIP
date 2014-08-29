@@ -1,9 +1,6 @@
 function y = mrdivide(X,Y)
 %MRDIVIDE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: mrdivide.m,v 1.1 2006-08-10 18:00:21 joloef Exp $   
-
 if (isa(Y,'sdpvar'))
     if Y.dim(1)*Y.dim(2) == 1
         y = X*Y^-1;

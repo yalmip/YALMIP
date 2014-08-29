@@ -1,9 +1,6 @@
 function Y=plot(varargin)
 %PLOT (overloaded)
 
-% Author Johan Löfberg
-% $Id: plot.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
 % Fast version for plotting simple PWA objects
 if nargin == 1
     X = varargin{1};

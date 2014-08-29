@@ -19,9 +19,6 @@ function [F,properties,arguments,fcn]=model(X,method,options,extstruct)
 % Gives (F = set(u<t) + set(1+y<t))
 % where u is the variable modelling norm([x;y])
 
-% Author Johan Löfberg
-% $Id: model.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
 extvar = getvariables(X);
 arguments   = cell(1,length(extvar));
 properties  = cell(1,length(extvar));

@@ -69,7 +69,7 @@ if nargin>=2
         end
         h = getcx(h);       
         if isempty(F)
-           F = set([]);
+           F = ([]);
         end
         
     else

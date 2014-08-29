@@ -13,7 +13,6 @@ function varargout = gams2yalmip(fileName,filenameOut);
 %    h            : SDPVAR object with objective (optional)
 
 % Author Based on original implementation by M. Kojima (readGMS.m)
-% $Id: gams2yalmip.m,v 1.15 2007-08-06 07:50:21 joloef Exp $
 
 writetofile = (nargout == 0) | (nargin>1);
 fileName = [fileName '.gms'];
@@ -295,13 +294,13 @@ if length(listOfEquations)>0
     if writetofile
         fprintf(fileOUT,'%% Define constraints \n');
     end
-    F = set([]);
+    F = ([]);
     if writetofile
-        fprintf(fileOUT,['F = set([]);' '\n']);
+        fprintf(fileOUT,['F = ([]);' '\n']);
     end
     for i = 1:length(listOfEquations)
         listOfEquations{i} = strrep(listOfEquations{i},';','');
-        %        string = ['F = F + set(' listOfEquations{i} ',' '''' listOfEquations{i} '''' ');'];
+        %        string = ['F = F + (' listOfEquations{i} ',' '''' listOfEquations{i} '''' ');'];
         string = ['F = [F, ' strtrim(listOfEquations{i}) '];'];
         string = strrep(string,'**','^');
         string = strrep(string,'sqrt(','sqrtm(');
@@ -322,12 +321,12 @@ if length(listOfEquations)>0
         fprintf(fileOUT,'\n');
     end
 else
-    F = set([]);
+    F = ([]);
     if writetofile
         fprintf(fileOUT,'%% Define constraints \n');
     end
     if writetofile
-        fprintf(fileOUT,['F = set([]);' '\n']);
+        fprintf(fileOUT,['F = ([]);' '\n']);
     end
 end
 

@@ -1,8 +1,5 @@
 function [Lc,Mc,Rc] = compressfactors(L,M,R)
 
-% Author Johan Löfberg
-% $Id: compressfactors.m,v 1.3 2009-11-03 09:36:24 joloef Exp $
-
 Lc = {};
 Rc = {};
 Mc = {};

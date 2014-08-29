@@ -10,7 +10,7 @@ end
 %X = varargin{3};
 n = length(X);
 if isequal(getbase(X),[zeros(n,1) eye(n)])
-    F = set([]);
+    F = ([]);
 else
     dX = double(X);
     if ~all(isnan(dX))

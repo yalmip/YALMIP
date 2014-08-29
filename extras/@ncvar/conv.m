@@ -1,10 +1,6 @@
 function Z=conv(X,Y)
 %CONV (overloaded)
 
-% Author Johan Löfberg 
-% $Id: conv.m,v 1.1 2006-08-10 18:00:19 joloef Exp $   
-
-
 x_lmi_variables = X.lmi_variables;
 n = X.dim(1);
 m = X.dim(2);

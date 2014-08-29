@@ -1,8 +1,5 @@
 function [xe,ye]=ellipplot(P,gamma,ecolor,xc)
-%DUAL2CELL Internal function for plotting ellipsoid
-
-% Author Johan Löfberg
-% $Id: ellipplot.m,v 1.3 2008-05-16 12:55:27 joloef Exp $
+%ELLIPPLOT Internal function for plotting ellipsoid
 
 if nargin<4
    xc = zeros(length(P),1);

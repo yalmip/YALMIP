@@ -145,7 +145,7 @@ for i = 1:length(F)
         if is(Fi,'socone')
             vars = getvariables(Fi);
             % Make sure these variables are not SDP cone variables
-            % This can actually only happen for set(X>0) + set(Xcone((2:end,1),X(1)))
+            % This can actually only happen for (X>0) + (Xcone((2:end,1),X(1)))
             if ~isempty(varSDP)
                 inSDP = any(varSDP(:,1)<=vars(1)& vars(1) <=varSDP(:,2)) | any(varSDP(:,1)<=vars(end)& vars(end) <=varSDP(:,2));
             else

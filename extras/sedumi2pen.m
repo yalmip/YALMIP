@@ -1,9 +1,6 @@
 function pen = sedumi2pen(F_struc,K,c,x0)
 %SEDUMI2MPEN Internal function to convert SeDuMi structure to format needed in PENNON
 
-% Author Johan Löfberg
-% $Id: sedumi2pen.m,v 1.15 2006-08-24 17:12:27 joloef Exp $
-
 % General data
 pen.vars = length(c);
 pen.constr = K.l;

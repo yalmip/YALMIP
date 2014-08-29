@@ -3,7 +3,7 @@ function [sol,x_extract,momentsstructure,sosout] = solvemoment(F,obj,options,k)
 %
 %   min        h(x)
 %   subject to
-%              F(x) > 0,
+%              F(x) >= 0,
 %
 %   [DIAGNOSTIC,X,MOMENT,SOS] = SOLVEMOMENT(F,h,options,k)
 %

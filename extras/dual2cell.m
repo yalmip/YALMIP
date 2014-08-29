@@ -1,9 +1,6 @@
 function X = dual2cell(dual_vec,K)
 %DUAL2CELL Internal function for organizing dual data 
 
-% Author Johan Löfberg
-% $Id: dual2cell.m,v 1.2 2004-07-02 08:17:30 johanl Exp $
-
 row = 1;
 
 X.f = dual_vec(row:row+K.f-1);

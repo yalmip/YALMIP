@@ -1,9 +1,6 @@
 function Y=trace(X)
 %TRACE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: trace.m,v 1.1 2006-08-10 18:00:23 joloef Exp $   
-
 if isa(X,'blkvar')
     X = sdpvar(X);
 end

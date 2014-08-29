@@ -8,7 +8,7 @@ function [yesno,diagnostic] = isfeasible(OptimizationProblem,Options)
 %    The following code creates an optimization problem, and then checks
 %    feasibility
 %
-%    x = sdpvar(1);P = optproblem(x > 0, x^2);isfeasible(P)
+%    x = sdpvar(1);P = optproblem(x >= 0, x^2);isfeasible(P)
 
 OptimizationProblem.Options.verbose = 0;
 if nargin < 2

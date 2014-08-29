@@ -1,9 +1,6 @@
 function X=fliplr(X)
 %FLIPLR (overloaded)
 
-% Author Johan Löfberg 
-% $Id: fliplr.m,v 1.1 2006-08-10 18:00:20 joloef Exp $   
-
 n  = X.dim(1);
 m  = X.dim(2);
 nm = n*m;

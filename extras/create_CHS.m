@@ -1,9 +1,6 @@
 function [H,S]=create_CHS(A,B,C,N,M);
 % CREATE_CHS Internal function to define matrices for MPC problem
 
-% Author Johan Löfberg
-% $Id: create_CHS.m,v 1.2 2004-07-02 08:17:29 johanl Exp $
-
 % How many states
 n=length(A);p=size(C,1);
 [dummy,m]=size(B);

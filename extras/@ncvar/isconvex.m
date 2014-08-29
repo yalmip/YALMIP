@@ -1,8 +1,6 @@
 function YESNONA = isconvex(p)
 %ISCONVEX Checks if scalar function is convex
 
-% Author Johan Löfberg 
-% $Id: isconvex.m,v 1.1 2006-08-10 18:00:20 joloef Exp $   
 p=p;
 if is(p,'linear')
     YESNONA = 1;
@@ -40,7 +38,7 @@ end
 if convex
     H = hessian(p,x);
     v = sdpvar(length(H),1);
-    sol = solvesos(set(sos(v'*H*v)),[],sdpsettings('verbose',1));
+    sol = solvesos((sos(v'*H*v)),[],sdpsettings('verbose',1));
     if sol.problem == 0
         YESNONA = 1;
     else

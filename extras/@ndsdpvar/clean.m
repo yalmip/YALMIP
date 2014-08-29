@@ -1,9 +1,6 @@
 function Y=clean(Y)
 %clean (overloaded)
 
-% Author Johan Löfberg
-% $Id: clean.m,v 1.1 2006-07-13 19:40:59 joloef Exp $
-
 i = length(Y.dim);
 while i>2
     if Y.dim(end) == 1

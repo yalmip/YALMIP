@@ -1,9 +1,6 @@
 function y = plus(X,Y)
 %PLUS (overloaded)
 
-% Author Johan Löfberg
-% $Id: plus.m,v 1.2 2006-08-11 11:48:15 joloef Exp $
-
 if isa(X,'sdpvar')
     X = ncvar(X);
 elseif isa(Y,'sdpvar')

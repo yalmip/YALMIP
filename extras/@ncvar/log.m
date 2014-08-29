@@ -1,9 +1,6 @@
 function varargout = log(varargin)
 %LOG (overloaded)
 
-% Author Johan Löfberg
-% $Id: log.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double' % What is the numerical value of this argument (needed for displays etc)
@@ -32,7 +29,7 @@ switch class(varargin{1})
                 F = SetupEvaluationVariable(varargin{:});
                 
                 % Now add your own code, such as domain constraints
-                F = F + set(X > eps);
+                F = F + (X >= eps);
                 
                 % Let YALMIP know about convexity etc                
                 varargout{1} = F;

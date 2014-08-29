@@ -3,9 +3,6 @@ function varargout=median(varargin)
 %
 % V = var(x)
 
-% Author Johan Löfberg
-% $Id: var.m,v 1.1 2006-08-10 18:00:23 joloef Exp $
-
 x = varargin{1};
 
 if nargin > 1 | min(size(x))>1

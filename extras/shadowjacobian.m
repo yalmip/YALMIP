@@ -1,9 +1,6 @@
 function dfdx = shadowjacobian(f,x)
 % See SDPVAR/jacobian
 
-% Author Johan Löfberg
-% $Id: shadowjacobian.m,v 1.7 2007-08-10 08:34:30 joloef Exp $
-
 if isa(f,'double')
     dfdx = zeros(size(f,1),length(x));
     return

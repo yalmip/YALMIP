@@ -6,9 +6,6 @@ function varargout = pwf(varargin)
 % The variable t can only be used in convexity/concavity preserving
 % operations, depending on the convexity of hi
 
-% Author Johan Löfberg
-% $Id: pwf.m,v 1.12 2008-01-15 12:52:23 joloef Exp $
-
 switch class(varargin{1})
         
     case {'cell','struct'}

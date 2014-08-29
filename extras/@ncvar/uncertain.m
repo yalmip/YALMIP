@@ -16,8 +16,5 @@ function x = uncertain(x)
 %
 %   See also SOLVEROBUST, ROBUSTIFY
 
-% Author Johan Löfberg
-% $Id: uncertain.m,v 1.1 2006-08-10 18:00:23 joloef Exp $
-
 x.typeflag = 15;
 x = lmi(x);

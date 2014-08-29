@@ -1,9 +1,6 @@
 function varargout=ceil(varargin)
 %CEIL (overloaded)
 
-% Author Johan Löfberg
-% $Id: ceil.m,v 1.1 2006-08-10 18:00:19 joloef Exp $
-
 switch class(varargin{1})
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
@@ -27,7 +24,7 @@ switch class(varargin{1})
                 X = varargin{3};
                 
                 c = intvar(1,1);
-                F = set(x <= c <= x + 1);
+                F = (x <= c <= x + 1);
 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','milp','monotonicity','milp','definiteness','milp');

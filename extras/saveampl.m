@@ -11,8 +11,6 @@ function solution = saveampl(varargin)
 % Note that YALMIP changes the variable names. Continuous variables
 % are called x, binary are called y while z denotes integer variables.
 
-% Author Johan Löfberg
-
 F = varargin{1};
 h = varargin{2};
 

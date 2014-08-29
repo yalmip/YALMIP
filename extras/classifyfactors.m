@@ -1,8 +1,5 @@
 function [constants,general,singles,pairs] = classifyfactors(L,M,R)
 
-
-% Author Johan Löfberg, Rikard Falkeborn
-% $Id: classifyfactors.m,v 1.8 2009-10-27 10:26:20 joloef Exp $
 nfac = length(L);
 used = zeros(1,nfac);
 

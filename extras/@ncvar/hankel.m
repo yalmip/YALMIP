@@ -1,9 +1,6 @@
 function H = hankel(c,r)
 %HANKEL (overloaded)
 
-% Author Johan Löfberg
-% $Id: hankel.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 % direct 1-to-1 copy of MATLAB double code
 c = reshape(c,prod(size(c)),1);
 nc = length(c);

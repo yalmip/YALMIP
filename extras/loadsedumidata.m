@@ -4,9 +4,6 @@ function [F,h] = loadsedumidata(varargin)
 %    [F,h] = loadsedumidata('filename')  Loads the problem min(h(x)), F(x)>0 from file 'filename'
 %    [F,h] = loadsedumidata              An "Open" - box will be opened
 
-% Author Johan Löfberg
-% $Id: loadsedumidata.m,v 1.2 2005-09-16 08:10:24 joloef Exp $
-
 filename = varargin{1};
 
 % Does the file exist

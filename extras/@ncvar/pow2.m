@@ -1,8 +1,5 @@
-function varargout = exp(varargin)
+function varargout = pow2(varargin)
 %POW2 (overloaded)
-
-% Author Johan Löfberg
-% $Id: pow2.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
 
 switch class(varargin{1})
 

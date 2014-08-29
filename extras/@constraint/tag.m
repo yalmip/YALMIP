@@ -1,3 +1,3 @@
 function F = tag(F,t)
 
-F = tag(set(F),t);
+F = tag(lmi(F),t);

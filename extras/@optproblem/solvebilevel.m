@@ -31,9 +31,6 @@ function [sol,info] = solvebilevel(varargin)
 %
 %   See also SDPVAR, SDPSETTINGS, SOLVESDP
 
-% Author Johan Löfberg
-% $Id: solvebilevel.m,v 1.15 2010-04-27 14:25:05 joloef Exp $
-
 if isa(varargin{2},'optimizer')
     Pout = varargin{1};
     s = struct(varargin{2});

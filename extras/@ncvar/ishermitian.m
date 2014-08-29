@@ -1,9 +1,6 @@
 function issym=ishermitian(X)
 %ISHERMITIAN Check if variable is Hermitian
 
-% Author Johan Löfberg
-% $Id: ishermitian.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 n = X.dim(1);
 m = X.dim(2);
 issym = 0;

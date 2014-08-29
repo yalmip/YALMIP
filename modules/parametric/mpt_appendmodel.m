@@ -200,7 +200,7 @@ for k = 1:length(X.Ai)
             if isfulldim(isc)
                 p2 = [x;1]'*Yq*[x;1];
                 [H,K] = double(isc);
-                [xx,cc,vv]= solvemoment(set(H*x < K),p1-p2)
+                [xx,cc,vv]= solvemoment((H*x <= K),p1-p2)
             end
         end
         %        if ~all(real(eig(Xq-Yq))>=-1e-12)
@@ -216,8 +216,8 @@ function XbiggerY = quadraticLarger2(Q1,Q2,H,K)
 x = sdpvar(size(H,2),1);
 obj = [x;1]'*Q1*[x;1]-[x;1]'*Q2*[x;1];
 
-%sol = solvemoment(set(H*x <= K),obj,[],2);
-sol = solvesdp(set(H*x <= K),obj,sdpsettings('solver','kktqp'));
+%sol = solvemoment((H*x <= K),obj,[],2);
+sol = solvesdp((H*x <= K),obj,sdpsettings('solver','kktqp'));
 %if relaxdouble(obj) > -1e-5
 if double(obj) > -1e-5
 

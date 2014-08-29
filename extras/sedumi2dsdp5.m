@@ -1,9 +1,6 @@
 function [b,AC] = sedumi2dsdp(F_struc,c,K)
 %SEDUMI2DSDP5 Internal function to convert SeDuMi structure to format needed in DSDP 5
 
-% Author Johan Löfberg
-% $Id: sedumi2dsdp5.m,v 1.1 2004-10-06 18:11:26 johanl Exp $
-
 nvars = size(F_struc,2)-1;
 
 A = [];

@@ -1,9 +1,6 @@
 function Z = minus(X,Y)
 % MINUS (overloaded)
 
-% Author Johan Löfberg
-% $Id: minus.m,v 1.2 2006-07-13 19:40:59 joloef Exp $
-
 dim = [];
 if isa(X,'ndsdpvar')
     dim = X.dim;

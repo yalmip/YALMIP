@@ -1,8 +1,5 @@
 function varargout = log2(varargin)
-%LOG (overloaded)
-
-% Author Johan Löfberg
-% $Id: log2.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
+%LOG2 (overloaded)
 
 switch class(varargin{1})
 
@@ -32,7 +29,7 @@ switch class(varargin{1})
                 F = SetupEvaluationVariable(varargin{:});
                 
                 % Now add your own code, such as domain constraints
-                F = F + set(X > 0);
+                F = F + (X >= 0);
                 
                 % Let YALMIP know about convexity etc                
                 varargout{1} = F;

@@ -7,15 +7,12 @@ function y = max(varargin)
 % operator max(X).
 %
 % The variable t is primarily meant to be used in convexity preserving
-% operations such as t><, minimize t etc.
+% operations such as t<=1, minimize t etc.
 %
 % If the variable is used in a non-convexity preserving operation, such as
-% t>0, a mixed integer model will be derived.
+% t>=0, a mixed integer model will be derived.
 %
 % See built-in MAX for syntax.
-
-% Author Johan Löfberg
-% $Id: max.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
 
 % MAX is implemented as a nonlinear operator.
 % However, for performance issues, it is not

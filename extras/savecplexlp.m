@@ -4,8 +4,6 @@ function filename = savecplexlp(varargin)
 %    SAVCPLEXLP(F,h,'filename')    Saves the problem min(h(x)), F(x)>0 to the file filename
 %    SAVCPLEXLP(F,h)               A "Save As"- box will be opened
 %
-% Author Johan Lofberg, modified by Yi-Shuai NIU
-% $Id: savecplexlp.m,v 1.5 2008-06-02 10:27:56 joloef Exp $
 
 F = varargin{1};
 h = varargin{2};

@@ -1,10 +1,6 @@
 function sdpvarExpr = parseLMI(X)
 %PARSELMI Internal function for dirty parsing of lmi string
 
-% Author Johan Löfberg
-% $Id: parseLMI.m,v 1.3 2004-07-27 14:11:57 johanl Exp $
-
-
 % Assume Error
 
 % TypeofConstraint = 1;

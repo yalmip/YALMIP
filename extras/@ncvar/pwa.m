@@ -5,7 +5,7 @@ function [p,Bi,Ci,Pn,Pfinal] = PWA(h,Xdomain)
 %
 % Input
 %  h  : scalar SDPVAR object
-%  X  : SET object
+%  X  : Constraint object
 %
 % Output
 %
@@ -27,10 +27,6 @@ function [p,Bi,Ci,Pn,Pfinal] = PWA(h,Xdomain)
 %
 % The function is mainly inteded to be used for easy 
 % plotting of convex PWA functions
-
-% Author Johan Löfberg 
-% $Id: pwa.m,v 1.1 2006-08-10 18:00:22 joloef Exp $   
-
 
 t = sdpvar(1,1);
 [F,failure,cause] = expandmodel(set(h<t),[],sdpsettings('allowmilp',0));

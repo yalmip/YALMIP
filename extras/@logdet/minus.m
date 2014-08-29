@@ -1,8 +1,5 @@
 function Z = minus(A,B)
-%display           Overloaded
-
-% Author Johan Löfberg 
-% $Id: minus.m,v 1.4 2007-02-07 09:11:27 joloef Exp $  
+%minus           Overloaded
 
 % Standard case A.cx + A.logdetP - (B.cx + B.logdetP)
 

@@ -1,9 +1,6 @@
 function d = det(X)
 %DET (overloaded)
 
-% Author Johan Löfberg 
-% $Id: det.m,v 1.1 2006-08-10 18:00:19 joloef Exp $  
-
 n = X.dim(1);
 m = X.dim(2);
 

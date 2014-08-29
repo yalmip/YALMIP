@@ -16,8 +16,6 @@ function  varargout = yalmip(varargin)
 %
 %   See also YALMIPTEST, YALMIPDEMO
 
-% Author Johan Löfberg
-
 persistent prefered_solver internal_sdpvarstate internal_setstate
 
 if nargin==0

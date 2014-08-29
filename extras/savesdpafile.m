@@ -13,7 +13,7 @@ h = varargin{2};
 nvars = yalmip('nvars');
 
 if isa(F,'constraint')
-    F = set(F);
+    F = lmi(F);
 end
 
 if any(is(F,'socp'))

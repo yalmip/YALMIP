@@ -23,10 +23,6 @@ function deg=degree(p,y,e)
 %
 % degree(p,[],1) returns [1;3]
 
-% Author Johan Löfberg 
-% $Id: degree.m,v 1.1 2006-08-10 18:00:19 joloef Exp $  
-
-
 if isa(p,'double')
     if nargin==1
         deg = 0;

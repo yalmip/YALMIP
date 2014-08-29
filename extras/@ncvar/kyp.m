@@ -16,9 +16,6 @@ function sys = kyp(A,B,P,M)
 %
 %  See also @sdpvar/LYAP
 
-% Author Johan Löfberg
-% $Id: kyp.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
 if isempty(B)
     kyp_part = [A'*P+P*A];
 else

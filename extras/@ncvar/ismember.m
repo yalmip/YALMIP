@@ -13,7 +13,7 @@ function varargout = ismember(varargin)
 % generated. 
 %
 % If P is a single polytope, the linear constraints [H,K] = double(P);
-% F=set(H*x <= K) will be created. 
+% F=(H*x <= K) will be created. 
 %
 % If P is a polytope array, then length(P) binary variables will be
 % introduced and the constraint will model that x is inside at least one of
@@ -25,10 +25,6 @@ function varargout = ismember(varargin)
 %
 % Since the two last constructions are based on big-M formulations, all
 % involved variable should have explicit variable bounds. 
-
-% Author Johan Löfberg 
-% $Id: ismember.m,v 1.1 2006-08-10 18:00:20 joloef Exp $  
-
 
 x = varargin{1};
 p = varargin{2};
@@ -62,7 +58,7 @@ end
 % Here is the real overloaded ismember
 switch class(varargin{1})
     case 'sdpvar'
-        varargout{1} = set(yalmip('addextendedvariable',mfilename,varargin{:}) == 1);
+        varargout{1} = (yalmip('addextendedvariable',mfilename,varargin{:}) == 1);
 
     case 'char'
         varargout{1} = ismember_internal(varargin{3},varargin{4});

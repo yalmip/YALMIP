@@ -3,7 +3,7 @@ function [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = solvemp(P,Domain)
 %
 % min_z(x)   h(x,z)
 % subject to
-%            F(x,z) > 0
+%            F(x,z) >= 0
 %
 %
 % [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = SOLVEMP(P)
@@ -32,9 +32,6 @@ function [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = solvemp(P,Domain)
 % not will be available for mpMIQP problems.
 %
 % See also PARAMETRIC, SET, SDPSETTINGS, YALMIPERROR
-
-% Author Johan Löfberg
-% $Id: solvemp.m,v 1.11 2007-08-17 13:17:16 joloef Exp $
 
 %P.F = [P.F,0 <= P.input.expression <= 100];
 [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = solvemp(P.F,P.h,[],P.input.expression,P.output.expression);

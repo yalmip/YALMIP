@@ -1,10 +1,6 @@
 function [C,A,b,blk] = sdpt3struct2sdpt3block(F_struc,c,K)
 %SDPT3STRUCT2SDPT3BLOCK Internal function to convert data to SDPT3 format
 
-% Author Johan Löfberg
-% $Id: sdpt3struct2sdpt3block.m,v 1.2 2004-07-02 08:17:31 johanl Exp $
-
-
 nvars = size(F_struc,2)-1;
 block  = 1;
 top = 1;

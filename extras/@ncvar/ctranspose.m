@@ -1,9 +1,6 @@
 function X=ctranspose(X)
 %CTRANSPOSE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: ctranspose.m,v 1.2 2006-08-28 13:48:38 joloef Exp $
-
 if isa(X,'blkvar')
     X = sdpvar(X);
 end

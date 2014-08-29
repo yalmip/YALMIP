@@ -1,9 +1,6 @@
 function  exponent_m = separable(exponent_m,exponent_p,options);
 %SEPARABLE Internal function, not used
 
-% Author Johan Löfberg
-% $Id: separable.m,v 1.2 2004-07-02 08:17:32 johanl Exp $
-
 % %exponent_m(sum((exponent_m>0),2)>2,:)=[];
 % 
 % card = max(sum((exponent_p>0),2));

@@ -28,7 +28,4 @@ function varargout = optimize(varargin)
 %
 %   See also SDPVAR, @SDPVAR/DOUBLE, SDPSETTINGS, YALMIPERROR
 
-% Author Johan Löfberg
-% $Id: optimize.m,v 1.75 2010-04-06 06:32:49 joloef Exp $
-
 varargout{:} = solvesdp(varargin{:});

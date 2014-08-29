@@ -1,9 +1,6 @@
 function varargout = subsref(varargin)
 %SUBSREF (overloaded)
 
-% Author Johan Löfberg 
-% $Id: subsref.m,v 1.1 2006-08-10 18:00:22 joloef Exp $   
-
 % Stupid first slice call (supported by MATLAB)
 if  length(varargin{2}.subs) > 2
     i = 3;

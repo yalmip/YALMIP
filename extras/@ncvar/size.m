@@ -1,11 +1,8 @@
 function varargout=size(varargin)
 %SIZE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: size.m,v 1.1 2006-08-10 18:00:22 joloef Exp $   
-
 if nargin == 1    
-  bsize  = varargin{1}.dim;%[varargin{1}.n varargin{1}.m];
+  bsize  = varargin{1}.dim;
   switch (nargout)
   case 0
     varargout{1} = bsize;

@@ -88,10 +88,10 @@ while goon
     switch options.bmilin.trust
     case 1
     case 2
-        Flin = Flin + set(cone(x-x0,2*alpha*options.bmilin.alpha*norm(x0,2)+options.bmilin.beta));
+        Flin = Flin + (cone(x-x0,2*alpha*options.bmilin.alpha*norm(x0,2)+options.bmilin.beta));
     case inf
-        Flin = Flin + set(x-x0 < options.bmilin.alpha*norm(x0,'inf')+options.bmilin.beta);
-        Flin = Flin + set(x-x0 >-options.bmilin.alpha*norm(x0,'inf')+options.bmilin.beta);
+        Flin = Flin + (x-x0 <= options.bmilin.alpha*norm(x0,'inf')+options.bmilin.beta);
+        Flin = Flin + (x-x0 >=-options.bmilin.alpha*norm(x0,'inf')+options.bmilin.beta);
     otherwise
     end
     

@@ -43,9 +43,6 @@ function sys = sdpvar(varargin)
 %
 %   See also @SDPVAR/SET, INTVAR, BINVAR, methods('sdpvar'), SEE
 
-% Author Johan Löfberg
-% $Id: ncvar.m,v 1.4 2006-08-28 13:48:38 joloef Exp $
-
 superiorto('sdpvar');
 if nargin==0   
     return

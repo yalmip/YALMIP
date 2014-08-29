@@ -1,9 +1,6 @@
 function y = vertcat(varargin)
 %VERTCAT (overloaded)
 
-% Author Johan Löfberg 
-% $Id: vertcat.m,v 1.2 2006-08-11 11:48:15 joloef Exp $   
-
 prenargin = nargin;
 % Fast exit
 if prenargin<2

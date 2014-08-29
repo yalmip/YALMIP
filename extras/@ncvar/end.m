@@ -1,9 +1,6 @@
 function index = end(X,position,numindices)
 %END (overloaded)
 
-% Author Johan Löfberg
-% $Id: end.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 switch numindices
     case 1
         % User has written someting like X(end)

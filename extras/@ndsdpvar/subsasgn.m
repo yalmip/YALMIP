@@ -1,9 +1,6 @@
 function X = subsasgn(X,I,Y)
 % SUBSASGN (overloaded)
 
-% Author Johan Löfberg
-% $Id: subsasgn.m,v 1.2 2006-07-13 20:37:30 joloef Exp $
-
 base = reshape(1:size(X.basis,1),X.dim);
 base = subsref(base,I);
 

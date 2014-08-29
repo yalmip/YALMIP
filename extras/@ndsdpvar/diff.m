@@ -1,9 +1,6 @@
 function X = diff(varargin)
 % DIFF (overloaded)
 
-% Author Johan Löfberg
-% $Id: diff.m,v 1.2 2006-07-13 19:40:59 joloef Exp $
-
 Y = varargin{1};
 X = Y;
 X.basis = [];

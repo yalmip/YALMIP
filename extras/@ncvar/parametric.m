@@ -18,8 +18,5 @@ function x = integer(x)
 %
 %   See also SOLVEMP, SDPVAR
 
-% Author Johan Löfberg
-% $Id: parametric.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
 x.typeflag = 13;
 x = lmi(x);

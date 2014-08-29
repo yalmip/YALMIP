@@ -1,9 +1,6 @@
 function Y=repmat(varargin)
 %REPMAT (overloaded)
 
-% Author Johan Löfberg 
-% $Id: repmat.m,v 1.1 2007-01-04 08:52:49 joloef Exp $   
-
 try
     X = varargin{1};
     Y = X;

@@ -16,15 +16,10 @@ function x = binary(x)
 %    F : SET object
 %
 %   EXAMPLE
-%    F = set(binary(x));             % Full verbose notation
-%    F = binary(x);                  % Short notation
-%    F = binary(x*pi)                % Equivalent to code above
-%    solvesdp(G+set(binary(x)),obj)  % Add binary constraint on the fly
+%    F = binary(x);                  
+%    F = binary(x*pi)   % Equivalent to code above
 %
-%   See also INTEGER, SET, SDPVAR, INTVAR, BINVAR
-
-% Author Johan Löfberg
-% $Id: binary.m,v 1.1 2006-08-10 18:00:19 joloef Exp $
+%   See also INTEGER, SDPVAR, INTVAR, BINVAR
 
 x.typeflag = 8;
 x = lmi(x);

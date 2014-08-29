@@ -1,10 +1,6 @@
 function F = sdpvar(X)
 % SDPVAR Converts a block variable to standard SDPVAR
 
-% Author Johan Löfberg
-% $Id: sdpvar.m,v 1.5 2009-09-03 13:54:09 joloef Exp $
-
-
 % first, check that we have filled everything.
 [n,m] = size(X.blocks);
 

@@ -1,9 +1,6 @@
 function [lb,ub,cand_rows_eq,cand_rows_lp] = findlinearulb(F_struc,K,lb,ub,linearvariables)
 %FINDULB Internal function to extract upper and lower variable bounds
 
-% Author Johan Löfberg
-% $Id: findulb.m,v 1.11 2007-07-28 10:04:54 joloef Exp $
-
 n = size(F_struc,2)-1;
 if nargin < 3
     lb = -inf*ones(n,1);

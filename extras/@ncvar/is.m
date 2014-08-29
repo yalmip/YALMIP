@@ -5,9 +5,6 @@ function YESNO = is(X,property,additional)
 %   Properties possible to test are: 'real', 'symmetric', 'hermitian',
 %   'scalar', 'linear', 'bilinear','quadratic','sigmonial', 'homogeneous', 'integer', 'binary'
 
-% Author Johan Löfberg 
-% $Id: is.m,v 1.2 2009-09-29 12:02:40 joloef Exp $   
-
 switch property
     case 'logic'
         YESNO = X.typeflag==12;

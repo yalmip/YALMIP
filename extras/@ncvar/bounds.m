@@ -7,9 +7,6 @@ function varargout = bounds(x,lower,upper,aux)
 %                         These bounds are used when performing
 %                         big M formulations and similar things.
 
-% Author Johan Löfberg 
-% $Id: bounds.m,v 1.1 2006-08-10 18:00:19 joloef Exp $   
-
 variables = getvariables(x);
 if nargin == 1
     lb = yalmip('getbounds',variables);

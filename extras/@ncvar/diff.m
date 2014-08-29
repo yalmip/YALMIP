@@ -1,9 +1,6 @@
 function Y=diff(varargin)
 %DIFF (overloaded)
 
-% Author Johan Löfberg
-% $Id: diff.m,v 1.1 2006-08-10 18:00:19 joloef Exp $
-
 X = varargin{1};
 n = X.dim(1);
 m = X.dim(2);

@@ -6,10 +6,6 @@ function d2fdx2 = hessian(f,x)
 %
 % See also INT, JACOBIAN, LINEARIZE, SDISPLAY
 
-% Author Johan Löfberg
-% $Id: hessian.m,v 1.2 2004-07-02 08:17:31 johanl Exp $
-
-
 if nargin==1
     if isa(f,'sdpvar')
         x = recover(depends(f));

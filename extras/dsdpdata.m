@@ -1,9 +1,6 @@
 function [C,A,b,blk] = dsdpdata(F,h)
 %DSDPDATA Internal function create DSDP data
 
-% Author Johan Löfberg
-% $Id: dsdpdata.m,v 1.3 2004-11-24 09:13:05 johanl Exp $
-
 if ~(isempty(F) | isa(F,'lmi'))
 	help lmi
 	error('First argument (F) should be an lmi object. See help text above');

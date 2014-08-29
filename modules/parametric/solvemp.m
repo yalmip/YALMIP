@@ -3,7 +3,7 @@ function varargout = solvemp(F,h,ops,x,y)
 %
 % min_z(x)   h(x,z)
 % subject to
-%            F(x,z) > 0
+%            F(x,z) >= 0
 %
 %
 % [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = SOLVEMP(F,h,options,x,y)
@@ -50,7 +50,7 @@ if nargin <=3
 end
 
 if isa(F,'constraint')
-    F = set(F);
+    F = lmi(F);
 end
 
 par_declarations = is(F,'parametric');

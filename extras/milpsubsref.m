@@ -1,9 +1,6 @@
 function varargout = milpsubsref(varargin)
 %MILPSUBSREF
 
-% Author Johan Löfberg
-% $Id: milpsubsref.m,v 1.5 2007-08-02 19:33:16 joloef Exp $
-
 switch class(varargin{1})
     case 'double'
         varargin{1} = double(varargin{1});

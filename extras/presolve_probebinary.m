@@ -1,9 +1,5 @@
 function  [oldlb,oldub] = presolve_probebinary(A,b,c,lb,ub,binary_variables);
 
-% Author Johan Löfberg
-% $Id: presolve_probebinary.m,v 1.1 2005-10-05 14:54:55 joloef Exp $
-
-
 goon = 1;
 
 AL0A  = (A>0).*A;

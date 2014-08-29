@@ -1,9 +1,6 @@
 function varargout = exp(varargin)
 %EXP (overloaded)
 
-% Author Johan Löfberg
-% $Id: exp.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double' % What is the numerical value of this argument (needed for displays etc)

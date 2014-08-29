@@ -33,9 +33,6 @@ function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstrai
 %
 %   See also SDPVAR, SDPSETTINGS, SOLVESDP
 
-% Author Johan Löfberg
-% $Id: solvebilevel.m,v 1.15 2010-04-27 14:25:05 joloef Exp $
-
 % min f(x,y) s.t g(x,y)<0, y = argmin  [x;y]'*H*[x;y]+e'[x;y]+f, E[x;y]<d
 
 if nargin<6

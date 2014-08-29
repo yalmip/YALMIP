@@ -1,9 +1,6 @@
 function X = sum(varargin)
 % SUM (overloaded)
 
-% Author Johan Löfberg
-% $Id: sum.m,v 1.5 2006-11-07 08:18:28 joloef Exp $
-
 Y = varargin{1};
 X = Y;
 X.basis = [];

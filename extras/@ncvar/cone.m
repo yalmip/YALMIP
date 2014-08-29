@@ -6,18 +6,13 @@ function y = cone(Axplusb,cxplusd)
 %    h       : scalar double or SDPVAR object
 %
 % Example
-%    F = set(cone(z,x)) 
+%    F = cone(z,x))
 %
 % An alternative syntax with only one argument is also possible
-%    F = set(cone(z))
-% This command is equivalent to set(cone(z(2:end),z(1))
-% 
-
+%    F = cone(z)
+% This command is equivalent to cone(z(2:end),z(1)
 %
-% See also  SET, RCONE, @SDPVAR/NORM
-
-% Author Johan Löfberg
-% $Id: cone.m,v 1.1 2006-08-10 18:00:19 joloef Exp $
+% See also RCONE, @SDPVAR/NORM
 
 [n,m] = size(Axplusb);
 if min(n,m)>1

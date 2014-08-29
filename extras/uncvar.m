@@ -5,9 +5,6 @@ function sys = uncvar(varargin)
 %
 %   See also SDPVAR
 
-% Author Johan Löfberg
-% $Id: uncvar.m,v 1.1 2004-09-07 06:07:02 johanl Exp $
-
 all_variable_names = 1;
 i = 1;
 while all_variable_names & i<=nargin

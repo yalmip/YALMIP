@@ -1,3 +1,3 @@
 function B = getbase(F)
 
-B = getbase(set(F));
+B = getbase(lmi(F));
