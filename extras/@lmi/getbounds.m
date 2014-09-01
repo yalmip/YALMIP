@@ -73,15 +73,5 @@ if ~isempty(quadratic)
     M = mt(quadratic,:);
     [ii,jj,kk] = find(M);
     LU(quadratic,1) = max([LU(quadratic,1) zeros(length(quadratic),1)],[],2);    
-    LU(quadratic,2) = max([LU(jj,1).^2 LU(jj,2).^2],[],2);
-%     for i = 1:size(M,1)
-%         [ii,jj] = find(M(i,:));
-%         if length(ii) == 1
-%             LU(quadratic(i),1) = min([0 LU(jj,1)^2]);
-%             LU(quadratic(i),2) = max([LU(jj,1)^2 LU(jj,2)^2]);              
-%         else
-%             disp('Strange monomtable in GETBOUNDS! Report bug')
-%             error
-%         end
-%     end
+    LU(quadratic,2) = max([LU(quadratic,1).^2 LU(quadratic,2).^2],[],2);
 end
