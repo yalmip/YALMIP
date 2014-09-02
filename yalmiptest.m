@@ -329,7 +329,7 @@ try
     3*y;
     x = sdpvar(2,3);
     y = sdpvar(2,3);
-    setsdpvar(x,randn(2,3));
+    assign(x,randn(2,3));
     z = replace(x,x(1,1:2),[8 9]);
     z = x+y;
     z = x-y;
