@@ -128,7 +128,7 @@ end
 
 i=1;
 test{i}.fcn  = 'testsdpvar';
-test{i}.desc = 'sdpvar/set methods';
+test{i}.desc = 'Core functionalities';
 i = i+1;
 
 test{i}.fcn  = 'feasiblelp'; 
