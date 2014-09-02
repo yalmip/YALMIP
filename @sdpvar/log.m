@@ -1,8 +1,6 @@
 function varargout = log(varargin)
 %LOG (overloaded)
 
-% Author Johan Löfberg
-% $Id: log.m,v 1.21 2009-05-05 11:42:00 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
@@ -19,7 +17,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};      
-        F = set(X >= 1e-8);
+        F = (X >= 1e-8);
 
         operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');       
         operator.convexhull = @convexhull;

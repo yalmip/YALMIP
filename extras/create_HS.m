@@ -1,10 +1,6 @@
 function [H,S]=create_HS(A,B,N,M);
 % CREATE_HS Internal function to define matrices for MPC problem
 
-% Author Johan Löfberg
-% $Id: create_HS.m,v 1.2 2004-07-02 08:17:29 johanl Exp $
-
-
 % How many states
 n=length(A);C = eye(n);p=size(C,1);
 [dummy,m]=size(B);

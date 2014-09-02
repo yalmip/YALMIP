@@ -3,6 +3,9 @@ function F = lmi(X,handlestring,dummy,noprune,symmetryKnown)
 
 superiorto('sdpvar')
 
+persistent temp
+persistent F0
+
 fast = 0;
 noprune = 0;
 symmetryKnown = 0;
@@ -13,6 +16,7 @@ switch nargin
         F.savedata = [];
         F.dualized = 0;
         F = class(F,'lmi');
+        F0 = F;
         return
     case 1
         handlestring = '';
@@ -41,6 +45,19 @@ try
     F = class(F,'lmi');
 catch
     disp('Failure in creating SET object. Restart MATLAB and try again, or type clear classes')
+=======
+if isempty(F0)
+    F.clauses  = {};
+    F.LMIid    = [];
+    F.savedata = [];
+    try
+        F = class(F,'lmi');
+    catch
+        disp('Failure in creating SET object. Restart MATLAB and try again, or type clear classes')
+    end
+    F0 = F;
+else
+    F = F0;
 end
 
 % Return empty LMI in degenerate case
@@ -238,39 +255,61 @@ if all(TypeofConstraint == 2) && all(strict==strict(1))
             end
         end
     else
-        vecF = reshape(Fi{1},prod(size(Fi{1})),1);
+        vecF = vec(Fi{1});        
     end
-    F.clauses{1}.data=vecF;
-    F.clauses{1}.type = 2;
-    F.clauses{1}.symbolic=X;
-    F.clauses{1}.handle=handlestring;
-    F.clauses{1}.strict = strict(1);
-    F.clauses{1}.cut = 0;
-    F.clauses{1}.expanded = 0;
-    F.clauses{1}.lift = 0;
-    F.clauses{1}.schurfun  = '';
-    F.clauses{1}.schurdata = [];
-    F.clauses{1}.jointprobabilistic = [];
-    F.clauses{1}.confidencelevel = [];
-    F.clauses{1}.extra = [];
+    if isempty(temp)
+        temp.data=vecF;
+        temp.type = 2;
+        temp.symbolic=X;
+        temp.handle=handlestring;
+        temp.strict = strict(1);
+        temp.cut = 0;
+        temp.expanded = 0;
+        temp.lift = 0;
+        temp.schurfun  = '';
+        temp.schurdata = [];
+        temp.jointprobabilistic = [];
+        temp.confidencelevel = [];
+        temp.extra = [];
+    else
+        temp.data=vecF;
+        temp.symbolic=X;
+        temp.handle=handlestring;
+        temp.strict = strict(1);
+    end
+    F.clauses{1}{1} = temp;
+    
+%     F.clauses{1}{1}.data=vecF;
+%     F.clauses{1}{1}.type = 2;
+%     F.clauses{1}{1}.symbolic=X;
+%     F.clauses{1}{1}.handle=handlestring;
+%     F.clauses{1}{1}.strict = strict(1);
+%     F.clauses{1}{1}.cut = 0;
+%     F.clauses{1}{1}.expanded = 0;
+%     F.clauses{1}{1}.lift = 0;
+%     F.clauses{1}{1}.schurfun  = '';
+%     F.clauses{1}{1}.schurdata = [];
+%     F.clauses{1}{1}.jointprobabilistic = [];
+%     F.clauses{1}{1}.confidencelevel = [];
+%     F.clauses{1}{1}.extra = [];
     F.LMIid = [F.LMIid LMIIdentifiers(1)];
 else
     for i = 1:length(Fi)
         switch TypeofConstraint(i)
             case {1,2,3,4,5,7,8,9,10,11,12,13,15,16,20,30,40,50,51,52,53,54}
-                F.clauses{i}.data=Fi{i};
-                F.clauses{i}.type = TypeofConstraint(i);
-                F.clauses{i}.symbolic=X;
-                F.clauses{i}.handle=handlestring;
-                F.clauses{i}.strict = strict(i);
-                F.clauses{i}.cut = 0;
-                F.clauses{i}.expanded = 0;
-                F.clauses{i}.lift = 0; 
-                F.clauses{i}.schurfun  = '';
-                F.clauses{i}.schurdata = [];
-                F.clauses{i}.jointprobabilistic = [];
-                F.clauses{i}.confidencelevel = [];
-                F.clauses{i}.extra = [];
+                F.clauses{1}{i}.data=Fi{i};
+                F.clauses{1}{i}.type = TypeofConstraint(i);
+                F.clauses{1}{i}.symbolic=X;
+                F.clauses{1}{i}.handle=handlestring;
+                F.clauses{1}{i}.strict = strict(i);
+                F.clauses{1}{i}.cut = 0;
+                F.clauses{1}{i}.expanded = 0;
+                F.clauses{1}{i}.lift = 0; 
+                F.clauses{1}{i}.schurfun  = '';
+                F.clauses{1}{i}.schurdata = [];
+                F.clauses{1}{i}.jointprobabilistic = [];
+                F.clauses{1}{i}.confidencelevel = [];
+                F.clauses{1}{i}.extra = [];
                 F.LMIid = [F.LMIid LMIIdentifiers(i)];
                 i = i + 1;
             otherwise

@@ -1,10 +1,6 @@
 function [oldvariable,sqrList] = expandforindex(sqrList,candidates,nonconvindex);
 %EXPANDFORINDEX Internal function for organizing nonlinear variables
 
-% Author Johan Löfberg
-% $Id: expandforindex.m,v 1.4 2004-08-06 09:02:52 johanl Exp $
-
-
 % Expand the incoming variables
 
 if 1

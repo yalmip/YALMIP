@@ -1,9 +1,6 @@
 function Y=sparse(varargin)
 %SPARSE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: sparse.m,v 1.7 2010-02-22 12:40:48 joloef Exp $   
-
 if nargin < 3
     error('At-least 3 arguments needed');
 end

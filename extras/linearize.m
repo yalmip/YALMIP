@@ -8,9 +8,6 @@ function plin = linearize(p)
 %
 % See also SDPVAR, JACOBIAN
 
-% Author Johan Löfberg
-% $Id: linearize.m,v 1.2 2004-07-02 08:17:31 johanl Exp $
-
 if isa(p,'double')
     plin = zeros(size(p));
     return

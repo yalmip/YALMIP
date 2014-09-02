@@ -32,8 +32,7 @@ for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)
         Y.type = '()';
         Y.subs = [{pi} {pj}];
-        p = subsref(pvec,Y);
-      %  p = pvec(pi,pj);
+        p = subsref(pvec,Y);    
         
         if isa(p,'double')
             symb_p = num2str(p);

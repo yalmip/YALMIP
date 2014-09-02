@@ -13,7 +13,7 @@ x2 = sdpvar(1);
 objective = -(-(-1/(0.1+sqr(x1-4)+sqr(x2-4))-1/(0.2+sqr(x1-1)+sqr(x2-1))-1/(0.2+sqr(x1-8)+sqr(x2-8)))+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 % Solve problem
 sol = solvesdp([F,-100<=[x1 x2]<=100],objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 mbg_asserttrue(sol.problem==0 | sol.problem == 3)

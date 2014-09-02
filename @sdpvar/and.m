@@ -11,15 +11,12 @@ function varargout = and(varargin)
 % constraints add constraints to ensure that z, x and y satisfy the
 % truth-table for AND.
 %
-% The model for ARE is set(z<=x)+set(z<=y)+set(1+z>=x+y)+set(binary(z))
+% The model for ARE is (z<=x)+(z<=y)+(1+z>=x+y)+(binary(z))
 %
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
 %   See also SDPVAR/AND, BINVAR, BINARY
-
-% Author Johan Löfberg 
-% $Id: and.m,v 1.16 2009-09-18 11:09:43 joloef Exp $   
 
 if isa(varargin{1},'double')
     varargin = {varargin{[2:nargin 1]}};
@@ -45,7 +42,7 @@ switch class(varargin{1})
         end
         % *******************************************************
 
-        varargout{1} = set(x >= z) + set(y >= z) + set(length(x)+length(y)-1+z >= sum(x)+sum(y)) + set(binary(z));
+        varargout{1} = (x >= z) + (y >= z) + (length(x)+length(y)-1+z >= sum(x)+sum(y)) + (binary(z));
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = [x y];
 

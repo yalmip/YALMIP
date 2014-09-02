@@ -3,8 +3,6 @@ function varargout = power_internal2(varargin)
 % Used for cases such as x^x and 2^x, which is treated as evaluation-based
 % operators
 
-% Author Johan Löfberg
-% $Id: power_internal2.m,v 1.7 2007-08-02 19:17:36 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

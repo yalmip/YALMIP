@@ -1,10 +1,6 @@
 function y = power(x,d)
 %POWER (overloaded)
 
-% Author Johan Löfberg 
-% $Id: power.m,v 1.13 2009-10-14 07:28:42 joloef Exp $   
-
-
 % Vectorize x if d is vector
 if numel(x)==1 & (numel(d)>1)
     x = x.*ones(size(d));

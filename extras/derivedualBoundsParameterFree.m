@@ -19,12 +19,6 @@ mu = sdpvar(me,1);
 alpha = sdpvar(1);
 
 F = [];
-% if ~isempty(b)
-%     F = [F, A*x <= b*alpha];
-% end
-% if ~isempty(f)
-%     F = [F, E*x == f*alpha];
-% end
 
 % Start by computing primal lower bounds
 if nargin < 7

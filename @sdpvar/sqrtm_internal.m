@@ -1,8 +1,6 @@
 function varargout = sqrtm_internal(varargin)
 %SQRTM (overloaded)
 
-% Author Johan Löfberg
-% $Id: sqrtm_internal.m,v 1.12 2009-10-02 09:09:13 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
@@ -10,16 +8,11 @@ switch class(varargin{1})
 
     case 'sdpvar'
           varargout{1} = InstantiateElementWise(mfilename,varargin{:});
-%        if length(varargin{1}) == 1
-%            varargout{1} = yalmip('define',mfilename,varargin{1});
-%        else
-%            error('SQRTM is only implemented for scalar argument')
-%        end
 
     case 'char'
 
         X = varargin{3};
-        F = set(X >= eps);
+        F = (X >= eps);
 
         varargout{1} = F;
         varargout{2} = struct('convexity','concave','monotonicity','increasing','definiteness','positive','convexhull',@convexhull,'bounds',@bounds,'model','callback','derivative',@(x) 1./(eps + 2*abs(x).^0.5));

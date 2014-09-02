@@ -1,9 +1,6 @@
 function varargout = gammainc(varargin)
 %GAMMAINC (overloaded)
 
-% Author Johan Löfberg
-% $Id: gammainc.m,v 1.8 2007-08-02 18:16:26 joloef Exp $
-
 if nargin ~= 2
     error('Not enough input arguments.');
 end

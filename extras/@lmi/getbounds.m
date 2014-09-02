@@ -8,9 +8,9 @@ LU =  yalmip('getbounds',1:yalmip('nvars'));
 binary = yalmip('binvariables');
 LU(binary,1) = 0;
 LU(binary,2) = 1;
-
+F = flatten(F);
 is_interval = is(F,'interval');
-for i = 1:length(F.clauses)
+for i = 1:length(F.LMIid)
     if F.clauses{i}.type == 2
         X = F.clauses{i}.data;
         AB = getbase(X);
@@ -73,15 +73,5 @@ if ~isempty(quadratic)
     M = mt(quadratic,:);
     [ii,jj,kk] = find(M);
     LU(quadratic,1) = max([LU(quadratic,1) zeros(length(quadratic),1)],[],2);    
-    LU(quadratic,2) = max([LU(jj,1).^2 LU(jj,2).^2],[],2);
-%     for i = 1:size(M,1)
-%         [ii,jj] = find(M(i,:));
-%         if length(ii) == 1
-%             LU(quadratic(i),1) = min([0 LU(jj,1)^2]);
-%             LU(quadratic(i),2) = max([LU(jj,1)^2 LU(jj,2)^2]);              
-%         else
-%             disp('Strange monomtable in GETBOUNDS! Report bug')
-%             error
-%         end
-%     end
+    LU(quadratic,2) = max([LU(quadratic,1).^2 LU(quadratic,2).^2],[],2);
 end

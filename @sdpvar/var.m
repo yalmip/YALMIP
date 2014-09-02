@@ -1,10 +1,7 @@
-function varargout=median(varargin)
+function varargout=var(varargin)
 %VAR (overloaded)
 %
 % V = var(x)
-
-% Author Johan Löfberg
-% $Id: var.m,v 1.1 2006-05-16 12:32:35 joloef Exp $
 
 x = varargin{1};
 

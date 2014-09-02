@@ -10,21 +10,17 @@ function [pres,dres] = checkset(F)
 %
 % Primal constraint residuals are calculated as:
 %
-%  Semidefinite constraint F(x)>0 : min(eig(F))
-%  Element-wise constraint F(x)>0 : min(min(F))
-%  Equality constraint F==0       : -max(max(abs(F)))
-%  Second order cone t>||x||      : t-||x||
-%  Integrality constraint on x    : max(abs(x-round(x)))
-%  Rank constraint rank(X) < r     : r-rank(X)
-%  Sum-of-square constraint       : Minus value of largest (absolute value) coefficient 
+%  Semidefinite constraint F(x)>=0 : min(eig(F))
+%  Element-wise constraint F(x)>=0 : min(min(F))
+%  Equality constraint F==0        : -max(max(abs(F)))
+%  Second order cone t>=||x||      : t-||x||
+%  Integrality constraint on x     : max(abs(x-round(x)))
+%  Sum-of-square constraint        : Minus value of largest (absolute value) coefficient 
 %                                   in the polynomial p-v'*v
 %
 % Dual constraints are evaluated similarily.
 %
-%    See also   SET, SOLVESDP, SOLVESOS, SOSD, DUAL
-
-% Author Johan Löfberg
-% $Id: checkset.m,v 1.19 2008-02-21 15:32:09 joloef Exp $
+%    See also   SOLVESDP, SOLVESOS, SOSD, DUAL
 
 % Check if solution avaliable
 currsol = evalin('caller','yalmip(''getsolution'')');
@@ -33,7 +29,8 @@ if isempty(currsol)
     return
 end
 
-nlmi = size(F.clauses,2);
+F = flatten(F);
+nlmi = length(F.LMIid);
 spaces = ['                                    '];
 if (nlmi == 0)
     if nargout == 0
@@ -58,7 +55,7 @@ lmiinfo{11} = 'SOS constraint';
 lmiinfo{15} = 'Uncertainty declaration';
 lmiinfo{54} = 'Vectorized second order cone constraints';
 lmiinfo{55} = 'Complementarity constraint';
-header = {'ID','Constraint','Type','Primal residual','Dual residual','Tag'};
+header = {'ID','Constraint','Primal residual','Dual residual','Tag'};
 
 if nargout==0
     disp(' ');
@@ -178,33 +175,13 @@ for j = 1:nlmi
             gap = nan;
         end
     end
-%     if isempty(dual) | any(isnan(dual)) |  any(isnan(F0))
-%         gap = NaN;
-%     else
-%         switch F.clauses{j}.type
-%         case {1,9}
-%             gap = trace(F0*dual);
-%         case {2,3}
-%             gap = F0(:)'*dual(:);
-%         case 4
-%             gap = nan;
-%         case 5
-%             gap = nan;
-%         case 7
-%             gap = nan;
-%         otherwise
-%             gap = nan;
-%         end
-%     end
     
     if nargout==0
-        data{j,1} = ['#' num2str(j)];
-        data{j,2} = F.clauses{j}.symbolic;
-        data{j,3} = lmiinfo{F.clauses{j}.type};
-        data{j,4} = res(j,1);
-        data{j,5} = resdual(j,1);
-%        data{j,6} = gap;
-        data{j,6} = F.clauses{j}.handle;
+        data{j,1} = ['#' num2str(j)];        
+        data{j,2} = lmiinfo{F.clauses{j}.type};
+        data{j,3} = res(j,1);
+        data{j,4} = resdual(j,1);
+        data{j,5} = F.clauses{j}.handle;
         
         
         if ~islinear(F.clauses{j}.data)
@@ -217,7 +194,7 @@ for j = 1:nlmi
             else
                 classification = 'polynomial';
             end
-            data{j,3} = [data{j,3} ' (' classification ')'];
+            data{j,2} = [data{j,2} ' (' classification ')'];
         end
 end
 end
@@ -226,17 +203,20 @@ if nargout>0
     pres = res;
     dres = resdual;
 else
-    if length([data{:,6}])==0
-        header = {header{:,1:5}};
-        temp = {data{:,1:5}};
-        data = reshape(temp,length(temp)/5,5);
+    keep = ones(1,5);
+    
+    if length([data{:,5}])==0
+        keep(5) = 0;
     end
     
     if all(isnan(resdual))
-        header = {header{:,[1 2 3 4]}};
-        temp = {data{:,[1 2 3 4]}};
-        data = reshape(temp,length(temp)/4,4);
+        keep(4) = 0;  
     end
+    
+    header = {header{:,find(keep)}};
+    temp = {data{:,find(keep)}};
+    data = reshape(temp,length(temp)/nnz(keep),nnz(keep));
+    
     yalmiptable('',header,data)
     disp(' ');
 end

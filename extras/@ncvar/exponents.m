@@ -1,9 +1,6 @@
 function [ML,list] = exponents(poly,x)
 %EXPONENTS Internal function to extract powers of nonlinear expression
 
-% Author Johan Löfberg
-% $Id: exponents.m,v 1.4 2006-08-30 14:11:14 joloef Exp $
-
 % HOrrible code for noncommuting change. Basically silly change of the
 % commuting case, should be written from scratch instead
 mt = yalmip('monomtable');

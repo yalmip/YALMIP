@@ -95,7 +95,7 @@ for i = 1:length(b)
     end
 end
 
-F = F + set(y <= dy.*My);
+F = F + (y <= dy.*My);
 
 obj = -0.5*(c'*x+b'*y); % ==cost in optimal points 
 sol = solvesdp(F,obj,sdpsettings('verbose',interfacedata.options.verbose));

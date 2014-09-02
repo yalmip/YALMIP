@@ -36,9 +36,6 @@ function varargout = solvemp(P,x,y,options)
 %
 % See also PARAMETRIC, SDPSETTINGS, YALMIPERROR
 
-% Author Johan Löfberg
-% $Id: solvemp.m,v 1.11 2007-08-17 13:17:16 joloef Exp $
-
 if nargin < 4
     options = sdpsettings;
 else

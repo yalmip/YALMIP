@@ -7,9 +7,6 @@ function sys = binvar(varargin)
 %
 %   See also INTVAR, SDPVAR, BINARY, INTEGER
 
-% Author Johan Löfberg
-% $Id: binvar.m,v 1.8 2006-05-17 13:22:29 joloef Exp $
-
 all_variable_names = 1;
 i = 1;
 

@@ -31,7 +31,7 @@ variables = [];
 for i = 1:nargin
     % quick fix
     if isa(varargin{i},'constraint')
-        varargin{i} = set(varargin{i});
+        varargin{i} = lmi(varargin{i});
     end
     if ~(isa(varargin{i},'lmi') | isa(varargin{i},'socc'))
         error('Hull can only be applied to linear constraints');
@@ -55,9 +55,9 @@ t = sdpvar(nargin,1);
 nNow = yalmip('nvars');
 yalmip('addauxvariables',nInitial+1:nNow);
 
-Fhull = set([]);
+Fhull = lmi([]);
 for i = 1:nargin
-    Fi = varargin{i};
+    Fi = flatten(varargin{i});
     tvariable = getvariables(t(i));
     for j = 1:length(Fi.clauses)
         local_variables = getvariables(Fi);
@@ -69,8 +69,8 @@ for i = 1:nargin
     end
     Fhull = Fhull + Fi;
 end
-Fhull = Fhull + set(sum([y{:}],2) == recover(variables));
-Fhull = Fhull + set(sum(t)==1) + set(t>=0);
+Fhull = Fhull + (sum([y{:}],2) == recover(variables));
+Fhull = Fhull + (sum(t)==1) + (t>=0);
 Fhull = expanded(Fhull,1);
 yalmip('setdependence',[reshape([y{:}],[],1);t(:)],recover(variables));
 %yalmip('setdependence',recover([10 11]),recover(variables));

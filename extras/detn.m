@@ -1,9 +1,6 @@
 function d = detn(X)
 %DETN Internal function used in construction of MAXDET formulations
 
-% Author Johan Löfberg 
-% $Id: detn.m,v 1.2 2004-07-02 08:17:30 johanl Exp $  
-
 [n,m]=size(X);
 
 if n~=m

@@ -1,9 +1,6 @@
 function Y=simplify(X)
 %SIMPLIFY  Reduce PWA complexity
 
-% Author Johan Löfberg
-% $Id: simplify.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
-
 variables = getvariables(X);
 extstruct = yalmip('extstruct',variables(1));
 if ~isempty(extstruct)

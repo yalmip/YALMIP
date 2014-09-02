@@ -4,10 +4,7 @@ function varargout=abs(varargin)
 % t = abs(x)
 %
 % The variable t can only be used in convexity preserving
-% operations such as t<0, min t etc.
-
-% Author Johan Löfberg 
-% $Id: abs.m,v 1.1 2006-08-10 18:00:19 joloef Exp $
+% operations such as t<=0, minimize t etc.
 
 %% ***************************************************
 % This file defines a nonlinear operator for YALMIP

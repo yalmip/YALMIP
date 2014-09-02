@@ -1,9 +1,6 @@
 function X=diag(X,k)
 %DIAG (overloaded)
 
-% Author Johan Löfberg 
-% $Id: diag.m,v 1.1 2006-08-10 18:00:19 joloef Exp $  
-
 n = X.dim(1);
 m = X.dim(2);
 

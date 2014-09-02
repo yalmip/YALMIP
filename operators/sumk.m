@@ -9,9 +9,6 @@ function varargout = sumk(varargin)
 %
 % See also SUMABSK
 
-% Author Johan Löfberg
-% $Id: sumk.m,v 1.3 2007-08-02 19:17:36 joloef Exp $
-
 % ***************************************************
 % This file defines a nonlinear operator for YALMIP
 %
@@ -64,10 +61,10 @@ switch class(varargin{1})
             Z = sdpvar(n,m);
             s = sdpvar(1,1);
             if min(n,m)==1
-                varargout{1} = set(t-k*s-sum(Z) >= 0) + set(Z >= 0) + set(Z-X+s >= 0);
+                varargout{1} = (t-k*s-sum(Z) >= 0) + (Z >= 0) + (Z-X+s >= 0);
                 varargout{2} = struct('convexity','convex','monotonicity','increasing','definiteness','none','model','graph');
             else
-                varargout{1} = set(t-k*s-trace(Z) >= 0) + set(Z >= 0) + set(Z-X+s*eye(n) >= 0);
+                varargout{1} = (t-k*s-trace(Z) >= 0) + (Z >= 0) + (Z-X+s*eye(n) >= 0);
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','none','model','graph');
             end
             varargout{3} = X;

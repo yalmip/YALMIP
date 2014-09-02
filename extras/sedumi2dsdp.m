@@ -1,9 +1,6 @@
 function [C,A,b,blk] = sedumi2dsdp(F_struc,c,K)
 %SEDUMI2DSDP Internal function to convert SeDuMi structure to format needed in DSDP
 
-% Author Johan Löfberg
-% $Id: sedumi2dsdp.m,v 1.2 2004-07-02 08:17:32 johanl Exp $
-
 nvars = size(F_struc,2)-1;
 A = [];
 block  = 1; 

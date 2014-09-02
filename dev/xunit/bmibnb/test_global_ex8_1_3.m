@@ -13,7 +13,7 @@ x2 = sdpvar(1);
 objective = -(-(1+sqr(1+x1+x2)*(19+3*sqr(x1)-14*x1+6*x1*x2-14*x2+3*sqr(x2)))*(30+sqr(2*x1-3*x2)*(18+12*sqr(x1)-32*x1-36*x1*x2+48*x2+27*sqr(x2))));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 % Solve problem
 x = recover(objective);
 sol = solvesdp(F+[-100<=x<=100],objective,sdpsettings('solver','bmibnb','allownonconvex',1))

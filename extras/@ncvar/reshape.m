@@ -1,9 +1,6 @@
 function Y=reshape(varargin)
 %RESHAPE (overloaded)
 
-% Author Johan Löfberg
-% $Id: reshape.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
-
 try
     Y = varargin{1};
     n = length(Y.lmi_variables);

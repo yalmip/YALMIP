@@ -39,7 +39,7 @@ else
     end
 
     if isa(F,'constraint')
-        F = set(F);
+        F = lmi(F);
     end
 end
 
@@ -69,7 +69,7 @@ if nargin>=2
         end
         h = getcx(h);       
         if isempty(F)
-           F = set([]);
+           F = ([]);
         end
         
     else
@@ -111,6 +111,8 @@ end
 if any(is(F,'uncertain'))
     [F,h] = robustify(F,h,options);
 end
+
+F = flatten(F);
 
 % ******************************************
 % Export SOS problem to SOS first

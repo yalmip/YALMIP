@@ -11,18 +11,12 @@ function varargout = or(varargin)
 % constraints add constraints to ensure that z,x and y satisfy the
 % truth-table for OR. 
 %
-% The model for OR is set(z>x) + set(z>y) + set(z<x+y) + set(binary(z))
+% The model for OR is (z>x) + (z>y) + (z<x+y) + (binary(z))
 %
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
 %   See also SDPVAR/AND, BINVAR, BINARY
-
-% Author Johan Löfberg 
-% $Id: or.m,v 1.1 2006-08-10 18:00:21 joloef Exp $   
-
-% Author Johan Löfberg 
-% $Id: or.m,v 1.1 2006-08-10 18:00:21 joloef Exp $   
 
 % Models OR using a nonlinear operator definition
 switch class(varargin{1})
@@ -48,7 +42,7 @@ switch class(varargin{1})
                  
         xy=[x y];
         
-        varargout{1} = set(sum(xy) > z) + set(z > xy) +set(binary(z)) ;
+        varargout{1} = (sum(xy) > z) + (z > xy) +(binary(z)) ;
         varargout{2} = struct('convexity','milp','monotonicity','milp','definiteness','milp');
         varargout{3} = xy;
 

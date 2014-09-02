@@ -121,7 +121,7 @@ function F = replaceVertices(F_xw,w,vertices,VariableType,ops)
 
 F_xw_lp = F_xw(find(is(F_xw,'elementwise')));
 F_xw_socp_sdp = F_xw -  F_xw_lp;
-F = set([]);
+F = ([]);
 
 x_Flp = depends(F_xw_lp);
 uncAux = yalmip('auxvariablesW');
@@ -147,12 +147,12 @@ if length(F_xw_lp)>0
     
     % FIXME: More general detection of silly constraints
     if isa(rLP,'double') & all(rLP>=-eps^0.75)
-        F = set([]);
+        F = ([]);
     else
         % Easily generates redundant constraints
         [aux,index] = uniquesafe(getbase(rLP),'rows');
         try
-            F = set(rLP(index(randperm(length(index)))) >= 0);
+            F = (rLP(index(randperm(length(index)))) >= 0);
         catch
             1
         end
@@ -166,7 +166,7 @@ for j = 1:length(F_xw_socp_sdp)
         if ~isempty(uncAux)
             temp = replace(temp,uncAux,z{i});
         end
-        F = F + set(temp);
+        F = F + lmi(temp);
     end
 end
 

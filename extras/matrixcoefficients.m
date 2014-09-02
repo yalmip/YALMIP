@@ -1,10 +1,6 @@
 function [base,v] = matrixcoefficients(p,x)
 %MATRIXCOEFFICIENTS Extends coefficients, beta
 
-% Author Johan Löfberg
-% $Id: matrixcoefficients.m,v 1.4 2006-08-09 12:14:04 joloef Exp $
-
-
 % FIX: CURRENTLY UNSTABLE!
 
 if nargout>1 & (max(size(p))>1)

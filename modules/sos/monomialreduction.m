@@ -12,7 +12,7 @@ mindegrees = min(exponent_p,[],1);
 maxdegrees = max(exponent_p,[],1);
 mindeg = min(sum(exponent_p,2));
 maxdeg = max(sum(exponent_p,2));
-if size(exponent_m{1},2)==0 % Stupid case : set(sos(parametric))
+if size(exponent_m{1},2)==0 % Stupid case : (sos(parametric))
    if options.verbose>0;disp('Initially 1 monomials in R^0');end
 else
     if options.verbose>0;disp(['Initially ' num2str(sum(cellfun('prodofsize',exponent_m)/size(exponent_m{1},2))) ' monomials in R^' num2str(size(exponent_p,2))]);end

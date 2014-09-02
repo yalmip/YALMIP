@@ -1,9 +1,6 @@
 function pnew = degreduce(p,d)
 % DEGREDUCE Remove higher order terms
 
-% Author Johan Löfberg
-% $Id: degreduce.m,v 1.3 2004-10-04 07:51:13 johanl Exp $
-
 if islinear(p)
     pnew = p;
 else

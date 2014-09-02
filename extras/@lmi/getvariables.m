@@ -1,26 +1,16 @@
 function used = getvariables(F)
 
-used = recursivegetvariables(F,1,length(F.clauses));
-return
-
-m = length(F.clauses);
-if m == 1
-    used = getvariables(F.clauses{1}.data);
-else
-    if m>50
-        for i = 1:m
-            Fivars = getvariables(F.clauses{i}.data);
-            used = [used Fivars(:)'];
-        end
-        used = uniquestripped(used);
-    else
-        for i = 1:m
-            Fivars = getvariables(F.clauses{i}.data);
-            used = uniquestripped([used Fivars(:)']);
-        end
-    end
+F = flatten(F);
+if length(F.clauses) == 0
+    used = [];
+    return
 end
 
+if isa(F.clauses{1},'cell')
+    F = flatten(F);
+end
+
+used = recursivegetvariables(F,1,length(F.clauses));
 
 function used = recursivegetvariables(F,startindex,endindex)
 

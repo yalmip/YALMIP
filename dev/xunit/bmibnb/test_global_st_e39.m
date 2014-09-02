@@ -13,7 +13,7 @@ x2 = sdpvar(1);
 objective = -(-(-1/(0.1+power(x1-4,2)+power(x2-4,2))-1/(0.2+power(x1-1,2)+power(x2-1,2))-1/(0.2+power(x1-8,2)+power(x2-8,2)))+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 % Solve problem
 sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 mbg_assertfalse(sol.problem == 3)

@@ -1,9 +1,6 @@
 function X=rot90(X)
 %ROT90 (overloaded)
 
-% Author Johan Löfberg 
-% $Id: rot90.m,v 1.1 2006-08-10 18:00:22 joloef Exp $   
-
 n = X.dim(1);
 m = X.dim(2);
 nm = n*m;

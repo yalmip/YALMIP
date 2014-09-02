@@ -1,9 +1,6 @@
 function t = toeplitz(c,r)
 %TOEPLITZ (overloaded)
 
-% Author Johan Löfberg
-% $Id: toeplitz.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
-
 % direct 1-to-1 copy of MATLAB double code
 if nargin < 2,
     c.basis(1,:) = conj(c.basis(1,:));

@@ -6,9 +6,6 @@ function varargout = pwq_yalmip(varargin)
 % Currently only a container for PWQ functions. Can not be
 % used in actual optmization problem.
 
-% Author Johan Löfberg
-% $Id: pwq_yalmip.m,v 1.9 2008-01-15 14:19:01 joloef Exp $
-
 switch class(varargin{1})
 
     case {'struct','cell'} % Should only be called internally
@@ -110,13 +107,13 @@ switch class(varargin{1})
                         if length(d)==1
                             % Don't introduce any binary variables when
                             % there is only one quadratic cost
-                            F = set([]);
+                            F = ([]);
                             cost = x'*pwq_struct{1}.Ai{1}*x+pwq_struct{1}.Bi{1}*x+pwq_struct{1}.Ci{1};
                         else
                             n = length(x);
                             m = length(d);
                             z = sdpvar(n,m,'full');
-                            F = set(sum(d) == 1);
+                            F = (sum(d) == 1);
                             cost = 0;
                             [Mm,mm] = derivebounds(x);
                             try
@@ -129,11 +126,11 @@ switch class(varargin{1})
                             mx = max([mx mm],[],2);
                             for i = 1:m
                                 %    bounds(z(:,i),mx,Mx);
-                                F = F + set(-(Mx-mx)*(1-d(i)) <= z(:,i)-x <= (Mx-mx)*(1-d(i)));
-                                F = F + set(mx*d(i) <= z(:,i) <= Mx*d(i));
+                                F = F + (-(Mx-mx)*(1-d(i)) <= z(:,i)-x <= (Mx-mx)*(1-d(i)));
+                                F = F + (mx*d(i) <= z(:,i) <= Mx*d(i));
                                 [H,K] = double(pwq_struct{1}.Pn(i));
                                 [M,m]  = derivebounds(H*x-K);
-                                F = F + set(H*x-K <= M*(1-d(i)));
+                                F = F + (H*x-K <= M*(1-d(i)));
                                 cost = cost + z(:,i)'*pwq_struct{1}.Ai{i}*z(:,i)+pwq_struct{1}.Bi{i}(:)'*z(:,i)+d(i)*pwq_struct{1}.Ci{i};
                             end
                         end
@@ -161,25 +158,25 @@ switch class(varargin{1})
 
                         % Some overlapping function is active
                         % (it will automatically be the smallest one)
-                        F = set(sum(r) == 1);
+                        F = (sum(r) == 1);
                         for j = 1:length(pwq_struct)
 
                             if length(pwq_struct{j}.Pn) == 1
                                 d{j} = r(j);
                             else
                                 d{j} = binvar(length(pwq_struct{j}.Pn),1);
-                                F = F + set(sum(d{j}) == r(j));
+                                F = F + (sum(d{j}) == r(j));
                             end
                             m = length(d{j});
                             z = sdpvar(n,m,'full');
 
                             for i = 1:m
                                 bounds(z(:,i),mx,Mx);
-                                F = F + set(-(Mx-mx)*(1-d{j}(i)) <= z(:,i)-x <= (Mx-mx)*(1-d{j}(i)));
-                                F = F + set(mx*d{j}(i) <= z(:,i) <= Mx*d{j}(i));
+                                F = F + (-(Mx-mx)*(1-d{j}(i)) <= z(:,i)-x <= (Mx-mx)*(1-d{j}(i)));
+                                F = F + (mx*d{j}(i) <= z(:,i) <= Mx*d{j}(i));
                                 [H,K] = double(pwq_struct{j}.Pn(i));
                                 [M,m]  = derivebounds(H*x-K);
-                                F = F + set(H*x-K <= M*(1-d{j}(i)));
+                                F = F + (H*x-K <= M*(1-d{j}(i)));
                                 cost = cost + z(:,i)'*pwq_struct{j}.Ai{i}*z(:,i)+pwq_struct{j}.Bi{i}*z(:,i)+d{j}(i)*pwq_struct{j}.Ci{i};
                             end
                         end

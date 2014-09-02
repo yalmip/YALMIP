@@ -19,10 +19,6 @@ function varargout = norm(varargin)
 %
 % SEE ALSO SUMK, SUMABSK
 
-% Author Johan Löfberg
-% $Id: norm.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
-
 %% ***************************************************
 % This file defines a nonlinear operator for YALMIP
 %
@@ -71,76 +67,76 @@ switch class(varargin{1})
                         z = sdpvar(size(X,1),size(X,2),'full');
                         if min(size(X))>1
                             if isreal(X)
-                                F = set(-z < X < z);
+                                F = (-z <= X <= z);
                             else
-                                F = set([]);
+                                F = ([]);
                                 for i = 1:size(X,1)
                                     for j = 1:size(X,2)
                                         xi = extsubsref(X,i,j);
                                         zi = extsubsref(z,i,j);
-                                        F = F + set(cone([real(xi);imag(xi)],zi));
+                                        F = F + (cone([real(xi);imag(xi)],zi));
                                     end
                                 end
                             end
-                            F = F + set(sum(z,1) < t);
+                            F = F + (sum(z,1) <= t);
                         else
                             if isreal(X)
-                                F = set(-z < X < z) + set(sum(z) < t);
+                                F = (-z <= X <= z) + (sum(z) <= t);
                                 [M,m] = derivebounds(X);
                                 bounds(z,0,max(abs([M -m]),[],2));
                                 bounds(t,0,sum(max(abs([M -m]),[],2)));
                             else
-                                F = set([]);
+                                F = ([]);
                                 for i = 1:length(X)
                                     xi = extsubsref(X,i);
                                     zi = extsubsref(z,i);
-                                    F = F + set(cone([real(xi);imag(xi)],zi));
+                                    F = F + (cone([real(xi);imag(xi)],zi));
                                 end
-                                F = F + set(sum(z) < t);
+                                F = F + (sum(z) <= t);
                             end
                         end
                     case 2
                         z = sdpvar(size(X,1),size(X,2));
                         if min(size(X))>1
-                            F = set([t*eye(size(X,1)) X;X' t*eye(size(X,2))]);
+                            F = ([t*eye(size(X,1)) X;X' t*eye(size(X,2))])>=0;
                         else
-                            F = set(cone(X(:),t));
+                            F = (cone(X(:),t));
                         end
                     case {inf,'inf'}
                         if min(size(X))>1
                             z = sdpvar(size(X,1),size(X,2),'full');
                             if isreal(X)
-                                F = set(-z < X < z);
+                                F = (-z <= X <= z);
                             else
-                                F = set([]);
+                                F = ([]);
                                 for i = 1:size(X,1)
                                     for j = 1:size(X,2)
                                         xi = extsubsref(X,i,j);
                                         zi = extsubsref(z,i,j);
-                                        F = F + set(cone([real(xi);imag(xi)],zi));
+                                        F = F + (cone([real(xi);imag(xi)],zi));
                                     end
                                 end
                             end
-                            F = F + set(sum(z,2) < t);
+                            F = F + (sum(z,2) <= t);
                         else
                             if isreal(X)
-                                F = set(-t < X < t);
+                                F = (-t <= X <= t);
                                 [M,m,infbound] = derivebounds(X);
                                 if ~infbound
-                                    F = F + set(0<t<max(M));
+                                    F = F + (0<=t<=max(M));
                                 end
                             else
-                                F = set([]);
+                                F = ([]);
                                 for i = 1:length(X)
                                     xi = extsubsref(X,i);
-                                    F = F + set(cone([real(xi);imag(xi)],t));
+                                    F = F + (cone([real(xi);imag(xi)],t));
                                 end
                             end
                         end
                     case 'fro'
                         X.dim(1)=X.dim(1)*X.dim(2);
                         X.dim(2)=1;
-                        F = set(cone(X,t));
+                        F = (cone(X,t));
                     otherwise
                 end
                 varargout{1} = F;
@@ -161,7 +157,7 @@ switch class(varargin{1})
                         absX  = sdpvar(length(X),1);
                         d     = binvar(length(X),1);
                         [M,m] = derivebounds(X);
-                         F = set([]);
+                         F = ([]);
                          positive = find(m >= 0);
                          negative = find(M <= 0);
                          
@@ -174,9 +170,9 @@ switch class(varargin{1})
                              d = subsasgn(d,struct('type','()','subs',{{negative}}),0);
                          end
                          
-                         F = F + set(X <= M.*d)     + set(2*m.*d     <= absX+X <= 2*M.*d);
-                         F = F + set(X >= m.*(1-d)) + set(2*m.*(1-d) <= absX-X <= 2*M.*(1-d));
-                         F = F + set(t - sum(absX) == 0);
+                         F = F + (X <= M.*d)     + (2*m.*d     <= absX+X <= 2*M.*d);
+                         F = F + (X >= m.*(1-d)) + (2*m.*(1-d) <= absX-X <= 2*M.*(1-d));
+                         F = F + (t - sum(absX) == 0);
                          
                     else
 
@@ -193,7 +189,7 @@ switch class(varargin{1})
                             d     = binvar(n,1);
                             [M,m] = derivebounds(X);
 
-                            F = set(sum(d)==0);
+                            F = (sum(d)==0);
 
                             top = 1;
                             for i = 1:n
@@ -204,8 +200,8 @@ switch class(varargin{1})
                                     for j = setdiff(1:n,i)
                                         y = extsubsref(X,j);
                                         for sign_other = -1:2:1
-                                            F = F + set(xi*sign_abs_largest_variable >= sign_other*y);
-                                            F = F + set(-M*100*(1-di) <= xi*sign_abs_largest_variable-t <= t+M*100*(1-di));
+                                            F = F + (xi*sign_abs_largest_variable >= sign_other*y);
+                                            F = F + (-M*100*(1-di) <= xi*sign_abs_largest_variable-t <= t+M*100*(1-di));
                                         end
                                     end
                                     top = top + 1;
@@ -222,13 +218,13 @@ switch class(varargin{1})
                             absX  = sdpvar(n,1);
                             d     = binvar(n,1);
                             [M,m] = derivebounds(X);
-                            F = set([]);
-                            F = F + set(X <= M.*d)     + set(2*m.*d     <= absX+X <= 2*M.*d);
-                            F = F + set(X >= m.*(1-d)) + set(2*m.*(1-d) <= absX-X <= 2*M.*(1-d));
+                            F = ([]);
+                            F = F + (X <= M.*d)     + (2*m.*d     <= absX+X <= 2*M.*d);
+                            F = F + (X >= m.*(1-d)) + (2*m.*(1-d) <= absX-X <= 2*M.*(1-d));
                             M = max(M,-m);
                             d = binvar(n,1);
-                            F = F + set(sum(d)==1);
-                            F = F + set(absX <= t <= absX + M.*(1-d));
+                            F = F + (sum(d)==1);
+                            F = F + (absX <= t <= absX + M.*(1-d));
 
                             kk = [];
                             ii = [];
@@ -241,7 +237,7 @@ switch class(varargin{1})
                             xii = extsubsref(absX,ii);
                             dii = extsubsref(d,ii);
                             xkk = extsubsref(absX,kk);
-                            F = F + set(xkk <= xii+(M(kk)-m(ii)).*(1-dii));
+                            F = F + (xkk <= xii+(M(kk)-m(ii)).*(1-dii));
                         end
 
                         %   for i = 1:n
@@ -249,7 +245,7 @@ switch class(varargin{1})
                         %       di = extsubsref(d,i);
                         %       for k = [1:1:i-1 i+1:1:n]
                         %           xk = extsubsref(absX,k);
-                        %           F = F + set(xk <= xi+M(k)*(1-di));
+                        %           F = F + (xk <= xi+M(k)*(1-di));
                         %       end
                         %   end
 

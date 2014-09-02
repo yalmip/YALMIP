@@ -13,18 +13,13 @@ function x = binary(x)
 %    x : SDPVAR object
 %
 %   OUTPUT
-%    F : SET object
+%    F : Constraint object
 %
 %   EXAMPLE
-%    F = set(binary(x));             % Full verbose notation
-%    F = binary(x);                  % Short notation
+%    F = binary(x);                  % Add integrality
 %    F = binary(x*pi)                % Equivalent to code above
-%    solvesdp(G+set(binary(x)),obj)  % Add binary constraint on the fly
 %
 %   See also INTEGER, SET, SDPVAR, INTVAR, BINVAR
-
-% Author Johan Löfberg
-% $Id: binary.m,v 1.3 2004-07-06 14:08:11 johanl Exp $
 
 x.typeflag = 8;
 x = lmi(x);

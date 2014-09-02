@@ -8,10 +8,6 @@ function varargout=sort(varargin)
 % SORT is implemented in the nonlinear operator framework using a big-M
 % model.
 
-
-% Author Johan Löfberg
-% $Id: sort.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

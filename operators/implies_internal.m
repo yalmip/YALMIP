@@ -11,10 +11,10 @@ end
 
 % Normalize
 if isa(X,'constraint')
-    X = set(X,[],[],1);
+    X = lmi(X,[],[],1);
 end
 if isa(Y,'constraint')
-    Y = set(Y,[],[],1);
+    Y = lmi(Y,[],[],1);
 end
 
 % % Special case something implies binary == 1
@@ -26,7 +26,7 @@ end
 % end
 
 if isa(X,'sdpvar') & isa(Y,'sdpvar')
-    varargout{1} = set(Y >= X);
+    varargout{1} = (Y >= X);
 elseif isa(X,'sdpvar') & isa(Y,'lmi')
     varargout{1} = binary_implies_constraint(X,Y);
 elseif isa(X,'lmi') & isa(Y,'sdpvar')

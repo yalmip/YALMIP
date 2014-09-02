@@ -10,7 +10,6 @@ function varargout = slog(varargin)
 % modelling. Implemented in order to avoid singularities in logarithm
 % evaluation.
 
-% Author Johan Löfberg
 switch class(varargin{1})
     case 'double'
         x = varargin{1};       
@@ -25,7 +24,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = set(X >= -1+eps);
+        F = (X >= -1+eps);
 
         operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');
         operator.convexhull = @convexhull;

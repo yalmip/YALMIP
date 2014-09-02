@@ -1,7 +1,7 @@
 function test_gp_6
 
 q = sdpvar(1,1);
-F = set(q >= 0);
+F = (q >= 0);
 obj = (1+q)^2.5,
 sol = solvesdp(F,obj,sdpsettings('debug',1,'solver','fmincon-geometric'));
 

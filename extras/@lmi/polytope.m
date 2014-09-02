@@ -8,8 +8,6 @@ function [P,x] = polytope(X,options)
 % x : sdpvar object defining the variables in the polytope P.H*x<P.K
 % F : set-object with linear inequalities
 
-% Author Johan Löfberg
-
 if nargin < 2
     options = sdpsettings;
 elseif isempty(options)

@@ -67,7 +67,7 @@ try
     else
         y.typeflag = 4;
     end
-    y = set(y);
+    y = lmi(y);
 catch
     error(lasterr)
 end

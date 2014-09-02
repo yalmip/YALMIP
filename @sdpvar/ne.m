@@ -1,12 +1,9 @@
 function F = ne(X,Y)
 %NE (overloaded)
 %
-%    F = set(ne(x,y))
+%    F = ne(x,y)
 %
 %   See also SDPVAR/AND, SDPVAR/OR, BINVAR, BINARY
-
-% Author Johan Löfberg
-% $Id: ne.m,v 1.4 2009-02-25 12:29:25 joloef Exp $
 
 % Models NE using logic constraints
 
@@ -18,7 +15,7 @@ function F = ne(X,Y)
 % end
 
 if isa(X,'sdpvar') & isa(Y,'sdpvar') & is(X,'binary') & is(Y,'binary')
-    F = set(X + Y == 1);
+    F = (X + Y == 1);
 elseif isa(X,'sdpvar') & is(X,'binary') & is(X,'lpcone') &  isa(Y,'double') &  ismember(Y,[0 1])
     zv = find((Y == 0));
     ov = find((Y == 1));
@@ -29,7 +26,7 @@ elseif isa(X,'sdpvar') & is(X,'binary') & is(X,'lpcone') &  isa(Y,'double') &  i
     if ~isempty(ov)
         lhs = lhs + sum(1-extsubsref(X,ov));
     end
-    F = set(lhs >=1);
+    F = (lhs >=1);
 elseif isa(X,'sdpvar') & is(X,'integer') &  isa(Y,'double')
     X = reshape(X,[],1);
     Y = reshape(Y,[],1);
@@ -40,5 +37,5 @@ elseif isa(X,'sdpvar') & is(X,'integer') &  isa(Y,'double')
     larger = binvar(length(X),1);
     F = [implies(less,X<=Y-1), implies(larger,X>=Y+1), sum(less) + sum(larger) >= 1];
 else
-    F = set((X<=Y-0.5) | (X>=Y+0.5));
+    F = ((X<=Y-0.5) | (X>=Y+0.5));
 end

@@ -1,9 +1,6 @@
 function Z = plus(A,B)
 %plus           Overloaded
 
-% Author Johan Löfberg 
-% $Id: plus.m,v 1.5 2007-02-07 09:11:27 joloef Exp $  
-
 % Standard case A.cx + A.logdetP + (B.cx + B.logdetP)
 
 if isa(A,'sdpvar') | isa(A,'double') 

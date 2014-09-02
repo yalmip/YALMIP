@@ -24,9 +24,6 @@ function symb_pvec = sdisplay(pvec,symbolicname)
 %    ans = 
 %      'x^2+y^2+ryv(5)^2+ryv(6)^2'
 
-
-% Author Johan Löfberg
-% $Id: sym.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
 allnames = {};
 for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)

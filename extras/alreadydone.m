@@ -13,14 +13,3 @@ if ~isempty(index)
         end
     end
 end
-% if length(ALREADY_MODELLED) >= variable
-%     if ~isempty(ALREADY_MODELLED{variable})
-%         if isequal(ALREADY_MODELLED{variable}.method,method)
-%             if isequal(ALREADY_MODELLED{variable}.goal_vexity,goal_vexity)
-%                 done = 1;
-%             end
-%         elseif isequal(ALREADY_MODELLED{variable}.method,'milp')
-%             done = 1;
-%         end
-%     end
-% end

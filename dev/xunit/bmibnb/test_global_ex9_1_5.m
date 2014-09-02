@@ -24,7 +24,7 @@ x14 = sdpvar(1);
 objective = -0-x2+10*x3-x4-0;
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,x2+x3+x5==1];
 F=[F,x2+x4+x6==1];
 F=[F,x3+x4+x7==1];
@@ -52,6 +52,6 @@ F=[F,0<=x13];
 F=[F,0<=x14];
 
 % Solve problem
-sol = solvesdp(F+set(recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = solvesdp(F+(recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 mbg_asserttrue(sol.problem==0)
 mbg_asserttolequal(double(objective), -1, 1e-2);

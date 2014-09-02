@@ -17,7 +17,7 @@ x6 = sdpvar(1);
 objective = -(-(10.5*x1-1.5*sqr(x1)-sqr(x2)-3.95*x2-sqr(x3)+3*x3-2*sqr(x4)+5*x4-sqr(x5)+1.5*x5-2.5*sqr(x6)-1.5*x6)+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,x1+x2+x3+x4+x5+x6<=1e10];
 F=[F,0<=x1<=99];
 F=[F,0<=x2<=99];

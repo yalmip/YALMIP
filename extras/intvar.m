@@ -7,9 +7,6 @@ function sys = intvar(varargin)
 %
 %   See also SDPVAR, BINVAR, INTEGER, BINARY
 
-% Author Johan Löfberg
-% $Id: intvar.m,v 1.7 2006-05-17 13:22:29 joloef Exp $
-
 all_variable_names = 1;
 i = 1;
 while all_variable_names & i<=nargin

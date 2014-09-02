@@ -1,7 +1,5 @@
 function varargout = deadhub(varargin)
 
-% Author Johan Löfberg
-% $Id: deadhub.m,v 1.1 2008-01-24 21:38:29 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
@@ -14,9 +12,7 @@ switch class(varargin{1})
 
         operator = struct('convexity','convex','monotonicity','none','definiteness','positive','model','callback');
         operator.bounds     = @bounds;
-        operator.convexhull = @convexhull;
-        %operator.derivative = @derivative;
-        %operator.range = [-1 1];
+        operator.convexhull = @convexhull;      
 
         varargout{1} = [];
         varargout{2} = operator;

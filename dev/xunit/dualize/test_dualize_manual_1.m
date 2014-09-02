@@ -5,8 +5,8 @@ t = sdpvar(2,1);
 Y = sdpvar(3,3);
 obj = trace(X)+trace(Y)+5*sum(t);
 
-F = set(sum(X) == 6+pi*t(1)) + set(diag(Y) == -2+exp(1)*t(2))
-F = F + set(Y>=0) + set(X>=0);
+F = (sum(X) == 6+pi*t(1)) + (diag(Y) == -2+exp(1)*t(2))
+F = F + (Y>=0) + (X>=0);
 
 sol = solvesdp(F,obj,sdpsettings('dualize',1));
 

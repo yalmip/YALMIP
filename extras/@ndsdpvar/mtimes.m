@@ -1,9 +1,6 @@
 function F = mtimes(X,Y)
 % mtimes (overloaded)
 
-% Author Johan Löfberg
-% $Id: mtimes.m,v 1.3 2009-10-14 09:10:35 joloef Exp $
-
 Xd = isa(X,'ndsdpvar');
 Yd = isa(Y,'ndsdpvar');
 

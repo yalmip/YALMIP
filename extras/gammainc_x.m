@@ -1,8 +1,6 @@
 function varargout = gammainc_x(varargin)
 %GAMMAINC_X
 
-% Author Johan Löfberg
-% $Id: gammainc_x.m,v 1.8 2007-08-02 18:16:26 joloef Exp $
 switch class(varargin{1})
 
     case 'double'       

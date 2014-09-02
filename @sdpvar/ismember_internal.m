@@ -19,7 +19,7 @@ if isa(x,'sdpvar') & (isa(p,'polytope') | isa(p,'Polyhedron'))
 
     else
         d = binvar(length(p),1);
-        YESNO = set(sum(d)==1);
+        YESNO = (sum(d)==1);
         [L,U] = safe_bounding_box(p(1));
         for i = 1:length(p)
             [Li,Ui] = safe_bounding_box(p(i));
@@ -45,7 +45,7 @@ if isa(x,'sdpvar') & (isa(p,'polytope') | isa(p,'Polyhedron'))
                 Hpos = (H>0);
                 Hneg = (H<0);
                 M = min([M (H.*Hpos*U+H.*Hneg*L-K)],[],2);
-                YESNO = YESNO + set(H*x-K <= M.*(1-extsubsref(d,i)));
+                YESNO = YESNO + (H*x-K <= M.*(1-extsubsref(d,i)));
             else
                 error('Dimension mismatch.');
             end
@@ -61,7 +61,7 @@ if isa(x,'sdpvar') & isa(p,'double')
    
     
     if numel(p)==1
-        F = set(x == p);
+        F = (x == p);
     else
         if size(p,1)==length(x) & size(p,2)>1
             Delta = binvar(size(p,2),1);

@@ -9,9 +9,6 @@ function assign(X,value,ls)
 %
 % ASSIGN(X,value,1) Least square assignment.
 
-% Author Johan Löfberg
-% $Id: assign.m,v 1.5 2007-10-04 11:27:53 joloef Exp $
-
 if nargin<3
     ls = 0;
 end

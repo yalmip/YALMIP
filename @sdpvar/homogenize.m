@@ -3,8 +3,6 @@ function p_homo = homogenize(p,y);
 %
 % f = homogenize(p,t)
 
-% Author Johan Löfberg
-
 deg   = degree(p);
 deg_y = degree(y);
 if rem(deg,deg_y)~=0

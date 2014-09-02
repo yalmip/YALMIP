@@ -7,12 +7,9 @@ function varargout = SQRT(varargin)
 % operations such as t>1, max t etc.
 %
 % When SQRT is used in a problem, the domain constraint
-% set(x>0) is automatically added to the problem.
+% (x>=0) is automatically added to the problem.
 %
 % See also SDPVAR, SDPVAR/GEOMEAN
-
-% Author Johan Löfberg
-% $Id: sqrt.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
 
 switch class(varargin{1})
     
@@ -32,7 +29,7 @@ case 'char' % YALMIP send 'model' when it wants the epigraph or hypograph
     if isequal(varargin{1},'graph')
         t = varargin{2}; % Second arg is the extended operator variable
         X = varargin{3}; % Third arg and above are the args user used when defining t.           
-        varargout{1} = set(cone([(X-1)/2;t],(X+1)/2));
+        varargout{1} = (cone([(X-1)/2;t],(X+1)/2));
         varargout{2} = struct('convexity','concave','monotonicity','increasing','definiteness','positive');
         varargout{3} = X;
     else           

@@ -4,10 +4,6 @@ function y = stackcell(dummy,blocks)
 % [x1 x2 ... xn] is written as stackcell(sdpvar(1,1),{x1,x2,x3,...,xn})
 % Why the first argument? A hack to make it a method for sdpvar...
 
-
-% Author Johan Löfberg
-% $Id: stackcell.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
-
 nblocks = size(blocks,2);
 % Get dimensions
 n = zeros(nblocks,1);

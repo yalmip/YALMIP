@@ -7,7 +7,4 @@ function  F = projection(F,x,varargin)
 % x      : Variables to project on
 % method : See HELP PROJECTION
 
-% Author Johan Löfberg
-% $Id: projection.m,v 1.1 2010-03-01 15:22:58 joloef Exp $
-
-F = projection(set(F),x,varargin{:});
+F = projection(lmi(F),x,varargin{:});

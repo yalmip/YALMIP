@@ -25,7 +25,7 @@ switch class(varargin{1})
             operator = struct('convexity','none','monotonicity','decreasing','definiteness','positive','model','callback');
         else
             % Base is negative, so the power has to be an integer
-            F = set(integer(X));
+            F = (integer(X));
             operator = struct('convexity','none','monotonicity','decreasing','definiteness','none','model','callback');
         end
 

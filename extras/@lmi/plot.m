@@ -14,9 +14,6 @@ function varargout = plot(varargin)
 % n:  #vertices [double ] (default 100 in 2D and 300 otherwise)
 % options: options structure from sdpsettings
 
-% Author Johan Löfberg
-% $Id: plot.m,v 1.18 2010-03-31 14:27:39 joloef Exp $
-
 % Get the onstraints
 if nargin<1
     return

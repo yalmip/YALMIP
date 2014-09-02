@@ -1,9 +1,6 @@
 function issym=issymmetric(X)
 %ISSYMMETRIC Check if variable is symmetric
 
-% Author Johan Löfberg 
-% $Id: issymmetric.m,v 1.1 2006-08-10 18:00:21 joloef Exp $  
-
 n = X.dim(1);
 m = X.dim(2);
 if (n==m)

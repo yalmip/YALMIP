@@ -1,9 +1,6 @@
 function F = ismember(x,F)
 % Internal class for constraint list
 
-% Author Johan Löfberg
-% $Id: sdpvar.m,v 1.1 2004-06-17 08:40:03 johanl Exp $
-
-F = set(F);
+F = lmi(F);
 F = ismember(x,F);
 

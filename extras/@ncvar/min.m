@@ -7,15 +7,12 @@ function y=min(varargin)
 % operator MIN(X).
 %
 % The variable t is primarily meant to be used in convexity preserving
-% operations such as t>0, maximize t etc.
+% operations such as t>=0, maximize t etc.
 %
 % If the variable is used in a non-convexity preserving operation, such as
-% t<0, a mixed integer model will be derived.
+% t<=0, a mixed integer model will be derived.
 %
 % See built-in MIN for syntax.
-
-% Author Johan Löfberg
-% $Id: min.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
 
 % MIN is implemented as a nonlinear operator.
 % However, for performance issues, it is not

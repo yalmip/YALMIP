@@ -24,9 +24,6 @@ function [base,v] = coefficients(p,x,vin)
 %
 %   See also SDPVAR
 
-% Author Johan Löfberg
-% $Id: coefficients.m,v 1.19 2010-03-14 12:57:16 joloef Exp $  
-
 if isa(p,'double')
     base = p(:);
     v = 1;

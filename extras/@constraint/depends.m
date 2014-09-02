@@ -1,3 +1,3 @@
 function vars = depends(F)
 
-vars = depends(set(F));
+vars = depends(lmi(F));

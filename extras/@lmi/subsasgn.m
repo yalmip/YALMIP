@@ -1,11 +1,12 @@
 function F0 = subsasgn(F,Y,Z)
 %subasgn           Overloaded indexing
 
-% Author Johan Löfberg 
-% $Id: subsasgn.m,v 1.4 2005-04-29 16:28:03 joloef Exp $   
-
 % TODO : Implement lmi/subsasgn...
 %error('set/subsasgn not fully implemented yet. Contact author if you need this functionality')
+F = flatten(F);
+if ~isempty(Z)
+    Z = flatten(Z);
+end
 switch Y(1).type
     case '()'
         thelmi = Y.subs{1};

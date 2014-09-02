@@ -46,7 +46,7 @@ end
 % Linear uncertain constraint is (Bbetai*x + cdi) >= 0 for all w, or
 % (bi' + (Bi*w)')*x + (ci'*w + di).
 
-F = set([]);
+F = ([]);
 
 % To speed up the construction, compute the ci vectors for all constraints
 % in one call ci_basis = [c1 c2 ...]
@@ -56,10 +56,10 @@ for i = 1:length(all_f)
     bi = all_c_x(length(x)*(i-1)+1:length(x)*i);
     if (nnz(ci_basis(:,i))==0) & nnz(Bi)==0
         % This constraint row is constant
-        F = F + set(bi(:)'*x + all_f(i) >= 0);
+        F = F + (bi(:)'*x + all_f(i) >= 0);
     else
         ci = ci_basis(:,i);
         di = all_f(i);
-        F = F + set(bi'*x + di - r*norm(Bi'*x+ci) > 0);
+        F = F + (bi'*x + di - r*norm(Bi'*x+ci) > 0);
     end
 end

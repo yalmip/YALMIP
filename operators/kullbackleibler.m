@@ -5,8 +5,6 @@ function varargout = kullbackleibler(varargin)
 %
 % Computes/declares Kullback-Leibler divergence sum(x.*log(x./y))
 
-% Author Johan Löfberg
-
 switch class(varargin{1})
 
     case 'double'    

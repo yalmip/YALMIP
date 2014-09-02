@@ -215,7 +215,7 @@ try
                 z.dim(1) = nz;
                 z.dim(2) = mz;
                 z.basis = basis;
-                z.lmi_variables = all_lmi_variables;
+                z.lmi_variables = all_lmi_variables(:)';
                 y = z;	                
                 % Reset info about conic terms
                 y.conicinfo = [0 0];                 

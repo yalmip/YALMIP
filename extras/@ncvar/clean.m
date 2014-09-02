@@ -2,11 +2,6 @@ function Z=clean(X,tol)
 %CLEAN Remove terms with small coefficients
 %
 % Z = clean(X,tol) removes all variables with a coefficient smaller than tol
-%
-% 
-
-% Author Johan Löfberg 
-% $Id: clean.m,v 1.1 2006-08-10 18:00:19 joloef Exp $  
 
 if nargin==1
     temp = any(X.basis,1);

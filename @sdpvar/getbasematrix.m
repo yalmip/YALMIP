@@ -1,9 +1,6 @@
 function Q=getbasematrix(X,ind)
 %GETBASEMATRIX Internal function to extract basematrix for variable IND
 
-% Author Johan Löfberg 
-% $Id: getbasematrix.m,v 1.3 2006-07-26 20:17:58 joloef Exp $  
-
 if ind==0
   base = X.basis(:,1);
   Q = reshape(base,X.dim(1),X.dim(2));

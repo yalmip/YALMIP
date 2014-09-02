@@ -11,7 +11,7 @@ t = sdpvar(1,1);
 P = sdpvar(n,n);
 
 obj = t;
-F = set(kyp(A,B,P,blkdiag(C'*C,-t)) <= 0)
+F = (kyp(A,B,P,blkdiag(C'*C,-t)) <= 0)
 
 [Fp,objp,free] = primalize(F,-obj);
 

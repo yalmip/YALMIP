@@ -20,7 +20,7 @@ x11 = sdpvar(1);
 
 % Define constraints 
 objvar = x2*x2+(x3-10)*(x3-10);
-F = set([]);
+F = ([]);
 F=[F,x2<=15];
 F=[F,-x2+x3<=0];
 F=[F,-x2<=0];

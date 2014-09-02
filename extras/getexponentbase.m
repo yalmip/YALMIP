@@ -1,9 +1,6 @@
 function [exponents,base]=getexponentbase(p,x)
 %GETEXPONENTBASE Internal function used in SOS programs
 
-% Author Johan Löfberg
-% $Id: getexponentbase.m,v 1.9 2006-02-15 21:41:35 joloef Exp $
-
 if isempty(p)
     exponents=[];
     base=[];

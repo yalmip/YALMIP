@@ -13,11 +13,9 @@ function [Fhull,t,y] = hull(varargin)
 % (introduction of new variables). Hence, if you have many set of
 % constraints, your problem rapidly grows large.
 
-% $Id: hull.m,v 1.2 2008-02-14 14:53:36 joloef Exp $   
-
 for i = 1:nargin  
     if isa(varargin{i},'constraint')
-        varargin{i} = set(varargin{i});
+        varargin{i} = lmi(varargin{i});
     end
 end
 % Call the hull operator from the set

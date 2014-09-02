@@ -1,8 +1,6 @@
 function sys=double(X)
 %DOUBLE Returns current numerical value
-%
-% Author Johan Löfberg
-% $Id: double.m,v 1.4 2009-09-30 06:03:34 joloef Exp $
+
 
 solution = yalmip('getsolution');
 lmi_variables = X.lmi_variables;
@@ -13,22 +11,6 @@ mt = yalmip('nonCommutingTable');
 mt_local = mt(lmi_variables,2:end);
 nterms = sum(mt_local | mt_local,2); 
 nonlinears = lmi_variables(nterms > 1);
-
-% if ~isempty(solution.values)
-%     if max(lmi_variables) <= length(solution.values) & isempty(nonlinears)
-%         if ~any(isnan(solution.values(lmi_variables(:))))
-%             % Yihoo, we can do this really fast by
-%             % re-using the old values
-%             sys = X.basis*[1;solution.values(lmi_variables(:))];
-%             if X.typeflag==10
-%                 sys = eig(full(reshape(sys,X.dim(1),X.dim(2))));
-%             else
-%                 sys = full(reshape(sys,X.dim(1),X.dim(2)));
-%             end
-%             return
-%         end
-%     end
-% end
 
 % Okey, we could not do it really fast...
 allextended   = yalmip('extvariables');

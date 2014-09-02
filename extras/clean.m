@@ -5,9 +5,6 @@ function Z=clean(Z,tol)
 %
 %
 
-% Author Johan Löfberg
-% $Id: clean.m,v 1.1 2005-12-19 15:27:31 joloef Exp $
-
 if nargin == 1
     tol = 0;
 end

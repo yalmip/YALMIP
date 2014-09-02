@@ -14,7 +14,7 @@ x3 = sdpvar(1);
 objective = -(-(-3.5*sqr(x1)-35*x1-0.5*sqr(x2)-3*x2-2*sqr(x3)+4*x3)+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,x1<=4];
 F=[F,x2<=4];
 F=[F,x3<=4];

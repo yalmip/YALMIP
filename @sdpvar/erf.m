@@ -1,8 +1,6 @@
 function varargout = erf(varargin)
 %ERF (overloaded)
 
-% Author Johan Löfberg
-% $Id: erf.m,v 1.12 2008-05-06 16:37:50 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

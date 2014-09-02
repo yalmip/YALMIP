@@ -1,8 +1,6 @@
 function varargout = tanh(varargin)
 %TANH (overloaded)
 
-% Author Johan Löfberg
-% $Id: tanh.m,v 1.4 2007-08-02 18:16:27 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

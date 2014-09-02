@@ -155,7 +155,7 @@ options.avoidequalitybounds=1;
 
 % Normalize...
 if isa(Constraints,'constraint')
-    Constraints = set(Constraints);
+    Constraints = lmi(Constraints);
 end
 
 if ~isempty(Constraints)
@@ -187,9 +187,9 @@ end
 
 if ~isempty(Constraints) & any(is(Constraints,'uncertain'))
     [Constraints,Objective,failure] = robustify(Constraints,Objective,options);
-    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);
+    [aux1,aux2,aux3,model] = export((x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);
 else
-    [aux1,aux2,aux3,model] = export(set(x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);    
+    [aux1,aux2,aux3,model] = export((x == repmat(pi,nIn*mIn,1))+Constraints,Objective,options,[],[],0);    
 end
 
 if ~isempty(aux3)

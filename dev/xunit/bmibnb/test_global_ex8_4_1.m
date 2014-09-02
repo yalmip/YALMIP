@@ -33,7 +33,7 @@ x22 = sdpvar(1);
 objective = -(-(sqr(x1)+sqr(x2-5.9)+sqr(x3-0.9)+sqr(x4-5.4)+sqr(x5-1.8)+sqr(x6-4.4)+sqr(x7-2.6)+sqr(x8-4.6)+sqr(x9-3.3)+sqr(x10-3.5)+sqr(x11-4.4)+sqr(x12-3.7)+sqr(x13-5.2)+sqr(x14-2.8)+sqr(x15-6.1)+sqr(x16-2.8)+sqr(x17-6.5)+sqr(x18-2.4)+sqr(x19-7.4)+sqr(x20-1.5))+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,x22*x1-x2+x21==0];
 F=[F,x22*x3-x4+x21==0];
 F=[F,x22*x5-x6+x21==0];

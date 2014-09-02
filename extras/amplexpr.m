@@ -1,9 +1,6 @@
 function symb_pvec = amplexpr(pvec)
 %AMPLEXPR Converts SDPVAR variable to AMPL string
 
-% Author Johan Löfberg
-% $Id: amplexpr.m,v 1.3 2005-02-10 16:43:32 johanl Exp $
-
 for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)
         p = pvec(pi,pj);

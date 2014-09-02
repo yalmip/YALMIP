@@ -4,8 +4,8 @@ A = randn(3,3);A = -A*A';
 P = sdpvar(3,3);
 t = sdpvar(1,1);
 y = sdpvar(1,1);
-F = set(A'*P+P*A <= -eye(3));
-F = F + set(P >= 0) + set(P(3,3)>=0) + set(t+y >= 7) + set(P(2,2)>=4)+set(P(1,1:2)>=t) + set(t>=12);
+F = (A'*P+P*A <= -eye(3));
+F = F + (P >= 0) + (P(3,3)>=0) + (t+y >= 7) + (P(2,2)>=4)+(P(1,1:2)>=t) + (t>=12);
 obj = trace(P)+y;
     
 sol1  = solvesdp(F,obj);

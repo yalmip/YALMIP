@@ -1,9 +1,6 @@
 function varargout=rank(varargin)
 %RANK (overloaded)
 
-% Author Johan Löfberg
-% $Id: rank.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
-
 % *************************************************************************
 % This file defines a nonlinear operator for YALMIP
 % Rank is a bit non-standard, so don't look here to learn

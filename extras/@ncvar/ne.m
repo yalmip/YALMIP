@@ -1,12 +1,9 @@
 function F = ne(X,Y)
 %NE (overloaded)
 %
-%    F = set(ne(x,y))
+%    F = (ne(x,y))
 %
 %   See also SDPVAR/AND, SDPVAR/OR, BINVAR, BINARY
-
-% Author Johan Löfberg
-% $Id: ne.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
 
 % Models NE using logic constraints
 
@@ -27,7 +24,7 @@ if is(X,'binary') &  isa(Y,'double') & all((Y == round(Y)))
     if ~isempty(ov)
         lhs = lhs + sum(1-extsubsref(X,ov));
     end
-    F = set(lhs >=1);
+    F = (lhs >=1);
 else
-    F = set((X<=Y-0.5) | (X>=Y+0.5));
+    F = ((X<=Y-0.5) | (X>=Y+0.5));
 end

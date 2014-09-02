@@ -1,9 +1,6 @@
 function varargout=rem(varargin)
 %REM (overloaded)
 
-% Author Johan Löfberg
-% $Id: rem.m,v 1.2 2007-07-29 17:32:28 joloef Exp $
-
 switch class(varargin{1})
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.

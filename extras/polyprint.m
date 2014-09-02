@@ -3,9 +3,6 @@ function symb_pvec = polyprint(pvec)
 %
 % POLYPRINT is obsolete. Use SDISPLAY instead.
 
-% Author Johan Löfberg
-% $Id: polyprint.m,v 1.6 2004-09-15 16:30:54 johanl Exp $
-
 for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)
         p = pvec(pi,pj);

@@ -5,7 +5,7 @@ ops{3} = sdpsettings('sos.cong',0,'sos.newton',0,'verbose',0,'sos.extlp',0);
 sdpvar x s t u
 
 sdpvar x s t
-F = set(sos(x^4+(s+t-2)*x^3+s+t));
+F = (sos(x^4+(s+t-2)*x^3+s+t));
 obj = max(s,t);
 for i = 1:length(ops)
     i

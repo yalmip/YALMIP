@@ -1,5 +1,5 @@
 function sys = semivar(varargin)
-%SEMIVAR Create symbolic semicontinuous variable
+%SEMIVAR Create semicontinuous variable
 %
 %   SEMIVAR works exactly as SDPVAR, with the only difference that
 %   the elements in the variable automatically will be constrained
@@ -8,9 +8,6 @@ function sys = semivar(varargin)
 %   Thwe lower and upper bounds are defined separately.
 %
 %   See also SDPVAR, BINVAR, INTVAR, BINARY, INTEGER
-
-% Author Johan Löfberg
-% $Id: semivar.m,v 1.6 2007-08-02 19:33:16 joloef Exp $
 
 all_variable_names = 1;
 i = 1;

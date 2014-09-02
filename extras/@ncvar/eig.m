@@ -8,9 +8,6 @@ function varargout=eig(varargin)
 % EIG is implemented using a nonlinear operator framework,
 % but can currently not be used in any optmization model.
 
-% Author Johan Löfberg 
-% $Id: eig.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 
 
 % ***************************************************
@@ -44,7 +41,7 @@ switch class(varargin{1})
         if isequal(varargin{1},'graph')
             t = varargin{2};
             X = varargin{3};
-            varargout{1} = set(-t < X < t);
+            varargout{1} = (-t <= X <= t);
             varargout{2} = 1; % Convex operator
             error('SDPVAR/ABS called with CHAR argument?');
         end

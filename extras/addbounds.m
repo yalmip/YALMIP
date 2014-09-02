@@ -1,9 +1,6 @@
 function [F_struc,K] = addbounds(F_struc,K,ub,lb)
 %ADDBOUNDS Internal function to add variable bounds to an F_struc
 
-% Author Johan Löfberg
-% $Id: addbounds.m,v 1.3 2005-02-10 16:43:32 johanl Exp $
-
 % Upper bounds
 finite_bounds = find(~isinf(ub));
 if ~isempty(finite_bounds)

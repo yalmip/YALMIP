@@ -54,7 +54,7 @@ end
 
 % Lazy syntax (not official...)
 if nargin==1 & isa(F,'sdpvar')
-    F = set(sos(F));
+    F = (sos(F));
 end
 
 % Default return structure
@@ -109,7 +109,7 @@ end
 F_original = F;
 F_parametric = F(find(~is(F,'sos')));
 if isempty(F_parametric)
-    F_parametric = set([]);
+    F_parametric = ([]);
 end
 
 % *************************************************************************
@@ -151,7 +151,7 @@ end
 % *************************************************************************
 %% INITIALIZE SOS-DECOMPOSITIONS SDP CONSTRAINTS
 % *************************************************************************
-F_sos = set([]);
+F_sos = ([]);
 
 % *************************************************************************
 %% FIGURE OUT ALL USED PARAMETRIC VARIABLES
@@ -161,7 +161,7 @@ ParametricVariables = intersect(ParametricVariables,AllVariables);
 MonomVariables = setdiff(AllVariables,ParametricVariables);
 params = recover(ParametricVariables);
 if isempty(MonomVariables)
-    error('No independent variables? Perhaps you added a constraint set(p(x)) when you meant set(sos(p(x)))');
+    error('No independent variables? Perhaps you added a constraint (p(x)) when you meant (sos(p(x)))');
 end
 if options.verbose>0;disp(['Detected ' num2str(length(ParametricVariables)) ' parametric variables and ' num2str(length(MonomVariables)) ' independent variables.']);end
 
@@ -287,7 +287,7 @@ if options.sos.newton
     tempops.solver = 'cdd,glpk,*';  % CDD is generally robust on these problems
     tempops.verbose = 0;
     tempops.saveduals = 0;
-    [aux1,aux2,aux3,LPmodel] = export(set(temp>=0),temp,tempops);   
+    [aux1,aux2,aux3,LPmodel] = export((temp>=0),temp,tempops);   
 else
     LPmodel = [];
 end
@@ -311,7 +311,7 @@ for constraint = 1:length(p)
     ParametricIndicies = find(ismember(AllVariables,ParametricVariables));
 
     if isempty(MonomIndicies)
-        % This is the case set(sos(t)) where t is a parametric (matrix) variable
+        % This is the case (sos(t)) where t is a parametric (matrix) variable
         % This used to create an error message befgore to avoid some silly
         % bug in the model generation. Creating this error message is
         % stupid, but at the same time I can not remember where the bug was
@@ -327,7 +327,7 @@ for constraint = 1:length(p)
         Blockedx{constraint} = x;
         Blockedvarchange{constraint}=zeros(1,0);    
         continue
-        %  error('You have constraints of the type set(sos(f(parametric_variables))). Please use set(f(parametric_variables) > 0) instead')
+        %  error('You have constraints of the type (sos(f(parametric_variables))). Please use (f(parametric_variables) > 0) instead')
     end
 
     % *********************************************

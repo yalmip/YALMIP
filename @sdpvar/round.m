@@ -1,9 +1,6 @@
 function varargout=round(varargin)
 %ROUND (overloaded)
 
-% Author Johan Löfberg
-% $Id: round.m,v 1.2 2007-07-26 17:10:13 joloef Exp $
-
 switch class(varargin{1})
     
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
@@ -25,7 +22,7 @@ switch class(varargin{1})
                 t = varargin{2};
                 X = varargin{3};
                 
-                F = set([X-0.5 <= t <= X+0.5]) + set(integer(t));
+                F = ([X-0.5 <= t <= X+0.5]) + (integer(t));
                 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

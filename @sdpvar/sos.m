@@ -55,5 +55,5 @@ else
     X.typeflag = 11;
     X.extra.sosid = yalmip('sosid');
     X.extra.rank = r;
-    X = set(X);
+    X = lmi(X);
 end

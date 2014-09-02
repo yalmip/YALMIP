@@ -1,9 +1,6 @@
 function X=spdiags(varargin)
 %SPDIAGS (overloaded)
 
-% Author Johan Löfberg
-% $Id: sparse.m,v 1.7 2010-02-22 12:40:48 joloef Exp $
-
 if nargin < 1
     error('At-least 1 arguments needed');
 end

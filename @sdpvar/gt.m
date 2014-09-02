@@ -1,9 +1,6 @@
 function y = gt(X,Y)
 %GT (overloaded)
 
-% Author Johan Löfberg
-% $Id: gt.m,v 1.3 2005-06-17 13:02:01 joloef Exp $
-
 if isa(X,'blkvar')
     X = sdpvar(X);
 end

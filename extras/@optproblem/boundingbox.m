@@ -23,9 +23,9 @@ if nargin < 2
 end
 
 if nargin == 3
-    [B,L,U] = boundingbox(set(P.Constraints),Options,x)
+    [B,L,U] = boundingbox(lmi(P.Constraints),Options,x)
 else
-    [B,L,U] = boundingbox(set(P.Constraints),Options)
+    [B,L,U] = boundingbox(lmi(P.Constraints),Options)
 end
 switch nargout
     case 0

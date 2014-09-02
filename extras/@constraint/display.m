@@ -1,3 +1,3 @@
 function display(X)
 
-display(set(X));
+display(lmi(X));

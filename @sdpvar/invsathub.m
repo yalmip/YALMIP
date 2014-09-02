@@ -1,12 +1,7 @@
 function varargout = invsathub (varargin)
-%SIN (overloaded)
+%INVSATHUB (overloaded)
 
-% Author Johan Löfberg
-% $Id: invsathub.m,v 1.4 2008-02-18 15:42:45 joloef Exp $
 switch class(varargin{1})
-
-    case 'double'
-        error('Overloaded SDPVAR/SIN CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
@@ -15,16 +10,14 @@ switch class(varargin{1})
 
         operator = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
         operator.bounds     = @bounds;
-        operator.convexhull = @convexhull;
-        %operator.derivative = @derivative;
-        %operator.range = [-1 1];
+        operator.convexhull = @convexhull;      
 
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/SIN called with CHAR argument?');
+        error('SDPVAR/INVSATHUB called with CHAR argument?');
 end
 
 function [L,U] = bounds(xL,xU,lambda)

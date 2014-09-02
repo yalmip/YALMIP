@@ -28,12 +28,8 @@ function [p,Bi,Ci,Pn,Pfinal] = PWA(h,Xdomain)
 % The function is mainly inteded to be used for easy 
 % plotting of convex PWA functions
 
-% Author Johan Löfberg 
-% $Id: pwa.m,v 1.8 2006-02-07 10:58:39 joloef Exp $   
-
-
 t = sdpvar(1,1);
-[F,failure,cause] = expandmodel(set(h<t),[],sdpsettings('allowmilp',0));
+[F,failure,cause] = expandmodel(lmi(h<=t),[],sdpsettings('allowmilp',0));
 if failure
     error(['Could not expand model (' cause ')']);
     return
@@ -53,9 +49,9 @@ nx = length(vars);
 X = recover(vars);
 
 if nargin == 1
-    Xdomain = set(-100 <= X <= 100);
+    Xdomain = (-100 <= X <= 100);
 else
-    Xdomain = set(-10000 <= X <= 10000)+Xdomain;
+    Xdomain = (-10000 <= X <= 10000)+Xdomain;
 end
 
 [Ai,Bi,Ci,Pn] = generate_pwa(F,t,X,Xdomain,nx);
@@ -116,7 +112,7 @@ p = pwf(sol,X,'convex');
 function [Ai,Bi,Ci,Pn] = generate_pwa(F,t,X,Xdomain,nx)
 
 % Project, but remember that we already expanded the constraints
-P = polytope(projection(F+set(t<10000)+Xdomain,[X;t],[],1));Xdomain = polytope(Xdomain);
+P = polytope(projection(F+(t<=10000)+Xdomain,[X;t],[],1));Xdomain = polytope(Xdomain);
 [H,K] = double(P);
 facets = find(H(:,end)<0);
 

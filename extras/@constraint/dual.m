@@ -5,7 +5,4 @@ function sys = dual(X)
 % 
 %   See also SOLVESDP, DUALIZE
   
-% Author Johan Löfberg
-% $Id: dual.m,v 1.2 2010-02-08 13:06:11 joloef Exp $
-
-sys = dual(set(X));
+sys = dual(lmi(X));

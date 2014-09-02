@@ -1,9 +1,6 @@
 function x = unique(x)
 %UNIQUE (overloaded)
 
-% Author Johan Löfberg
-% $Id: unique.m,v 1.1 2006-08-10 18:00:23 joloef Exp $
-
 if min(x.dim(1),x.dim(2))~=1
     error('UNIQUE currently only supported for vectors')
 end

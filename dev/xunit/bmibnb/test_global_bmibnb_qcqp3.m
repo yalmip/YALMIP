@@ -41,8 +41,8 @@ e22 =     11*x1 + x2 + 2*x3 + 3*x4 + 4*x5 + 5*x6 + 6*x7 + 7*x8 + 8*x9 + 9*x10   
 % Define the objective function and the whole program
 obj =  (0.5*x1*x2 - x1*x1 + 0.5*x2*x1 - x2*x2 + 0.5*x2*x3 + 0.5*x3*x2 - x3*x3       + 0.5*x3*x4 + 0.5*x4*x3 - x4*x4 + 0.5*x4*x5 + 0.5*x5*x4 - x5*x5 + 0.5*x5      *x6 + 0.5*x6*x5 - x6*x6 + 0.5*x6*x7 + 0.5*x7*x6 - x7*x7 + 0.5*x7*x8 + 0.5      *x8*x7 - x8*x8 + 0.5*x8*x9 + 0.5*x9*x8 - x9*x9 + 0.5*x9*x10 + 0.5*x10*x9       - x10*x10 + 0.5*x10*x11 + 0.5*x11*x10 - x11*x11);
 e = -[e1;e2;e3;e4;e5;e6;e7;e8;e9;e10;e11;e12;e13;e14;e15;e16;e17;e18;e19;e20;e21;e22];
-F = set(10>=x>=0);
-F = F + set(e>=0);
+F = (10>=x>=0);
+F = F + (e>=0);
 
 sol = solvesdp(F,obj,sdpsettings('solver','bmibnb','bmibnb.di',0))
 

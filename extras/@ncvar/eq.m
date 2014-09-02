@@ -1,9 +1,6 @@
 function y = eq(X,Y)
 %EQ (overloaded)
 
-% Author Johan Löfberg
-% $Id: eq.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 if isa(X,'blkvar')
     X = sdpvar(X);
 end

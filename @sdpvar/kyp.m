@@ -16,9 +16,6 @@ function sys = kyp(A,B,P,M)
 %
 %  See also @sdpvar/GKYP, @sdpvar/LYAP
 
-% Author Johan Löfberg
-% $Id: kyp.m,v 1.9 2009-10-14 12:12:41 joloef Exp $
-
 if nargin<4
     M = 0;
 end

@@ -7,7 +7,7 @@ x = sdpvar(1,1);
 y = sdpvar(1,1);
 t = sdpvar(1,1);
 s = sdpvar(1,1);
-F = set(sos(1+y^2-t-s))+set(sos(1+x^2-s))+set(t>=0)+set(s>=-0.5)+set(s>=0);
+F = (sos(1+y^2-t-s))+(sos(1+x^2-s))+(t>=0)+(s>=-0.5)+(s>=0);
 obj = -s-t;
 for i = 1:length(ops)
     i

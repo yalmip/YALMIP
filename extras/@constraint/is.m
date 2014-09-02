@@ -1,3 +1,3 @@
 function yesno = is(X,this)
 
-yesno = is(set(X),this);
+yesno = is(lmi(X),this);

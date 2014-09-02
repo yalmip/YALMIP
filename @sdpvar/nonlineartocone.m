@@ -1,9 +1,6 @@
 function [Fconv,info] = nonlineartocone(F)
 %NONLINEARTOCONE Convert nonlinear constraint to second order cone
 
-% Author Johan Löfberg 
-% $Id: nonlineartocone.m,v 1.3 2004-07-02 08:17:29 johanl Exp $   
-
 if islinear(F)
     Fconv = F;
     info = 0;

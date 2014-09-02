@@ -13,7 +13,7 @@ x2 = sdpvar(1);
 objective = -(-(cos(x1)*sin(x2)-x1/(1+sqr(x2))));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-1<=x1<=2];
 F=[F,-1<=x2<=1];
 

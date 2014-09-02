@@ -13,18 +13,13 @@ function x = integer(x)
 %    x : SDPVAR object
 %
 %   OUTPUT
-%    F : SET object
+%    F : Constraint object
 %
 %   EXAMPLE
-%    F = set(integer(x));             % Full verbose notation
-%    F = integer(x);                  % Short notation
+%    F = integer(x);                  % Add integrality
 %    F = integer(x*pi)                % Equivalent to code above
-%    solvesdp(G+set(integer(x)),obj)  % Add integer constraint on the fly
 %
 %   See also BINARY, SET, SDPVAR, INTVAR, BINVAR
-
-% Author Johan Löfberg
-% $Id: integer.m,v 1.3 2004-07-06 14:08:12 johanl Exp $
 
 x.typeflag = 7;
 x = lmi(x);

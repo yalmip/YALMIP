@@ -1,7 +1,7 @@
 function  x = settype(F)
-% Author Johan Löfberg
-% $Id: settype.m,v 1.1 2005-03-09 15:16:15 johanl Exp $
-nlmi = size(F.clauses,2);
+
+F = flatten(F);
+nlmi = length(F.LMIid);
 lmiinfo{1} = 'sdp';
 lmiinfo{2} = 'elementwise';
 lmiinfo{3} = 'equality';

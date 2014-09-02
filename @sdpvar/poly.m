@@ -13,7 +13,6 @@ function p = poly (A, r)
 % See also DET
 
 % Author Anders Helmersson, Johan Löfberg
-% $Id: poly.m,v 1.2 2006-10-24 12:02:04 joloef Exp $%
 
 [n, m] = size (A);
 if n ~= m, error ('A must be square'); end;

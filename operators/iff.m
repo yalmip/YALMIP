@@ -26,7 +26,7 @@ function varargout = iff(varargin)
 %
 %  sdpvar X;binvar Y; F = set((X>=5) == Y);
 %  sdpvar X;binvar Y; F = set(Y == (X==5));
-
+%
 %
 % Note
 %  The function IFF is not complete, but will be
@@ -34,16 +34,12 @@ function varargout = iff(varargin)
 %
 %   See also @SDPVAR/AND, @SDPVAR/OR, IMPLIES
 
-% Author Johan Löfberg
-% $Id: iff.m,v 1.4 2007-08-02 19:17:36 joloef Exp $
-
 X = varargin{1};
 Y = varargin{2};
 
 switch class(varargin{1})
     case {'lmi','constraint','sdpvar'}
         varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
-
 
     case 'char'
         varargout{1} = iff_internal(varargin{3:end});

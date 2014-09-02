@@ -1,6 +1,4 @@
 function X = lift2real(X)
-% Author Johan Löfberg
-% $Id: lift2real.m,v 1.1 2007-03-02 09:51:35 joloef Exp $
 
 % Given (ar+i*ai)*X*(br+i*bi) 
 % Silly code, since it is Hermitian, we know ar = br', ai=-bi'

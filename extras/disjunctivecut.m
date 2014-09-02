@@ -39,7 +39,7 @@ end
 solvesdp(Constraints,Objective,sdpsettings('verbose',0));
 
 x = recover(p{1}.used_variables);
-cut = set(-double(beta)+double(alpha)'*x > 0);
+cut = (-double(beta)+double(alpha)'*x >= 0);
 
 
 return
@@ -81,4 +81,4 @@ Constraint = [Constraint,-1<alpha<1,sum(mu1)+sum(mu2)<10];
 
 solvesdp(Constraint,Objective,sdpsettings('verbose',0));
 
-cut = set(-double(beta)+double(alpha)'*x > 0);
+cut = (-double(beta)+double(alpha)'*x >= 0);

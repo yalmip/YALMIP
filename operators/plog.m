@@ -9,8 +9,6 @@ function varargout = plog(varargin)
 % of this function is exploited to perform convexity analysis and rigorous
 % modelling.
 
-% Author Johan Löfberg
-% $Id: plog.m,v 1.1 2008-05-06 18:46:00 joloef Exp $
 switch class(varargin{1})
     
     case 'double'
@@ -35,7 +33,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = set(X >= 0);
+        F = (X >= 0);
 
         operator = struct('convexity','convex','monotonicity','none','definiteness','none','model','callback');
         operator.range = [-inf inf];

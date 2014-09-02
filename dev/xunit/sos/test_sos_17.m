@@ -6,7 +6,7 @@ sdpvar x s t u
 
 sdpvar x y a bb c
 V = x^2*a+bb*y^2+x*y+3;
-F=set(sos(V))+set([a-4 bb c]);
+F=(sos(V))+([a-4 bb c]);
 obj=a;
 for i = 1:length(ops)
     i

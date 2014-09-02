@@ -13,8 +13,5 @@ function x = semicont(x)
 %
 %   See also BINARY, SDPVAR, INTVAR, BINVAR
 
-% Author Johan Löfberg
-% $Id: integer.m,v 1.3 2004-07-06 14:08:12 johanl Exp $
-
 x.typeflag = 52;
 x = lmi(x);

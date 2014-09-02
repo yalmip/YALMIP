@@ -1,42 +1,6 @@
 function solver = findapplicablesolvers(options,ProblemClass,solvers,socp_are_really_qc);
 %findapplicablesolvers Internal function to select solver based on problem category
 
-% Author Johan Löfberg
-% $Id: findapplicablesolvers.m,v 1.2 2005-09-16 09:00:45 joloef Exp $
-
-%problem = 0;
-
-% % UNDOCUMENTED
-% force_solver = yalmip('solver');
-% if length(force_solver)>0
-%     options.solver = force_solver;
-% end
-% 
-% % ***************************************************
-% % Maybe the user is stubborn and wants to pick solver
-% % ***************************************************
-% if length(options.solver)>0
-%     
-%     % Create tags with version also        
-%     temp = solvers;
-%     for i = 1:length(temp)
-%         if length(temp(i).version)>0
-%             temp(i).tag = lower([temp(i).tag '-' temp(i).version]);
-%         end
-%     end
-%     
-%     index = find(strcmp(lower({solvers.tag}),lower(options.solver)));
-%     index2 = find(strcmp(lower({temp.tag}),lower(options.solver)));
-%     if isempty(index) & isempty(index2)
-%         solver = [];
-%         problem = -3;
-%         return;
-%     else
-%         solvers = solvers(union(index,index2));
-%     end
-%     
-% end
-
 % ************************************************
 % Prune based on objective
 % ************************************************

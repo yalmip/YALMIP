@@ -1,2 +1,2 @@
 function S = spy(X)
-S = spy(set(X));
+S = spy(lmi(X));

@@ -1,8 +1,6 @@
 function varargout = erfc(varargin)
 %ERFC (overloaded)
 
-% Author Johan Löfberg
-% $Id: erfc.m,v 1.6 2008-02-28 21:54:49 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

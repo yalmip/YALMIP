@@ -7,7 +7,7 @@ function sys = unblkdiag(F)
 
 switch class(F)
     case 'lmi'
-        sys = set([]);
+        sys = ([]);
         for i = 1:length(F)
             if is(F(i),'sdp') % SDP
                 Z = sdpvar(F(i));
@@ -19,14 +19,14 @@ switch class(F)
                         r1 = r(blocks);
                         r2 = r(blocks+1)-1;
                         if r2>r1
-                            sys = sys + set(Z(v(r1:r2),v(r1:r2)));
+                            sys = sys + (Z(v(r1:r2),v(r1:r2)));
                         else
                             linearblocks = [linearblocks v(r1)];
                         end
                     end
                     if ~isempty(linearblocks)
                         D=diag(Z);
-                        sys = sys+set(D(linearblocks));
+                        sys = sys+(D(linearblocks));
                     end
                 else
                     sys = sys + F(i);

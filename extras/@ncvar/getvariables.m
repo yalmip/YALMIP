@@ -11,9 +11,6 @@ function varargout = getvariables(X,whatvars)
 % Note : The difference compared DEPENDS is that nonlinear terms
 %        are reported as separate variables.
 
-% Author Johan Löfberg
-% $Id: getvariables.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
-
 switch nargin
     case 1
         varargout{1} = X.lmi_variables;

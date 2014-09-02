@@ -1,9 +1,6 @@
 function display(X)
 %display           Overloaded
 
-% Author Johan Löfberg 
-% $Id: display.m,v 1.2 2007-02-02 09:31:24 joloef Exp $  
-
 P = X.P;
 classification = 'Logdet-term ';
 [n,m] = size(P);

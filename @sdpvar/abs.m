@@ -1,7 +1,6 @@
 function varargout=abs(varargin)
 %ABS (overloaded)
 
-% Author Johan Löfberg
 switch class(varargin{1})
     case 'double'
         error('Overloaded SDPVAR/ABS CALLED WITH DOUBLE. Report error')
@@ -47,15 +46,11 @@ switch class(varargin{1})
                 d = varargin{4};
                 [M,m]=derivebounds(X);
                 if m>=0
-                    F = set(t == X);
+                    F = (t == X);
                 elseif M<=0
-                    F = set(t == -X);
+                    F = (t == -X);
                 else
-                   % d = binvar(1,1);
                     maxABSX = max([abs(m) abs(M)],[],2);
-                   % F = F + set(0<= t <= maxABSX);
-                   % F = F + set(X <= M*d)     + set(0 <= t+X <= 2*maxABSX*d);
-                   % F = F + set(X >= m*(1-d)) + set(0 <= t-X <= 2*maxABSX*(1-d));
                     F = [[0 1 0;
                      0 -1 0;   
                      1 0 -M;
@@ -64,12 +59,7 @@ switch class(varargin{1})
                      -1 0 -m;
                      -1 1 2*maxABSX;1 -1 0]*[X;t;d] <= [maxABSX;0;0;0;0;-m;2*maxABSX;0]];
                 end
-%                 if all(all(getbase(X)==fix(getbase(X))))
-%                     xv = getvariables(X);
-%                     if all(ismember(xv,yalmip('intvariables')) | ismember(xv,yalmip('binvariables')))
-%                         F = [F,integer(t)];
-%                     end
-%                 end
+
                 varargout{1} = F;
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','integer');
                 varargout{3} = X;

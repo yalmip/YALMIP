@@ -1,9 +1,6 @@
 function y = mpower(x,d)
 %MPOWER (overloaded)
 
-% Author Johan Löfberg
-% $Id: mpower.m,v 1.27 2009-10-14 07:28:42 joloef Exp $
-
 %Sanity check
 if isa(d,'sdpvar')
     y = power_internal1(d,x);

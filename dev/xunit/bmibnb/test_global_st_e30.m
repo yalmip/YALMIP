@@ -25,7 +25,7 @@ x14 = sdpvar(1);
 objective = -(x14+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-x12*x7-x1+x3==0];
 F=[F,-x12*x8-x2+x4==0];
 F=[F,(-x13*x7)-x11*x9-x1+x5==0];

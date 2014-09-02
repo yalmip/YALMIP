@@ -10,10 +10,10 @@ end
 
 % Normalize data
 if isa(Y,'constraint')
-    Y=set(Y,[],[],1);
+    Y=lmi(Y,[],[],1);
 end
 if isa(X,'constraint')
-    X=set(X,[],[],1);
+    X=lmi(X,[],[],1);
 end
 if isa(X,'lmi') & isa(Y,'sdpvar')
     temp = X;
@@ -90,7 +90,7 @@ else
     end
     if size(S,1) > 0
         % Add cut cannot be outside both constraints
-        F = F + set(S*di >= 1);
+        F = F + (S*di >= 1);
     end
 end
 

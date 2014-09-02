@@ -13,7 +13,7 @@ x2 = sdpvar(1);
 objective = -(-(x1*x2-x1-x2)+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-6*x1+8*x2<=3];
 F=[F,3*x1-x2<=3];
 F=[F,0<=x1<=5];

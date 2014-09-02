@@ -1,8 +1,5 @@
-function varargout = norm(varargin)
+function varargout = sign(varargin)
 %SIGN (overloaded)
-
-% Author Johan Löfberg
-% $Id: sign.m,v 1.1 2006-08-10 18:00:22 joloef Exp $
 
 
 %% ***************************************************
@@ -62,9 +59,9 @@ switch class(varargin{1})
 
                 d = binvar(1,1);
                 [M,m] = derivebounds(X);
-                F = set([]);
-                F = set(X > d*m) + set(-2*d+1 <= t <= 1);
-                F = set(X < (1-d)*M) + set(-1     <= t <= -1 + 2*(1-d));
+                F = ([]);
+                F = (X > d*m) + (-2*d+1 <= t <= 1);
+                F = (X < (1-d)*M) + (-1     <= t <= -1 + 2*(1-d));
 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','milp','monotonicity','milp','definiteness','positive');

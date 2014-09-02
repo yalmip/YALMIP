@@ -1,10 +1,8 @@
 function [problem,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,P,h,relax,parametric,evaluation,F_vars)
 %categorizeproblem          Internal function: tries to determine the type of optimization problem
 
-% Author Johan Löfberg
-% $Id: categorizeproblem.m,v 1.24 2009-05-29 08:05:12 joloef Exp $
-
-Counter = size(F.clauses,2);
+F = flatten(F);
+Counter = length(F.LMIid);
 Ftype = zeros(Counter,1);
 
 real_data = 1;

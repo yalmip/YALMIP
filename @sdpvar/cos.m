@@ -1,8 +1,6 @@
 function varargout = cos(varargin)
 %COS (overloaded)
 
-% Author Johan Löfberg
-% $Id: cos.m,v 1.14 2008-04-08 09:02:48 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

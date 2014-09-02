@@ -39,20 +39,20 @@ for k = N-1:-1:1
     bounds(x{k+1},sysStruct.xmin,sysStruct.ymax);
     bounds(t,0,600);
 
-    F =     set(sysStruct.umin <= u{k}     <= sysStruct.umax);
-    F = F + set(sysStruct.xmin <= x{k}     <= sysStruct.xmax);
-    F = F + set(sysStruct.xmin <= x{k+1}   <= sysStruct.xmax);
-    F = F + set(sysStruct.ymin <= sysStruct.C{1}*x{k}   <= sysStruct.ymax);
-    F = F + set(sysStruct.ymin <= sysStruct.C{1}*x{k+1} <= sysStruct.ymax);
+    F =     (sysStruct.umin <= u{k}     <= sysStruct.umax);
+    F = F + (sysStruct.xmin <= x{k}     <= sysStruct.xmax);
+    F = F + (sysStruct.xmin <= x{k+1}   <= sysStruct.xmax);
+    F = F + (sysStruct.ymin <= sysStruct.C{1}*x{k}   <= sysStruct.ymax);
+    F = F + (sysStruct.ymin <= sysStruct.C{1}*x{k+1} <= sysStruct.ymax);
 
-    F = F + set(-t <= [x{k};u{k}] <= t) ;
+    F = F + (-t <= [x{k};u{k}] <= t) ;
 
     % PWA Dynamics
     for i = 1:length(sysStruct.A)
-        F = F + set(implies(d(i),x{k+1} == sysStruct.A{i}*x{k}+sysStruct.B{i}*u{k}+sysStruct.f{i}));
-        F = F + set(implies(d(i),sysStruct.guardX{i}*x{k} <= sysStruct.guardC{i}));
+        F = F + (implies(d(i),x{k+1} == sysStruct.A{i}*x{k}+sysStruct.B{i}*u{k}+sysStruct.f{i}));
+        F = F + (implies(d(i),sysStruct.guardX{i}*x{k} <= sysStruct.guardC{i}));
     end
-    F = F + set(sum(d) == 1);
+    F = F + (sum(d) == 1);
 
     % Compute value function for one step backwards
     [mpsol{k},sol{k},Uz{k},J{k}] = solvemp(F,sum(t) + J{k+1},[],x{k},u{k});

@@ -7,7 +7,7 @@ ops{3} = sdpsettings('sos.cong',0,'sos.newton',0,'verbose',1,'sos.extlp',0);
 x = sdpvar(1,1);
 y = sdpvar(1,1);
 t = sdpvar(1,1);
-F = set(sos(1+y^2-t))+set(sos(1+x^2-t));
+F = (sos(1+y^2-t))+(sos(1+x^2-t));
 obj = -t;
 for i = 1:length(ops)
     i

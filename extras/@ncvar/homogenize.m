@@ -3,9 +3,6 @@ function p_homo = homogenize(p,y);
 %
 % f = homogenize(p,x)
 
-% Author Johan Löfberg 
-% $Id: homogenize.m,v 1.1 2006-08-10 18:00:20 joloef Exp $  
-
 deg   = degree(p);
 deg_y = degree(y);
 if rem(deg,deg_y)~=0

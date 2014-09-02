@@ -7,9 +7,6 @@ function F = projection(F,x,method,alreadyprojected)
 % x      : Variables to project on
 % method : See HELP PROJECTION
 
-% Author Johan Löfberg
-% $Id: projection.m,v 1.13 2006-08-05 20:45:22 joloef Exp $
-
 if nargin<2
     error('Not enough input arguments.')
 end
@@ -73,9 +70,9 @@ if length(e)>0
 
         [ii,jj] = sort(x_vars);
         x = recover(x_vars(jj));
-        F = set(H(:,jj)*x <= K);
+        F = (H(:,jj)*x <= K);
     else
-        F=set(sum(x) <= -1) + set(sum(x) >= 1);
+        F=(sum(x) <= -1) + (sum(x) >= 1);
     end
 else
 
@@ -93,5 +90,5 @@ else
 
     [ii,jj] = sort(x_vars);
     x = recover(x_vars(jj));
-    F = set(H(:,jj)*x < K);
+    F = (H(:,jj)*x <= K);
 end

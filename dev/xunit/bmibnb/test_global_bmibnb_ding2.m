@@ -1,4 +1,4 @@
-function ding2
+function test_global_bmibnb_ding2
 %J Glob Optim (2007) 38:421ÿ436
 %DOI 10.1007/s10898-006-9091-3
 %ORIGINAL ARTICLE

@@ -5,7 +5,6 @@ function varargout = slogfrac(varargin)
 %
 % Computes/declares log(1 + x(1)/x(2))
 
-% Author Johan Löfberg
 switch class(varargin{1})
     case 'double'
         x = varargin{1};        

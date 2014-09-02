@@ -1,7 +1,7 @@
 function X = setcutflag(X,flag)
 %setcutlag Internal : defines a SET object as a CUT
-%
-% Author Johan Löfberg
+
+X = flatten(X);
 if nargin == 1
     flag = 1;
 end

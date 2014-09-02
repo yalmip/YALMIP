@@ -8,7 +8,4 @@ function p = depends(x)
 % Output
 %    i : DOUBLE
 
-% Author Johan Löfberg 
-% $Id: depends.m,v 1.2 2004-07-02 08:17:30 johanl Exp $  
-
 p=[];

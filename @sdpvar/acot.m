@@ -1,8 +1,6 @@
 function varargout = acot(varargin)
 %ACOT (overloaded)
 
-% Author Johan Löfberg
-% $Id: acot.m,v 1.5 2008-09-05 07:29:15 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

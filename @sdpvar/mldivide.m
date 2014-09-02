@@ -1,9 +1,6 @@
 function y = mldivide(X,Y)
 %MLDIVIDE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: mldivide.m,v 1.5 2009-10-13 10:52:39 joloef Exp $   
-
 if (isa(X,'sdpvar'))
   error('Division of matrix variables not possible.')
 end

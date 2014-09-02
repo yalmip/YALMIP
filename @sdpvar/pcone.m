@@ -6,17 +6,13 @@ function y = pcone(z,x,y,alpha)
 %    alpha   : scalar double 0<=alpha<=1
 %
 % Example
-%    F = set(pcone(z,x,y,alpha))
+%    F = pcone(z,x,y,alpha)
 %
 % An alternative syntax with only one argument is also possible
-%    F = set(pcone(z))
+%    F = pcone(z)
 %
-
 %
-% See also  SET, CONE
-
-% Author Johan Löfberg
-% $Id: pcone.m,v 1.2 2008-04-24 20:19:57 joloef Exp $
+% See also CONE
 
 if numel(z)>1
     error('x must be a scalar')

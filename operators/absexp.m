@@ -1,8 +1,4 @@
 function varargout = absexp(varargin)
-%LOG (overloaded)
-
-% Author Johan Löfberg
-% $Id: absexp.m,v 1.1 2007-08-01 15:03:13 joloef Exp $
 
 switch class(varargin{1})
 
@@ -19,7 +15,6 @@ switch class(varargin{1})
         F = SetupEvaluationVariable(varargin{:});
 
         operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-   %     operator.convexhull = @convexhull;
         operator.bounds = @bounds;
 
         varargout{1} = F;

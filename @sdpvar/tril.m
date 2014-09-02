@@ -1,10 +1,6 @@
 function X=tril(X,r)
 %TRIL (overloaded)
 
-% Author Johan Löfberg 
-% $Id: tril.m,v 1.7 2006-07-26 20:17:58 joloef Exp $   
-
-
 if nargin==1
     r = 0;
 end

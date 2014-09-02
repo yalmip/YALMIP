@@ -16,33 +16,3 @@ for i = 1:length(p)
         end
     end
 end
-
-% 
-% 
-% function [p,simplex_model] = find_simplex_models(p);
-
-% simplex_model = [];
-% if p.K.f == 0
-%     return
-% elseif any(p.K.q > 0) | any(p.K.s > 0)
-%     return
-% else
-%     aux = p;
-%     aux.F_struc(1:p.K.f,:) = [];
-%     aux.K.f = 0;
-%     [aux,lower,upper] = find_simple_variable_bounds(aux);
-%     if all(lower == 0) | all(upper == 1)
-%         % b = A*x
-%         b = p.F_struc(1:p.K.f,1);
-%         A = -p.F_struc(1:p.K.f,2:end);
-%         for i = 1:length(b)
-%             if abs(b)==1
-%                 if all(A(i,:) == 1/abs(b(i)))
-%                     simplex_model{end+1} = find(A(i,:));
-%                 end
-%             end
-%         end
-%     end
-%     return
-% end
-

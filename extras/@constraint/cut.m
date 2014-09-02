@@ -1,17 +1,15 @@
-function F = set(varargin)
+function F = cut(varargin)
 %CUT               Defines a cut constraint
 %   
 % The syntax for CUT is exactly the same as the
-% syntax for SET. In fact, the result from CUT is
-% a SET object.
+% syntax for constraints. In fact, the result from CUT is
+% a constraint object.
 %
 % The difference between a ordinary constraint and 
 % a cut constraint is that the CUT will not be used
 % in the solution of the upper bound problem in a
 % global solver, but only in the relxation for the 
 % lower problem.
-%
-%    See also   SET
 
 switch nargin
 case 0

@@ -1,9 +1,6 @@
 function y = gt(X,Y)
 %GT (overloaded)
 
-% Author Johan Löfberg
-% $Id: gt.m,v 1.2 2006-07-13 19:40:59 joloef Exp $
-
 if isa(X,'ndsdpvar')
     X = sdpvar(X);
 elseif isa(X,'double')

@@ -1,8 +1,6 @@
 function varargout = SIGN(varargin)
 %SIGN (overloaded)
 
-% Author Johan Löfberg
-% $Id: sign.m,v 1.4 2009-02-12 10:31:47 joloef Exp $
 switch class(varargin{1})
 
     case 'double'

@@ -1,10 +1,6 @@
 function [c,Q,f,onlyfeasible] = createobjective(h,G,options,quad_info)
 %CREATEOBJECTIVE Internal function to extract data related to objective function
 
-% Author Johan Löfberg
-% $Id: createobjective.m,v 1.8 2008-01-22 13:36:20 joloef Exp $
-
-
 onlyfeasible = 0;
 nvars = yalmip('nvars'); 
 if isempty(h)

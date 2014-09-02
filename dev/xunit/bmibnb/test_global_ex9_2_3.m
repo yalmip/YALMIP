@@ -27,7 +27,7 @@ x17 = sdpvar(1);
 % Define constraints 
 objvar = -3*x1-3*x2+2*x4+2*x5-60;
 
-F = set([]);
+F = ([]);
 F=[F,x1-2*x2+x4+x5<=40];
 F=[F,2*x1-x4+x6==-10];
 F=[F,2*x2-x5+x7==-10];

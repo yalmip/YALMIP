@@ -13,13 +13,11 @@ function x = integer(x)
 %    x : SDPVAR object
 %
 %   OUTPUT
-%    F : SET object
+%    F : Constraint object
 %
 %   EXAMPLE
-%    F = set(integer(x));             % Full verbose notation
-%    F = integer(x);                  % Short notation
+%    F = integer(x);                 
 %    F = integer(x*pi)                % Equivalent to code above
-%    solvesdp(G+set(integer(x)),obj)  % Add integer constraint on the fly
 %
 %   See also BINARY, SET, SDPVAR, INTVAR, BINVAR
 

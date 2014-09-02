@@ -29,7 +29,7 @@ x20 = sdpvar(1);
 objvar = sdpvar(1);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,0.5*(sqr(x1-2)+2*sqr(x2-2)+3*sqr(x3-2)+4*sqr(x4-2)+5*sqr(x5-2)+6*sqr(x6-2)+7*sqr(x7-2)+8*sqr(x8-2)+9*sqr(x9-2)+10*sqr(x10-2)+11*sqr(x11-2)+12*sqr(x12-2)+13*sqr(x13-2)+14*sqr(x14-2)+15*sqr(x15-2)+16*sqr(x16-2)+17*sqr(x17-2)+18*sqr(x18-2)+19*sqr(x19-2)+20*sqr(x20-2))+objvar==0];
 F=[F,-3*x1+7*x2-5*x4+x5+x6+2*x8-x9-x10-9*x11+3*x12+5*x13+x16+7*x17-7*x18-4*x19-6*x20<=-5];
 F=[F,7*x1-5*x3+x4+x5+2*x7-x8-x9-9*x10+3*x11+5*x12+x15+7*x16-7*x17-4*x18-6*x19-3*x20<=2];

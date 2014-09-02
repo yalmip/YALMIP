@@ -1,8 +1,5 @@
 function varargout = det_internal(varargin)
 
-% Author Johan Löfberg
-% $Id: det_internal.m,v 1.18 2007-08-02 19:17:36 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

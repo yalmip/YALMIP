@@ -4,9 +4,6 @@ function [F,h] = loadsdpafile(varargin)
 %    [F,h] = loadsdpafile('filename')  Loads the problem min(h(x)), F(x)>0 from file 'filename'
 %    [F,h] = loadsdpafile         A "Open" - box will be opened
 
-% Author Johan Löfberg
-% $Id: loadsdpafile.m,v 1.3 2005-06-17 13:02:01 joloef Exp $
-
 filename = varargin{1};
 
 % Does the file exist
@@ -27,12 +24,12 @@ end
 nvars = length(b);
 x = sdpvar(nvars,1);
 
-F = set([]);
+F = ([]);
 top = 1;
 if isfield(K,'l')
     if K.l(1)>0
         X = c(top:top+K.l-1)-At(top:top+K.l-1,:)*x;
-        F = F + set(X(:));
+        F = F + (X(:)>=0);
         top = top + K.l;
     end
 end
@@ -44,11 +41,11 @@ if isfield(K,'s')
             off = (ix-1)/(K.s(i)+1);
             if all(off == round(off))           
                 X = c(top:top+K.s(i)^2-1)-At(top:top+K.s(i)^2-1,:)*x;
-                F = F + set(diag(reshape(X,K.s(i),K.s(i))) > 0);
+                F = F + (diag(reshape(X,K.s(i),K.s(i))) >= 0);
                 top = top + K.s(i)^2;
             else
                 X = c(top:top+K.s(i)^2-1)-At(top:top+K.s(i)^2-1,:)*x;
-                F = F + set(reshape(X,K.s(i),K.s(i)) > 0);
+                F = F + (reshape(X,K.s(i),K.s(i)) >= 0);
                 top = top + K.s(i)^2;
             end
         end

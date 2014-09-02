@@ -17,7 +17,7 @@ x6 = sdpvar(1);
 objective = -(x4+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,0.09755988*x1*x5+x1==1];
 F=[F,0.0965842812*x2*x6+x2-x1==0];
 F=[F,0.0391908*x3*x5+x3+x1==1];

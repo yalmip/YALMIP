@@ -6,9 +6,6 @@ function dfdx = jacobian(f,x)
 %
 % See also INT, HESSIAN, LINEARIZE, SDISPLAY
 
-% Author Johan Löfberg
-% $Id: jacobian.m,v 1.3 2007-08-10 08:37:19 joloef Exp $
-
 switch nargin
     case 1
         dfdx = shadowjacobian(f);

@@ -1,8 +1,5 @@
-function Z = plus(A,B)
+function Z = mtimes(A,B)
 %plus           Overloaded
-
-% Author Johan Löfberg 
-% $Id: mtimes.m,v 1.2 2007-10-03 12:31:41 joloef Exp $  
 
 % Standard case A.cx + A.logdetP + (B.cx + B.logdetP)
 

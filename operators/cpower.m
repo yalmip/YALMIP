@@ -19,9 +19,6 @@ function varargout = cpower(varargin)
 % of these variables are O(2^L) where L typically is the
 % smallest integer such that 2^L >= min(p,q)
 
-% Author Johan Löfberg
-% $Id: cpower.m,v 1.4 2010-03-26 11:35:23 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

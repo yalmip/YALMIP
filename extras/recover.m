@@ -1,9 +1,6 @@
 function varargout = recover(lmi_variables)
 %RECOVER Create SDPVAR object using variable indicies
 
-% Author Johan Löfberg
-% $Id: recover.m,v 1.10 2009-10-13 10:52:39 joloef Exp $
-
 if isempty(lmi_variables)
     varargout{1} = [];
 else

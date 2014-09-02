@@ -1,9 +1,6 @@
 function X = not(X)
 % Internal class for constraint list
 
-% Author Johan Löfberg
-% $Id: not.m,v 1.2 2009-02-25 12:29:25 joloef Exp $
-
 superiorto('sdpvar');
 superiorto('double');
 

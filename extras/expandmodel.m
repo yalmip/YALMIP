@@ -1,6 +1,4 @@
 function [F,failure,cause,ALREADY_MODELLED] = expandmodel(F,h,options,w)
-% Author Johan Löfberg
-% $Id: expandmodel.m,v 1.93 2008-05-06 18:08:16 joloef Exp $
 
 % FIX : Current code experimental, complex, conservative, has issues with
 % nonlinearities and is slow...
@@ -55,7 +53,7 @@ else
     ALREADY_MODELLED = [];
     
     % Temporary hack to deal with a bug in CPLEX. For the implies operator (and
-    % some more) YALMIP creates a dummy variable x with set(x==1). Cplex fails
+    % some more) YALMIP creates a dummy variable x with (x==1). Cplex fails
     % to solve problem with these stupid variables kept, hence we need to
     % remove these variables and constraints...
     MARKER_VARIABLES = [];
@@ -176,10 +174,10 @@ else
 end
 
 % Constraints generated during recursive process to model operators
-F_expand = set([]);
+F_expand = ([]);
 
 if isempty(F)
-    F = set([]);
+    F = ([]);
 end
 
 % First, check the objective
@@ -285,7 +283,7 @@ F_expand = lifted(F_expand,1);
 % *************************************************************************
 % We are done. We might have generated some stuff more than once, but
 % luckily we keep track of these mistakes and remove them in the end (this
-% happens if we have constraints like set(max(x)<1) + set(max(x)>0) where
+% happens if we have constraints like (max(x)<1) + (max(x)>0) where
 % the first constraint would genrate a graph-model but the second set
 % creates a integer model.
 % *************************************************************************

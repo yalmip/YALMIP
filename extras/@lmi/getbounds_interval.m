@@ -5,6 +5,7 @@ K.l = 0;
 L = [];
 U = [];
 LU =  yalmip('getbounds',1:yalmip('nvars'));
+F = flatten(F);
 for i = 1:length(F.clauses)
     if F.clauses{i}.type == 2
         X = F.clauses{i}.data;

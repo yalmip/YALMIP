@@ -1,9 +1,6 @@
 function X = subsasgn(X,I,Y)
 %SUBASGN (overloaded)
 
-% Author Johan Löfberg 
-% $Id: subsasgn.m,v 1.1 2005-05-25 12:15:04 joloef Exp $   
-
 try
     if strcmp('()',I.type)
         X_is_spdvar = isa(X,'sdpvar');

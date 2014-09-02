@@ -1,9 +1,6 @@
 function [C,A,b,blk] = sdpt3data(F,h)
 %SDPT3DATA Internal function to convert data to SDPT3 format
 
-% Author Johan Löfberg
-% $Id: sdpt3data.m,v 1.3 2004-11-24 09:13:05 johanl Exp $
-
 if ~(isempty(F) | isa(F,'lmi'))
 	help lmi
 	error('First argument (F) should be an lmi object. See help text above');

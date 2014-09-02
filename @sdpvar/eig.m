@@ -1,8 +1,6 @@
 function varargout = eig(varargin)
 %EIG (overloaded)
 
-% Author Johan Löfberg
-% $Id: eig.m,v 1.7 2007-08-03 13:08:30 joloef Exp $
 switch class(varargin{1})
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.

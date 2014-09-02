@@ -1,9 +1,6 @@
 function sys=relaxdouble(X)
 %RELAXDOUBLE Return numerial value treating nonlinear variables as independent
 
-% Author Johan Löfberg 
-% $Id: relaxdouble.m,v 1.5 2006-07-26 20:17:58 joloef Exp $  
-
 solution = yalmip('getsolution');
 lmi_variables = X.lmi_variables;
 opt_variables = solution.variables;

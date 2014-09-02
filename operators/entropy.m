@@ -11,8 +11,6 @@ function varargout = entropy(varargin)
 %
 % See also crossentropy.
 
-% Author Johan Löfberg
-% $Id: entropy.m,v 1.11 2007-08-02 20:57:53 joloef Exp $
 switch class(varargin{1})
 
     case 'double'
@@ -40,7 +38,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = set(X >= 0);
+        F = (X >= 0);
 
         operator = struct('convexity','concave','monotonicity','none','definiteness','none','model','callback');
         operator.range = [-inf exp(-1)*length(X)];

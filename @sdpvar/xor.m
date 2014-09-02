@@ -15,9 +15,6 @@ function varargout = xor(varargin)
 %
 % See also SDPVAR/AND, SDPVAR/OR, BINVAR, BINARY
 
-% Author Johan Löfberg
-% $Id: xor.m,v 1.3 2007-07-29 17:32:29 joloef Exp $
-
 % Models OR using a nonlinear operator definition
 switch class(varargin{1})
     case 'char'
@@ -41,7 +38,7 @@ switch class(varargin{1})
         % If user has constrained the XOR operator to true, we can add that
         % constraint very easily
         if m>=1
-            varargout{1} = set(sum(xy) == 1);
+            varargout{1} = (sum(xy) == 1);
         else
             T1 = -ones(n);
             T1 = T1 + 2*diag(ones(n,1));
@@ -51,7 +48,7 @@ switch class(varargin{1})
                 T2(i,t(i,1)) = 1;
                 T2(i,t(i,2)) = -1;
             end
-            varargout{1} = set(2 - T2*reshape(xy,n,1) >= z) + set(z >= T1*reshape(xy,n,1)) +set(binary(z));
+            varargout{1} = (2 - T2*reshape(xy,n,1) >= z) + (z >= T1*reshape(xy,n,1)) +(binary(z));
         end
 
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

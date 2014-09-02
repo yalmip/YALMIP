@@ -30,9 +30,6 @@ function varargout = pwa_yalmip(varargin)
 % The input is a cell with structs. Each struct has
 % the fields Pn, Pfinal, Bi and Ci (or Fi and Gi)
 
-% Author Johan Löfberg
-% $Id: pwa_yalmip.m,v 1.11 2008-06-26 14:52:04 joloef Exp $
-
 switch class(varargin{1})
 
     case {'struct','cell'} % Should only be called internally
@@ -143,7 +140,7 @@ switch class(varargin{1})
                         
                         costs = S*[x;1];
                         %costs = reshape([pwa_struct{1}.Bi{:}]',length(x),[])'*x+reshape([pwa_struct{1}.Ci{:}]',[],1);
-                        F = set(H* x <= K) + set(costs<=t,'Epigraph of pwa');
+                        F = (H* x <= K) + ((costs<=t):'Epigraph of pwa');
 
                     case 'convexoverlapping'
 
@@ -151,7 +148,7 @@ switch class(varargin{1})
                         s = sdpvar(length(pwa_struct),1);
 
                         % Some region, one defined as minimizer
-                        F = set(sum(d)==1);
+                        F = (sum(d)==1);
                         maxcost = -inf;
                         mincost = inf;
                         for i = 1:length(pwa_struct)
@@ -166,7 +163,7 @@ switch class(varargin{1})
                             mincost = min(mincost,min(m));
                             [H,K] = double(pwa_struct{i}.Pfinal);
                             [M,m] = derivebounds(H*x - K);
-                            F = F + set(H*x-K <= (1+M)*(1-d(i)));
+                            F = F + (H*x-K <= (1+M)*(1-d(i)));
                         end
                         for i = 1:length(pwa_struct)
 
@@ -177,7 +174,7 @@ switch class(varargin{1})
                             cost = reshape([pwa_struct{i}.Bi{jj}]',length(x),[])'*x+reshape([pwa_struct{i}.Ci{jj}]',[],1);
 
                             [M,m] = derivebounds(cost);
-                            F = F + set(cost <= t + 2*(1+maxcost)*(1-d(i)));
+                            F = F + (cost <= t + 2*(1+maxcost)*(1-d(i)));
                         end
                         [t_bounds] = yalmip('getbounds',getvariables(t));
                         bounds(t,max([t_bounds(1) mincost]),min([t_bounds(2) 3*maxcost]));
@@ -186,7 +183,7 @@ switch class(varargin{1})
                     case 'general'
 
                         % In one region
-                        F = set(sum(d) == 1);
+                        F = (sum(d) == 1);
 
                         % Extract the wanted row
                         for i = 1:length(pwa_struct{1}.Pn)
@@ -200,11 +197,11 @@ switch class(varargin{1})
                                             
                         % t equals some of the costs
                         % Big-M : |costs-t| < max(costs)-min(t) < M-m
-                        F = F + set((m-max(M)).*(1-d)  <= costs-t <= (M-min(m)).*(1-d));
+                        F = F + ((m-max(M)).*(1-d)  <= costs-t <= (M-min(m)).*(1-d));
                         for i = 1:length(pwa_struct{1}.Pn)
                             [H,K] = double(pwa_struct{1}.Pn(i));
                             [M,m] = derivebounds(H*x - K);
-                            F = F + set(H*x - K <= M*(1-d(i)));
+                            F = F + (H*x - K <= M*(1-d(i)));
                         end
 
                     otherwise
@@ -239,7 +236,7 @@ switch class(varargin{1})
                         if isempty(d)
                             d = binvar(length(pwa_struct{1}.Pn),1)
                         end
-                        F = set(sum(d) == 1);
+                        F = (sum(d) == 1);
 
                         % Extract the wanted row
                         for i = 1:length(pwa_struct{1}.Pn)
@@ -265,10 +262,10 @@ switch class(varargin{1})
                         % function
                         if length(d)~=length(costs)
                             d = binvar(length(costs),1);
-                            F = set(sum(d) == 1);
+                            F = (sum(d) == 1);
                         end
                         % t equals some of the costs
-                        F = F + set((m-max(M)).*(1-d)  <= costs-t <= (M-min(m)).*(1-d));
+                        F = F + ((m-max(M)).*(1-d)  <= costs-t <= (M-min(m)).*(1-d));
                         for i = 1:length(pwa_struct{1}.Pn)
                             [H,K] = double(pwa_struct{1}.Pn(i));
                             [M,m] = derivebounds(H*x - K);
@@ -276,7 +273,7 @@ switch class(varargin{1})
                             m2 = H.*(H>0)*lb + H.*(H<0)*ub-K;
                             M = min([M M2],[],2);
                             m = max([m m2],[],2);
-                            F = F + set(H*x - K <= M*(1-d(i)));
+                            F = F + (H*x - K <= M*(1-d(i)));
                         end
 
                     otherwise

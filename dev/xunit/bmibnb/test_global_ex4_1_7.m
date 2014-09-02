@@ -12,7 +12,7 @@ x1 = sdpvar(1);
 objective = -(-(power(x1,4)-3*power(x1,3)-1.5*sqr(x1)+10*x1));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-5<=x1<=5];
 
 % Solve problem

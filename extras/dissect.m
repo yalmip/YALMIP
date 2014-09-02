@@ -6,7 +6,7 @@ function varargout = dissect(X);
 % See also UNBLKDIAG
 
 if isa(X,'constraint')
-    X = set(X);
+    X = lmi(X);
 end
 
 switch class(X)
@@ -45,7 +45,7 @@ switch class(X)
         varargout{3} = E;
 
     case 'lmi'
-        Fnew=set([]);
+        Fnew=([]);
         % decompose trivial block diagonal stuff
         X = unblkdiag(X);
         for i = 1:length(X)
@@ -55,7 +55,7 @@ switch class(X)
                 if ~isempty(B)
                     S=sdpvar(size(E,1));
                     S = S.*inversesparsity(E,D,B);
-                    Fnew=Fnew+set([A C;C' S])+set([E-S D';D B]);
+                    Fnew=Fnew+([A C;C' S]>=0)+([E-S D';D B]>=0);
                 else
                     Fnew = Fnew + X(i);
                 end
@@ -68,12 +68,12 @@ switch class(X)
                         S{i}=sdpvar(size(E,1));
                         S{i} = S{i}.*inversesparsity(E,C{i},A{i});
                         allS = allS + S{i};
-                        Fnew=Fnew+set([A{i} C{i};C{i}' S{i}]);
+                        Fnew=Fnew+([A{i} C{i};C{i}' S{i}]>=0);
                     end
                     i = i + 1;
                     S{i}=E-allS;
                     S{i} = S{i}.*inversesparsity(E,C{i},A{i});
-                    Fnew=Fnew+set([A{i} C{i};C{i}' S{i}]);                                     
+                    Fnew=Fnew+([A{i} C{i};C{i}' S{i}]>=0);                                     
                 else
                     Fnew = Fnew + X(i);
                 end

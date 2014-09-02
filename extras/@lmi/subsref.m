@@ -1,9 +1,7 @@
 function F = subsref(F,Y)
 %subsref           Overloaded indexing
 
-% Author Johan Löfberg
-% $Id: subsref.m,v 1.4 2005-02-04 10:10:27 johanl Exp $
-
+F = flatten(F);
 switch Y(1).type
     case '()'
         thelmi = Y.subs{1};

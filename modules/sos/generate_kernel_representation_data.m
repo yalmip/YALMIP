@@ -35,7 +35,7 @@ end
 
 if reuse & options.sos.reuse
     % Get old stuff
-    if size(exponent_m2{1},2)==2 % Stupid set(sos(parametric)) case
+    if size(exponent_m2{1},2)==2 % Stupid (sos(parametric)) case
         ind = spalloc(1,1,0);
         ind(1)=1;
         allj = 1:size(exponent_p_monoms,1);
@@ -63,7 +63,7 @@ if reuse & options.sos.reuse
 else
     allj = [];
     used_in_p = zeros(size(exponent_p_monoms,1),1);
-    if size(exponent_m2{1},2)==2 % Stupid set(sos(parametric)) case
+    if size(exponent_m2{1},2)==2 % Stupid (sos(parametric)) case
         ind = spalloc(1,1,0);
         ind(1)=1;
         allj = 1:size(exponent_p_monoms,1);

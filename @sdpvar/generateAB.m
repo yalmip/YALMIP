@@ -1,9 +1,6 @@
 function [A,b,lmi_variables] = generateAB(varargin)
 %GENERATEAB Internal function to generates linear equation system
 
-% Author Johan Löfberg
-% $Id: generateAB.m,v 1.4 2006-07-26 20:17:58 joloef Exp $
-
 if mod(nargin,2)~=0
     error('Internal error in generateAB. Please report.');
 end

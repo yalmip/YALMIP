@@ -1,6 +1,7 @@
 function X = fastcat(varargin)
 
 X = varargin{1};
+X = flatten(X);
 nTOT = length(X.clauses);
 for i = 2:nargin
     X.clauses{i} = varargin{i}.clauses{1};   

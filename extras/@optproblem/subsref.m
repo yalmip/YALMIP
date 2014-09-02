@@ -1,9 +1,6 @@
 function P = subsref(P,String)
 %subsref           Overloaded indexing
 
-% Author Johan Löfberg
-% $Id: subsref.m,v 1.4 2005-02-04 10:10:27 johanl Exp $
-
 if length(String)>1
     R = subsref(P,String(1));
     P = subsref(R,String(2:end));

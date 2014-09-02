@@ -9,9 +9,6 @@ function varargout = norm_nuclear(varargin)
 %
 % See also SUMABSK
 
-% Author Johan Löfberg
-% $Id: norm_nuclear.m,v 1.3 2007-08-02 19:17:36 joloef Exp $
-
 switch class(varargin{1})
     
     case 'double' % What is the numerical value of this argument (needed for displays etc)

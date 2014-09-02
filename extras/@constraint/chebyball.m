@@ -11,21 +11,18 @@ function varargout = chebyball(F)
 % If only one output is requested, only the symbolic constraint is returned
 % C = chebyball(F)
 
-% Author Johan Löfberg
-% $Id: chebyball.m,v 1.1 2004-12-08 00:07:15 johanl Exp $
-
 switch nargout
     case 0
-        f = chebyball(set(F))
+        f = chebyball(lmi(F))
     case 1
-        [f] = chebyball(set(F));
+        [f] = chebyball(lmi(F));
         varargout{1} = f;
     case 2
-        [xc,R] = chebyball(set(F));
+        [xc,R] = chebyball(lmi(F));
         varargout{1} = xc;
         varargout{2} = R;
     case 3
-        [xc,R,f] = chebyball(set(F));
+        [xc,R,f] = chebyball(lmi(F));
         varargout{1} = xc;
         varargout{2} = R;
         varargout{3} = f;

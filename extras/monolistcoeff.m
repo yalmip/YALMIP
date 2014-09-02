@@ -1,9 +1,6 @@
 function m = monolistcoeff(n,d,summax)
 %MONOLISTCOEFF  Internal function used in SOS programs
 
-% Author Johan Löfberg
-% $Id: monolistcoeff.m,v 1.5 2005-02-20 17:04:28 johanl Exp $
-
 if length(d)==1
     d = repmat(full(d),1,full(n));
 end

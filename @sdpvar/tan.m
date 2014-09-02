@@ -1,9 +1,6 @@
 function varargout = tan (varargin)
 %TAN (overloaded)
 
-% Author Johan Löfberg
-% $Id: tan.m,v 1.10 2007-08-02 18:16:26 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double'

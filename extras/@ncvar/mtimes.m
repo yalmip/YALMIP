@@ -1,9 +1,6 @@
 function Z = mtimes(X,Y)
 %MTIMES (overloaded)
 
-% Author Johan Löfberg
-% $Id: mtimes.m,v 1.3 2006-08-11 11:48:15 joloef Exp $
-
 % Brute-force implementation of multiplication of noncommuting variables
 % (with possible commuting variables involved)
 

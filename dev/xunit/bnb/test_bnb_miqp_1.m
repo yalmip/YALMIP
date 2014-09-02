@@ -1,4 +1,4 @@
-function milp
+function test_bnb_miqp_1
 
 rand('seed',1234);
 
@@ -11,12 +11,12 @@ a_hat = intvar(6,1);
 
 residuals = y-x*a_hat;
 bound = sdpvar(length(residuals),1);
-F = set(-bound <= residuals <= bound);
+F = (-bound <= residuals <= bound);
 ops = sdpsettings('solver','bnb');
 
 % Test QP
 obj = residuals'*residuals;
-sol = solvesdp(set(residuals <50),obj,ops);
+sol = solvesdp((residuals < = 50),obj,ops);
 mbg_asserttrue(sol.problem==0);
 mbg_asserttolequal(double(obj), 1.605058709613011e+003, 1e-5);
 

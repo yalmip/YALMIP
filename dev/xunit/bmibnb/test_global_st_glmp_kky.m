@@ -18,7 +18,7 @@ x7 = sdpvar(1);
 objective = -(-(x4*x5+x6*x7)-x3+0-(0));
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-5*x1+8*x2<=24];
 F=[F,-5*x1-8*x2<=100];
 F=[F,-6*x1+3*x2<=100];

@@ -1,9 +1,6 @@
 function y = times(X,Y)
 %TIMES (overloaded)
 
-% Author Johan Löfberg
-% $Id: times.m,v 1.30 2009-09-28 12:53:16 joloef Exp $
-
 % Check dimensions
 [n,m]=size(X);
 if ~((prod(size(X))==1) || (prod(size(Y))==1))

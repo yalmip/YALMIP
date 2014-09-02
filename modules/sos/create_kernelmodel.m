@@ -19,7 +19,7 @@ for i = 1:length(Blockedb)
     for j = 1:length(BlockedA{i})
         n = sqrt(size(BlockedA{i}{j},2));
         BlockedQ{i}{j} = sdpvar(n*sizematrixSOS,n*sizematrixSOS);
-        F = F + set(BlockedQ{i}{j});
+        F = F + lmi(BlockedQ{i}{j});
         if sizematrixSOS>0
             % Matrix valued sum of sqaures
             % Loop over all elements
@@ -45,7 +45,7 @@ for i = 1:length(Blockedb)
     end
     for k = 1:sizematrixSOS
         for r = k:sizematrixSOS
-            F = F + set(res{(k-1)*sizematrixSOS+r} == Blockedb{i}(:,(k-1)*sizematrixSOS+r));
+            F = F + (res{(k-1)*sizematrixSOS+r} == Blockedb{i}(:,(k-1)*sizematrixSOS+r));
         end
     end
 end
@@ -63,7 +63,7 @@ if ~isempty(sparsityPattern)
             end
         end
     end
-    F = F + set(0 == res);
+    F = F + (0 == res);
 end
 
 % And get the primal model of this

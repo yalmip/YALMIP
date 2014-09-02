@@ -1,9 +1,6 @@
 function [X,n] = shiftdim(varargin)
 % SHIFTDIM (overloaded)
 
-% Author Johan Löfberg
-% $Id: shiftdim.m,v 1.1 2006-07-26 09:09:07 joloef Exp $
-
 Y = varargin{1};
 X = Y;
 X.basis = [];

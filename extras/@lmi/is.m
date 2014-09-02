@@ -5,15 +5,13 @@ function YESNO = is(F,property)
 %   Properties possible to test are: 'elementwise', 'sdp', 
 %   'socc', 'equality', 'lmi', 'linear', 'kyp', 'sos'
 
-% Author Johan Löfberg
-% $Id: is.m,v 1.18 2008-04-24 11:15:13 joloef Exp $
-
-if isempty(F.clauses)
+if length(F.LMIid)==0
     YESNO = 0;
 else
-    %   for i = 1:length(F.clauses)
-    %       Fi = F.clauses{i};
-    YESNO=zeros(length(F.clauses),1);
+    
+    F = flatten(F);
+      
+    YESNO=zeros(length(F.LMIid),1);
     switch property
         case 'dualized'
             YESNO = F.dualized == 1;

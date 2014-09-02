@@ -8,8 +8,6 @@ function [P,x] = polyhedron(X,options)
 % x : sdpvar object defining the variables in the polyhedron
 % F : Object with linear inequalities
 
-% Author Johan Löfberg
-
 if nargin < 2
     options = sdpsettings;
 elseif isempty(options)

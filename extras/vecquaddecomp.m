@@ -1,9 +1,6 @@
 function [Q,c,f,x,info] = vecquaddecomp(p,z)
 %QUADDECOMP Internal function to decompose quadratic expression
 
-% Author Johan Löfberg
-% $Id: vecquaddecomp.m,v 1.10 2008-06-12 20:41:45 joloef Exp $
-
 [n,m]=size(p);
 info = 0;
 

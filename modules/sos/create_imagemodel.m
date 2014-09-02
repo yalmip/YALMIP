@@ -71,10 +71,10 @@ if ~isempty(notUsed)
             %            error('You seem to have a strange model. Have you forgotten to define some parametric variable?');
         end
     else
-       F_parametric = F_parametric + set(g(notUsed)==0);
+       F_parametric = F_parametric + (g(notUsed)==0);
     end
 end
-F_sos = set([]);
+F_sos = ([]);
 obj = 0;
 for i = 1:length(BlockedQ)
     for j = 1:size(BlockedQ{i},2)
@@ -89,7 +89,7 @@ for i = 1:length(BlockedQ)
         Q_new = reshape(Q_new,length(BlockedQ{i}{j}),length(BlockedQ{i}{j}));
         obj = obj+trace(Q_new);
         if ~isa(Q_new,'double')
-            F_sos = F_sos + set(Q_new);
+            F_sos = F_sos + (Q_new>=0);
         elseif min(eig(Q_new))<-1e-8
             sol.yalmiptime = 0; % FIX
             sol.solvertime = 0;

@@ -6,9 +6,6 @@ function varargout = pwf(varargin)
 % The variable t can only be used in convexity/concavity preserving
 % operations, depending on the convexity of hi
 
-% Author Johan Löfberg
-% $Id: pwf.m,v 1.12 2008-01-15 12:52:23 joloef Exp $
-
 switch class(varargin{1})
         
     case {'cell','struct'}
@@ -58,7 +55,7 @@ switch class(varargin{1})
                 ok = 0;
                 if isa(varargin{2*i-1},'sdpvar')
                     if isa(varargin{2*i},'constraint')
-                        varargin{2*i} = set(varargin{2*i});
+                        varargin{2*i} = lmi(varargin{2*i});
                     end
                     if isa(varargin{2},'lmi')
                         if is(varargin{2*i-1},'quadratic') |  is(varargin{2*i-1},'linear')
@@ -128,7 +125,7 @@ switch class(varargin{1})
             % Indicator for where we are
             indicators = binvar(length(f),1);
             % We are in some of the regions
-            F = set(sum(indicators) == 1);
+            F = (sum(indicators) == 1);
 
             % Control where we are using the indicators and big-M
             X = [];
@@ -139,7 +136,7 @@ switch class(varargin{1})
                 else
                     m = -1e4;
                 end
-                F = F + set(Xi >= m*(1-indicators(i)));
+                F = F + (Xi >= m*(1-indicators(i)));
                 X = [X;recover(depends(Guard{i}))];
             end
             % cost = sum(delta_i*cost_i(x)) = sum(cost_i(delta_i*x))
@@ -155,10 +152,10 @@ switch class(varargin{1})
                     [M,m] = derivebounds(xi);
                     z{i} = sdpvar(length(xi),1);
                     cost = cost + z{i}'*Q{i}*z{i}+c{i}'*z{i} + g{i}*indicators(i);
-                    F = F + set(xi+(1-indicators(i))*m<=z{i}<xi+(1-indicators(i)).*M);
-                    F = F + set(m*indicators(i) <= z{i} <= M*indicators(i));
+                    F = F + (xi+(1-indicators(i))*m<=z{i}<xi+(1-indicators(i)).*M);
+                    F = F + (m*indicators(i) <= z{i} <= M*indicators(i));
                 end
-                F = F + set(cost <= t);
+                F = F + (cost <= t);
             else
                 fmax_max = -inf;
                 fmin_min = inf;
@@ -170,7 +167,7 @@ switch class(varargin{1})
                     [fmax,fmin] = derivebounds(c{i}'*xi+g{i});                                        
                     fmax_max = max(fmax,fmax_max);
                     fmin_min = min(fmin,fmin_min);
-                    F = F + set(c{i}'*xi +g{i} <= t + fmax*(1-indicators(i)));
+                    F = F + (c{i}'*xi +g{i} <= t + fmax*(1-indicators(i)));
                 end
             end
             % To help variable strenghtening, constraint removal etc in

@@ -1,9 +1,6 @@
 function varargout = pow10(varargin)
 %POW10 (overloaded)
 
-% Author Johan Löfberg
-% $Id: pow10.m,v 1.1 2006-08-10 18:00:21 joloef Exp $
-
 switch class(varargin{1})
 
     case 'double' % What is the numerical value of this argument (needed for displays etc)

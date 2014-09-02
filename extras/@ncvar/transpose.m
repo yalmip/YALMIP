@@ -1,9 +1,6 @@
 function X=transpose(X)
 %TRANSPOSE (overloaded)
 
-% Author Johan Löfberg 
-% $Id: transpose.m,v 1.1 2006-08-10 18:00:23 joloef Exp $
-
 if isa(X,'blkvar')
     X = sdpvar(X);
 end

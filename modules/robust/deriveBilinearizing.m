@@ -4,7 +4,7 @@ if nargin < 3
     order = 1;
 end
 
-BilinearizeringConstraints = set([]);
+BilinearizeringConstraints = ([]);
 failure = 0;
 Fi = sdpvar(Fi);
 if is(Fi,'hermitian')
@@ -24,7 +24,7 @@ for i = 1:length(Fi)
                     return
                 end
             else
-                BilinearizeringConstraints = BilinearizeringConstraints + set(c(k) == 0);
+                BilinearizeringConstraints = BilinearizeringConstraints + (c(k) == 0);
             end
         end
     end

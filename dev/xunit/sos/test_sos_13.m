@@ -4,7 +4,7 @@ ops{2} = sdpsettings('sos.cong',1,'sos.model',2,'verbose',0);
 ops{3} = sdpsettings('sos.cong',0,'sos.newton',0,'verbose',0,'sos.extlp',0);
 sdpvar x s t u
 
-F = set(sos(1+x+16*s*x^2+13*u+t))+set(sos(2+2*x+(-8+u)*x^4+5-pi*t))+set(t>=0)+set(t+u>=0);
+F = (sos(1+x+16*s*x^2+13*u+t))+(sos(2+2*x+(-8+u)*x^4+5-pi*t))+(t>=0)+(t+u>=0);
 obj = t;
 for i = 1:length(ops)
     i

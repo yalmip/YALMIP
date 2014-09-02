@@ -15,7 +15,7 @@ x6 = sdpvar(1);
 
 % Define constraints 
 
-F = set([]);
+F = ([]);
 F=[F,objvar*x2==1];
 F=[F,x3 == 4.8*objvar*x4];
 F=[F,x5==0.98*x2*x6];

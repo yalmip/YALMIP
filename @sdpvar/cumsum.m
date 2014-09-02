@@ -1,9 +1,6 @@
 function X=cumsum(X,I)
 %CUMSUM (overloaded)
 
-% Author Johan Löfberg
-% $Id: cumsum.m,v 1.9 2009-10-15 10:25:41 joloef Exp $
-
 if nargin == 1 & min(X.dim)==1
     B = cumsum(X.basis);
 else

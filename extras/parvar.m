@@ -7,9 +7,6 @@ function sys = parvar(varargin)
 %
 %   See also PARAMETRIC, INTVAR, BINVAR, SDPVAR, BINARY, INTEGER
 
-% Author Johan Löfberg
-% $Id: parvar.m,v 1.2 2004-07-09 14:29:39 johanl Exp $
-
 switch nargin
     case 1
         sys = sdpvar(varargin{1});

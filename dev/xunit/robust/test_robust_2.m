@@ -15,10 +15,10 @@ A(1,3) = alpha;
 Y = sdpvar(3,3);
 L = sdpvar(1,3);
 
-F = set(Y >=0);
-F = F + set([-A*Y-B*L + (-A*Y-B*L)' Y L';Y inv(Q) zeros(3,1);L zeros(1,3) inv(R)] >= 0)
+F = (Y >=0);
+F = F + ([-A*Y-B*L + (-A*Y-B*L)' Y L';Y inv(Q) zeros(3,1);L zeros(1,3) inv(R)] >= 0)
 
-F = F + set(-0.1 <= alpha <= 0.1);
+F = F + (-0.1 <= alpha <= 0.1);
 
 sol = solverobust(F,-trace(Y),[],alpha)
 
@@ -40,9 +40,9 @@ Y0 = sdpvar(3,3);
 Y1 = sdpvar(3,3);
 Y = Y0 + alpha*Y1;
 
-F = set(Y >=0);
-F = F + set([-A*Y-B*L + (-A*Y-B*L)' Y L';Y inv(Q) zeros(3,1);L zeros(1,3) inv(R)] >= 0)
-F = F + set(-0.1 <= alpha <= 0.1);
+F = (Y >=0);
+F = F + ([-A*Y-B*L + (-A*Y-B*L)' Y L';Y inv(Q) zeros(3,1);L zeros(1,3) inv(R)] >= 0)
+F = F + (-0.1 <= alpha <= 0.1);
 sol = solverobust(F,-trace(Y),[],alpha)
 
 mbg_asserttolequal(sol.problem, 0, 1e-5);

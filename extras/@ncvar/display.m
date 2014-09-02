@@ -1,9 +1,6 @@
 function display(X)
 %DISPLAY (overloaded)
 
-% Author Johan Löfberg
-% $Id: display.m,v 1.2 2006-08-10 23:02:56 joloef Exp $
-
 switch(X.typeflag)
     case {0,9}
         n = X.dim(1);

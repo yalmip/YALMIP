@@ -1,9 +1,6 @@
 function y = horzcat(varargin)
 %HORZCAT (overloaded)
 
-% Author Johan Löfberg 
-% $Id: horzcat.m,v 1.17 2010-01-13 14:18:15 joloef Exp $  
-
 prenargin = nargin;
 % Fast exit
 if prenargin<2

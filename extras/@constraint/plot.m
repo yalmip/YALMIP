@@ -8,14 +8,11 @@ function varargout = plot(varargin)
 % introduced by YALMIP when modelling, e.g., mixed integer linear
 % programming represetable operators)
 %
-% C:  SET object
+% C:  Constraint object
 % x:  Plot variables [At most three variables]
 % c:  color [double] ([r g b] format) or char from 'rymcgbk'
 % n:  #vertices [double ]
 % options: options structure from sdpsettings
-
-% Author Johan Löfberg
-% $Id: plot.m,v 1.1 2007-02-28 16:20:33 joloef Exp $
 
 varargin{1} = lmi(varargin{1});
 if nargout == 0

@@ -8,9 +8,6 @@ function  LinearVariables = depends(x)
 % Output
 %    i : DOUBLE
 
-% Author Johan Löfberg
-% $Id: depends.m,v 1.2 2006-08-11 11:48:15 joloef Exp $
-
 [mt,variabletype] = yalmip('monomtable');
 ncv = yalmip('nonCommutingTable');
 

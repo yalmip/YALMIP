@@ -1,9 +1,6 @@
 function Y=plot(varargin)
 %DOMAIN  Extract domain for PWA variable
 
-% Author Johan Löfberg 
-% $Id: domain.m,v 1.1 2006-08-10 18:00:19 joloef Exp $   
-
 % Fast version for plotting simple PWA objects
 if nargin == 1
     X = varargin{1};

@@ -1,9 +1,5 @@
 function [exponent_p_monoms_changed,varchange] = variablechange(exponent_p_monoms)
-%function [exponent_p_changed,varchange] = variablechange(exponent_p,monom_indicies)
 %VARIABLECHANGE Internal function to reduce monomials in SOS programs
-
-% Author Johan Löfberg
-% $Id: variablechange.m,v 1.3 2004-09-17 23:21:50 johanl Exp $
 
 n = size(exponent_p_monoms,2);
 exponent_p_monoms_changed = exponent_p_monoms;

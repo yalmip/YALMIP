@@ -1,9 +1,6 @@
 function Z = plus(X,Y)
 % PLUS (overloaded)
 
-% Author Johan Löfberg
-% $Id: plus.m,v 1.2 2006-07-13 19:40:59 joloef Exp $
-
 dim = [];
 if isa(X,'ndsdpvar')
     dim = X.dim;

@@ -11,7 +11,7 @@ A =[-2 -6 -1 0 -3 -3 -2 -6 -2 -2;
 x = sdpvar(10,1);
 t = sdpvar(1,1);
 p = c'*x-0.5*x'*Q*x;
-F = set(0<=x<=1)+set(A*x<=b);
+F = (0<=x<=1)+(A*x<=b);
 obj = p;
 
 sol = solvesdp(F,obj,sdpsettings('solver','bmibnb'))

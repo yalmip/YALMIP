@@ -10,9 +10,6 @@ function see(X,showfull)
 %
 %    See also   SDPVAR
 
-% Author Johan Löfberg
-% $Id: see.m,v 1.2 2004-07-02 08:17:32 johanl Exp $
-
 disp(' ');
 if nargin==1  
     disp('Constant matrix');disp(' ')

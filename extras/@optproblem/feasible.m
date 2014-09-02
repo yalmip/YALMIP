@@ -8,7 +8,7 @@ function diagnostics = feasible(OptimizationProblem,Options)
 %    The following code creates an optimization problem, and then finds a
 %    feasible solution
 %
-%    x = sdpvar(1);P = optproblem(1 > x > 0, x^2);feasible(P)
+%    x = sdpvar(1);P = optproblem(1 >= x >= 0, x^2);feasible(P)
 
 if nargin < 2
     diagnostics = solvesdp(OptimizationProblem.Constraints,[],OptimizationProblem.Options);

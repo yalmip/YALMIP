@@ -19,7 +19,7 @@ x8 = sdpvar(1);
 objective = -x7-x8-0-(0);
 
 % Define constraints 
-F = set([]);
+F = ([]);
 F=[F,-(x1*x2+x5*x4)+x7==0];
 F=[F,-x1*x3+x8==0];
 F=[F,-x2-x5+x6==0];
@@ -33,6 +33,6 @@ F=[F,56<=x6<=100];
 F=[F,x7<=3000];
 
 % Solve problem
-sol = solvesdp(F+set(-5000<=recover(depends(F))<=5000),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = solvesdp(F+(-5000<=recover(depends(F))<=5000),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 mbg_asserttrue(sol.problem==0)
 mbg_asserttolequal(double(objective), -4500, 1e-2);
