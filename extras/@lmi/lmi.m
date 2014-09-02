@@ -36,20 +36,11 @@ switch nargin
         error('Wrong number of arguments')
 end
 
-F.clauses  = {};
-F.LMIid    = [];
-F.savedata = [];
-F.dualized = 0;
-
-try
-    F = class(F,'lmi');
-catch
-    disp('Failure in creating SET object. Restart MATLAB and try again, or type clear classes')
-=======
 if isempty(F0)
     F.clauses  = {};
     F.LMIid    = [];
     F.savedata = [];
+    F.dualized = 0;
     try
         F = class(F,'lmi');
     catch
