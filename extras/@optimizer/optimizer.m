@@ -346,7 +346,7 @@ if sys.nonlinear & ~sys.complicatedEvalMap
             
     % Linear indexation to linear terms
     linterms = rmvmonoms == 1;
-    if ~isempty(jj1) | any(sum(linterms,2))>1
+    if ~isempty(jj1) | any(sum(linterms,2)>1)
         [ii2,jj2] = find(linterms);
         sys.model.precalc.index2 = sub2ind(size(rmvmonoms),ii2,jj2);
         sys.model.precalc.jj2 = jj2;
