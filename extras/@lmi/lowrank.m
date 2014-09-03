@@ -13,7 +13,7 @@ for i = 1:length(F.LMIid)
 end
 
 if isempty(identifiers)
-    F = set([]);
+    F = ([]);
     return
 end
 

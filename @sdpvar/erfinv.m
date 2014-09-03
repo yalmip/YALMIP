@@ -12,7 +12,7 @@ switch class(varargin{1})
     case 'char'
        
         X = varargin{3};
-        F = set(-1+1e-9 <= X <= 1-1e-9);
+        F = (-1+1e-9 <= X <= 1-1e-9);
 
         operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
         operator.bounds = @bounds;

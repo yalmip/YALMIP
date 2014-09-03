@@ -16,16 +16,16 @@ function varargout = iff(varargin)
 %
 % Examples
 %
-%  binvar X,Y; F = set(iff(X,Y));
-%  sdpvar X;binvar Y; F = set(iff(X>5,Y));
-%  sdpvar X;binvar Y; F = set(iff(Y,X==5));
+%  binvar X,Y; F = iff(X,Y);
+%  sdpvar X;binvar Y; F = iff(X>=5,Y);
+%  sdpvar X;binvar Y; F = iff(Y,X==5);
 %
 % Overloading
 %
 % The iff overloads == for logic constraints.
 %
-%  sdpvar X;binvar Y; F = set((X>=5) == Y);
-%  sdpvar X;binvar Y; F = set(Y == (X==5));
+%  sdpvar X;binvar Y; F = ((X>=5) == Y);
+%  sdpvar X;binvar Y; F = (Y == (X==5));
 %
 %
 % Note

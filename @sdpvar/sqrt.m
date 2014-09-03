@@ -7,7 +7,7 @@ function varargout = sqrt(varargin)
 % operations such as t>1, max t etc.
 %
 % When SQRT is used in a problem, the domain constraint
-% set(x>0) is automatically added to the problem.
+% (x>=0) is automatically added to the problem.
 %
 % See also SDPVAR, SDPVAR/GEOMEAN
 
@@ -34,7 +34,7 @@ switch class(varargin{1})
             t = varargin{2}; % Second arg is the extended operator variable
             X = varargin{3}; % Third arg and above are the args user used when defining t.
             if is(X,'linear')
-                varargout{1} = set(cone([(X-1)/2;t],(X+1)/2));
+                varargout{1} = (cone([(X-1)/2;t],(X+1)/2));
                 varargout{2} = struct('convexity','concave','monotonicity','increasing','definiteness','positive');
                 varargout{3} = X;
             elseif is(X,'quadratic')
@@ -60,7 +60,7 @@ switch class(varargin{1})
                 X = varargin{3};
                 [U,L] = derivebounds(X);
                 if L<0
-                    F = set(X >= 0);
+                    F = (X >= 0);
                 else
                     F = [];
                 end

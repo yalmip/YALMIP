@@ -43,7 +43,7 @@ switch class(varargin{1})
                 % Description using epigraphs
                 t = varargin{2};
                 X = varargin{3};
-                varargout{1} = set(-t <= X <= t);
+                varargout{1} = (-t <= X <= t);
                 varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive');
                 varargout{3} = X;
 
@@ -51,16 +51,16 @@ switch class(varargin{1})
                 % Exact description using binary variables
                 t = varargin{2};
                 X = varargin{3};
-                F = set([]);
+                F = ([]);
                 [M,m]=derivebounds(X);
                 if m>=0
-                    F = F + set(t == X);
+                    F = F + (t == X);
                 elseif M<0
-                    F = F + set(t == -X);
+                    F = F + (t == -X);
                 else
                     d = binvar(1,1);
-                    F = F + set(X <= M*d)     + set(-2*(M-m)*d     <= t+X <= 2*(M-m)*d);
-                    F = F + set(X >= m*(1-d)) + set(-2*(M-m)*(1-d) <= t-X <= 2*(M-m)*(1-d));
+                    F = F + (X <= M*d)     + (-2*(M-m)*d     <= t+X <= 2*(M-m)*d);
+                    F = F + (X >= m*(1-d)) + (-2*(M-m)*(1-d) <= t-X <= 2*(M-m)*(1-d));
                 end
                 varargout{1} = F;
                 varargout{2} = struct('convexity','milp','monotonicity','milp','definiteness','positive');

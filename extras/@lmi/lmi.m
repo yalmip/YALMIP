@@ -1,5 +1,4 @@
 function F = lmi(X,handlestring,dummy,noprune,symmetryKnown)
-% The command lmi is obsolete, see help sdpvar/set
 
 superiorto('sdpvar')
 

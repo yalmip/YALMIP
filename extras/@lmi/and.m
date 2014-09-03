@@ -12,10 +12,10 @@ if isa(Y,'sdpvar')
 end
 
 if isa(X,'constraint')
-    X = set(X);
+    X = lmi(X);
 end
 if isa(Y,'constraint')
-    Y = set(Y);
+    Y = lmi(Y);
 end
 
 sys = plus(X,Y);

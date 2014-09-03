@@ -30,7 +30,7 @@ p2 = ~(islinear(F) & islinear(obj));
 p3 = any(is(F,'integer')) | any(is(F,'binary'));
 if p1 | p2 | p3
     if nargout == 5
-        Fdual = set([]);objdual = [];y = []; X = []; t = []; err = 1;
+        Fdual = lmi([]);objdual = [];y = []; X = []; t = []; err = 1;
     else
         problems = {'Cannot imagalize complex-valued problems','Cannot imagalize nonlinear problems','Cannot imagalize discrete problems'};
         error(problems{min(find([p1 p2 p3]))});
@@ -73,17 +73,17 @@ y = sdpvar(length(model.c),1);
 
 vecF = model.F_struc*[1;y];
 K = model.K;
-Fimage = set([]);
+Fimage = lmi([]);
 start = 1;
 if model.K.l > 0
-    Fimage = Fimage + set(vecF(start:start+K.l-1) > 0);
+    Fimage = Fimage + lmi(vecF(start:start+K.l-1) >= 0);
     start = start + K.l;
 end
 
 if model.K.q(1) > 0
     for i = 1:length(model.K.q)
         z = vecF(start:start+K.q(i)-1)
-        Fimage = Fimage + set(cone(z(2:end),z(1)));
+        Fimage = Fimage + lmi(cone(z(2:end),z(1)));
         start = start + K.q(i);
     end
 end
@@ -91,7 +91,7 @@ end
 if model.K.s(1)>0
     for i = 1:length(model.K.s)
         z = vecF(start:start+K.s(i)^2-1);
-        Fimage = Fimage + set(reshape(z,K.s(i),K.s(i)));
+        Fimage = Fimage + lmi(reshape(z,K.s(i),K.s(i)));
         start = start + K.s(i)^2;
     end
 end

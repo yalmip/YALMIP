@@ -1,7 +1,7 @@
 function X=sos2(X,weights,dim)
 %SOS2 Declare special ordered set of type 2
 %
-% F = sos(p,w,dim)
+% F = sos2(p,w,dim)
 %
 % Input
 %  p   : SDPVAR object
@@ -55,4 +55,4 @@ else
     X.extra.sosweights = findOutWeights(X,weights)           
 end
 
-X = set(X);
+X = lmi(X);

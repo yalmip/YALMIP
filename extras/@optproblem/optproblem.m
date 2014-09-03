@@ -19,7 +19,7 @@ if nargin < 3
 end
 
 if isa(Constraints,'constraint')
-    Constraints = set(Constraints);
+    Constraints = lmi(Constraints);
 end
 sys.Constraints = Constraints;
 sys.Objective = Objective;

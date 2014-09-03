@@ -5,7 +5,7 @@ if isa(varargin{1},'lmi')
     F = varargin{1};
     top = 2;
 elseif isa(varargin{1},'constraint')
-    F = set(varargin{1});
+    F = lmi(varargin{1});
     top = 2;
 else
     top = 1;

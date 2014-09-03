@@ -1,7 +1,7 @@
 function [p,A,b] = pwamodel(f,x)
 
 t = sdpvar(1);
-F = set([f <= t]);
+F = ([f <= t]);
 [A,b] = pwamodel(F,[x;t]);
 B = A(:,end);
 A = A(:,1:end-1);

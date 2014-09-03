@@ -8,12 +8,12 @@ function [F,vars] = pwadynamics_internal(first_coord,varargin)
 n = length(varargin{1});
 xplus = recover(getvariables(first_coord):getvariables(first_coord)+n-1);
 vars = getvariables(xplus);
-F = set([]);
+F = ([]);
 for i = 1:(length(varargin)/2)
     fi{i} = varargin{2*i-1};
-    R{i} =  varargin{2*i} + set(xplus == fi{i});
+    R{i} =  varargin{2*i} + (xplus == fi{i});
     F = F + R{i};
 end
 
-[F,t] = hull(R{:});F = F + set(binary(t));
+[F,t] = hull(R{:});F = F + (binary(t));
 

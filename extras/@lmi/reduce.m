@@ -3,7 +3,7 @@ function F = projection(F,x,method)
 %
 % Freduced  = reduce(F)
 %
-% F  :  Polytopic SET object
+% F  :  Polytopic constraint object
 %
 % See also POLYTOPE, PROJECTION
 
@@ -31,4 +31,4 @@ x = recover(x_vars);
 H = get(P,'H');
 K = get(P,'K');
 
-F = set(H*x < K);
+F = (H*x <= K);

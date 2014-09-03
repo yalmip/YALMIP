@@ -1,6 +1,6 @@
 function Fcont = logic2cont(Flogic)
 
-Fcont = set([]);
+Fcont = ([]);
 M = 1e3;
 % How many elements in this clause
 Flogic = flatten(Flogic);
@@ -30,13 +30,13 @@ else
         clause_i_j = Flogic.clauses{i}{j};
         if isa(clause_i_j,'constraint')
             delta = binvar(1,1);
-            F = F + set(sdpvar(clause_i_j)+M*(1-delta)>0);
+            F = F + (sdpvar(clause_i_j)+M*(1-delta)>=0);
             sum_or = sum_or + delta;
         elseif isa(clause_i_j,'sdpvar')
-            F = F + set(clause_i_j);
+            F = F + (clause_i_j>=0);
             sum_or = sum_or + clause_i_j;
         end
     end
 
 end
-Fcont = set(sum_or>1);
+Fcont = (sum_or>=1);

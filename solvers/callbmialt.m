@@ -85,7 +85,7 @@ while goon
     Flin0 = replace(F,x1,double(x1));
     obj1 = replace(h,x1,double(x1));
     
-    Flin = set([]);
+    Flin = ([]);
     for i = 1:length(Flin0)
         if isa(sdpvar(Flin0(i)),'sdpvar')
             Flin = Flin + Flin0(i);
@@ -102,7 +102,7 @@ while goon
     Flin0 = replace(F,x2,double(x2));
     obj1 = replace(h,x2,double(x2));
     
-    Flin = set([]);
+    Flin = ([]);
     for i = 1:length(Flin0)
         if isa(sdpvar(Flin0(i)),'sdpvar')
             Flin = Flin + Flin0(i);

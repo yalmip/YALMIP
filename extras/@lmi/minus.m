@@ -2,7 +2,7 @@ function sys = minus(X,Y)
 %MINUS (overloaded)
 
 if isempty(X)
-    sys = set([]);
+    sys = ([]);
     return
 end
 

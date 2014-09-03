@@ -29,7 +29,7 @@ function diagnostic = solvesdp(varargin)
 %   EXAMPLE
 %    A = randn(15,5);b = rand(15,1)*5;c = randn(5,1);
 %    x = sdpvar(5,1);
-%    solvesdp(set(A*x<=b),c'*x);double(x)
+%    solvesdp([x>=0, A*x<=b],c'*x);double(x)
 %
 %   See also DUAL, @SDPVAR/DOUBLE, SDPSETTINGS, YALMIPERROR
 
@@ -116,7 +116,7 @@ if nargin>=2
         logdetStruct.gain  = getgain(h);
         h = getcx(h);
         if isempty(F)
-            F = set([]);
+            F = ([]);
         end
     else
         logdetStruct = [];

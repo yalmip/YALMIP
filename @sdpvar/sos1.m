@@ -15,4 +15,4 @@ if nargin == 1
 else
     X.extra.sosweights = findOutWeights(X,weights)       
 end
-X = set(X);
+X = lmi(X);

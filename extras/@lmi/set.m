@@ -1,9 +1,5 @@
 function F = set(F,tag)
-% SET Obsolete. Use simple overloading with + instead
 
-if nargin == 2
-    F = flatten(F);
-    for i = 1:length(F.clauses)
-        F.clauses{i}.handle = tag;
-    end
-end
+disp('SET has been considered obsolete for many years, and the time has come...');
+disp('Update your code. http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Commands.set');
+error('Obsolete command')

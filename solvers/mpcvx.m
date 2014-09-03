@@ -13,9 +13,6 @@ function output = mpcvx(p)
 % Computational Optimization and Applications Volume 35, Number 1 /
 % September, 2006
 
-% Author Johan Löfberg
-% $Id: mpcvx.m,v 1.13 2006-11-28 11:48:44 joloef Exp $
-
 % *************************************************************************
 % INITIALIZE DIAGNOSTICS IN YALMIP
 % *************************************************************************
@@ -211,8 +208,8 @@ if eps_CP_S_abs > p.options.mpcvx.absgaptol & eps_CP_S_rel > p.options.mpcvx.rel
         [i,j] = max(R);
         [H,K] = double(P1);
         x = sdpvar(2,1);
-        Pnew1 =  polytope(set(H*x <= K) + set(null(H(j,:))'*(x-xd(:,j)) > 0));
-        Pnew2 =  polytope(set(H*x <= K) + set(null(H(j,:))'*(x-xd(:,j)) < 0));
+        Pnew1 =  polytope((H*x <= K) + (null(H(j,:))'*(x-xd(:,j)) >= 0));
+        Pnew2 =  polytope((H*x <= K) + (null(H(j,:))'*(x-xd(:,j)) <= 0));
         plot(Pnew1);
         plot(Pnew2);
         theta1 = extreme(Pnew1)';

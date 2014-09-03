@@ -21,7 +21,7 @@ end
 try
     y = [x;y;z;alpha];
     y.typeflag = 20;
-    y = set(y);
+    y = lmi(y);
 catch
     rethrow(lasterror)
 end

@@ -8,13 +8,13 @@ function model = mpt_parbb(Matrices,options)
 
 U = sdpvar(Matrices.nu,1);
 x = sdpvar(Matrices.nx,1);
-F = set(Matrices.G*U < Matrices.W + Matrices.E*x);
-F = F + set(Matrices.lb < [U;x] < Matrices.ub);
-F = F + set(binary(U(Matrices.binary_var_index)));
-F = F + set(Matrices.Aeq*U + Matrices.Beq*x == Matrices.beq);
+F = (Matrices.G*U <= Matrices.W + Matrices.E*x);
+F = F + (Matrices.lb <= [U;x] <= Matrices.ub);
+F = F + (binary(U(Matrices.binary_var_index)));
+F = F + (Matrices.Aeq*U + Matrices.Beq*x == Matrices.beq);
 h = Matrices.H*U + Matrices.F*x;
 
-Universe = polytope(set(Matrices.lb(end-Matrices.nx+1:end) <= x <= Matrices.ub(end-Matrices.nx+1:end)));
+Universe = polytope((Matrices.lb(end-Matrices.nx+1:end) <= x <= Matrices.ub(end-Matrices.nx+1:end)));
 
 model = parametric_bb(F,h,options,x,Universe);
 
@@ -44,7 +44,7 @@ y = intersect(y,[yalmip('binvariables') depends(F(find(is(F,'binary'))))]);
 y = recover(y);
 
 % Make sure binary relaxations satisfy 0-1 constraints
-F = F + set(0 <= y <= 1);
+F = F + (0 <= y <= 1);
 
 % recursive, starting in maximum universe
 sol = sub_bb(F,obj,ops,x,y,Universe);
@@ -79,7 +79,7 @@ if 1%while intsol.problem == 0
         if intsol.problem == 0
             y_feasible = round(double(y));
             ops.relax = 1;
-            localsol = solvemp(F+set(y == y_feasible),obj,ops,x);
+            localsol = solvemp(F+(y == y_feasible),obj,ops,x);
             ops.relax = 0;
             if isempty(localsol{1})
                 F = F + not_equal(y,y_feasible);
@@ -108,10 +108,10 @@ if 1%while intsol.problem == 0
             for i = 1:length(localsol.Pn)
                 G = F;
                 % Better cost
-                G = G + set(obj <= localsol.Bi{i}*x + localsol.Ci{i});
+                G = G + (obj <= localsol.Bi{i}*x + localsol.Ci{i});
                 % In this region
                 [H,K] = double(localsol.Pn(i));
-                G = G + set(H*x <= K);
+                G = G + (H*x <= K);
                 % Recurse
                 diggsol{i} = sub_bb(G,obj,ops,x,y,localsol.Pn(i));
             end
@@ -121,7 +121,7 @@ if 1%while intsol.problem == 0
             flipsol={};
             for i = 1:length(flipped)
                 [H,K] = double(flipped(i));
-                flipsol{i} = sub_bb(F+ set(H*x <= K),obj,ops,x,y,flipped(i));
+                flipsol{i} = sub_bb(F+ (H*x <= K),obj,ops,x,y,flipped(i));
             end
 
             % Just place all solutions in one big cell. We should do some
@@ -168,4 +168,4 @@ end
 if ~isempty(ov)
     lhs = lhs + sum(1-extsubsref(X,ov));
 end
-F = set(lhs >=1);
+F = (lhs >=1);
