@@ -89,7 +89,7 @@ else
                 Fnew = nan;
                 break
             end
-            Fnew = Fnew + set(true(F(i)));
+            Fnew = Fnew + (true(F(i)));
         end
         if isnan(Fnew)
             error('First argument (F) should be a constraint object.');
