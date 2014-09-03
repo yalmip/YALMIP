@@ -98,7 +98,9 @@ if length(Matrices.beq) > 0
     end
     
     if ~isempty(Matrices.G)
-        Matrices.G(abs(Matrices.G)<eps) = 0;
+        [i,j,k] = find(Matrices.G);
+        k(abs(k)<eps)=0;
+        Matrices.G = sparse(i,j,k,size(Matrices.G,1),size(Matrices.G,2));        
     end
 
     % Keep the bounds for the new basis only
