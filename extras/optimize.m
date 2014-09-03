@@ -9,7 +9,7 @@ function varargout = optimize(varargin)
 %            Constraint
 %
 %   NOTES
-%    To obtain solution for a variable, use DOUBLE.
+%    To obtain solution for a variable, use VALUE.
 %    To obtain dual variable for a constraint, use DUAL.
 %    See YALMIPERROR for error codes returned in output.
 %
