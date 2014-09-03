@@ -91,6 +91,10 @@ end
 
 if isempty(options)
     options = sdpsettings;
+else
+    if ~isa(options,'struct')
+        error('The third argument should be an options structure');
+    end
 end
 
 % Lazy syntax (not official...)
