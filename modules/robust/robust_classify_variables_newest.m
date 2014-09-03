@@ -82,8 +82,14 @@ end
 x = recover(x_variables);
 w = recover(w_variables);
 
-F_xw_scalar =  F_xw(find(is(F_xw,'elementwise') | is(F_xw,'equality')));
-F_xw_multi = F_xw - F_xw_scalar;
+if ~isempty(F_xw)
+    F_xw_scalar =  F_xw(find(is(F_xw,'elementwise') | is(F_xw,'equality')));
+    F_xw_multi = F_xw - F_xw_scalar;
+else
+    F_xw_scalar = [];
+    F_xw_multi = F_xw;
+end
+
 [MonomTable,Nonlinear] = yalmip('monomtable');
 Dependency = yalmip('getdependenceUser');
 evar = yalmip('extvariables');
