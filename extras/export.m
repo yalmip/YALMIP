@@ -185,7 +185,11 @@ switch lower(solver.tag)
             model.prob = yalmip2mosek(interfacedata);
         end
         model.param = interfacedata.options.mosek;
-                    
+   
+    case 'linprog'
+        model = yalmip2quadprog(interfacedata);
+        model = rmfield(model,'Q');
+        
     case 'quadprog'
         model = yalmip2quadprog(interfacedata);
         
