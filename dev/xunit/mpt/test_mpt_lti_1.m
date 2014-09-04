@@ -67,8 +67,13 @@ probStruct.R=1;
 probStruct.N=N-1;
 probStruct.P_N=zeros(2);
 probStruct.subopt_lev=0;
-probStruct.y0bounds=1;
 probStruct.Tconstraint=0;
-ctrl=mpt_control(sysStruct,probStruct)
 
-mbg_asserttolequal(mpt_isPWAbigger(mpsol{1}{1},ctrl),0);
+ctrl = mpt_control(sysStruct, probStruct, 'online');
+Y = ctrl.toYALMIP();
+Y.constraints = Y.constraints + [ -1 <= C*Y.variables.x(:, end) <= 1 ];
+new = ctrl.fromYALMIP(Y).toExplicit();
+
+fun1 = mpt_mpsol2pu(mpsol{1});
+result = fun1.compare(new.optimizer, 'obj');
+assertTrue(result == 0);
