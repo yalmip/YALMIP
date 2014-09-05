@@ -39,9 +39,9 @@ prg = frlibPrg(A,b,C,K);
 
 switch options.frlib.reduce
     case 'primal'
-        prgR = prg.ReducePrimal(options.frlib.approximation);
+        prgR = prg.ReducePrimal(options.frlib.approximation,options.frlib);
     case 'dual'
-        prgR = prg.ReduceDual(options.frlib.approximation);
+        prgR = prg.ReduceDual(options.frlib.approximation,options.frlib);
     otherwise
        error('Wrong option ''reduce'' for frlib.');
 end
