@@ -29,7 +29,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    11 Other identified error
 %    12 Infeasible or unbounded
 %    13 YALMIP cannot determine status in solver
-%    14 Convexity check failed.
+%    14 Model creation failed
 %    15 Problem either infeasible or unbounded
 %    16 User terminated
 %    17 Presolve recovery failed
@@ -98,7 +98,7 @@ case -3
  case 13
   error_string = ['YALMIP cannot determine status in solver ' solver ]; 
  case 14
-  error_string = ['Convexity check failed ' solver ]; 
+  error_string = ['Model creation failed ' solver ]; 
  case 15
   error_string = ['Infeasible or unbounded problem ' solver ]; 
  case 16

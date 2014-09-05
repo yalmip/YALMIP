@@ -78,16 +78,22 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
             failure = 0;
             method = 'exact';
         else
-            if failure & options.allowmilp
-               % [properties,F_graph,arguments] = model(variable,'exact',options,[],w); 
-                [properties,F_graph,arguments] = model(variable,'exact',options,allExtStruct(ext_index),w); 
+            if failure & options.allowmilp               
+                [properties,F_graph,arguments,fcn] = model(variable,'exact',options,allExtStruct(ext_index),w); 
                                
                 if ~isempty(properties)
                     properties = properties{1};
                 end
    
                 if isempty(F_graph)
-                    cause = [cause ', exact model not available.'];
+                    switch fcn
+                        case 'sqrt'
+                            cause = [cause 'See users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.SQRT'];
+                        case 'norm'
+                            cause = [cause 'Only 1- and inf-norms can be used in a nonconvex fashion'];
+                        otherwise
+                            cause = [cause 'The function ' fcn ' does not have an implementation when entering in a ' goal_vexity ' fashion '];
+                    end
                     return
                 else
                     failure = 0;                   
