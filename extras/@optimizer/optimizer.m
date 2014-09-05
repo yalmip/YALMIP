@@ -169,7 +169,15 @@ if ~isempty(Constraints)
         tempOps = options;
         tempOps.sos.model = 2;
         tempOps.verbose = max(0,tempOps.verbose-1);
-        [Constraints,Objective] = compilesos([Constraints,parametric(x)],Objective,tempOps);
+        parameter_sos = [x;u;recover(depends(Objective))];
+        parameter_sos = depends(parameter_sos);
+        for i = 1:length(Constraints)
+            if ~is(Constraints,'sos')
+                parameter_sos = [parameter_sos depends(Constraints(i))];
+            end
+        end
+        parameter_sos = recover(parameter_sos);
+        [Constraints,Objective] = compilesos(Constraints,Objective,tempOps,parameter_sos);
     end
 end
 
