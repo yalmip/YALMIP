@@ -143,7 +143,7 @@ F = F + (  (1/(Nj + 2*Nk) ) * ( (Procs-2) * ti + (Procs-1) * tj ) <= 1);
 %F = F + ( tj <= ( Nj / (Procs-1) ) ) ; 
 
 % solve an integer version of the problem
-intConstraints = set (integer(ti)) + (integer(tj)) + (integer(tk));
+intConstraints = (integer(ti)) + (integer(tj)) + (integer(tk));
 F = F + intConstraints;
 
 % + ( (Procs-1) * tj <= Nj + 2*tk) ; 
@@ -239,7 +239,7 @@ F = F + (tj <= Nj) ;
 F = F + (  (1/Nj) * ( (Procs-2) * ti + (Procs-1) * tj ) <= 1);
 
 % solve an integer version of the problem
-intConstraints = set (integer(ti)) + (integer(tj));
+intConstraints = (integer(ti)) + (integer(tj));
 F = F + intConstraints;
 
 % -------------  End of Constraints -------------------------
@@ -325,7 +325,7 @@ F = F + (ti <= ( Ni  / Procs)) ;
 %F = F + ( (Procs-1) <= Nk );
 
 % solve an integer version of the problem
-intConstraints = set (integer(ti)) ;
+intConstraints = (integer(ti)) ;
 F = F + intConstraints;
 
 % -------------  End of Constraints -------------------------
