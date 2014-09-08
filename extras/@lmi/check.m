@@ -55,6 +55,7 @@ lmiinfo{11} = 'SOS constraint';
 lmiinfo{15} = 'Uncertainty declaration';
 lmiinfo{54} = 'Vectorized second order cone constraints';
 lmiinfo{55} = 'Complementarity constraint';
+lmiinfo{56} = 'Logic constraint';
 header = {'ID','Constraint','Primal residual','Dual residual','Tag'};
 
 if nargout==0
@@ -86,10 +87,10 @@ end
 
 for j = 1:nlmi
     constraint_type = F.clauses{j}.type;
-    if constraint_type~=11
+    if constraint_type~=11 && constraint_type~=56
         F0 = double(F.clauses{j}.data);
     end
-    if (constraint_type~=11) & any(isnan(F0(:)))
+    if ~(constraint_type == 56) && (constraint_type~=11) & any(isnan(F0(:))) 
         res(j,1) = NaN;
     else
         switch F.clauses{j}.type
@@ -146,6 +147,9 @@ for j = 1:nlmi
                 end
                 soscount=soscount+1;
             end
+            
+            case 56
+                 res(j,1) = logicSatisfaction(F.clauses{j}.data);
             
         otherwise
             res(j,1) = nan;
@@ -219,4 +223,42 @@ else
     
     yalmiptable('',header,data)
     disp(' ');
+end
+
+function res = logicSatisfaction(clause);
+
+a = clause{2};
+b = clause{3};
+if isa(a,'sdpvar')
+    aval = double(a);
+    if is(a,'binary')
+        atruth = aval == 1;
+    else
+        atruth = aval>=0;
+    end
+elseif isa(a,'lmi') | isa(a,'constraint')
+    aval = check(lmi(a));
+    atruth = aval >= 0;
+end
+if isa(b,'sdpvar')
+    bval = double(b);
+elseif isa(b,'lmi') | isa(b,'constraint')
+    bval = check(lmi(b));
+    btruth = bval >= 0;
+end
+switch clause{1}
+    case 'implies'
+        if all(btruth >= atruth)
+            res = 1;
+        else
+            res = -1;
+        end
+    case 'iff'
+        if all(btruth == atruth);
+            res = 1;
+        else
+            res = -1;
+        end
+    otherwise
+        res = nan;
 end

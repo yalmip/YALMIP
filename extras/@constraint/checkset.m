@@ -24,9 +24,9 @@ function [p,d] = checkset(X)
 
 switch nargout
     case 0
-        checkset(lmi(X));
+        check(lmi(X));
     case 1
-        p = checkset(lmi(X));
+        p = check(lmi(X));
     case 2
-        [p,d] = checkset(lmi(X));
+        [p,d] = check(lmi(X));
 end
