@@ -90,7 +90,7 @@ for j = 1:nlmi
     if constraint_type~=11 && constraint_type~=56
         F0 = double(F.clauses{j}.data);
     end
-    if ~(constraint_type == 56) && (constraint_type~=11) & any(isnan(F0(:))) 
+    if ~((constraint_type == 56) || (constraint_type==11)) && any(isnan(F0(:)))
         res(j,1) = NaN;
     else
         switch F.clauses{j}.type
