@@ -56,7 +56,10 @@ base = [];
 for i = 1:length(p)
     allvar = depends(p(i));
     t = setdiff(allvar,xvar);
-    if isa(p(i),'sdpvar')
+    if isa(p(i),'double')
+        base = [base;p(i)];
+        v = 1;
+    elseif isa(p(i),'sdpvar')
         [exponent_p,p_base] = getexponentbase(p(i),recover(depends(p(i))));
         ParametricIndicies = find(ismember(allvar,t));
         % FIX : don't define it here, wait until sparser below. Speed!!
