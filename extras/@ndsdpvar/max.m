@@ -20,5 +20,8 @@ if workdim > length(xdim)
     error('Index exceeds matrix dimensions.');
 end
 
-newdim = xdim;newdim(workdim)=1;
+newdim = xdim;
+newdim = circshift(xdim',-(workdim-1))';
+newdim(1)=1;
 Y = reshape(max(reshape(shiftdim(X,workdim-1),xdim(workdim),[])),newdim);
+Y = shiftdim(Y,length(xdim)-workdim+1);
