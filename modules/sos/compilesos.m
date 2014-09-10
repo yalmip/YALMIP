@@ -161,7 +161,7 @@ ParametricVariables = intersect(ParametricVariables,AllVariables);
 MonomVariables = setdiff(AllVariables,ParametricVariables);
 params = recover(ParametricVariables);
 if isempty(MonomVariables)
-    error('No independent variables? Perhaps you added a constraint (p(x)) when you meant (sos(p(x)))');
+    error('No independent variables? Perhaps you added a constraint (p(x)) when you meant (sos(p(x))). It could also be that you added a constraint directly in the independents, such as p(x)>=0 or similarily.');
 end
 if options.verbose>0;disp(['Detected ' num2str(length(ParametricVariables)) ' parametric variables and ' num2str(length(MonomVariables)) ' independent variables.']);end
 
