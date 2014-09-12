@@ -36,14 +36,20 @@ switch class(varargin{1})
                     index2 = 1:size(varargin{1},2);
                 end
                 y = [];
-                for i = 1:length(index1)
-                    temp = [];
-                    for j = 1:length(index2)
-                        varargin{2}.subs{1} = index1(i);
-                        varargin{2}.subs{2} = index2(j);
-                        temp = [temp yalmip('define',mfilename,varargin{:})];
+                if length(index1)*length(index2) == 1
+                    varargin{2}.subs{1} = index1;
+                    varargin{2}.subs{2} = index2;
+                    y = yalmip('define',mfilename,varargin{:});
+                else
+                    for i = 1:length(index1)
+                        temp = [];
+                        for j = 1:length(index2)
+                            varargin{2}.subs{1} = index1(i);
+                            varargin{2}.subs{2} = index2(j);
+                            temp = [temp yalmip('define',mfilename,varargin{:})];
+                        end
+                        y = [y;temp];
                     end
-                    y = [y;temp];
                 end
                 % Figure out dims of variable
                 X = randn(size(varargin{1}));

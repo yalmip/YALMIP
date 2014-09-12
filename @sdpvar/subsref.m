@@ -19,19 +19,12 @@ if length(varargin{2})==1
     end
 end
 
-if (isequal(varargin{2}.type,'()') && ((isa(varargin{2}.subs{1},'sdpvar')) || (length(varargin{2}.subs)==2 && isa(varargin{2}.subs{2},'sdpvar'))))
-    % *****************************************
-    % Experimental code for varaiable indicies
-    % *****************************************
-    varargout{1} = milpsubsref(varargin{:});
-    return
-else    
-    X = varargin{1};
-    if ~isempty(X.midfactors)
-        X = flush(X);
-    end
-    Y = varargin{2};
+
+X = varargin{1};
+if ~isempty(X.midfactors)
+  X = flush(X);
 end
+Y = varargin{2};
 
 try
     switch Y(1).type
@@ -42,14 +35,9 @@ try
             % Check for simple cases to speed things up (yes, ugly but we all want speed don't we!)
             switch size(Y(1).subs,2)
                 case 1
-                    if isa(Y(1).subs{1},'sdpvar')
-                        varargout{1} = yalmip('addextendedvariable',mfilename,varargin{:});
-                        return
-                    else
-                        y = subsref1d(X,Y(1).subs{1});
-                    end
+                    y = subsref1d(X,Y(1).subs{1},Y);                    
                 case 2
-                    y = subsref2d(X,Y.subs{1},Y(1).subs{2});
+                    y = subsref2d(X,Y.subs{1},Y(1).subs{2},Y);
                 otherwise
                     error('Indexation error.');
             end
@@ -164,7 +152,7 @@ else
 end
 varargout{1} = y;
 
-function X = subsref1d(X,ind1)
+function X = subsref1d(X,ind1,Y)
 
 % Get old and new size
 n = X.dim(1);
@@ -173,14 +161,13 @@ m = X.dim(2);
 % Convert to linear indecicies
 if islogical(ind1)
     ind1 = double(find(ind1));
-end
-
-% Ugly hack handle detect X(:)
-%pickall = 0;
-if ischar(ind1)
+elseif ischar(ind1)
     X.dim(1) = n*m;
     X.dim(2) = 1;
     return;
+elseif ~isnumeric(ind1)
+    X = milpsubsref(X,Y);
+    return
 end
 
 % Detect X(scalar)
@@ -229,13 +216,19 @@ else
     X.basis = reshape(bas(ind1),nnew*mnew,1);
 end
 
-function X = subsref2d(X,ind1,ind2)
+function X = subsref2d(X,ind1,ind2,Y)
 
 if ischar(ind1)
     ind1 = 1:X.dim(1);
+elseif ~(isnumeric(ind1) | islogical(ind1))
+    X = milpsubsref(X,Y);
+    return
 end
 if ischar(ind2)
     ind2 = 1:X.dim(2);
+elseif ~(isnumeric(ind2) | islogical(ind2))
+    X = milpsubsref(X,Y);
+    return
 end
 
 % Convert to linear indecicies
