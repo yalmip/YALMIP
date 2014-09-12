@@ -220,25 +220,19 @@ function X = subsref2d(X,ind1,ind2,Y)
 
 if ischar(ind1)
     ind1 = 1:X.dim(1);
-elseif ~(isnumeric(ind1) | islogical(ind1))
+elseif islogical(ind1)
+    ind1 = double(find(ind1));
+elseif ~isnumeric(ind1)
     X = milpsubsref(X,Y);
     return
 end
 if ischar(ind2)
     ind2 = 1:X.dim(2);
-elseif ~(isnumeric(ind2) | islogical(ind2))
+elseif islogical(ind2)
+    ind2 = double(find(ind2));
+elseif  ~isnumeric(ind2)    
     X = milpsubsref(X,Y);
     return
-end
-
-% Convert to linear indecicies
-if islogical(ind1)
-    ind1 = double(find(ind1));
-end
-
-% Convert to linear indecicies
-if islogical(ind2)
-    ind2 = double(find(ind2));
 end
 
 n = X.dim(1);
@@ -254,6 +248,13 @@ if lind1 == 1
     ind2_ext = ind2(:);
 else
     ind2_ext = kron(ind2(:),ones(lind1,1));
+end
+
+if lind1==1 && lind2==1 && isequal(X.conicinfo,[1 0])
+%     X.basis = [1 0];
+%     X.lmi_variables = 1;
+%     X.dim = [1 1];
+%     return
 end
 
 if prod(size(ind1_ext))==0 | prod(size(ind2_ext))==0

@@ -11,6 +11,9 @@ switch class(varargin{1})
         if isa(varargin{2},'sdpvar')
             error('x^y currently not supported for SDPVAR x and SDPVAR y')
         else
+            if length(varargin{1}) > 1 || size(varargin{2},1) ~= size(varargin{2},2)
+                error('Inputs must be a scalar and a square matrix. To compute elementwise POWER, use POWER (.^) instead.');
+            end
             varargout{1} = InstantiateElementWise(mfilename,varargin{:});
         end
 
