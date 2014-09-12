@@ -16,6 +16,22 @@ if prod(size(x))==1 & (prod(size(d))==1)
     return 
 end
 
+if isa(d,'sdpvar')
+    % Normalize arguments to have same size
+    if any(size(x)>1) && length(d)==1
+        d = ones(size(x))*d;
+    end
+    if any(size(d)>1) && length(x)==1
+        d = ones(size(d))*x;
+    end
+    if ~isequal(size(d),size(x))
+        error('Dimension mismatch in power');
+    end
+    % Call helper which vectorizes the elements
+    y = powerinternalhelper(d,x);
+    return
+end
+
 % Sanity Check
 if prod(size(d))>1
     if any(size(d)~=size(x))
