@@ -25,8 +25,11 @@ if (isequal(varargin{2}.type,'()') && ((isa(varargin{2}.subs{1},'sdpvar')) || (l
     % *****************************************
     varargout{1} = milpsubsref(varargin{:});
     return
-else
-    X = flush(varargin{1});
+else    
+    X = varargin{1};
+    if ~isempty(X.midfactors)
+        X = flush(X);
+    end
     Y = varargin{2};
 end
 
@@ -74,32 +77,10 @@ try
                     varargout{1} = double(X);
                     return
                 end
-
-%                     vars = getvariables(X(i));
-%                     nonlinearModel = yalmip('extstruct',vars);
-%                     for j = 1:length(nonlinearModel)
-%                         if ~((isequal(nonlinearModel{j}.fcn,'pwa_yalmip') | isequal(nonlinearModel{j}.fcn,'pwq_yalmip'))& isa(Y.subs{:},'double'))
-%                             mpt_solution = 0;
-%                         end
-%                     end
-%                     if mpt_solution
-%                         assign(nonlinearModel{1}.arg{2},Y.subs{:});
-%                         XX = double(X);
-%                         varargout{1} = [varargout{1};XX(i)];
-%                     end
-%                 end
-%                 if mpt_solution
-%                     return;
-%                 end
             end
             vars = getvariables(X);
             if (length(vars) == 1) & ismembc(vars,yalmip('extvariables'))
                 nonlinearModel = yalmip('extstruct',vars);
-%                 if (isequal(nonlinearModel.fcn,'pwa_yalmip') | isequal(nonlinearModel.fcn,'pwq_yalmip'))& isa(Y.subs{:},'double')
-%                     assign(nonlinearModel.arg{2},Y.subs{:});
-%                     varargout{1} = double(X);
-%                     return
-%                 end
                 OldArgument = [];
                 for i = 1:length(nonlinearModel.arg)
                     if isa(nonlinearModel.arg{i},'sdpvar')
@@ -288,6 +269,8 @@ else
     % Speed-up for some bizarre code with loads of indexing of vector
     if m==1 & ind2_ext==1
         linear_index = ind1_ext;
+    elseif length(ind2_ext)==1 && length(ind1_ext)==1
+        linear_index = ind1_ext + (ind2_ext-1)*n;
     else
         linear_index = sub2ind([n m],ind1_ext,ind2_ext);
     end
