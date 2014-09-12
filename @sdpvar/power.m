@@ -6,7 +6,9 @@ if numel(x)==1 & (numel(d)>1)
     x = x.*ones(size(d));
 end
 
-x = flush(x);
+if isa(x,'sdpvar')
+    x = flush(x);
+end
 
 % Reuse code
 if prod(size(x))==1 & (prod(size(d))==1)
