@@ -81,6 +81,12 @@ p.feasible = 1;
 p.changedbounds = 1;
 
 % *************************************************************************
+% Initialize some diagnostic counters
+% *************************************************************************
+p.counter.lpsolved = 0;
+p.counter.lowersolved = 0;
+p.counter.uppersolved = 0;
+% *************************************************************************
 % Some preprocessing to put the model in a better format
 % *************************************************************************
 p = convert_perspective_log(p);
@@ -342,7 +348,7 @@ if p.feasible
     % *******************************
     % RUN BILINEAR BRANCH & BOUND
     % *******************************
-    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing] = branch_and_bound(p,x_min,upper,timing);
+    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing);
     
     % ********************************
     % CREATE SOLUTION AND DIAGNOSTICS
@@ -371,9 +377,9 @@ end
 
 timing.total = toc(timing.total);
 if p.options.bmibnb.verbose
-    disp(['* Timing: ' num2str(ceil(100*timing.uppersolve/timing.total)) '% spent in upper solver']);
-    disp(['*         ' num2str(ceil(100*timing.lowersolve/timing.total)) '% spent in lower solver']);
-    disp(['*         ' num2str(ceil(100*timing.domainreduce/timing.total)) '% spent in LP-based domain reduction']);
+    disp(['* Timing: ' num2str(ceil(100*timing.uppersolve/timing.total)) '% spent in upper solver (' num2str(counter.uppersolved) ' problems solved)']);
+    disp(['*         ' num2str(ceil(100*timing.lowersolve/timing.total)) '% spent in lower solver (' num2str(counter.lowersolved) ' problems solved)']);
+    disp(['*         ' num2str(ceil(100*timing.domainreduce/timing.total)) '% spent in LP-based domain reduction (' num2str(counter.lpsolved) ' problems solved)']);
 end
 
 x_min = dediagonalize(p,x_min);

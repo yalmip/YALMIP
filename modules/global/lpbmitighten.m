@@ -106,7 +106,7 @@ while feasible & j<=length(jj)
     if abs(p.ub(i)-p.lb(i)>p.options.bmibnb.vartol) & improvethese(i)    
         p_test.c = eyev(length(p_test.c),i);        
         output = feval(lpsolver,removenonlinearity(p_test));
-
+        p.counter.lpsolved = p.counter.lpsolved + 1;
         if output.problem == 0 | output.problem == 2 | output.problem == 12
             if output.problem == 0
                 if p_test.lb(i) < output.Primal(i)-1e-5
@@ -115,7 +115,8 @@ while feasible & j<=length(jj)
                 end
             end
             p_test.c = -p_test.c;          
-            output = feval(lpsolver,removenonlinearity(p_test));         
+            output = feval(lpsolver,removenonlinearity(p_test));   
+            p.counter.lpsolved = p.counter.lpsolved + 1;
             if output.problem == 0
                 if p_test.ub(i) > output.Primal(i)+1e-5
                     p_test.ub(i) = output.Primal(i);

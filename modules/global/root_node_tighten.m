@@ -38,6 +38,7 @@ if p.options.bmibnb.roottight & p.feasible
         if p.lb(j) < p.ub(j) & (ismember(j,p.branch_variables) | (p.options.bmibnb.roottight == 2))
             p.c = eyev(length(p.c),j);
             output = feval(lowersolver,removenonlinearity(p));
+            p.counter.lowersolved = p.counter.lowersolved + 1;
             if (output.problem == 0) & (output.Primal(j)>p.lb(j)+1e-4)
                 p.lb(j) = output.Primal(j);
                 p = updateonenonlinearbound(p,j);
@@ -48,6 +49,7 @@ if p.options.bmibnb.roottight & p.feasible
             elseif p.lb(j) < p.ub(j) % We might have updated lb
                 p.c = -eyev(length(p.c),j);
                 output = feval(lowersolver,removenonlinearity(p));
+                p.counter.lowersolved = p.counter.lowersolved + 1;
                 if (output.problem == 0) & (output.Primal(j) < p.ub(j)-1e-4)
                     p.ub(j) = output.Primal(j);
                     if p.ub(j)<p.lb(j)
@@ -79,5 +81,6 @@ if p.options.bmibnb.roottight & p.feasible
     pin.lb = p.lb;
     pin.ub = p.ub;
     pin.feasible = p.feasible;
+    pin.counter = p.counter;
     p = pin;
 end

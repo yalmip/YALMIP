@@ -159,6 +159,7 @@ else
             
             tstart = tic;                                             
             output = feval(lowersolver,removenonlinearity(p_cut));
+            psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
             cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
             % Minor clean-up
@@ -229,6 +230,7 @@ else
                 try
                     tstart = tic;
                     output = feval(lowersolver,removenonlinearity(p_cut));
+                    psave.counter.lowersolved = psave.counter.lowersolved + 1;
                     timing.lowersolve = timing.lowersolve + toc(tstart);
                 catch
                     1

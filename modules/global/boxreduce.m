@@ -10,6 +10,7 @@ if options.bmibnb.lpreduce
     span_before = p.ub - p.lb;
     
     [pcut,feasible,lower] = lpbmitighten(p,lower,upper,lpsolver,xmin,improvethese);
+    p.counter = pcut.counter;
     diag_after = sum(pcut.ub(p.branch_variables)-pcut.lb(p.branch_variables));
     span_after = pcut.ub - pcut.lb;
     
@@ -26,6 +27,7 @@ if options.bmibnb.lpreduce
     while any(improvethese) & feasible & iterations < 8                
         span_before = span_after;        
         [pcut,feasible,lower] = lpbmitighten(pcut,lower,upper,lpsolver,xmin,improvethese);
+        p.counter = pcut.counter;
         span_after = pcut.ub - pcut.lb;
         improvethese(find(abs(span_after) <=  p.options.bmibnb.vartol)) = 0;    
         not_decreasing = find(span_after >= 0.95*span_before);

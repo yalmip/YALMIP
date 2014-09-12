@@ -1,4 +1,4 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing] = branch_and_bound(p,x_min,upper,timing)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing)
 
 % *************************************************************************
 % Create handles to solvers
@@ -54,6 +54,8 @@ numGlobalSolutions = 0;
 % Silly hack to speed up solver calls
 % *************************************************************************
 p.getsolvertime = 0;
+
+counter = p.counter;
 
 if options.bmibnb.verbose>0
     disp('* Starting YALMIP global branch & bound.');
@@ -216,6 +218,7 @@ while go_on
                             if upper > p.options.bmibnb.target
                                 if options.bmibnb.lowertarget > lower                                    
                                     [upper,x_min,info_text,numGlobalSolutions,timing] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing);
+                                    p.counter.uppersolved = p.counter.uppersolved + 1;
                                 end
                             end
                         end
@@ -322,11 +325,14 @@ while go_on
         lower = min([stack.lower]);
     end
 
+    if ~isempty(p)
+        counter = p.counter;
+    end
     % ************************************************
     %  Pick and create a suitable node
-    % ************************************************
+    % ************************************************    
     [p,stack] = selectbranch(p,options,stack,x_min,upper);
-
+    
     if isempty(p)
         if ~isinf(upper)
             relgap = 0;
