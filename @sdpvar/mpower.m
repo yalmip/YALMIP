@@ -3,6 +3,9 @@ function y = mpower(x,d)
 
 %Sanity check
 if isa(d,'sdpvar')
+    if length(d)>1 && length(x)>1
+        error('Inputs must be a scalar and a square matrix. To compute elementwise POWER, use POWER (.^) instead.');
+    end
     y = power_internal1(d,x);
     return
 end
