@@ -349,7 +349,7 @@ if p.feasible
     % RUN BILINEAR BRANCH & BOUND
     % *******************************
     [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing);
-    
+       
     % ********************************
     % CREATE SOLUTION AND DIAGNOSTICS
     % ********************************
@@ -367,6 +367,7 @@ if p.feasible
         problem = 3;
     end
 else
+    counter = p.counter;
     problem = 1;
     x_min = repmat(nan,length(p.c),1);
     solved_nodes = 0;
