@@ -4,7 +4,7 @@ sdpvar x y
 sdpvar a t
 p = x^4+(x-a)^2 + a^2;
 [F,objective] = compilesos(sos(p-t),-t,sdpsettings('sos.model',2),[t;a]);
-P = optimizer(F,objective,sdpsettings('solver','+mosek'),a,t);
+P = optimizer(F,objective,sdpsettings('solver','+sdpt3'),a,t);
 s1 = P{2};
 
 a = 2;
