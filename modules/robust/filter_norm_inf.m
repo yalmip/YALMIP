@@ -77,8 +77,22 @@ for i = 1:length(all_f)
                 % There is only one expression involving product between x
                 % and w. We explicitly construct the absolut value
                 % constraint projection
-                F = F + (x'*Q_xx{i}*x+(bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)-T(non_zeroBirow,:)*(ci+Bi'*x) >= 0) ;
-                F = F + (x'*Q_xx{i}*x+(bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)+T(non_zeroBirow,:)*(ci+Bi'*x) >= 0) ;
+                extremecase = x'*Q_xx{i}*x+(bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)-T(non_zeroBirow,:)*(ci+Bi'*x);
+                if isnumeric(extremecase)
+                    if extremecase < 0
+                        error('A worst-case computation reveals a trivially infeasible constraint');
+                    end
+                else
+                    F = F + (extremecase >= 0) ;
+                end
+                extremecase = x'*Q_xx{i}*x+(bi'+e'*Bi')*x + (di+e'*ci) - norm(T(zeroBirow,:)*ci,1)+T(non_zeroBirow,:)*(ci+Bi'*x);
+                if isnumeric(extremecase)
+                    if extremecase < 0
+                        error('A worst-case computation reveals a trivially infeasible constraint.');
+                    end
+                else
+                    F = F + (extremecase >= 0) ;
+                end
             end
         end
     end

@@ -3,16 +3,17 @@ function varargout = subsref(varargin)
 
 % Stupid first slice call (supported by MATLAB)
 % x = sdpvar(2);x(1,:,:)
-if length(varargin{2})==1
-    if  length(varargin{2}.subs) > 2 && isequal(varargin{2}.type,'()')
+Y = varargin{2};
+if length(Y)==1
+    if  length(Y.subs) > 2 && isequal(Y.type,'()')
         i = 3;
         ok = 1;
-        while ok && (i <= length(varargin{2}.subs))
-            ok = ok && (isequal(varargin{2}.subs{i},1) || isequal(varargin{2}.subs{i},':'));
+        while ok && (i <= length(Y.subs))
+            ok = ok && (isequal(Y.subs{i},1) || isequal(Y.subs{i},':'));
             i = i + 1;
         end
         if ok
-            varargin{2}.subs = {varargin{2}.subs{1:2}};
+            varargin{2}.subs = {Y.subs{1:2}};
         else
             error('??? Index exceeds matrix dimensions.');
         end
@@ -24,7 +25,6 @@ X = varargin{1};
 if ~isempty(X.midfactors)
   X = flush(X);
 end
-Y = varargin{2};
 
 try
     switch Y(1).type
@@ -218,7 +218,8 @@ end
 
 function X = subsref2d(X,ind1,ind2,Y)
 
-if ischar(ind1)
+if isnumeric(ind1)
+elseif ischar(ind1)
     ind1 = 1:X.dim(1);
 elseif islogical(ind1)
     ind1 = double(find(ind1));
@@ -226,7 +227,8 @@ elseif ~isnumeric(ind1)
     X = milpsubsref(X,Y);
     return
 end
-if ischar(ind2)
+if isnumeric(ind2)
+elseif ischar(ind2)
     ind2 = 1:X.dim(2);
 elseif islogical(ind2)
     ind2 = double(find(ind2));
@@ -254,21 +256,15 @@ if any(ind1 > n) || any(ind2 > m)
     error('Index exceeds matrix dimensions.');
 end
     
-% if lind1==1 && lind2==1 
-%     if isequal(X.conicinfo,[-1 0])
-%       X.basis = [1 0];
-%       X.lmi_variables = X.lmi_variables(1) + ind1 + (ind2-1)*n -1;
-%       X.dim = [1 1];
-%       X.conicinfo = [0 0];
-%       return
-% %     elseif isequal(X.conicinfo,[1 0])
-% %       X.basis = [1 0];
-% %       X.lmi_variables = X.lmi_variables(1) + ind1 + (ind2-1)*n -1;
-% %       X.dim = [1 1];
-% %       X.conicinfo = [0 0];
-% %       return
-%     end
-% end
+if lind1==1 && lind2==1
+    if isequal(X.conicinfo,[-1 0])
+        X.basis = [1 0];
+        X.lmi_variables = X.lmi_variables(1)+ind1+(ind2-1)*n-1;
+        X.dim = [1 1];
+        X.conicinfo = [0 0];   
+        return
+    end
+end
 
 if prod(size(ind1_ext))==0 | prod(size(ind2_ext))==0
     linear_index = [];
