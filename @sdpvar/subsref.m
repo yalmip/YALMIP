@@ -250,12 +250,25 @@ else
     ind2_ext = kron(ind2(:),ones(lind1,1));
 end
 
-if lind1==1 && lind2==1 && isequal(X.conicinfo,[1 0])
-%     X.basis = [1 0];
-%     X.lmi_variables = 1;
-%     X.dim = [1 1];
-%     return
+if any(ind1 > n) || any(ind2 > m)
+    error('Index exceeds matrix dimensions.');
 end
+    
+% if lind1==1 && lind2==1 
+%     if isequal(X.conicinfo,[-1 0])
+%       X.basis = [1 0];
+%       X.lmi_variables = X.lmi_variables(1) + ind1 + (ind2-1)*n -1;
+%       X.dim = [1 1];
+%       X.conicinfo = [0 0];
+%       return
+% %     elseif isequal(X.conicinfo,[1 0])
+% %       X.basis = [1 0];
+% %       X.lmi_variables = X.lmi_variables(1) + ind1 + (ind2-1)*n -1;
+% %       X.dim = [1 1];
+% %       X.conicinfo = [0 0];
+% %       return
+%     end
+% end
 
 if prod(size(ind1_ext))==0 | prod(size(ind2_ext))==0
     linear_index = [];

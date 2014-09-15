@@ -178,6 +178,7 @@ switch nargin
         else
             matrix_type = 'full';
             nvar = sum(n.*m);
+            conicinfo = [-1 0];
         end
     case 2
         n = varargin{1};
@@ -196,6 +197,7 @@ switch nargin
         else
             matrix_type = 'full';
             nvar = sum(n.*m);
+            conicinfo = [-1 0];
         end
     case {3,4}
         n = varargin{1};
@@ -267,13 +269,16 @@ switch nargin
                     else
                         matrix_type = 'symmetric';
                         nvar = sum(n.*(n+1)/2);
+                        conicinfo = [1 0];
                     end
 
                 case 4
                     matrix_type = 'full';
                     nvar = sum(n.*m);
+                    conicinfo = [-1 0];
                     if nvar==1
                         matrix_type = 'symmetric';
+                        conicinfo = [1 0];
                     end
 
                 case 5
