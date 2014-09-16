@@ -421,7 +421,7 @@ switch varargin{1}
                         Xi = X(i);
                         if vec_isdoubles(i)%isa(Xi,'double')
                             found = 1;
-                            y(i) = X(i);
+                            y(i) = abs(X(i));
                         else
                             if ~isempty(correct_operator)
                                 this_hash = vec_hashes(i);                                
