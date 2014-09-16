@@ -14,7 +14,7 @@ switch class(varargin{1})
                 x = X;
                 xvars = getvariables(x);               
                 allextvars = yalmip('extvariables');
-                if (length(xvars)==1) & ismembc(xvars,allextvars)
+                if (length(xvars)==1) & ismembcYALMIP(xvars,allextvars)
                     [x,F] = expandor(x,allextvars,F);
                 end
 
@@ -28,7 +28,7 @@ switch class(varargin{1})
                 y = Y;
                 yvars = getvariables(y);
                 allextvars = yalmip('extvariables');
-                if (length(yvars)==1) & ismembc(yvars,allextvars)
+                if (length(yvars)==1) & ismembcYALMIP(yvars,allextvars)
                     [y,F] = expandor(y,allextvars,F);
                 end
             case 'constraint'
@@ -66,7 +66,7 @@ if isequal(xmodel.fcn,'or')
         case 'sdpvar'
             x1 = X1;
             xvars = getvariables(x1);
-            if ismembc(xvars,allextvars)
+            if ismembcYALMIP(xvars,allextvars)
                 [x1,F] = expandor(x1,allextvars,F);
             end
 
@@ -79,7 +79,7 @@ if isequal(xmodel.fcn,'or')
         case 'sdpvar'
             x2 = X2;
             yvars = getvariables(x2);
-            if ismembc(yvars,allextvars)
+            if ismembcYALMIP(yvars,allextvars)
                 [x2,F] = expandor(x2,allextvars,F);
             end
         case 'constraint'
