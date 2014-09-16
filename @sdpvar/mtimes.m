@@ -50,8 +50,12 @@ end
 % 3 : SDPVAR * SDPVAR
 switch 2*X_is_spdvar+Y_is_spdvar
     case 3
-        X = flush(X);
-        Y = flush(Y);
+        if ~isempty(X.midfactors)
+            X = flush(X);
+        end
+        if ~isempty(Y.midfactors)
+            Y = flush(Y);
+        end
         try
             % HACK: Return entropy when user types x*log(x)
             if isequal(Y.extra.opname,'log')
@@ -67,13 +71,13 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
             end
 
-            x_isscalar =  X.dim(1)*X.dim(2)==1;
-            y_isscalar =  Y.dim(1)*Y.dim(2)==1;
-
             ny = Y.dim(1);
             my = Y.dim(2);
             nx = X.dim(1);
             mx = X.dim(2);
+            
+            x_isscalar =  nx*mx==1;
+            y_isscalar =  ny*my==1;
 
             [mt,oldvariabletype,mt_hash,hash] = yalmip('monomtable');
 
@@ -132,8 +136,10 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     index_X = [ones(1,length(X.lmi_variables))];
                     index_Y = index_X;
                 case 1
-                    index_X = [ones(1,length(X.lmi_variables)) zeros(1,length(Y.lmi_variables))];
-                    index_Y = [zeros(1,length(X.lmi_variables)) ones(1,length(Y.lmi_variables))];
+                    oX = ones(1,length(X.lmi_variables));
+                    oY = ones(1,length(Y.lmi_variables));
+                    index_X = [oX 0*oY];
+                    index_Y = [oX*0 oY];
                 case 2
                     index_X = [zeros(1,length(Y.lmi_variables)) ones(1,length(X.lmi_variables))];
                     index_Y = [ones(1,length(Y.lmi_variables)) zeros(1,length(X.lmi_variables))];
@@ -157,7 +163,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             speyemy = sparse(1:my,1:my,1,my,my);
 
             % Linear terms
-            inner_vector_product = (X.dim(1)==1 & Y.dim(2)==1 & (X.dim(2) == Y.dim(1)));
+            inner_vector_product = (nx==1 && my==1 && (mx == ny));
             if inner_vector_product
                 base1=Xbase*Y.basis;base1=base1(2:end);
                 base2=Ybase.'*X.basis;base2=base2(2:end);
