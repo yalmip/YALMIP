@@ -31,7 +31,7 @@ switch class(varargin{1})
                 if (length(yvars)==1) & ismembcYALMIP(yvars,allextvars)
                     [y,F] = expandor(y,allextvars,F);
                 end
-            case 'constraint'
+            case {'constraint','lmi'}
                 y = binvar(1,1);
                 F = F + (implies_internal(y,Y));
             otherwise
