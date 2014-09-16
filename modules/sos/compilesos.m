@@ -494,8 +494,8 @@ switch options.sos.model
     case 1
         % Kernel model
         [F,obj,BlockedQ,Primal_matrices,Free_variables] = create_kernelmodel(BlockedA,Blockedb,F_parametric,parobj,options,[]);
-    case {2,4}
-        % Image model
+    case {2,4,5,6}
+        % 2=Image model, 4=reduced nonlinear, 5=dd,6=sd
         [F,obj,BlockedQ,sol] = create_imagemodel(BlockedA,Blockedb,F_parametric,parobj,options);
 
     case 3

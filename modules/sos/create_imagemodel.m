@@ -89,7 +89,14 @@ for i = 1:length(BlockedQ)
         Q_new = reshape(Q_new,length(BlockedQ{i}{j}),length(BlockedQ{i}{j}));
         obj = obj+trace(Q_new);
         if ~isa(Q_new,'double')
-            F_sos = F_sos + (Q_new>=0);
+            switch options.sos.model
+                case {2,4}
+                    F_sos = F_sos + (Q_new>=0);
+                case 5
+                    S = ones(length(Q_new));S = S - diag(diag(S));
+                    F_sos = F_sos + [diag(Q_new) >= sum(abs(S.*Q_new),2)];
+                otherwise
+            end
         elseif min(eig(Q_new))<-1e-8
             sol.yalmiptime = 0; % FIX
             sol.solvertime = 0;
