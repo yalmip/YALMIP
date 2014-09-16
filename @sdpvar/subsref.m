@@ -258,7 +258,7 @@ end
     
 if lind1==1 && lind2==1
     if isequal(X.conicinfo,[-1 0])
-        X.basis = [1 0];
+        X.basis = [0 1];
         X.lmi_variables = X.lmi_variables(1)+ind1+(ind2-1)*n-1;
         X.dim = [1 1];
         X.conicinfo = [0 0];   
