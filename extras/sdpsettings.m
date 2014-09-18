@@ -887,7 +887,9 @@ else
     try
         options.ipopt = ipoptset;
         options.ipopt.hessian_approximation = 'limited-memory';
-        
+        options.ipopt.max_iter = 1500;
+        options.ipopt.max_cpu_time = 1000;
+        options.ipopt.tol = 1e-7;
         cNames = recursivefieldnames(options.ipopt);
         for i = 1:length(cNames)
             Names{end+1} = ['ipopt.' cNames{i}];
