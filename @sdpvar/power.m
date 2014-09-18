@@ -11,7 +11,7 @@ if isa(x,'sdpvar')
 end
 
 % Reuse code
-if prod(size(x))==1 & (prod(size(d))==1)
+if numel(x)==1 && numel(d)==1
     y = mpower(x,d);
     return 
 end
