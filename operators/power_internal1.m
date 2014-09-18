@@ -16,7 +16,13 @@ switch class(varargin{1})
             if length(varargin{1}) > 1 || size(varargin{2},1) ~= size(varargin{2},2)
                 error('Inputs must be a scalar and a square matrix. To compute elementwise POWER, use POWER (.^) instead.');
             end
-            varargout{1} = InstantiateElementWise(mfilename,varargin{:});
+            x = varargin{2};
+            y = varargin{1};
+            if isa(x,'double') && x==1 && length(y)==1
+                varargout{1} = 1;
+            else                
+                varargout{1} = InstantiateElementWise(mfilename,varargin{:});
+            end
         end
 
     case 'char'
