@@ -1,10 +1,27 @@
 function y = mpower(x,d)
 %MPOWER (overloaded)
 
-%Sanity check
-if isa(d,'sdpvar')    
-    if length(d)>1 && length(x)>1
-        error('Inputs must be a scalar and a square matrix. To compute elementwise POWER, use POWER (.^) instead.');
+if (numel(d)>1) || (size(x,1) ~= size(x,2))
+   error('Inputs must be a scalar and a square matrix. To compute elementwise POWER, use POWER (.^) instead.');
+end
+
+if isa(d,'sdpvar')  
+    if numel(x) > 1
+        if isa(x,'sdpvar')
+            error('x^d not support SDPVARMATRIX^SDPVARSCALAR')
+        else
+            if isnumeric(x)
+                if isreal(x) && isessentiallysymmetric(x)
+                    [V,D] = eig(x);V = real(V);D = real(D);
+                    y = V*diag(diag(D).^d)*V';
+                    return
+                else
+                     error('Matrix power requires x to be real symmetric');
+                end
+            else
+                error('Object class not support in x^d');
+            end
+        end
     end
     d = flush(d);d.conicinfo = [0 0];
     y = power_internal1(d,x);
@@ -12,13 +29,6 @@ if isa(d,'sdpvar')
 end
 
 x = flush(x);
-
-if prod(size(d))>1
-    error('The power must be scalar.');
-end
-if x.dim(1)~=x.dim(2) 
-    error('Matrix must be square.')
-end
     
 % Trivial cases
 if d==0
