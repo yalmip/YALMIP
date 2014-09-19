@@ -1,0 +1,37 @@
+function test_sdpvar_power
+
+x = sdpvar(1);
+X = sdpvar(2);
+Y = randn(2);Y = Y*Y';
+
+assertEqual(x^2,x.^2)
+assertEqual([x^2 x^2],[x x].^2)
+assertEqual(X^2,X*X)
+try
+    X^2.5;
+	assertTrue(false);
+catch
+end
+try
+    X^x;
+	assertTrue(false);
+catch
+end
+try
+    X^X;
+	assertTrue(false);
+catch
+end
+try
+    X^Y;
+	assertTrue(false);
+catch
+end
+try
+    Y^X;
+	assertTrue(false);
+catch
+end
+assign(x,3);
+assertElementsAlmostEqual(double(Y^x),Y^3)
+assertElementsAlmostEqual(double(Y^-x),Y^-3)
