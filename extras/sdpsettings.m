@@ -180,6 +180,10 @@ Names = {'solver'
     'robust.reducedual'
     'robust.reducesemiexplicit'       
     'gurobi.BarIterLimit'
+    'ecos.feastol'
+    'ecos.abstol'
+    'ecos.reltol'
+    'ecos.maxit'
     'gurobi.Cutoff'
     'gurobi.IterationLimit'
     'gurobi.NodeLimit'
@@ -881,6 +885,11 @@ else
     options.clp.dualtolerance    = 1e-7;
     options.clp.primalpivot = 1;
     options.clp.dualpivot = 1;
+    
+    options.ecos.feastol = 1e-5;
+    options.ecos.abstol = 1e-6;
+    options.ecos.reltol = 1e-6;
+    options.ecos.maxit = 30;
     
     options.quadprogbb.max_time = inf;
   

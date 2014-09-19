@@ -5,24 +5,19 @@ options = yalmipmodel.options;
 
 model = yalmip2ecos(yalmipmodel);
 
+options.ecos.verbose = options.verbose~=0;
+model.opts = options.ecos;
+
 if options.savedebug
     save ecosdebug model
 end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 solvertime = clock;
-if isempty(model.A)
-    if options.verbose
-        [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims);
-    else
-        evalc('[x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims);');
-    end
-else
-    if options.verbose
-        [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b);
-    else
-        evalc('[x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b);');
-    end
+if isempty(model.A)   
+    [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.opts);  
+else    
+    [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b,model.opts);
 end
 if yalmipmodel.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
