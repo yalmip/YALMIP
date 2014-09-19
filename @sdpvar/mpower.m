@@ -11,13 +11,13 @@ if isa(d,'sdpvar')
             error('x^d not support SDPVARMATRIX^SDPVARSCALAR')
         else
             if isnumeric(x)
-                if isreal(x) && isessentiallysymmetric(x)
-                    [V,D] = eig(x);V = real(V);D = real(D);
-                    y = V*diag(diag(D).^d)*V';
-                    return
-                else
-                     error('Matrix power requires x to be real symmetric');
-                end
+                [V,D] = eig(x);
+                if ~isreal(D)
+                    error('Matrix power x^d requires x to have real eigenvalues');
+                end                
+                D = real(D);
+                y = V*diag(diag(D).^d)*inv(V);
+                return                
             else
                 error('Object class not support in x^d');
             end
