@@ -34,4 +34,5 @@ catch
 end
 assign(x,3);
 assertElementsAlmostEqual(double(Y^x),Y^3)
-assertElementsAlmostEqual(double(Y^-x),Y^-3)
+assign(x,1);
+assertElementsAlmostEqual(double(Y^-1),Y^-1)
