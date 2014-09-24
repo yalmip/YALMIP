@@ -9,11 +9,7 @@ function out = yalmiptest(prefered_solver,auto)
 %    YALMIPTEST('solver tag') % Test with specified solver
 %    YALMIPTEST(options)      % Test with specific options structure from
 %
-%   See also SDPSETTINGS, YALMIPDEMO
-
-% Author Johan Löfberg 
-% $Id: yalmiptest.m,v 1.28 2008-05-09 13:51:41 joloef Exp $
-
+%   See also SDPSETTINGS
 
 if ~exist('sedumi2pen.m')
     disp('Add /yalmip/extras etc to your path first...')
