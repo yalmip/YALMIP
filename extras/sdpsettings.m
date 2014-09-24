@@ -940,12 +940,16 @@ qpip.mu = 0.0;
 qpip.method = 1;
 
 function qsopt = setup_qsopt_options
-qsopt.dual = 0;
-qsopt.primalprice = 1;
-qsopt.dualprice = 6;
-qsopt.scale = 1;
-qsopt.maxiter = 300000;
-qsopt.maxtime = 10000.0;
+try
+    qsopt = optiset('solver','qsopt');
+catch
+    qsopt.dual = 0;
+    qsopt.primalprice = 1;
+    qsopt.dualprice = 6;
+    qsopt.scale = 1;
+    qsopt.maxiter = 300000;
+    qsopt.maxtime = 10000.0;
+end
 
 function sdpa = setup_sdpa_options
 sdpa.maxIteration = 100 ;

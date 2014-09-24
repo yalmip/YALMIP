@@ -21,10 +21,8 @@ else
     b =[F_struc(K.f+1:end,1);F_struc(1:K.f,1)];    
 end
 
+opts = options.qsopt;
 opts.nin = length(b)-K.f;
-%opts.tolfun = options.clp.primaltolerance;
-opts.maxiter = options.clp.maxnumiterations;
-opts.maxtime = options.clp.maxnumseconds;
 opts.display = options.verbose;
 
 if options.savedebug    
