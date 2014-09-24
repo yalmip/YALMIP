@@ -194,7 +194,10 @@ switch lower(solver.tag)
         model = yalmip2quadprog(interfacedata);
         
     case {'sedumi-1.05','sedumi-1.1','sedumi-1.3'}        
-        model = yalmip2sedumi(interfacedata);
+        model = yalmip2sedumi(interfacedata);  
+        
+   case {'scs-direct','scs-indirect'}
+        model = yalmip2scs(interfacedata);  
         
     case {'powersolver'}        
         model = yalmip2powersolver(interfacedata);

@@ -757,6 +757,26 @@ solver(i).call    = 'callsdpnal';
 i = i+1;
 
 solver(i) = sdpsolver;
+solver(i).tag     = 'scs';
+solver(i).version = 'direct';
+solver(i).checkfor= {'scs','scs_direct'};
+solver(i).call    = 'callscs';
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.inequalities.rotatedsecondordercone = 0;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag     = 'scs';
+solver(i).version = 'indirect';
+solver(i).checkfor= {'scs','scs_indirect'};
+solver(i).call    = 'callscs';
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.inequalities.rotatedsecondordercone = 0;
+i = i+1;
+
+solver(i) = sdpsolver;
 solver(i).tag     = 'LMIRANK';
 solver(i).version = '';
 solver(i).checkfor= {'lmirank'};

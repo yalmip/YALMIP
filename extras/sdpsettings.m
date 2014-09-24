@@ -206,6 +206,9 @@ else
     
     options.scip = setup_scip_options;
     Names = appendOptionNames(Names,options.scip,'scip');
+        
+    options.scs = setup_scs_options;
+    Names = appendOptionNames(Names,options.scs,'scs');
     
     options.sdpa = setup_sdpa_options;
     Names = appendOptionNames(Names,options.sdpa,'sdpa');
@@ -1067,6 +1070,19 @@ try
     scip = optiset;
 catch
     scip = [];
+end
+
+function scs = setup_scs_options
+try
+    scs.alpha = 1.5;
+    scs.rho_x = 1e-3;
+    scs.max_iters = 2500;
+    scs.eps = 1e-3;
+    scs.normalize = 1;
+    scs.scale = 5;
+    scs.cg_rate = 2;     
+catch
+    scs = [];
 end
 
 function dsdp = setup_dsdp_options
