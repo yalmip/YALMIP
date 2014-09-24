@@ -345,7 +345,8 @@ end
 function  Names = appendOptionNames(Names,options,solver)
 if ~isempty(options)
     if ~isa(options,'struct')
-        options = struct(options);
+        % Hide warning
+        evalc(['options = struct(options);']);
     end
     cNames = recursivefieldnames(options);
     if nargin == 3
@@ -691,6 +692,9 @@ gurobi.Threads = 0;
 function intlinprog = setup_intlinprog_options
 try
     intlinprog = optimoptions('intlinprog');
+    if ~isa(intlinprog,'struct');
+        evalc(['intlinprog = struct(intlinprog);']);
+    end
 catch
     intlinprog = [];
 end
