@@ -17,6 +17,8 @@ elseif ~alreadyprojected
     [F,dummy] = expandmodel(F,[]);
 end
 
+F = flatten(F);
+
 f = [];
 e = [];
 for i = 1:length(F)
