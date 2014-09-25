@@ -386,5 +386,9 @@ if n == m-1 && nnz(B)==n
         return
     end
 end
+if  length(unique(B*randn(size(B,2),1))) == n
+    i = 1:n;
+    return
+end
 [temp,i,j] = unique(B,'rows');
 i = i(:);
