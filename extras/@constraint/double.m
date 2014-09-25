@@ -3,7 +3,7 @@ function x = double(x);
 
 x = double(x.Evaluated{1});
 
-if issymmetric(x)
+if isessentiallyhermitian(x)
     x = min(eig(x)) >= 0;
 else
     x = min(x(:)) >= 0;
