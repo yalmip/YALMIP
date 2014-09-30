@@ -1,7 +1,7 @@
 function S = spy(X)
 %SPY (overloaded)
 
-F = flatten(F);
+F = flatten(X);
 if length(X)>1
     S = [];
     for i = 1:length(X)
