@@ -64,8 +64,11 @@ lambda = [];
 lbA = [model.beq;-inf(length(model.b),1)];
 ubA = [model.beq;model.b];
 A = [model.Aeq;model.A];
-options.qpoases.printLevel = -1;
-[x,fval,exitflag,iter,lambda] = qpOASES(model.Q, model.c, A, model.lb,model.ub,lbA,ubA,options.qpoases);
+if nnz(model.Q) == 0
+    options.qpoases.enableRegularisation=1;
+end
+options.qpoases.printLevel = options.verbose+1;
+[x,fval,exitflag,iter,lambda] = qpOASES(model.Q, model.c, A, model.lb,model.ub,lbA,ubA,options.qpoases,qpOASES_auxInput());
 solveroutput.x = x;
 solveroutput.fval = fval;
 solveroutput.exitflag = exitflag;
