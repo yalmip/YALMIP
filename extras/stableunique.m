@@ -5,6 +5,18 @@ function [C,firstPos,index,skipped] = stableunique(varargin)
 % Brute-force implementation, no brain involved.
 
 a = varargin{1};
+n = length(a);
+% Simple cases
+if n == 1
+    C = a;
+    firstPos=1;index=1;
+    skipped = [];
+elseif all(diff(sort(a))>0)
+    C = a;
+    firstPos = 1:n;
+    index = 1:n;
+    skipped = [];
+end
 C = a(1);
 firstPos = 1;
 index = zeros(length(a),1);
