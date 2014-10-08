@@ -39,10 +39,15 @@ end
 
 if nargin < 3
     options = sdpsettings('solver','sedumi','remove',1);
+else
+    options = sdpsettings(options,'remove',1);
 end
     
 if any(is(F,'equality'))
     [model,recoverdata,solver,diagnostic,F] = compileinterfacedata(F,[],[],obj,options,0);
+    if ~isempty(model.F_struc)
+        model.F_struc(abs(model.F_struc) <= 1e-12)=0;
+    end
     if isfield(diagnostic,'problem')
         if diagnostic.problem == 1
             warning('Problem is infeasible');
