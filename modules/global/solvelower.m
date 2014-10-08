@@ -221,6 +221,7 @@ else
                 % No objective and no constraints
                 if all(p_cut.lb <= p_cut.ub)
                     output.Primal = (p_cut.lb + p_cut.ub)/2;
+                    output.Primal(isinf(p_cut.lb) & isinf(p_cut.ub))=0;
                     output.problem = 0;
                 else
                     output.Primal = zeros(length(p_cut.lb),1);
