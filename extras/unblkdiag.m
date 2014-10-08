@@ -19,14 +19,14 @@ switch class(F)
                         r1 = r(blocks);
                         r2 = r(blocks+1)-1;
                         if r2>r1
-                            sys = sys + (Z(v(r1:r2),v(r1:r2)));
+                            sys = sys + (Z(v(r1:r2),v(r1:r2))>=0);
                         else
                             linearblocks = [linearblocks v(r1)];
                         end
                     end
                     if ~isempty(linearblocks)
                         D=diag(Z);
-                        sys = sys+(D(linearblocks));
+                        sys = sys+(D(linearblocks)>=0);
                     end
                 else
                     sys = sys + F(i);
