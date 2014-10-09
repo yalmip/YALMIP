@@ -66,6 +66,26 @@ nInitial = yalmip('nvars');
 x = VariableType.x;
 w = VariableType.w;
 
+% Experimental code for conic-conic case
+if (any(is(UncertainModel.F_xw,'sdp')) |  any(is(UncertainModel.F_xw,'socp'))) && (any(is(Uncertainty.F_w,'sdp')) |  any(is(Uncertainty.F_w,'socp')))
+    SOSModel = [];
+    for i = 1:length(UncertainModel.F_xw)
+        if any(ismember(getvariables(UncertainModel.F_xw(i)),getvariables(VariableType.w)))
+            SOSModel = [SOSModel, dualtososrobustness(UncertainModel.F_xw(i),Uncertainty.F_w,VariableType.w,VariableType.x,ops.robust.coniconic.tau_degree,ops.robust.coniconic.gamma_degree,ops.robust.coniconic.Z_degree)];
+        else
+            % Misplaced?
+            SOSModel = [SOSModel, UncertainModel.F_xw(i)];
+        end
+    end
+    %SOSModel = expanded(SOSModel,1);
+    F = [SOSModel, UncertainModel.F_x];
+    h = UncertainModel.h;
+   % h = expanded(h,1);
+   % F = expanded(F,1); % This is actually done already in expandmodel
+   % h = expanded(h,1); % But this one has to be done manually
+  
+    return
+end
 
 % FIXME: SYNC with expandmodel?
 if ~isempty(UncertainModel.F_x)
