@@ -109,7 +109,11 @@ if nargin>=2
         h = [];
     end
     if ~(isempty(h) | isa(h,'sdpvar') | isa(h,'logdet') |  isa(h,'ncvar'))
-        error('Second argument (the objective function h) should be an sdpvar or logdet object (or empty).');
+        if isa(h,'struct')
+            error('Second argument (the objective function h) should be an sdpvar or logdet object (or empty). It appears as if you sent an options structure in the second argument.');
+        else
+            error('Second argument (the objective function h) should be an sdpvar or logdet object (or empty).');
+        end
     end
     if isa(h,'logdet')
         logdetStruct.P     = getP(h);
