@@ -764,6 +764,7 @@ solver(i).call    = 'callscs';
 solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone = 0;
+solver(i).evaluation = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
