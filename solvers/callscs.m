@@ -28,16 +28,19 @@ if ~isempty(model.evalMap)
     logarithms = [];
     isexponential = zeros(1,length(model.evalMap));
     for i = 1:length(model.evalMap)
-        if isequal(model.evalMap{i}.fcn,'exp') 
-            exponentials = [exponentials model.evalMap{i}.computes];
-            isexponential(i) = 1;           
-        elseif isequal(model.evalMap{i}.fcn,'log') 
-            logarithms = [logarithms model.evalMap{i}.computes];          
-        else
-            % Standard interface, return solver not applicable
-            output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
-            return
-        end       
+        switch model.evalMap{i}.fcn
+            case 'exp'
+                exponentials = [exponentials model.evalMap{i}.computes];
+                isexponential(i) = 1;
+            case 'log'
+                logarithms = [logarithms model.evalMap{i}.computes];
+            case 'slog'
+                logarithms = [logarithms model.evalMap{i}.computes];
+            otherwise
+                % Standard interface, return solver not applicable
+                output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
+                return
+        end
     end
     % Check that all exp/log enter in a convex fashion
     if model.K.f > 0
@@ -62,19 +65,27 @@ if ~isempty(model.evalMap)
     m = length(exponentials) + length(logarithms);        
     cones.ep = m;
     for i = 1:m
-        if isexponential(i)
-            % exp(xv) <= xc
-            % y*exp(x/y)<= z.  y new variable, xv the original variable, and xc the "computed"           
-            x = model.evalMap{i}.variableIndex;
-            z = model.evalMap{i}.computes;           
-            data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
-            data.b = [data.b;[0;1;0]];          
-        else
-            % log(xv) >= xc i.e. xv >= exp(xc)          
-            z = model.evalMap{i}.variableIndex;
-            x = model.evalMap{i}.computes;
-            data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
-            data.b = [data.b;[0;1;0]];       
+        switch model.evalMap{i}.fcn
+            case 'exp'
+                % exp(xv) <= xc
+                % y*exp(x/y)<= z.  y new variable, xv the original variable, and xc the "computed"
+                x = model.evalMap{i}.variableIndex;
+                z = model.evalMap{i}.computes;
+                data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
+                data.b = [data.b;[0;1;0]];
+            case 'log'
+                % log(xv) >= xc i.e. xv >= exp(xc)
+                z = model.evalMap{i}.variableIndex;
+                x = model.evalMap{i}.computes;
+                data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
+                data.b = [data.b;[0;1;0]];
+            case 'slog'
+                % log(1+xv) >= xc i.e. 1+xv >= exp(xc)
+                z = model.evalMap{i}.variableIndex;
+                x = model.evalMap{i}.computes;
+                data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
+                data.b = [data.b;[1;1;0]];
+            otherwise
         end
     end
 end
