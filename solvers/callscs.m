@@ -26,6 +26,7 @@ if ~isempty(model.evalMap)
     % First check that we have only exponentials
     exponentials = [];
     logarithms = [];
+    vectorentropy = [];  
     isexponential = zeros(1,length(model.evalMap));
     for i = 1:length(model.evalMap)
         switch model.evalMap{i}.fcn
@@ -36,6 +37,11 @@ if ~isempty(model.evalMap)
                 logarithms = [logarithms model.evalMap{i}.computes];
             case 'slog'
                 logarithms = [logarithms model.evalMap{i}.computes];
+            case 'entropy'                              
+                logarithms = [logarithms model.evalMap{i}.computes];
+                if length(model.evalMap{i}.variableIndex) > 1
+                    vectorentropy = [vectorentropy i];
+                end
             otherwise
                 % Standard interface, return solver not applicable
                 output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
@@ -61,8 +67,33 @@ if ~isempty(model.evalMap)
              return
         end
     end
+    % Scalarize entropy operator
+    if ~isempty(vectorentropy)
+        for i = vectorentropy(:)'
+            involved = model.evalMap{i}.variableIndex;
+            computes = model.evalMap{i}.computes;
+            n = length(data.c);
+            m = length(involved);
+            data.A = [sparse(ones(1,m+1),[computes n+(1:m)],[-1 ones(1,m)],1,n+m);
+                      data.A spalloc(size(data.A,1),m,0)];
+            data.b = [0;data.b];      
+            data.c = [data.c;zeros(m,1)];            
+            cones.f = cones.f + 1;
+            % The original strucuture now just relates to the first new term
+            model.evalMap{i}.computes = n+1;
+            model.evalMap{i}.variableIndex = involved(1);
+            % and then we add some
+            for j = 2:length(involved)
+                model.evalMap{end+1} = model.evalMap{i};
+                model.evalMap{i}.variableIndex = involved(j);
+                model.evalMap{i}.computes = n+j;
+            end
+        end
+    end
+
+    
     % Describe all exponential cones
-    m = length(exponentials) + length(logarithms);        
+    m = length(model.evalMap);        
     cones.ep = m;
     for i = 1:m
         switch model.evalMap{i}.fcn
@@ -85,6 +116,11 @@ if ~isempty(model.evalMap)
                 x = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[1;1;0]];
+            case 'entropy'
+                x = model.evalMap{i}.computes;
+                y =  model.evalMap{i}.variableIndex;
+                data.A = [data.A;sparse([1;2],[x y],-1,3,size(data.A,2))];
+                data.b = [data.b;[0;0;1]];
             otherwise
         end
     end
