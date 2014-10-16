@@ -1,4 +1,4 @@
-function model = yalmip2cplex(interfacedata)
+function [model,nonlinearremain] = yalmip2cplex(interfacedata)
 
 % Author Johan Löfberg
 
@@ -20,9 +20,9 @@ if ~isempty(semicont_variables)
 end
 [F_struc,K,c,H,ub,lb,x0,Qi,Li,ri] = append_normalized_socp(F_struc,K,c,H,ub,lb,x0);
 
-
+nonlinearremain=0;
 if any(interfacedata.variabletype)
-    error('Nonlinear monomials remain when calling CPLEX. If you are using OPTIMIZER, ensure your model really is solvable by CPLEX for fixed parameters. If you still think so, please report this and ask for a feature improvement.');
+    nonlinearremain=1;    
 end
 
 % Notation used

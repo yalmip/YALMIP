@@ -14,8 +14,10 @@ end
 
 options = interfacedata.options;
 n_original = length(interfacedata.c);
-model = yalmip2cplex(interfacedata);
-
+[model,nonlinearremain] = yalmip2cplex(interfacedata);
+if nonlinearremain
+    error('Nonlinear monomials remain when calling CPLEX. If you are using OPTIMIZER, ensure your model really is solvable by CPLEX for fixed parameters. If you still think so, please report this and ask for a feature improvement.');
+end
 if options.savedebug
     save cplexdebug model
 end
