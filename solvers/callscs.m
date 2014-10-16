@@ -18,7 +18,7 @@ end
 
 data.A = -F_struc(:,2:end);
 data.b = full(F_struc(:,1));
-data.c = c;
+data.c = full(c);
 cones = K;
 
 % Now add exponential cone information
@@ -58,46 +58,52 @@ if ~isempty(model.evalMap)
              return
         end
     end
-    % We have to create new "y"-variables in yexp(x/y)<=z
-    % Add constraint y = 1
-    m = length(exponentials) + length(logarithms);
-    cones.f = cones.f + m;
-    data.b = [ones(m,1);data.b];
-    data.A = [spalloc(m,size(data.A,2),0) speye(m);data.A spalloc(size(data.A,1),m,0)];
-    data.c = [c;zeros(m,1)];
-    
-    % Now describe all exponential cones
+    % Describe all exponential cones
+    m = length(exponentials) + length(logarithms);        
     cones.ep = m;
     for i = 1:m
         if isexponential(i)
             % exp(xv) <= xc
-            % y*exp(x/y)<= z.  y new variable, xv the original variable, and xc the "computed"
-            y = length(model.c)+i; %New variable appended after the old
+            % y*exp(x/y)<= z.  y new variable, xv the original variable, and xc the "computed"           
             x = model.evalMap{i}.variableIndex;
-            z = model.evalMap{i}.computes;
-            data.A = [data.A;sparse([1;2;3],[x y z],-1,3,size(data.A,2))];
-            data.b = [data.b;zeros(3,1)];          
+            z = model.evalMap{i}.computes;           
+            data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
+            data.b = [data.b;[0;1;0]];          
         else
-            % log(xv) >= xc i.e. xv >= exp(xc)
-            y = length(model.c)+i; %New variable appended after the old
+            % log(xv) >= xc i.e. xv >= exp(xc)          
             z = model.evalMap{i}.variableIndex;
             x = model.evalMap{i}.computes;
-            data.A = [data.A;sparse([1;2;3],[x y z],-1,3,size(data.A,2))];
-            data.b = [data.b;zeros(3,1)];       
+            data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
+            data.b = [data.b;[0;1;0]];       
         end
     end
+end
+
+if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
+
+params = options.scs;
+params.verbose = options.verbose;
+
+if params.eliminateequalities
+    tempmodel.F_struc = [data.b -data.A];
+    tempmodel.c = data.c;
+    tempmodel.K = cones;
+    [tempmodel,xsol,H] =  removeequalitiesinmodel(tempmodel);
+    data.b = full(tempmodel.F_struc(:,1));
+    data.A = -tempmodel.F_struc(:,2:end);
+    data.c = full(tempmodel.c);
+    cones = tempmodel.K;
+else
+    H = 1;
+    xsol = 0;
 end
 
 if options.savedebug
     save scsdebug data cones
 end
 
-if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
-
 solvertime = clock; 
 problem = 0;  
-params = options.scs;
-params.verbose = options.verbose;
 
 switch  model.solver.tag
     case 'scs-direct'
@@ -110,7 +116,8 @@ end
 if model.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % Internal format. Only recover the original variables
-Primal = x_s(1:length(model.c)); 
+Primal = H*x_s+xsol; 
+Primal = Primal(1:length(model.c));
 Dual   = y_s;
 
 switch info.status
@@ -154,3 +161,49 @@ output.infostr     = infostr;
 output.solverinput = solverinput;
 output.solveroutput= solveroutput;
 output.solvertime  = solvertime;
+
+function [model,x0,H] = removeequalitiesinmodel(model)
+
+if model.K.f > 0
+    % Extract the inequalities
+    A_equ = model.F_struc(1:model.K.f,2:end);
+    b_equ = -model.F_struc(1:model.K.f,1);
+    
+    if 1
+        % Find a basis for the column space of A_equ
+        [L,U,P] = lu(A_equ');
+        r = colspaces(L');
+        AA = L';
+        H1 = AA(:,r);
+        H2 = AA(:,setdiff(1:size(AA,2),r));
+        try
+            x0 = P'*linsolve(full(L'),linsolve(full(U'),full(b_equ),struct('LT',1==1)),struct('UT',1==1));
+        catch
+            x0 = A_equ\b_equ;
+        end
+        % FIX : use L and U stupid!
+        H = P'*[-H1\H2;eye(size(H2,2))];
+        
+    else
+        H = null(full(A_equ));
+        x0 = A_equ\b_equ;
+    end
+    
+    model.c = H'*model.c;
+    model.F_struc(:,1) = model.F_struc(:,1) + model.F_struc(:,2:end)*x0;
+    model.F_struc = [model.F_struc(:,1) model.F_struc(:,2:end)*H];
+    model.F_struc(1:model.K.f,:)=[];
+    model.K.f = 0;
+else
+    H = speye(length(model.c));
+    x0 = zeros(length(model.c),1);
+end
+
+
+function  [indx]=colspaces(A)
+indx = [];
+for i = 1:size(A,2)
+    s = max(find(A(:,i)));
+    indx = [indx s];
+end
+indx = unique(indx);

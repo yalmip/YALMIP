@@ -1087,6 +1087,7 @@ scs.eps = 1e-3;
 scs.normalize = 1;
 scs.scale = 5;
 scs.cg_rate = 2;
+scs.eliminateequalities = 0;
 
 function dsdp = setup_dsdp_options
 try
