@@ -66,11 +66,12 @@ for i = 1:nargin
         local_index = find(ismember(variables,local_variables));
         new_variables = getvariables(y{i}(local_index));
         Fi.clauses{j}.data = brutepersp(Fi.clauses{j}.data,tvariable,new_variables);       
+        Fi.clauses{j}.handle = ['F(y_' num2str(i) ')'];
     end
     Fhull = Fhull + Fi;
 end
-Fhull = Fhull + (sum([y{:}],2) == recover(variables));
-Fhull = Fhull + (sum(t)==1) + (t>=0);
+Fhull = Fhull + [(sum([y{:}],2) == recover(variables)):'sum y_i == x'];
+Fhull = Fhull + [(sum(t)==1):'Multipliers sum to 1'] + [(t>=0):'Positive multiplier'];
 Fhull = expanded(Fhull,1);
 yalmip('setdependence',[reshape([y{:}],[],1);t(:)],recover(variables));
 %yalmip('setdependence',recover([10 11]),recover(variables));
