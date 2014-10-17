@@ -13,22 +13,32 @@ function [Fhull,t,y] = hull(varargin)
 % (introduction of auxially variables). Hence, if you have many set of
 % constraints, your problem rapidly grows large.
 
-if nargin==1
+% Pull out the parameter if one is given
+ParameterVariables = [];
+if isa(varargin{end},'sdpvar')
+    Parameter = varargin{end};
+    ParameterVariables = getvariables(Parameter);
+    varargin = {varargin{1:end-1}};     
+end
+N = length(varargin);
+
+if N==1
     Fhull = varargin{1};
     t = [];
+    y = [];
 end
+
 % Pre-process to convert convex quadratic constraints to socp constraints.
 % This makes the perspective code easier.
 % We also wexpand all graph-operators etc to find out all involved
 % variables and constraints
-
-for i = 1:nargin
+for i = 1:N
     varargin{i} = convertquadratics(varargin{i});
     varargin{i} = expandmodel(varargin{i},[]);
 end
 
 variables = [];
-for i = 1:nargin
+for i = 1:N
     % quick fix
     if isa(varargin{i},'constraint')
         varargin{i} = lmi(varargin{i});
@@ -39,9 +49,10 @@ for i = 1:nargin
         error('Hull can only be applied to linear and convex quadratic constraints');
     end
     variables = unique([variables depends(varargin{i})]);
+    variables = setdiff(variables,ParameterVariables);
 end
 
-if nargin == 1
+if N == 1
     Fhull = varargin{1};
     return
 end
@@ -50,22 +61,28 @@ end
 % internally defined variables as auxilliary. YALMIP will then not plot
 % w.r.t these variables
 nInitial = yalmip('nvars');
-y = sdpvar(repmat(length(variables),1,nargin),repmat(1,1,nargin));
-t = sdpvar(nargin,1);
+y = sdpvar(repmat(length(variables),1,N),repmat(1,1,N));
+t = sdpvar(N,1);
 nNow = yalmip('nvars');
 yalmip('addauxvariables',nInitial+1:nNow);
 
 Fhull = lmi([]);
-for i = 1:nargin
+for i = 1:N
     Fi = flatten(varargin{i});
     tvariable = getvariables(t(i));
-    for j = 1:length(Fi.clauses)
-        local_variables = getvariables(Fi);
+    for j = 1:length(Fi.clauses)       
         Xi = Fi.clauses{j}.data;
+        if ~isempty(ParameterVariables)
+            Xitrue = Xi;
+            Xi = replace(Xi,Parameter,0);
+        end
         local_variables = getvariables(Xi);
         local_index = find(ismember(variables,local_variables));
         new_variables = getvariables(y{i}(local_index));
-        Fi.clauses{j}.data = brutepersp(Fi.clauses{j}.data,tvariable,new_variables);       
+        Fi.clauses{j}.data = brutepersp(Fi.clauses{j}.data,tvariable,new_variables); 
+        if ~isempty(ParameterVariables)
+            Fi.clauses{j}.data = Fi.clauses{j}.data + t(i)*(Xitrue-Xi);
+        end
         Fi.clauses{j}.handle = ['F(y_' num2str(i) ')'];
     end
     Fhull = Fhull + Fi;
