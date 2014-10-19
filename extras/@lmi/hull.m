@@ -12,6 +12,14 @@ function [Fhull,t,y] = hull(varargin)
 % Note that the convex representation of the convex hull requires a lifting
 % (introduction of auxially variables). Hence, if you have many set of
 % constraints, your problem rapidly grows large.
+%
+% If you intend to use the hull operator in a parameterized fashion in an 
+% optimizer setting, you can declare the parameters in the last argument.
+% These variables will then be considered as if the were constants
+%
+% H = hull(F1,F2,...,Parameters)
+
+
 
 % Pull out the parameter if one is given
 ParameterVariables = [];
@@ -79,9 +87,11 @@ for i = 1:N
         local_variables = getvariables(Xi);
         local_index = find(ismember(variables,local_variables));
         new_variables = getvariables(y{i}(local_index));
-        Fi.clauses{j}.data = brutepersp(Fi.clauses{j}.data,tvariable,new_variables); 
+        Xipersp = brutepersp(Xi,tvariable,new_variables); 
         if ~isempty(ParameterVariables)
-            Fi.clauses{j}.data = Fi.clauses{j}.data + t(i)*(Xitrue-Xi);
+            Fi.clauses{j}.data = Xipersp + t(i)*(Xitrue-Xi);
+        else
+            Fi.clauses{j}.data = Xipersp;
         end
         Fi.clauses{j}.handle = ['F(y_' num2str(i) ')'];
     end
