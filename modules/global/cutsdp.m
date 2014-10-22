@@ -439,20 +439,23 @@ if p.K.s(1)>0
     for i = 1:1:length(p.K.s)
         x = xsave;        
         iter = 1;       
-        keep_projecting = 1;
-        p_lp_0 = p_lp;
+        keep_projecting = 1;      
         infeasibility = 0;
         while iter <= p.options.cutsdp.maxprojections & (infeasibility(end) < -p.options.cutsdp.feastol) && keep_projecting
             % Add one cut b + a'*x >= 0 (if x infeasible)
-            p_lp_i = p_lp;
-            [X,p_lp,infeasibility(iter),a,b] = add_one_sdp_cut(p,p_lp,x,i);                       
+            [X,p_lp,infeasibility(iter),a,b] = add_one_sdp_cut(p,p_lp,x,i);  
+           
             if infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
                 % Project current point on the hyper-plane associated with
                 % the most negative eigenvalue and move towards the SDP
                 % feasible region, and the iterate a couple of iterations
                 % to generate a deeper cut 
                 x0 = x;
-                x = x + a*(-b-a'*x)/(a'*a);
+                try
+                    x = x + a*(-b-a'*x)/(a'*a);
+                catch
+                
+                end
                 keep_projecting = norm(x-x0)>= p.options.cutsdp.projectionthreshold;
             else
                 keep_projecting = 0;
@@ -560,7 +563,7 @@ if infeasibility<0
             A = -bA(:,2:end);
             newF = real([newF;[b -A]]);
             newcuts = newcuts + 1;
-            if m == 1
+            if isempty(asave)
                 asave = -A(:);
                 bsave = b;
             end
