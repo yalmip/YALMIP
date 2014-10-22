@@ -1,10 +1,7 @@
 function output = cutsdp(p)
 % CUTSDP
 %
-% See also SOLVESDP, BNB, BINVAR, INTVAR, BINARY, INTEGER, LMI
-
-% Author Johan Löfberg
-% $Id: cutsdp.m,v 1.10 2010-03-09 14:51:21 joloef Exp $
+% See also OPTIMIZE, BNB, BINVAR, INTVAR, BINARY, INTEGER
 
 % *************************************************************************
 %% INITIALIZE DIAGNOSTICS IN YALMIP
@@ -31,7 +28,7 @@ if isempty(p.lb)
 end
 
 % *************************************************************************
-%% ADD CONSTRAINTS 0<x<1 FOR BINARY
+%% ADD CONSTRAINTS 0<=x<=1 FOR BINARY
 % *************************************************************************
 if ~isempty(p.binary_variables)
     p.ub(p.binary_variables) =  min(p.ub(p.binary_variables),1);
@@ -180,7 +177,13 @@ if p.options.cutsdp.verbose
     disp(['* Max iterations : ' num2str(p.options.cutsdp.maxiter)]);
 end
 
-if p.options.bnb.verbose;            disp(' Node       Infeasibility.     Lower bound    LP cuts');end;
+if p.options.bnb.verbose;         
+    if p.K.s(1)>0
+        disp(' Node       Infeasibility.     Lower bound    LP cuts     Infeasible SDP cones');
+    else
+         disp(' Node       Infeasibility.     Lower bound    LP cuts');
+    end
+end
 
 %% Initialize diagnostic
 infeasibility = -inf;
@@ -215,6 +218,7 @@ if p.K.s(1)>0
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         newF=[];
+        nouse = [];
         for m = 1:p.K.s(i)
             d = eyev(p.K.s(i),m);
             index = (1+(m-1)*(p.K.s(i)+1));
@@ -225,7 +229,17 @@ if p.K.s(1)>0
             pos = find(a>0);
             neg = find(a<0);
             if a(pos)*p.ub(pos) + a(neg)*p.lb(neg)>b
-                newF = [newF;p.F_struc(top+index-1,:)];
+%                 if length(p.binary_variables) == length(p.c)
+%                     if all(p.F_struc(top+index-1,2:end) == fix(p.F_struc(top+index-1,2:end)))
+%                       %  ab(1) = floor(ab(1));
+%                         if max(a)<=0 % Exclusive or in disguise
+%                           %  ab = sign(ab);
+%                         end
+%                     end
+%                 end
+                newF = [newF;ab];
+            else
+                nouse = [nouse m];
             end
         end
         % Clean
@@ -302,6 +316,19 @@ end
 hist_infeasibility = [];
 mmm=[];
 pool = [];
+
+% Avoid data shuffling later on when creating cuts for SDPs
+top = 1+p.K.f + sum(p.K.l)+sum(p.K.q);
+% Slicing columns much faster
+p.F_struc = p.F_struc';
+for i = 1:length(p.K.s)
+    p.semidefinite{i}.F_struc = p.F_struc(:,top:top+p.K.s(i)^2-1)';
+    p.semidefinite{i}.index = 1:p.K.s(i)^2;
+    top = top + p.K.s(i)^2;
+end
+p.F_struc = p.F_struc';
+p.F_struc = p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
+
 while goon
     
     if p.options.cutsdp.nodetight
@@ -351,6 +378,9 @@ while goon
         p_lp.F_struc = p_lp.F_struc(1:end-1,:);
     end
     
+    infeasible_socp_cones = ones(1,length(p.K.q));
+    infeasible_sdp_cones = ones(1,length(p.K.s));
+    
     if output.problem == 1 | output.problem == 12
         % LP relaxation was infeasible, hence problem is infeasible
         feasible = 0;
@@ -360,12 +390,12 @@ while goon
         lower = inf;
     else
         % Relaxed solution
-        x = output.Primal;      
+        x = output.Primal;
         lower = p.f+p.c'*x+x'*p.Q*x;
         
         infeasibility = 0;
-        [p_lp,infeasibility] = add_socp_cut(p,p_lp,x,infeasibility);
-        [p_lp,infeasibility] = add_sdp_cut(p,p_lp,x,infeasibility);
+        [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);
+        [p_lp,infeasibility,infeasible_sdp_cones] = add_sdp_cut(p,p_lp,x,infeasibility);
         [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility);
         
         if ~isempty(pool)
@@ -385,38 +415,55 @@ while goon
     end
     
     solved_nodes = solved_nodes + 1;
-    if p.options.cutsdp.verbose;fprintf(' %4.0f :      %12.3E      %12.3E      %2.0f\n',solved_nodes,infeasibility,lower,p_lp.K.l-p.K.l);end
+    if p.options.cutsdp.verbose;
+        if p.K.s(1)>0
+            fprintf(' %4.0f :      %12.3E      %12.3E      %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+        else
+            fprintf(' %4.0f :      %12.3E      %12.3E      %2.0f\n',solved_nodes,infeasibility,lower,p_lp.K.l-p.K.l);
+        end
+    end
 end
 
 D_struc = [];
 
 
 
-function [p_lp,infeasibility] = add_sdp_cut(p,p_lp,x,infeasibility_in);
+function [p_lp,worstinfeasibility,infeasible_sdp_cones] = add_sdp_cut(p,p_lp,x,infeasibility_in);
 
+worstinfeasibility = infeasibility_in;
+infeasible_sdp_cones = zeros(1,length(p.K.s));
 if p.K.s(1)>0
     % Solution found by MILP solver
     xsave = x;
-    for i = 1:1:length(p.K.s) 
-        x = xsave;
-        
-        iter = 1;
-        infeasibility = -1;
-        while iter <= 2 & (infeasibility(end) < -1e-9)
+    infeasibility = -1;    
+    for i = 1:1:length(p.K.s)
+        x = xsave;        
+        iter = 1;       
+        keep_projecting = 1;
+        p_lp_0 = p_lp;
+        infeasibility = 0;
+        while iter <= p.options.cutsdp.maxprojections & (infeasibility(end) < -p.options.cutsdp.feastol) && keep_projecting
             % Add one cut b + a'*x >= 0 (if x infeasible)
-            [X,p_lp,infeasibility(iter),a,b] = add_one_sdp_cut(p,p_lp,x,i);
-            if infeasibility(iter) < -1e-9
-                % Project current point on hyper-plane and move towards the
-                % SDP feasible region, and the iterate a couple of
-                % iterations to generate a deeper cut
+            p_lp_i = p_lp;
+            [X,p_lp,infeasibility(iter),a,b] = add_one_sdp_cut(p,p_lp,x,i);                       
+            if infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
+                % Project current point on the hyper-plane associated with
+                % the most negative eigenvalue and move towards the SDP
+                % feasible region, and the iterate a couple of iterations
+                % to generate a deeper cut 
+                x0 = x;
                 x = x + a*(-b-a'*x)/(a'*a);
-            end
+                keep_projecting = norm(x-x0)>= p.options.cutsdp.projectionthreshold;
+            else
+                keep_projecting = 0;
+            end            
+            worstinfeasibility = min(worstinfeasibility,infeasibility(iter));
             iter = iter + 1;
         end
-    end
-    infeasibility = min(infeasibility_in,infeasibility(1));
+        infeasible_sdp_cones(i) =  infeasibility(1) < p_lp.options.cutsdp.feastol;
+    end   
 else
-    infeasibility = min(infeasibility_in,0);
+    worstinfeasibility = min(worstinfeasibility,0);
 end
 
 
@@ -425,51 +472,107 @@ function  [X,p_lp,infeasibility,asave,bsave] = add_one_sdp_cut(p,p_lp,x,i);
 newcuts = 0;
 newF = [];
 n = p.K.s(i);
-top = p.K.f+p.K.l+sum(p.K.q)+sum(p.K.s(1:i-1).^2)+1;
-X = p.F_struc(top:top+n^2-1,:)*[1;x];
+X = p.semidefinite{i}.F_struc*[1;x];
 X = reshape(X,n,n);X = (X+X')/2;
+
 asave = [];
 bsave = [];
 % First check if it happens to be psd. Then we are done. Quicker
 % than computing all eigenvalues
 % This also acts as a slight safe-guard in case the sparse eigs
 % fails to prove that the smallest eigenvalue is non-negative
-[R,indefinite] = chol(X+eye(length(X))*1e-12);
-if indefinite
-    if n < 1000
-        [d,v] = eig(X);
+%[R,indefinite] = chol(X+eye(length(X))*1e-12);
+%if indefinite
+
+ % User is trying to solve by only generating no-good cuts
+permutation = [];
+if p.options.cutsdp.cutlimit == 0
+    [R,indefinite] = chol(X+eye(length(X))*1e-12);
+    if indefinite
+        infeasibility = -1;
     else
-        [d,v] = eigs(sparse(X),25,'SA');
+        infeasibility = 0;
     end
+    return
+end
+
+% For not too large problems, we simply go with a dense
+% eigenvalue/vector computation
+if n <= p_lp.options.cutsdp.switchtosparse
+    [d,v] = eig(X);
+else
+    % Try to perform a block-diagonalization of the current solution,
+    % and compute eigenvalue/vectorsa for each block.
+    [d,v,permutation] = dmpermblockeig(X,p_lp.options.cutsdp.switchtosparse);
+end
+if ~isempty(v)
     d(abs(d)<1e-12)=0;
     infeasibility = min(diag(v));
 else
     infeasibility = 0;
 end
 
-
 if infeasibility<0
     [ii,jj] = sort(diag(v));
-    for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'%find(diag(v<0))%1:1%length(v)
+    
+    if ~isempty(permutation)
+        [~,inversepermutation] = ismember(1:length(permutation),permutation);
+       % index = reshape(top:top+n^2-1,n,n);
+       % index = index(permutation,permutation);
+       % localFstruc = p.F_struc(index,:);
+        %localFstruc = p.F_struc(top:top+n^2-1,:)';
+        localFstruc = p.semidefinite{i}.F_struc';
+    else
+        %localFstruc = p.F_struc(top:top+n^2-1,:);
+        localFstruc = p.semidefinite{i}.F_struc';
+    end
+    
+    for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'
         if v(m,m)<-1e-12
-            bA =  d(:,m)'*(kron(d(:,m),speye(n)).'*p.F_struc(top:top+n^2-1,:));
+            if 0
+                index = reshape(1:n^2,n,n);
+                indexpermuted = index(permutation,permutation);
+                indexused = index(find(d(:,m)),find(d(:,m)));
+                localFstruc = p.F_struc(indexused,:);
+                dd=d(find(d(:,m)),m);%dd = dd*dd';
+                bA = dd'*(kron(dd,speye(length(dd))).'*localFstruc);
+            else                
+                %bA =  d(:,m)'*(kron(d(:,m),speye(n)).'*localFstruc);
+                try
+                    if ~isempty(permutation)
+                        dhere = d(inversepermutation,m);
+                    else
+                        dhere = d(:,m);
+                    end
+                    if nnz(dhere)>100
+                         [~,ii] = sort(-abs(dhere));
+                         dhere(abs(dhere) <= abs(dhere(ii(100))))=0;
+                    end
+                    dd = dhere*dhere';dd = dd(:);                                                         
+                    index = p.semidefinite{i}.index;                  
+                    used = find(dd);                    
+                    bA = (localFstruc(:,index(used))*sparse(dd(used)))';
+                catch
+                    bA = sparse(dd(used))'*p.F_struc(index(used),:);                    
+                end         
+            end         
             b = bA(:,1);
-            A = -bA(:,2:end);            
+            A = -bA(:,2:end);
             newF = real([newF;[b -A]]);
             newcuts = newcuts + 1;
             if m == 1
                 asave = -A(:);
                 bsave = b;
             end
-        end        
+        end
     end
 end
 
 newF(abs(newF)<1e-12) = 0;
 keep=find(any(newF(:,2:end),2));
 newF = newF(keep,:);
-if size(newF,1)>0    
-    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);newF;p_lp.F_struc(1+p_lp.K.f:end,:)];  
+if size(newF,1)>0
+    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);newF;p_lp.F_struc(1+p_lp.K.f:end,:)];
     p_lp.K.l = p_lp.K.l + size(newF,1);
 end
 
@@ -490,8 +593,8 @@ if length(x) ==  length(p.binary_variables)
 end
 
 
-function [p_lp,infeasibility] = add_socp_cut(p,p_lp,x,infeasibility);
-
+function [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);
+infeasible_socp_cones = zeros(1,length(p.K.q));
 if p.K.q(1)>0
     % Add cuts
     top = p.K.f+p.K.l+1;
@@ -517,7 +620,7 @@ if p.K.q(1)>0
             end
         end
         newF(abs(newF)<1e-12) = 0;
-        keep=find(any(newF(:,2:end),2));
+        keep= any(newF(:,2:end),2);
         newF = newF(keep,:);
         if size(newF,1)>0
             p_lp.F_struc = [p_lp.F_struc;newF];
@@ -527,10 +630,3 @@ if p.K.q(1)>0
         top = top+n;
     end
 end
-
-function plotyalmippolytope(p_lp)
-
-x = sdpvar(length(p_lp.c),1);
-A = -p_lp.F_struc(p_lp.K.f + (1:p_lp.K.l),2:end);
-b = p_lp.F_struc(p_lp.K.f + (1:p_lp.K.l),1);
-plot([A*x < b,-10<x<10]);
