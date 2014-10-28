@@ -48,22 +48,42 @@ X = recover(depends(F));
 
 x = floor(L(1)):ceil(U(1));
 y = floor(L(2)):ceil(U(2));
+ThreeD = length(L)>2;
+if ThreeD
+    z = floor(L(3)):ceil(U(3));
+else
+    z = 1;
+end
 
 for i = x
     for j = y
+        for k = z
         switch which
             case 'outer'
-                l = plot(i,j,'or','MarkerSize',size);
+                if ThreeD
+                    l = plot3(i,j,k,'or','MarkerSize',size);
+                else
+                    l = plot(i,j,'or','MarkerSize',size);
+                end
                 set(l,'MarkerFaceColor',color);
             case 'inner'
-                assign(X,[i;j]);
+                if ThreeD
+                    assign(X,[i;j;k]);
+                else
+                    assign(X,[i;j]);
+                end
                 p = checkset(F);
                 if min(p) >= 0
-                    l = plot(i,j,'or','MarkerSize',size,'MarkerFaceColor','yellow');
+                    if ThreeD
+                        l = plot3(i,j,k,'or','MarkerSize',size,'MarkerFaceColor','yellow');
+                    else
+                        l = plot(i,j,'or','MarkerSize',size,'MarkerFaceColor','yellow');
+                    end
                     set(l,'MarkerFaceColor',color);
                 end
             otherwise
                 error
+        end
         end
     end
 end
