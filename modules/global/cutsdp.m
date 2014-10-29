@@ -179,9 +179,9 @@ end
 
 if p.options.bnb.verbose;
     if p.K.s(1)>0
-        disp(' Node       Infeasibility.     Lower bound    Upper bound     LP cuts     Infeasible SDP cones');
+        disp(' Node       Infeasibility     Lower bound    Upper bound  LP cuts   Infeasible SDP cones');
     else
-        disp(' Node       Infeasibility.     Lower bound    Upper bound     LP cuts');
+        disp(' Node       Infeasibility     Lower bound    Upper bound  LP cuts');
     end
 end
 
@@ -203,6 +203,8 @@ p_lp = addDiagonalCuts(p,p_lp);
 % all binary variables 2x2 = constant not psd + M(x) means some x has to be
 % non-zero
 p_lp = addActivationCuts(p,p_lp);
+
+p_lp = removeRedundant(p_lp);
 
 goon = 1;
 rr = p_lp.integer_variables;
@@ -368,9 +370,9 @@ while goon
         if p.options.cutsdp.verbose;
             if p.K.s(1)>0
                 if output.problem == 3
-                    fprintf(' %4.0f :      %12.3E      %12.3E*  %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+                    fprintf(' %4.0f :    %12.3E      %12.3E*  %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
                 else
-                    fprintf(' %4.0f :      %12.3E      %12.3E   %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+                    fprintf(' %4.0f :    %12.3E      %12.3E   %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
                 end
             else
                 fprintf(' %4.0f :      %12.3E      %12.3E   %12.3E     %2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l);
@@ -394,15 +396,17 @@ if p.K.s(1)>0
     % Solution found by MILP solver
     xsave = x;
     infeasibility = -1;
-    eig_computation_failure = 1;
+    eig_computation_failure = 1;   
     for i = 1:1:length(p.K.s)
         x = xsave;
         iter = 1;
         keep_projecting = 1;
-        infeasibility = 0;
+        infeasibility = 0;      
+    %    lin = p_lp.K.l;
         while iter <= p.options.cutsdp.maxprojections & (infeasibility(end) < -p.options.cutsdp.feastol) && keep_projecting
             % Add one cut b + a'*x >= 0 (if x infeasible)
-            [X,p_lp,infeasibility(iter),a,b,failure] = add_one_sdp_cut(p,p_lp,x,i);
+            %l0 = p_lp.K.l;
+            [X,p_lp,infeasibility(iter),a,b,failure] = add_one_sdp_cut(p,p_lp,x,i);                        
             eig_computation_failure = eig_computation_failure & failure;
             if infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
                 % Project current point on the hyper-plane associated with
@@ -422,6 +426,11 @@ if p.K.s(1)>0
             worstinfeasibility = min(worstinfeasibility,infeasibility(iter));
             iter = iter + 1;
         end
+%         if p_lp.K.l > l0
+%             n = size(p_lp.F_struc,1);    
+%             p_lp.F_struc = p_lp.F_struc([1:lin l0+1:n],:);
+%             p_lp.K.l = size(p_lp.F_struc,1);    
+%         end
         infeasible_sdp_cones(i) =  infeasibility(1) < p_lp.options.cutsdp.feastol;
     end
 else
@@ -434,7 +443,7 @@ function  [X,p_lp,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,p_lp,x,
 newcuts = 0;
 newF = [];
 n = p.K.s(i);
-X = p.semidefinite{i}.F_struc*[1;x];
+X = p.semidefinite{i}.F_struc*sparse([1;x]);
 X = reshape(X,n,n);X = (X+X')/2;
 
 asave = [];
@@ -448,6 +457,7 @@ bsave = [];
 
 % User is trying to solve by only generating no-good cuts
 permutation = [];
+failure = 0;
 if p.options.cutsdp.cutlimit == 0
     [R,indefinite] = chol(X+eye(length(X))*1e-12);
     if indefinite
@@ -498,9 +508,9 @@ if infeasibility<0
             else
                 try
                     if ~isempty(permutation)
-                        dhere = d(inversepermutation,m);
+                        dhere = sparse(d(inversepermutation,m));
                     else
-                        dhere = d(:,m);
+                        dhere = sparse(d(:,m));
                     end
                     if nnz(dhere)>100
                         [~,ii] = sort(-abs(dhere));
@@ -516,9 +526,11 @@ if infeasibility<0
             end
             b = bA(:,1);
             A = -bA(:,2:end);
-            newF = real([newF;[b -A]]);
+            newF = real([newF;[b -A]]);                                  
             newcuts = newcuts + 1;
             if isempty(asave)
+                A(abs(A)<1e-12)=0;
+                b(abs(b)<1e-12)=0;
                 asave = -A(:);
                 bsave = b;
             end
@@ -592,14 +604,18 @@ function p_lp = addActivationCuts(p,p_lp)
 if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) == length(p.c)
     top = p.K.f + p.K.l+sum(p.K.q)+1;
     for k = 1:length(p.K.s)
-        F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);
+        F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);        
+      %  Fij = p.F_struc(top:top+p.K.s(k)^2-1,2:end);        
+      %  Fij = sum(Fij | Fij,2);       
         F0 = reshape(F0,p.K.s(k),p.K.s(k));
+      %  Fij = reshape(Fij,p.K.s(k),p.K.s(k));
+      %  Fall = F0 | Fij;
         row = 1;   
         added = 0; % Avoid adding more than 2*n cuts (we hope for sparse model...)
         while row <= p.K.s(k)-1 && added <= 2*p.K.s(k)
             % if 1
             j = find(F0(row,:));
-            if 0%min(eig(F0(j,j)))<0
+            if min(eig(F0(j,j)))<0
                 [ii,jj] = find(F0(j,j));                
                 ii = j(ii);
                 jj = j(jj);
@@ -649,14 +665,14 @@ if p.K.s(1)>0
             pos = find(a>0);
             neg = find(a<0);
             if a(pos)*p.ub(pos) + a(neg)*p.lb(neg)>b
-                %                 if length(p.binary_variables) == length(p.c)
-                %                     if all(p.F_struc(top+index-1,2:end) == fix(p.F_struc(top+index-1,2:end)))
-                %                       %  ab(1) = floor(ab(1));
-                %                         if max(a)<=0 % Exclusive or in disguise
-                %                           %  ab = sign(ab);
-                %                         end
-                %                     end
-                %                 end
+                if length(p.binary_variables) == length(p.c)
+                    if all(p.F_struc(top+index-1,2:end) == fix(p.F_struc(top+index-1,2:end)))
+                        ab(1) = floor(ab(1));
+                        if max(a)<=0 % Exclusive or in disguise
+                            ab = sign(ab);
+                        end
+                    end
+                end
                 newF = [newF;ab];
             else
                 nouse = [nouse m];
@@ -726,3 +742,18 @@ if p.options.cutsdp.nodefix
     end
 end
 
+function p_lp = removeRedundant(p_lp);
+
+F = unique(p_lp.F_struc(1+p_lp.K.f:end,:),'rows');
+if size(F,1) < p_lp.K.l
+    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f:end,:);F];
+    p_lp.K.l = size(F,1);
+end
+
+
+function plotP(p)
+
+b = p.F_struc(1+p.K.f:p.K.f+p.K.l,1);
+A = -p.F_struc(1+p.K.f:p.K.f+p.K.l,2:end);
+x = sdpvar(size(A,2),1);
+plot([A*x <= b, p.lb <= x <= p.ub],x,'b',[],sdpsettings('plot.shade',.2));
