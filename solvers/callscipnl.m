@@ -81,6 +81,12 @@ solvertime = etime(clock,solvertime);
 
 % Check, currently not exhaustive...
 switch exitflag
+    case 0
+        if ~isempty(strfind(info.Status,'Exceed'))
+            problem = 3;
+        else
+            problem = 9;
+        end
     case 1
         problem = 0;
     case {2,-1}
