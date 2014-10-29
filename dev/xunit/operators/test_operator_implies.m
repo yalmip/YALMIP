@@ -97,7 +97,7 @@ assertTrue(double(y) > 1-1e-5)
 x = sdpvar(2,1);
 u = sdpvar(1);
 solvesdp([-10 <= [x;u] <= 10,implies(x==0.5,u == pi)],(x-.5)'*(x-.5),ops)
-mbg_asserttolequal(double(x),0.5,1e-3);
+mbg_asserttolequal(norm(double(x)-.5),0,1e-3);
 
 solvesdp([-10 <= [x;u] <= 10,implies(x==0.5,u == 15,1e-3)],(x-.5)'*(x-.5),ops)
 mbg_asserttrue(any(abs(double(x)-0.5)>1e-5));

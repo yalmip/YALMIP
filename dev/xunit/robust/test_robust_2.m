@@ -25,7 +25,7 @@ sol = solverobust(F,-trace(Y),[],alpha)
 K = double(L)*inv(double(Y));
 
 mbg_asserttolequal(sol.problem, 0, 1e-5);
-mbg_asserttolequal(K -   [-1.3674   -2.9158   -2.6670], 0, 1e-2);
+mbg_asserttolequal(norm(K -   [-1.3674   -2.9158   -2.6670]), 0, 1e-2);
 
 
 alpha = sdpvar(1)
