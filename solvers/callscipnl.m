@@ -72,7 +72,7 @@ switch model.options.verbose
         opts.display = 'iter';
 end
 if model.options.savedebug    
-    save scipnldebug obj con A ru rl cl cu lb ub x0 opts
+    save scipnldebug obj con A ru rl cl cu xtype lb ub x0 opts
 end
 
 solvertime = clock;
