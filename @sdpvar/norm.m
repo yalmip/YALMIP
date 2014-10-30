@@ -7,12 +7,14 @@ function varargout = norm(varargin)
 % operations such as t<=1, max(t,y)<=1, minimize t etc.
 %
 %    For matrices...
-%      NORM(X) models the largest singular value of X, max(svd(X)).
-%      NORM(X,2) is the same as NORM(X).
-%      NORM(X,1) models the 1-norm of X, the largest column sum, max(sum(abs(X))).
-%      NORM(X,inf) models the infinity norm of X, the largest row sum, max(sum(abs(X'))).
+%      NORM(X)       models the largest singular value of X, max(svd(X)).
+%      NORM(X,2)     is the same as NORM(X).
+%      NORM(X,1)     models the 1-norm of X, the largest column sum, max(sum(abs(X))).
+%      NORM(X,inf)   models the infinity norm of X, the largest row sum, max(sum(abs(X'))).
+%      NORM(X,'inf') same as above
 %      NORM(X,'fro') models the Frobenius norm, sqrt(sum(diag(X'*X))).
 %      NORM(X,'nuc') models the Nuclear norm, sum of singular values.
+%      NORM(X,'*')   same as above
 %    For vectors...
 %      NORM(V) = norm(V,2) = standard Euclidean norm.
 %      NORM(V,inf) = max(abs(V)).
@@ -41,7 +43,7 @@ switch class(varargin{1})
             switch varargin{2}
                 case {1,2,inf,'inf','fro'}
                     varargout{1} = yalmip('define',mfilename,varargin{:});
-                case 'nuclear'
+                case {'nuclear','*'}
                     if min(size(varargin{1}))==1
                         varargout{1} = norm(varargin{1},1);
                     else
