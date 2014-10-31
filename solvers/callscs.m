@@ -95,6 +95,10 @@ if ~isempty(model.evalMap)
     % Describe all exponential cones
     m = length(model.evalMap);        
     cones.ep = m;
+    dataAi = [];
+    dataAj = [];
+    dataAk = [];
+    datab = [];
     for i = 1:m
         switch model.evalMap{i}.fcn
             case 'exp'
@@ -119,11 +123,19 @@ if ~isempty(model.evalMap)
             case 'entropy'
                 x = model.evalMap{i}.computes;
                 y =  model.evalMap{i}.variableIndex;
-                data.A = [data.A;sparse([1;2],[x y],-1,3,size(data.A,2))];
-                data.b = [data.b;[0;0;1]];
+                dataAi = [dataAi 1 2];
+                dataAj = [dataAj x y];
+                dataAk = [dataAk -1 -1];
+                datab = [datab;0;0;1];
+              %  data.A = [data.A;sparse([1;2],[x y],-1,3,size(data.A,2))];
+              %  data.b = [data.b;[0;0;1]];
             otherwise
         end
     end
+    if ~isempty(dataAi)
+        data.A = [data.A;sparse(dataAi,dataAj,dataAk,3*length(dataAi)/3,size(data.A,2))];
+        data.b = [data.b;datab];
+    end            
 end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
