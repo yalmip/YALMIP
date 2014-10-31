@@ -15,6 +15,7 @@ function varargout = norm(varargin)
 %      NORM(X,'fro') models the Frobenius norm, sqrt(sum(diag(X'*X))).
 %      NORM(X,'nuc') models the Nuclear norm, sum of singular values.
 %      NORM(X,'*')   same as above
+%      NORM(X,'tv')  models the (isotropic) total variation semi-norm 
 %    For vectors...
 %      NORM(V) = norm(V,2) = standard Euclidean norm.
 %      NORM(V,inf) = max(abs(V)).
@@ -43,6 +44,15 @@ switch class(varargin{1})
             switch varargin{2}
                 case {1,2,inf,'inf','fro'}
                     varargout{1} = yalmip('define',mfilename,varargin{:});
+                case 'tv'
+                    if ~isreal(varargin{1})
+                        error('Total variation norm not yet implemented for complex arguments');
+                    end
+                    if min(varargin{1}.dim)==1
+                        varargout{1} = norm(diff(varargin{1}),1);
+                        return
+                    end
+                    varargout{1} = yalmip('define','norm_tv',varargin{:});
                 case {'nuclear','*'}
                     if min(size(varargin{1}))==1
                         varargout{1} = norm(varargin{1},1);
@@ -157,6 +167,12 @@ switch class(varargin{1})
                         U = sdpvar(X.dim(2));
                         V = sdpvar(X.dim(1));
                         F = [trace(U)+trace(V) <= 2*t, [U X';X V]>=0];
+                    case 'tv'                        
+                        Dx = [diff(X,1,1);zeros(1,X.dim(2))];
+                        Dy = [diff(X,1,2) zeros(X.dim(1),1)];
+                        T = sdpvar(X.dim(1),X.dim(2),'full');
+                        F = cone([reshape(T,1,[]);reshape(Dx,1,[]);reshape(Dy,1,[])]);
+                        F = [F, sum(sum(T)) <= t];
                     otherwise
                 end
                 varargout{1} = F;
