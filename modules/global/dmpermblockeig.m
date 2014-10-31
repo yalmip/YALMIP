@@ -1,6 +1,6 @@
 function [V,D,permutation,failure] = dmpermblockeig(X,switchtosparse)
     
-[permutation,aux1,aux2,blocks] = dmperm(X);
+[permutation,aux1,aux2,blocks] = dmperm(X+speye(length(X)));
 Xpermuted = X(permutation,permutation);
 
 V = [];
