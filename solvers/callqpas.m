@@ -1,8 +1,5 @@
 function output = callqpas(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callqpas.m,v 1.3 2007-09-12 14:28:30 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 model = yalmip2quadprog(interfacedata);
@@ -17,9 +14,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 [x,flag,lm] = qpas(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, options.verbose);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % Internal format for duals
 if ~isempty(lm)

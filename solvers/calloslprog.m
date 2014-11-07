@@ -1,8 +1,5 @@
 function output = callglpk(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: calloslprog.m,v 1.1 2007-03-08 20:07:43 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -47,10 +44,10 @@ if options.savedebug
     save osldebug
 end
 
-solvertime = clock; 
 STATUS = 0;
+tic
 [x,fval] = oslprog(c,A,B,Aeq,Beq,lb,ub);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 problem = 0;
 
 % No duals returned

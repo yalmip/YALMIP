@@ -1,8 +1,5 @@
 function output = calllmirank(interfacedata)
 
-% Author Johan Löfberg
-% $Id: calllmirank.m,v 1.10 2005-06-06 16:42:13 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -52,15 +49,14 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock; 
+tic
 if options.usex0
     [y,info] = lmirank(-F_struc(:,2:end),F_struc(:,1),K,pars,x0);
 else
     [y,info] = lmirank(-F_struc(:,2:end),F_struc(:,1),K,pars);
 end
+solvertime = toc;
 x = y;
-solvertime = etime(clock,solvertime);
-
 
 switch info.solved
     case 1

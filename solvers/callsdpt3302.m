@@ -1,8 +1,5 @@
 function output = callsdpt3302(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsdpt3302.m,v 1.9 2006-12-12 11:45:12 joloef Exp $ 
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -27,13 +24,14 @@ if options.savedebug
     save sdpt3debug blk A C b sdpt3options x0
 end
 
-solvertime = clock;
 showprogress('Calling SDPT3',options.showprogress);
+tic
 if options.verbose==0 % SDPT3 does not run silent despite printyes=0!
    evalc('[obj,X,y,Z,info,runhist,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,options.sdpt3,[],x0,[]);');
 else
     [obj,X,y,Z,info,runhist,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,options.sdpt3,[],x0,[]);    
 end
+solvertime = toc;
 
 % Create variables in internal format
 % A bit messy ...
@@ -75,8 +73,6 @@ if K.s(1)>0
         Slack = [Slack;Zi{i}(:)];     
     end
 end
-
-solvertime = etime(clock,solvertime);
 x = -y;  % Our notation does not coincide ...
 
 % Convert error code

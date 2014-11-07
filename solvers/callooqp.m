@@ -1,8 +1,5 @@
 function output = callooqp(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callooqp.m,v 1.3 2006-11-29 16:45:58 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -54,9 +51,9 @@ if options.verbose==0
 else
     doprint = 'yes';
 end
-solvertime = clock; 
+tic
 [status, x, gamma, phi, y, z, lambda, pi] = ooqp( c, 2*Q, xlow, xupp, A, dA, C, clow, cupp, doprint);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 problem = 0;
 

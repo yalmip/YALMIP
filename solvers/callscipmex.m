@@ -1,7 +1,5 @@
 function output = callscipmex(interfacedata)
 
-% Author Johan Löfberg 
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -82,7 +80,7 @@ if options.savedebug
 end
 
 % Call mex-interface
-solvertime = clock;  
+tic
 try
     [x,FMIN,STATUS,INFO] = scip(H, f, A, rl, ru, lb, ub, VARTYPE, sos,qc,[],ops);
 catch
@@ -92,7 +90,7 @@ catch
     STATUS = -1;
     INFO = [];
 end
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 D_struc = [];
 

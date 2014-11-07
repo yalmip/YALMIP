@@ -1,8 +1,5 @@
 function output = callsdpnal(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsdpnal.m,v 1.21 2010-01-13 13:49:21 joloef Exp $ 
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -25,13 +22,13 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 if options.verbose==0
    evalc('[obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);');
 else
     [obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);            
 end
-
+solvertime = toc;
 % Create YALMIP dual variable and slack
 Dual = [];
 Slack = [];
@@ -71,8 +68,6 @@ if K.s(1)>0
         Slack = [Slack;Zi{i}(:)];     
     end
 end
-
-solvertime = etime(clock,solvertime);
 Primal = -y;  % Primal variable in YALMIP
 
 % No error code available

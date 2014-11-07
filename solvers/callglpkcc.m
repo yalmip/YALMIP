@@ -1,8 +1,5 @@
 function output = callglpk(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callglpkcc.m,v 1.2 2008-03-28 12:04:51 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -72,10 +69,9 @@ if options.glpk.msglev==1
 end
 
 % Call mex-interface
-solvertime = clock; 
-%[x,FMIN,STATUS,LAMBDA_EXTRA] = glpkmex(SENSE,C,A,B,CTYPE,LB,UB,VARTYPE,options.glpk,options.glpk.lpsolver,options.glpk.save);
+tic
 [x,FMIN,STATUS,LAMBDA_EXTRA] = glpkcc(C, A, B, LB, UB, CTYPE,VARTYPE,SENSE,options.glpk);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 problem = 0;
 
 if options.saveduals

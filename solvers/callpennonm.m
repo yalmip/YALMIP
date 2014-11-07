@@ -1,9 +1,5 @@
 function output = callpennonm(model)
 
-% Author Johan Löfberg
-% $Id: callpennonm.m,v 1.7 2008-05-05 14:51:54 joloef Exp $
-
-
 % Pull out SDP-specific data
 norig = length(model.c);
 if ~isequal(model.K.s,0)    
@@ -134,16 +130,15 @@ latest_x = [];
 latest_x_g = [];
 
 % Solve
-solvertime = clock;
+tic
 [f,xout,u,inform,iresults,dresults] = pennonm(pen);
+solvertime = toc;
 if ~isempty(sdp_data)
     % remove the S-variables
     xout(end-sum((model.K.s).*(model.K.s+1)/2)+1:end) = [];
     model.linearindicies(model.linearindicies>norig)=[];
     model.c = model.c(1:norig);
 end
-solvertime = etime(clock,solvertime);
-
 x = RecoverNonlinearSolverSolution(model,xout);
 
 % We currently don't extract dual solutions

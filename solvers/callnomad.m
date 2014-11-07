@@ -1,8 +1,5 @@
 function output = callnomad(model)
 
-% Author Johan Löfberg
-% $Id: callnomad.m,v 1.6 2009-09-29 10:30:15 joloef Exp $
-
 model = yalmip2nonlinearsolver(model);
 
 % Nomad does not need derivatives, so let us inform our callbacks that we
@@ -55,9 +52,9 @@ opts = model.options.nomad;
 opts.display_degree = model.options.verbose;
 
 showprogress('Calling NOMAD',model.options.showprogress);
-solvertime = clock;
+tic
 [x,fval,exitflag,iter,nfval] = nomad(funcs.objective,model.x0,lb,ub,funcs.constraints,nlrhs,xtype,opts);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % Duals currently not supported
 lambda = [];

@@ -1,8 +1,5 @@
 function output = calllsqnonneg(interfacedata)
 
-% Author Johan Löfberg
-% $Id: calllsqnonneg.m,v 1.17 2007-08-02 11:39:36 joloef Exp $
-
 K = interfacedata.K;
 c = interfacedata.c;
 CA = interfacedata.F_struc;
@@ -87,17 +84,17 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 try
     [X,RESNORM,RESIDUAL,EXITFLAG] = lsqnonneg(model.C,model.d,model.options);
 catch
     [X,RESNORM,RESIDUAL,EXITFLAG] = lsqnonneg(model.C,model.d,model.x0,model.options);
 end
+solvertime = toc;
 solveroutput.X = X;
 solveroutput.RESNORM = RESNORM;
 solveroutput.RESIDUAL = RESIDUAL;
 solveroutput.EXITFLAG = EXITFLAG;
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 solution.x = [X;RESNORM];
 solution.D_struc = [];

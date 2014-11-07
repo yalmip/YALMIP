@@ -1,8 +1,5 @@
 function output = callfmincongp(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callipoptgp.m,v 1.9 2008-04-02 11:22:26 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -142,12 +139,12 @@ if problem == 0
     latest_x_f = [];
     latest_x_g = [];
 
-    solvertime = clock;
+    tic
     [xout,lambda,iters] = ipopt(x0,lb,ub,Flow,Fupp,...
         @ipoptgp_callback_f,@ipoptgp_callback_df,@ipoptgp_callback_g,@ipoptgp_callback_dg,'',...
         prob,'',[],...
         'jac_c_constant',jac_c_constant,'jac_d_constant',jac_d_constant,ops{:});
-    solvertime = etime(clock,solvertime);
+    solvertime = toc;
 
     x = zeros(length(c),1);
     x(linear_variables) = exp(xout);

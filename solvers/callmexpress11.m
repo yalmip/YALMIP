@@ -1,7 +1,4 @@
-function output = callmexpress(interfacedata)
-
-% Author Johan Löfberg 
-% $Id: callmexpress11.m,v 1.1 2006-08-07 11:31:25 joloef Exp $
+function output = callmexpress11(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -62,9 +59,9 @@ if options.savedebug
 end
 
 % Call mex-interface
-solvertime = clock; 
+tic
 [x,FMIN,STATUS,EXTRA] = xpress(H,C,A,B,LB,UB,CTYPE,VARTYPE,SENSE,options.xpress);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 problem = 0;
 if isstruct(EXTRA)
     D_struc = -EXTRA.lambda;    

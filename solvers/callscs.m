@@ -161,18 +161,15 @@ if options.savedebug
     save scsdebug data cones
 end
 
-solvertime = clock; 
+tic
 problem = 0;  
-
 switch  model.solver.tag
     case 'scs-direct'
          [x_s,y_s,s,info] = scs_direct(data,cones,params);
     otherwise
         [x_s,y_s,s,info] = scs_indirect(data,cones,params);
 end
-
-% solvertime = cputime - solvertime;%etime(clock,solvertime
-if model.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % Internal format. Only recover the original variables
 Primal = H*x_s+xsol; 

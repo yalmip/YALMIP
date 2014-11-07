@@ -1,8 +1,5 @@
 function output = calloptiqsopt(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callopticlp.m,v 1.6 2005-05-07 13:53:20 joloef Exp $
-
 % Standard input interface
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -29,9 +26,9 @@ if options.savedebug
     save qsoptdebug c A b  lb ub opts
 end
 
-solvertime = clock; 
+tic
 [x,fval,exitflag] = qsopt(full(c), A, full(b), full(lb), full(ub),opts);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % No duals
 D_struc = [];

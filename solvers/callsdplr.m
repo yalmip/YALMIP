@@ -1,8 +1,5 @@
 function output = callsdplr(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsdplr.m,v 1.8 2005-12-15 13:21:16 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -110,14 +107,14 @@ end
 % CALL SDPLR
 % *********************************************
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 if isempty(lrA)    
    [x_s,y_s,info] = sdplr(F_struc(:,2:end),c,F_struc(:,1),K);
 else   
    % pars.reduce = 0;
     [x_s,y_s,info] = sdplr(F_struc(:,2:end),full(c),full(F_struc(:,1)),K,pars,lrA);
 end
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % YALMIP format
 D_struc = x_s;

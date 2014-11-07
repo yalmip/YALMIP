@@ -1,8 +1,5 @@
 function output = callpowersolver(model)
 
-% Author Johan Löfberg 
-% $Id: callpowersolver.m,v 1.4 2008-06-27 13:47:21 joloef Exp $
-
 % Retrieve needed data
 options = model.options;
 F_struc = model.F_struc;
@@ -33,12 +30,12 @@ if options.showprogress;
     showprogress(['Calling ' model.solver.tag],options.showprogress);
 end
 
-solvertime = clock; 
 K.p = K.p';
 K.e = 0;
 K.pd = 'd';
+tic
 [x_s,y_s,info] = powersolver(-F_struc(:,2:end)',-c,F_struc(:,1),K);
-solvertime = etime(solvertime,clock); 
+solvertime = toc;
 
 % Internal format
 Primal = y_s; 

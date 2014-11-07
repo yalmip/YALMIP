@@ -49,9 +49,9 @@ if options.savedebug
     save pensdpmdebug pen
 end
 if options.showprogress;showprogress('Calling PENSDP',options.showprogress);end
-if interfacedata.getsolvertime solvertime = clock; end
+tic
 [f,x,u,iflag,niter,feas] = pensdpm(pen);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % Get dual variable (this must be possible to do easier...)
 if options.saveduals | options.dimacs

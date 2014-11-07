@@ -27,9 +27,9 @@ switch options.verbose
 end
 prob.opts = options.penlab;
 showprogress('Calling PENLAB',model.options.showprogress);
-solvertime = clock;
+tic
 solve(prob);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 xout = prob.x;
 x = zeros(length(model.c),1);
 if ~isempty(xout)

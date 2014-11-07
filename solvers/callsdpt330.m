@@ -1,8 +1,5 @@
 function output = callsdpt330(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsdpt330.m,v 1.3 2005-05-07 13:53:20 joloef Exp $ 
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -26,7 +23,6 @@ global LOOP_LEVEL   % loop unrolling level
 CACHE_SIZE = options.sdpt3.CACHE_SIZE; 
 LOOP_LEVEL = options.sdpt3.LOOP_LEVEL;
 
-solvertime = clock;
 A = svec(blk,A,ones(size(blk,1),1));
 
 if options.savedebug
@@ -34,12 +30,14 @@ if options.savedebug
 end
 
 showprogress('Calling SDPT3',options.showprogress);
+
+tic
 if options.verbose==0
     evalc('[obj,X,y,Z,gaphist,infeashist,info,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,[],x0,[],options.sdpt3);');
 else
     [obj,X,y,Z,gaphist,infeashist,info,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,[],x0,[],options.sdpt3);
 end
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % Create dual variable in internal format
 D_struc = [];

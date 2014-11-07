@@ -1,8 +1,5 @@
 function output = callpenbmi(interfacedata);
 
-% Author Johan Löfberg
-% $Id: callpenbmi.m,v 1.5 2005-05-07 13:53:20 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -128,7 +125,7 @@ if options.savedebug
 end
 
 showprogress('Calling PENBMI',options.showprogress);
-solvertime = clock;
+tic
 try    
     if all(c==0)
         [xout, fx, u, iresults, fresults, iflag] = pen(penstruct,1);
@@ -143,7 +140,7 @@ catch
         [xout, fx, u, iresults, fresults, iflag] = pen(penstruct);
     end    
 end
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % Get dual variable
 % First, get the nonlinear scalars treated as BMIs
