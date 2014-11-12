@@ -15,7 +15,7 @@ switch class(varargin{1})
         varargout{1} = yalmip('define',mfilename,varargin{1});
 
     case 'char'
-        varargout{1} = ([]);
+        varargout{1} = lmi([]);
         properties = struct('convexity','none','monotonicity','none','definiteness','none','model','exact');
         varargout{2} = properties;
         varargout{3} = varargin{3};
