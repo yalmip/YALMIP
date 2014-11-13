@@ -178,6 +178,11 @@ if model.K.s(1)>0
    prob = appendSDPdata(model.F_struc,model.K,prob);
 end
 
+if model.options.savedebug
+    ops = model.options;
+    save mosekdebug prob param ops
+end
+
 [r,res,solvertime] = doCall(prob,param,model.options);
 
 try
