@@ -61,7 +61,7 @@ end
 
 if strcmp(options.solver,'sparsepop')
     if nargin >= 4        
-        sol = solvesdp(F,obj,sdpsettings(options,'relaxLevel',k));
+        sol = solvesdp(F,obj,sdpsettings(options,'sparsepop.relaxorder',k));
     else
         sol = solvesdp(F,obj,options);
     end
