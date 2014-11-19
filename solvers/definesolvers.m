@@ -113,6 +113,7 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.semivar = 1;
 solver(i).constraint.sos2 = 1;
+solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = qpsolver;
