@@ -43,6 +43,9 @@ function varargout = implies(varargin)
 % X --> Y     (LP,equality,sdp)/(LP,equality,sdp) Not implemented
 
 X = varargin{1};
+if nargin < 2
+    help implies
+end
 Y = varargin{2};
 
 if isempty(X)
