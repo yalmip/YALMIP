@@ -70,7 +70,13 @@ else
     f = reshape(f,nf*mf,1);
     di = binvar(nf*mf,1);
     F = linearnegativeconstraint_iff_binary(f,di,M,m,zero_tolerance);
-    F = [F, X>=sum(di)-length(di)+1, X <= di];
+    if length(X)==1
+        % X is true if any di
+        F = [F, X>=sum(di)-length(di)+1, X <= di];
+    else
+        % This must be a vectorized X(i) iff f(i)
+        F = [F, di == X];
+    end
     
     % di=0 means the ith hypeplane is violated
     % X=1 means we are in the polytope
