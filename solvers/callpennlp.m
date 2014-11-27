@@ -1,8 +1,5 @@
 function output = callquadprog(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callpennlp.m,v 1.5 2005-05-07 13:53:20 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -134,9 +131,9 @@ if options.savedebug
 end
 
 showprogress('Calling FMINCON',options.showprogress);
-solvertime = clock;
+tic
 [obj,xout,duals,flag] = pennlpm(pen);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 if isempty(nonlinearindicies)
     x = xout(:);

@@ -39,9 +39,9 @@ if options.savedebug
     save intlinprogdebug c intcon A b Aeq beq lb ub ops x0
 end
  
-solvertime = clock; 
+tic
 [x,fval,exitflag,output] = intlinprog(c, intcon, A, b, Aeq, beq, lb, ub,ops);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 problem = 0;
 
 if isempty(x)

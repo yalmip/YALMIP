@@ -1,8 +1,5 @@
 function diagnostic = callstrul(F,h,options)
 
-% Author Johan Löfberg
-% $Id: callstrul.m,v 1.5 2010-01-13 14:18:15 joloef Exp $
-
 F_new = [];
 
 for i = 1:length(F)

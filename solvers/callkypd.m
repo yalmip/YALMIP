@@ -1,8 +1,5 @@
 function diagnostic = callkypd(F,h,options)
 
-% Author Johan Löfberg 
-% $Id: callkypd.m,v 1.9 2009-10-14 12:12:41 joloef Exp $
-
 %F = constraint2kyp(F);
 kyps = is(F,'kyp');
 if all(kyps)

@@ -1,6 +1,4 @@
 function output = callnage04naf(varargin)
-% Author Johan Löfberg 
-% $Id: callnage04naf.m,v 1.12 2006-04-10 09:34:47 joloef Exp $
 
 % Hack for NAG
 persistent Q
@@ -77,11 +75,10 @@ otherwise
     msglev = 5*options.verbose;
     ifail = -1;
 end
-solvertime = clock; 
 
+tic
 [x,iter,obj,clambda,istate,ifail] = e04naf(full(lb),full(ub),'callnage04naf',zeros(length(c),1),full(c),full(A),0,lp, cold,istate,featol,msglev,options.nag.itmax,options.nag.bigbnd,options.nag.orthog,ifail);
-
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 problem = 0;
 
 % Internal format for duals

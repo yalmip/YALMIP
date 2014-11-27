@@ -1,4 +1,4 @@
-function varargout = geomean(varargin)
+function varargout = det(varargin)
 %DET (overloaded)
 %
 % t = DET(X)

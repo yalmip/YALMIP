@@ -1,8 +1,5 @@
 function output = callcplexint(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callcplexint.m,v 1.21 2009-11-03 11:08:47 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -98,9 +95,9 @@ end
 
 
 % Call mex-interface
-solvertime = clock; 
+tic
 [x,FMIN,SOLSTAT,DETAILS] = cplexint(H, C, A, B, INDEQ, QC, LB, UB,VARTYPE,PARAM,OPTIONS);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 problem = 0;
 
 D_struc = -DETAILS.dual;    

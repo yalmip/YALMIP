@@ -687,7 +687,6 @@ gurobi.FeasRelaxBigM = 1e6;
 gurobi.IISMethod = -1;
 gurobi.LogFile = '';
 gurobi.Method = -1;
-gurobi.NonBlocking = 0;
 gurobi.NumericFocus = 0;
 gurobi.PreCrush = 0;
 gurobi.PreDepRow = -1;

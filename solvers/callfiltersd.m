@@ -69,9 +69,9 @@ if ~model.options.usex0
 end
 
 options.display = model.options.verbose;
-solvertime = clock;
+tic
 [xout,fval,exitflag,stats,lambda] = filtersd(funcs.objective, funcs.gradient, model.x0, lb, ub, funcs.constraints, funcs.jacobian, cl, cu, options);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % Duals currently not supported
 lambda = [];

@@ -69,9 +69,9 @@ if options.glpk.msglev==1
 end
 
 % Call mex-interface
-solvertime = clock; 
+tic
 [x,FMIN,STATUS,LAMBDA_EXTRA] = glpkmex(SENSE,C,A,B,CTYPE,LB,UB,VARTYPE,options.glpk,options.glpk.lpsolver,options.glpk.save);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 problem = 0;
 
 if options.saveduals

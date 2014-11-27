@@ -47,7 +47,7 @@ else
     % Pre-solve required on binary problems
     options.mp.presolve = 1;
 
-    solvertime = clock;  
+   tic
         
     switch options.mp.algorithm
         case 1
@@ -66,7 +66,7 @@ else
         otherwise
             
     end
-    solvertime = etime(clock,solvertime);
+    solvertime = toc;
 end
 
 if isempty(model)

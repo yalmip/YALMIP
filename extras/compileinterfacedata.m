@@ -1108,7 +1108,7 @@ if ~isempty(evalVariables)
                 end
             end
             n = length(X);
-            if isequal(getbase(X),[zeros(n,1) eye(n)])% & is(evalMap{i}.arg{1},'linear')
+            if isequal(getbase(X),[spalloc(n,1,0) speye(n)])% & is(evalMap{i}.arg{1},'linear')
                 for j = 1:length(evalMap{i}.arg)-1
                     % The last argument is the help variable z in the
                     % transformation from f(ax+b) to f(z),z==ax+b. We should not
@@ -1158,7 +1158,7 @@ if ~isempty(evalVariables)
                 end
             end
             n = length(X);
-            if isequal(getbase(X),[zeros(n,1) eye(n)])
+            if isequal(getbase(X),[spalloc(n,1,0) speye(n)])
                 index = ismember(used_variables,getvariables(X));
                 evalMap{i}.variableIndex = find(index);
             else

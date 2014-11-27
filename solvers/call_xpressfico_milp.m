@@ -1,8 +1,5 @@
 function output = call_xpressfico_milp(interfacedata)
 
-% Author Johan Löfberg
-% $Id: call_cplexibm_milp.m,v 1.3 2010-02-08 13:06:11 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 model = yalmip2xpress(interfacedata);
@@ -11,7 +8,7 @@ if options.savedebug
     save xpressdebug model
 end
 
-solvertime = clock;
+tic
 if isempty(model.extra.integer_variables) & isempty(model.extra.binary_variables) & isempty(model.extra.semicont_variables) & isempty(model.sos)
     if options.verbose
         [x,fval,exitflag,output,lambda] = xprslp(model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops);
@@ -26,7 +23,7 @@ else
     end
     lambda = [];
 end
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 if ~isempty(lambda)
     D_struc = [lambda.lin];

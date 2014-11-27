@@ -43,9 +43,9 @@ end
 % CALL PENSDP
 %**************************
 showprogress('Calling PENSDP',options.showprogress);
-solvertime = clock; 
+tic
 [x, fx, u, iresults, fresults, iflag] = pen(penstruct);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % Get dual variable (this must be possible to do easier...)
 u = u(:);

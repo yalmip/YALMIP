@@ -1,8 +1,5 @@
 function output = callvsdp(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callvsdp.m,v 1.8 2007-02-15 15:55:50 joloef Exp $ 
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -28,10 +25,8 @@ end
 % Solver to be used in VSDP
 options.vsdp.model = interfacedata;
 
-solvertime = clock;
-     
+tic     
 [objt,Xt,yt,Zt,info] = mysdps_yalmip(blk,A',C,b,options);
-%[objt,Xt,yt,Zt,info] = mysdps(blk,A,C,b);
 
 % Compute rigorous lower bound (default behaviour)
 if options.vsdp.verifiedlower
@@ -58,7 +53,7 @@ else
     lb = [];
 end
 
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 Dual = [];
 Slack = [];

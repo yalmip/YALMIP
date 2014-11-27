@@ -32,7 +32,6 @@ end
 % Call frlib and solver
 % *********************************************
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
-solvertime = clock; 
 
 % Reduce
 prg = frlibPrg(A,b,C,K);
@@ -62,7 +61,9 @@ if any(model.K.q) && any(model.K.q == 0)
 end
 
 % Call SDP solver
+tic
 output = feval(model.solver.solver.call,model);
+solvertime = toc;
 
 [x,y,dual_recov_success] = prgR.Recover(output.Dual,output.Primal);
 output.Dual = x;

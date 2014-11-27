@@ -1,8 +1,5 @@
 function output = callfmincongp(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callfmincongp.m,v 1.26 2008-05-09 13:51:41 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;

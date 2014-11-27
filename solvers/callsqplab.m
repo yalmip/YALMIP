@@ -1,7 +1,5 @@
 function output = callfmincon(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsqplab.m,v 1.2 2007-05-15 11:38:23 joloef Exp $
 global SQPLABDATA
 % Retrieve needed data
 options = interfacedata.options;
@@ -139,11 +137,11 @@ SQPLABDATA.b = b;
 SQPLABDATA.Aeq = Aeq;
 SQPLABDATA.beq = beq;
 
-solvertime = clock;
 lb_co = -[b;interfacedata.bnonlinineq];
 ub_co = inf + lb_co;
+tic
 [xout,ci,flag] = sqplab('sqplab_simul',x0,[],[lb;lb_co],[ub;ub_co]);    
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 if isempty(nonlinearindicies)
     x = xout(:);

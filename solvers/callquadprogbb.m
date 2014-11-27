@@ -1,7 +1,4 @@
-function output = callquadprog(interfacedata)
-
-% Author Johan Löfberg
-% $Id: callquadprog.m,v 1.17 2007-08-02 11:39:36 joloef Exp $
+function output = callquadprogbb(interfacedata)
 
 options = interfacedata.options;
 model = yalmip2quadprog(interfacedata);
@@ -11,9 +8,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 solveroutput = callsolver(model,options);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 solution = quadprogsol2yalmipsol(solveroutput,model);
 
 % Save all data sent to solver?

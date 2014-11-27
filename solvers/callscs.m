@@ -26,7 +26,8 @@ if ~isempty(model.evalMap)
     % First check that we have only exponentials
     exponentials = [];
     logarithms = [];
-    vectorentropy = [];  
+    vectorentropy = []; 
+    vectorkullback = []; 
     isexponential = zeros(1,length(model.evalMap));
     for i = 1:length(model.evalMap)
         switch model.evalMap{i}.fcn
@@ -42,6 +43,11 @@ if ~isempty(model.evalMap)
                 if length(model.evalMap{i}.variableIndex) > 1
                     vectorentropy = [vectorentropy i];
                 end
+            case 'kullbackleibler'
+                exponentials = [exponentials model.evalMap{i}.computes];
+                if length(model.evalMap{i}.variableIndex) > 2
+                    vectorkullback = [vectorkullback i];
+                end
             otherwise
                 % Standard interface, return solver not applicable
                 output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
@@ -50,10 +56,14 @@ if ~isempty(model.evalMap)
     end
     % Check that all exp/log enter in a convex fashion
     if model.K.f > 0
-       if nnz(data.A(1:K.f,exponentials))>0
+       if nnz(data.A(1:K.f,exponentials))>0 || nnz(data.A(1:K.f,logarithms))>0
           output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
              return
         end 
+    end
+    if any(data.c(exponentials) < 0) || any(data.c(logarithms) > 0)
+        output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
+        return
     end
     if model.K.l > 0
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,exponentials)<0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,logarithms)>0)
@@ -85,45 +95,84 @@ if ~isempty(model.evalMap)
             % and then we add some
             for j = 2:length(involved)
                 model.evalMap{end+1} = model.evalMap{i};
-                model.evalMap{i}.variableIndex = involved(j);
-                model.evalMap{i}.computes = n+j;
+                model.evalMap{end}.variableIndex = involved(j);
+                model.evalMap{end}.computes = n+j;
             end
         end
     end
 
+     % Scalarize kullbackleibler operator
+    if ~isempty(vectorkullback)
+        for i = vectorkullback(:)'
+            involved = model.evalMap{i}.variableIndex;
+            computes = model.evalMap{i}.computes;
+            n = length(data.c);
+            m = length(involved)/2;
+            data.A = [sparse(ones(1,m+1),[computes n+(1:m)],[-1 ones(1,m)],1,n+m);
+                      data.A spalloc(size(data.A,1),m,0)];
+            data.b = [0;data.b];      
+            data.c = [data.c;zeros(m,1)];            
+            cones.f = cones.f + 1;
+            % The original strucuture now just relates to the first new term
+            model.evalMap{i}.computes = n+1;
+            model.evalMap{i}.variableIndex = involved([1 m+1]);
+            % and then we add some
+            for j = 2:length(involved)/2
+                model.evalMap{end+1} = model.evalMap{i};
+                model.evalMap{end}.variableIndex = involved([j j+m]);
+                model.evalMap{end}.computes = n+j;
+            end
+        end
+    end
     
     % Describe all exponential cones
     m = length(model.evalMap);        
     cones.ep = m;
+    dataAi = [];
+    dataAj = [];
+    dataAk = [];
+    datab = [];
     for i = 1:m
         switch model.evalMap{i}.fcn
             case 'exp'
-                % exp(xv) <= xc
-                % y*exp(x/y)<= z.  y new variable, xv the original variable, and xc the "computed"
+                % 1*exp(xv/1) <= xc
+                % y*exp(x/y)  <= z.  y new variable, xv the original variable, and xc the "computed"
                 x = model.evalMap{i}.variableIndex;
                 z = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
             case 'log'
-                % log(xv) >= xc i.e. xv >= exp(xc)
+                % log(xv) >= xc i.e. xv >= exp(xc/1)*1
                 z = model.evalMap{i}.variableIndex;
                 x = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
             case 'slog'
-                % log(1+xv) >= xc i.e. 1+xv >= exp(xc)
+                % log(1+xv) >= xc i.e. (1+xv) >= exp(xc/1)*1
                 z = model.evalMap{i}.variableIndex;
                 x = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[1;1;0]];
             case 'entropy'
+                % -xv*log(xv)>=xc i.e. 1 >= exp(xc/xv)*xv
                 x = model.evalMap{i}.computes;
-                y =  model.evalMap{i}.variableIndex;
-                data.A = [data.A;sparse([1;2],[x y],-1,3,size(data.A,2))];
-                data.b = [data.b;[0;0;1]];
+                y = model.evalMap{i}.variableIndex;
+                data.A = [data.A;sparse([1;2],[x y],[-1 -1],3,size(data.A,2))];
+                data.b = [data.b;[0;0;1]];          
+            case 'kullbackleibler'
+                % -xv1*log(xv1/xv2)>=-xc i.e. xv2 >= exp(-xc/xv1)*xv1
+                x = model.evalMap{i}.computes;
+                y = model.evalMap{i}.variableIndex(1);
+                z = model.evalMap{i}.variableIndex(2);
+                data.A = [data.A;sparse([1;2;3],[x y z],[1 -1 -1],3,size(data.A,2))];
+                data.b = [data.b;[0;0;0]];
             otherwise
         end
     end
+    if ~isempty(dataAi)
+        data.A = [data.A;sparse(dataAi,dataAj,dataAk,3*length(dataAi)/3,size(data.A,2))];
+        data.b = [data.b;datab];
+    end            
 end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
@@ -149,18 +198,15 @@ if options.savedebug
     save scsdebug data cones
 end
 
-solvertime = clock; 
+tic
 problem = 0;  
-
 switch  model.solver.tag
     case 'scs-direct'
          [x_s,y_s,s,info] = scs_direct(data,cones,params);
     otherwise
         [x_s,y_s,s,info] = scs_indirect(data,cones,params);
 end
-
-% solvertime = cputime - solvertime;%etime(clock,solvertime
-if model.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % Internal format. Only recover the original variables
 Primal = H*x_s+xsol; 
@@ -182,9 +228,9 @@ infostr = yalmiperror(problem,model.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
-    solverinput.data = data
+    solverinput.data = data;
     solverinput.cones = cones;
-    solverinput.param = param;  
+    solverinput.params = params;  
 else
     solverinput = [];
 end

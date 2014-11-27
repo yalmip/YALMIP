@@ -1,8 +1,5 @@
 function output = calllpsolve(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: calllpsolve.m,v 1.14 2010-04-27 14:25:05 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -96,12 +93,12 @@ if ~isempty(semicont_variables)
     mxlpsolve('set_semicont', lp, semicont_variables) 
 end
 
-try
-    solvertime = clock; 
+try    
     if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
+    tic
     result=mxlpsolve('solve', lp);
-    solvertime = etime(clock,solvertime);
-    if result == 0 | result == 1 | result == 11 | result == 12
+    solvertime = toc;
+    if result == 0 | result == 1 | result == 11 | result == 12        
         [obj, x, duals] = mxlpsolve('get_solution', lp);
     else
         obj = [];

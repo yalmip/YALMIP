@@ -1,8 +1,5 @@
 function output = callmpt(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callmplcp.m,v 1.1 2006-03-30 13:28:06 joloef Exp $
-
 % Speeds up solving LPs in mpmilp
 global mptOptions
 if ~isstruct(mptOptions)
@@ -11,28 +8,6 @@ end
 
 % Convert to MPT
 Matrices = yalmip2mpt(interfacedata);
-
-% % Convert to colin
-% parametric = find(~any(Matrices.G,2) & any(Matrices.E,2));
-% nonparametric = find(~(~any(Matrices.G,2) & any(Matrices.E,2)));
-% [M,Q,q,T,Tth,t] = lcp_mpqp(Matrices.H,Matrices.F',Matrices.Cf',Matrices.G(nonparametric,:),Matrices.E(nonparametric,:),Matrices.W(nonparametric,:));
-% Ht = [Matrices.E(parametric,:) Matrices.W(parametric)];
-% [BB,dPiv,dkPiv] = mplcp(M,q,Q,[Matrices.E(parametric,:) Matrices.W(parametric)]);
-
-% 
-% m = size(M,1);
-% A  = [eye(m) -M];
-% [At,bt] = a2s(Ht);
-% bases = BB.bases;
-% for i=[1:size(bases,1)]
-%   iB = inv(A(:,bases(i,:)));
-%   P(i) = polytope([At;-iB*Q],[bt;iB*q]);
-% end;
-% 
-% model{1}.Pn = P;
-
-%model = mpt_solvenode(Matrices,Matrices.lb,Matrices.ub,Matrices,[],options);
-
 
 % Get some MPT options
 options = interfacedata.options;
@@ -47,19 +22,19 @@ end
 if isempty(Matrices.binary_var_index)
 
     showprogress('Calling MPT',options.showprogress);
-    solvertime = clock;
+    tic
     if options.mp.presolve        
         [Matrices.lb,Matrices.ub] = mpt_detect_and_improve_bounds(Matrices,Matrices.lb,Matrices.ub,Matrices.binary_var_index,options);
     end        
 
     model = mpt_solvenode(Matrices,Matrices.lb,Matrices.ub,Matrices,[],options);
-    solvertime = etime(clock,solvertime);
+    solvertime = toc;
 
 else  
     % Pre-solve required on binary problems
     options.mp.presolve = 1;
 
-    solvertime = clock;    
+    tic
     switch options.mp.algorithm
         case 1
             showprogress('Calling MPT via enumeration',options.showprogress);
@@ -73,7 +48,7 @@ else
             
         otherwise
     end
-    solvertime = etime(clock,solvertime);
+    solvertime = toc;
 end
 
 if isempty(model)

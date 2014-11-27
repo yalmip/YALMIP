@@ -1,8 +1,5 @@
 function output = callsnopt(model)
 
-% Author Johan Löfberg
-% $Id: callsnopt.m,v 1.17 2010-01-20 09:13:15 joloef Exp $
-
 % Build trees etc. This common format is used for fmincon, snopt and ipopt
 % interfaces
 model = yalmip2nonlinearsolver(model);
@@ -57,7 +54,6 @@ model.sparsityElements = find(G);
 
 usrf = 'snopt_callback';
 snopt_callback([],model);
-solvertime = clock;
 if model.options.verbose == 0
     snscreen('off')
 else
@@ -65,9 +61,10 @@ else
 end
 snseti('Minimize',1)  
 
+tic
 [xout,F,xmul,Fmul,inform, xstate, Fstate, ns, ninf, sinf, mincw, miniw, minrw] = snoptcmex( solveopt, x0, xlow, xupp, xmul, xstate, Flow, Fupp, Fmul, Fstate,ObjAdd, ObjRow, A, iAfun(:), jAvar(:),iGfun(:), jGvar(:), usrf );
+solvertime = toc;
    
-solvertime = etime(clock,solvertime);
 lambda = Fmul(2:end);   
 
 x = RecoverNonlinearSolverSolution(model,xout);

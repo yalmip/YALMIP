@@ -15,11 +15,14 @@ end
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 solvertime = clock;
 if isempty(model.A)   
+    tic
     [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.opts);  
+    solvertime = toc;
 else    
+    tic
     [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b,model.opts);
+    solvertime = toc;
 end
-if yalmipmodel.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % Internal format
 Primal = x;

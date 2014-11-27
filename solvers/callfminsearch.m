@@ -71,9 +71,9 @@ end
 
 fun = @(x,m)fmincon_fun(x,m);
 
-solvertime = clock;
+tic
 [xout,fmin,flag,output] = fminsearch(@(x)fun(x,model),x0,options.fminsearch);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 if isempty(nonlinearindicies)
     x = xout(:);

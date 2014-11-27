@@ -1,8 +1,5 @@
 function output = calllsqlin(interfacedata)
 
-% Author Johan Löfberg
-% $Id: calllsqlin.m,v 1.17 2007-08-02 11:39:36 joloef Exp $
-
 K = interfacedata.K;
 c = interfacedata.c;
 CA = interfacedata.F_struc;
@@ -78,15 +75,16 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 [X,RESNORM,RESIDUAL,EXITFLAG,OUTPUT,LAMBDA] = lsqlin(model);
+solvertime = toc;
+
 solveroutput.X = X;
 solveroutput.RESNORM = RESNORM;
 solveroutput.RESIDUAL = RESIDUAL;
 solveroutput.EXITFLAG = EXITFLAG;
 solveroutput.OUTPUT = OUTPUT;
 solveroutput.LAMBDA = LAMBDA;
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 solution.x = [X;RESNORM];
 solution.D_struc = [];

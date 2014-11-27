@@ -8,9 +8,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 solution = callsolver(model,options);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % Save all data sent to solver?
 if ~options.savesolverinput

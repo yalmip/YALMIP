@@ -117,18 +117,19 @@ if problem == 0
 
     param = model.options.mosek;
 
-    % Call MOSEK
-    solvertime = clock;
-    showprogress('Calling MOSEK',model.options.showprogress);
-    solvertime = clock;
+    % Call MOSEK   
+    showprogress('Calling MOSEK',model.options.showprogress);    
     if model.options.verbose == 0  
+        tic
         res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize echo(0)');
+        solvertime = toc;
     else
+        tic
     	res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');     
+        solvertime = toc;
     end
     sol = res.sol;
-    solvertime = etime(clock,solvertime);
-
+    
     x = zeros(length(model.c),1);
     x(model.linear_variables)=exp(res.sol.itr.xx);
     D_struc = [];
@@ -177,6 +178,11 @@ if model.K.s(1)>0
    prob = appendSDPdata(model.F_struc,model.K,prob);
 end
 
+if model.options.savedebug
+    ops = model.options;
+    save mosekdebug prob param ops
+end
+
 [r,res,solvertime] = doCall(prob,param,model.options);
 
 try
@@ -206,13 +212,15 @@ problem = MosekYALMIPError(res);
 function [res,sol,solvertime] = doCall(prob,param,options)
 
 showprogress('Calling Mosek',options.showprogress);
-solvertime = clock;
 if options.verbose == 0
+    tic
     [res,sol] = mosekopt('minimize echo(0)',prob,param);    
+    solvertime = toc;
 else
+    tic
     [res,sol] = mosekopt('minimize info',prob,param);
+    solvertime = toc;
 end
-solvertime = etime(clock,solvertime);
 
 function problem = MosekYALMIPError(res)
 
@@ -325,7 +333,6 @@ param = model.options.mosek;
 % Convert
 [model.F_struc,model.K] = addbounds(model.F_struc,model.K,model.ub,model.lb);
 prob = yalmip2SDPmosek(model);
-solvertime = clock;
 
 % Debug?
 if model.options.savedebug
@@ -333,9 +340,13 @@ if model.options.savedebug
 end
 
 if model.options.verbose == 0
+    tic
     [r,res] = mosekopt('minimize echo(0)',prob,param);    
+    solvertime = toc;
 else
+    tic
     [r,res] = mosekopt('minimize info',prob,param);
+    solvertime = toc;
 end
 solvertime = etime(clock,solvertime);
 
@@ -445,14 +456,16 @@ if model.options.savedebug
 end
 
 % Call MOSEK
-solvertime = clock; 
 showprogress('Calling MOSEK',model.options.showprogress);
 if model.options.verbose == 0
+    tic
     [r,res] = mosekopt('minimize echo(0)',prob,param); 
+    solvertime = toc;
 else
+    tic
     [r,res] = mosekopt('minimize',prob,param);     
+    solvertime = toc;
 end
-solvertime = etime(clock,solvertime);
 
 if (r == 1010) || (r == 1011) | (r==1001)
     problem = -5;

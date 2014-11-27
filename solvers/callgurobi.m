@@ -1,7 +1,5 @@
 function output = callgurobi(interfacedata)
 
-% Author Johan Löfberg 
-
 options = interfacedata.options;
 nOriginal = length(interfacedata.c);
 model = yalmip2gurobi(interfacedata);
@@ -11,9 +9,9 @@ if interfacedata.options.savedebug
 end
 
 if options.showprogress;showprogress('Calling GUROBI',options.showprogress);end
-solvertime = clock; 
+tic
 result = gurobi(model,model.params);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 % Gurobi assumes semi-continuous variables only can take negative values so
 % we negate semi-continuous violating this

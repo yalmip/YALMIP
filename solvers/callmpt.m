@@ -1,7 +1,5 @@
 function output = callmpt(interfacedata)
 
-% Author Johan Löfberg
-
 % This file is kept for MPT2 compatability
 
 % Speeds up solving LPs in mpmilp
@@ -52,7 +50,7 @@ else
     % Pre-solve required on binary problems
     options.mp.presolve = 1;
 
-    solvertime = clock;  
+    tic
     
  %   if Matrices.qp &  options.mp.algorithm == 3
  %        options.mp.algorithm = 1;
@@ -78,7 +76,7 @@ else
             
         otherwise
     end
-    solvertime = etime(clock,solvertime);
+    solvertime = toc;
 end
 
 if isempty(model)

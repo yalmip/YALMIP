@@ -1,6 +1,6 @@
 function [V,D,permutation,failure] = dmpermblockeig(X,switchtosparse)
     
-[permutation,aux1,aux2,blocks] = dmperm(X);
+[permutation,aux1,aux2,blocks] = dmperm(X+speye(length(X)));
 Xpermuted = X(permutation,permutation);
 
 V = [];
@@ -16,11 +16,8 @@ for i = 1:length(blocks)-1
     [R,fail] = chol(Xi);
     anycholfail = anycholfail | fail;
     if fail
-        if length(Xi) >= switchtosparse
-            %[vi,di,eigfail] = eigband(Xi,1);
-            %if eigfail
-                [vi,di,eigfail] = eigs(Xi,5,'SA');
-            %end
+        if length(Xi) >= switchtosparse           
+            [vi,di,eigfail] = eigs(Xi,5,'SA');            
             if eigfail || isempty(di)
                 res = 0;
                 for j = 1:size(vi,2)

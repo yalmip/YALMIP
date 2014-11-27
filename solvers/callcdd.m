@@ -1,8 +1,5 @@
 function output = callcdd(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callcdd.m,v 1.3 2005-05-07 13:53:20 joloef Exp $
-
 % Standard input interface
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -28,7 +25,6 @@ end
 % IN.B = IN.B(valid_constraints,:);
 
 showprogress('Calling CDD',options.showprogress);
-solvertime = clock; 
 
 if options.savedebug
     save cdddebug IN
@@ -36,12 +32,15 @@ end
 
 switch options.cdd.method
     case 'criss-cross'
+        tic
         OUT = cddmex('solve_lp',IN); 
+        solvertime = toc;
     case 'dual-simplex'
+        tic
         OUT = cddmex('solve_lp_DS',IN);
+        solvertime = toc;
     otherwise
 end
-solvertime = etime(clock,solvertime);
 problem = 0;
 
 % Internal format for duals

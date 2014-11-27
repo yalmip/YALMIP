@@ -11,14 +11,17 @@ if interfacedata.options.savedebug
     save cplexdebug model
 end
 
-solvertime = clock;
+tic
 [x,fval,exitflag,output,lambda] = localSolverCall(model);
+solvertime = toc;
 if output.cplexstatus == 4 | output.cplexstatus == 119
     % CPLEX reports infeasible OR unbounded
     % Remove objective and resolve
     model.H = model.H*0;
     model.f = model.f*0;
+    tic
     [x,fval,exitflag,output,lambda] = localSolverCall(model);
+    solvertime = toc;
     switch output.cplexstatus
         case {1,101,102} % It was ok, hence it must have been unbounded
             output.cplexstatus = 2;
@@ -28,7 +31,6 @@ if output.cplexstatus == 4 | output.cplexstatus == 119
             output.cplexstatus = 4; % I give up
     end
 end
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 
 % Inconstency in early version of CPLEX
 if str2num(interfacedata.solver.subversion)>=12.3

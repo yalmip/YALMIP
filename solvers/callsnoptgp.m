@@ -1,7 +1,4 @@
-function output = callfmincongp(interfacedata)
-
-% Author Johan Löfberg
-% $Id: callsnoptgp.m,v 1.6 2008-02-28 12:18:17 joloef Exp $
+function output = callsnoptgp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -137,14 +134,14 @@ if problem == 0
     [iGfun,jGvar] = find(G);
     usrf = 'snoptgp_callback';
     snoptgp_callback([],prob);
-    solvertime = clock;
+    tic
     if options.verbose == 0
         evalc('[xout,F,xmul,Fmul,inform, xstate, Fstate, ns, ninf, sinf, mincw, miniw, minrw] = snoptcmex( solveopt, x0, xlow, xupp, xmul, xstate, Flow, Fupp, Fmul, Fstate,ObjAdd, ObjRow, A, iAfun(:), jAvar(:),iGfun(:), jGvar(:), usrf );');
     else
         [xout,F,xmul,Fmul,inform, xstate, Fstate, ns, ninf, sinf, mincw, miniw, minrw] = snoptcmex( solveopt, x0, xlow, xupp, xmul, xstate, Flow, Fupp, Fmul, Fstate,ObjAdd, ObjRow, A, iAfun(:), jAvar(:),iGfun(:), jGvar(:), usrf );
     end
-    lambda = Fmul(2:end);
-    solvertime = etime(clock,solvertime);
+    solvertime = toc;
+    lambda = Fmul(2:end);    
 
     x = zeros(length(c),1);
     x(linear_variables) = exp(xout);

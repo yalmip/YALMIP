@@ -1,8 +1,5 @@
 function output = callclp(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callclp.m,v 1.16 2010-03-14 12:57:16 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -58,9 +55,9 @@ if options.savedebug
 end
 
 % Call mex-interfacec
-solvertime = clock; 
+tic
 [x,lambda,problem] = clp(2*Q,c,A,b,Aeq,beq,lb,ub,ops);%,interfacedata.integer_variables);
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc;
 
 if options.saveduals
     D_struc = -lambda;    

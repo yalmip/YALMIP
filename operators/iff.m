@@ -35,6 +35,9 @@ function varargout = iff(varargin)
 %   See also @SDPVAR/AND, @SDPVAR/OR, IMPLIES
 
 X = varargin{1};
+if nargin < 2
+    help iff
+end
 Y = varargin{2};
 
 switch class(varargin{1})

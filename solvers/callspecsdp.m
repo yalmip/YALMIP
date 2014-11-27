@@ -1,8 +1,5 @@
 function output = callspecsdp(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callspecsdp.m,v 1.3 2005-05-07 13:53:20 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -69,11 +66,11 @@ penopts = ops(7:end);
 % *********************************************
 % Call Apkarians solver
 % *********************************************
-solvertime = clock; 
 showprogress('Calling Apkarian',options.showprogress);
 problem = 0;
+tic
 [x,laug,lmax]=SPSDPLSCX(nnnn,A0,AAval,irowA,icolA,Dims,c,opts,penopts,x0);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % *********************************************
 % Dual variables not available

@@ -1,8 +1,5 @@
 function output = callsparsecolo(interfacedata)
 
-% Author Johan Löfberg
-% $Id: callsparsecolo.m,v 1.21 2010-01-13 13:49:21 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -44,13 +41,13 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 if options.verbose==0 % Sparsecolo does not run silent
     evalc('[x,y,infoCoLO,cliqueDomain,cliqueRange,LOP] = sparseCoLO(A,b,C,K,[],ops);');
 else    
     [x,y,infoCoLO,cliqueDomain,cliqueRange,LOP] = sparseCoLO(A,b,C,K,[],ops);
 end
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 % Create YALMIP dual variable and slack
 Dual = x;

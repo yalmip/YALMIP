@@ -1,8 +1,5 @@
 function output = callqsopt(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callqsopt.m,v 1.3 2005-05-07 13:53:20 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -30,10 +27,9 @@ options.qsopt.verbose = options.verbose;
 if options.savedebug
     save qsoptdebug
 end
-solvertime = clock; 
-
+tic
 [x,lambda,STATUS] = qsopt(c,-F_struc(1+K.f:end,2:end),F_struc(1+K.f:end,1),-F_struc(1:K.f,2:end),F_struc(1:K.f,1),lb,ub,options.qsopt);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 problem = 0;
 
 if options.saveduals

@@ -1,8 +1,5 @@
 function output = callopenopt(model)
 
-% Author Johan Löfberg
-% $Id: callopenopt.m,v 1.1 2007-07-31 07:43:38 joloef Exp $
-
 % Retrieve needed data
 options = model.options;
 F_struc = model.F_struc;
@@ -105,9 +102,9 @@ prob.beq = beq;
 prob.lb = lb;
 prob.ub = ub;
 
-solvertime = clock;
+tic
 r = ooRun(prob, 'ralg');
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 
 if isempty(nonlinearindicies)
     x = r.xf(:);

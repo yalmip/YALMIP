@@ -1,8 +1,5 @@
 function output = callglpkoctave(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: callglpk.m,v 1.21 2007-07-31 14:39:13 joloef Exp $
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -71,10 +68,10 @@ if options.glpk.msglev==1
 end
 
 % Call mex-interface
-solvertime = clock;
+tic
 [x,FMIN,STATUS,LAMBDA_EXTRA] = glpk(C,A,B,LB,UB,CTYPE,VARTYPE,SENSE);
+solvertime = toc;
 
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 problem = 0;
 
 if options.saveduals

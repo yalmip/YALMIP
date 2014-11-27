@@ -426,11 +426,6 @@ if p.K.s(1)>0
             worstinfeasibility = min(worstinfeasibility,infeasibility(iter));
             iter = iter + 1;
         end
-%         if p_lp.K.l > l0
-%             n = size(p_lp.F_struc,1);    
-%             p_lp.F_struc = p_lp.F_struc([1:lin l0+1:n],:);
-%             p_lp.K.l = size(p_lp.F_struc,1);    
-%         end
         infeasible_sdp_cones(i) =  infeasibility(1) < p_lp.options.cutsdp.feastol;
     end
 else

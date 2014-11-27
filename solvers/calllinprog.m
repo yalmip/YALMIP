@@ -1,8 +1,5 @@
 function output = calllinprog(interfacedata)
 
-% Author Johan Löfberg 
-% $Id: calllinprog.m,v 1.6 2005-05-07 13:53:20 joloef Exp $
-
 % Standard input interface
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -26,7 +23,6 @@ else
     A =-F_struc(K.f+1:end,2:end);
     b = F_struc(K.f+1:end,1);   
 end
-solvertime = clock; 
 
 switch options.verbose
 case 0
@@ -56,8 +52,9 @@ if options.savedebug
     save linprogdebug c A b Aeq beq lb ub ops x0
 end
 
+tic
 [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
-solvertime = etime(clock,solvertime);
+solvertime = toc;
 problem = 0;
 
 % Internal format for duals

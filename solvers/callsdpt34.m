@@ -148,9 +148,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-solvertime = clock;
+tic
 [obj,X,y,Z,info,runhist] =  sdpt3(blk,A,C,b,options.sdpt3,[],x0,[]);            
-
+solvertime = toc;
 
 % Create YALMIP dual variable and slack
 Dual = [];
@@ -196,7 +196,6 @@ if any(K.m > 0)
    % Dual = [];
 end
 
-solvertime = etime(clock,solvertime);
 Primal = -y;  % Primal variable in YALMIP
 
 % Convert error code
