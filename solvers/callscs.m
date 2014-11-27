@@ -56,10 +56,14 @@ if ~isempty(model.evalMap)
     end
     % Check that all exp/log enter in a convex fashion
     if model.K.f > 0
-       if nnz(data.A(1:K.f,exponentials))>0
+       if nnz(data.A(1:K.f,exponentials))>0 || nnz(data.A(1:K.f,logarithms))>0
           output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
              return
         end 
+    end
+    if any(data.c(exponentials) < 0) || any(data.c(logarithms) > 0)
+        output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
+        return
     end
     if model.K.l > 0
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,exponentials)<0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,logarithms)>0)
