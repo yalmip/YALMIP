@@ -191,9 +191,9 @@ infostr = yalmiperror(problem,model.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
-    solverinput.data = data
+    solverinput.data = data;
     solverinput.cones = cones;
-    solverinput.param = param;  
+    solverinput.params = params;  
 else
     solverinput = [];
 end
