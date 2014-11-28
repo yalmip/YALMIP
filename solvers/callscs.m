@@ -24,30 +24,32 @@ cones = K;
 % Now add exponential cone information
 if ~isempty(model.evalMap)
     % First check that we have only exponentials
-    exponentials = [];
-    logarithms = [];
+    convexFunctions = [];
+    concaveFunctions = [];
     vectorentropy = []; 
-    vectorkullback = []; 
-    isexponential = zeros(1,length(model.evalMap));
+    vectorkullback = [];  
+    vectorlogsumexp = [];
     for i = 1:length(model.evalMap)
         switch model.evalMap{i}.fcn
             case 'exp'
-                exponentials = [exponentials model.evalMap{i}.computes];
-                isexponential(i) = 1;
+                convexFunctions = [convexFunctions model.evalMap{i}.computes];               
             case 'log'
-                logarithms = [logarithms model.evalMap{i}.computes];
+                concaveFunctions = [concaveFunctions model.evalMap{i}.computes];
             case 'slog'
-                logarithms = [logarithms model.evalMap{i}.computes];
+                concaveFunctions = [concaveFunctions model.evalMap{i}.computes];
             case 'entropy'                              
-                logarithms = [logarithms model.evalMap{i}.computes];
+                concaveFunctions = [concaveFunctions model.evalMap{i}.computes];
                 if length(model.evalMap{i}.variableIndex) > 1
                     vectorentropy = [vectorentropy i];
                 end
             case 'kullbackleibler'
-                exponentials = [exponentials model.evalMap{i}.computes];
+                convexFunctions = [convexFunctions model.evalMap{i}.computes];
                 if length(model.evalMap{i}.variableIndex) > 2
                     vectorkullback = [vectorkullback i];
                 end
+            case 'logsumexp'
+                convexFunctions = [convexFunctions model.evalMap{i}.computes];                
+                vectorlogsumexp = [vectorlogsumexp i];                
             otherwise
                 % Standard interface, return solver not applicable
                 output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
@@ -56,23 +58,23 @@ if ~isempty(model.evalMap)
     end
     % Check that all exp/log enter in a convex fashion
     if model.K.f > 0
-       if nnz(data.A(1:K.f,exponentials))>0 || nnz(data.A(1:K.f,logarithms))>0
+       if nnz(data.A(1:K.f,convexFunctions))>0 || nnz(data.A(1:K.f,concaveFunctions))>0
           output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
              return
         end 
     end
-    if any(data.c(exponentials) < 0) || any(data.c(logarithms) > 0)
+    if any(data.c(convexFunctions) < 0) || any(data.c(concaveFunctions) > 0)
         output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
         return
     end
     if model.K.l > 0
-        if nnz(data.A(1+model.K.f:model.K.f+model.K.l,exponentials)<0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,logarithms)>0)
+        if nnz(data.A(1+model.K.f:model.K.f+model.K.l,convexFunctions)<0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,concaveFunctions)>0)
              output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
              return
         end
     end
     if sum(model.K.q) + sum(model.K.s) > 0
-         if nnz(data.A(1+model.K.f+K.l:end,exponentials))>0 || nnz(data.A(1+model.K.f+K.l:end,logarithms))>0
+         if nnz(data.A(1+model.K.f+K.l:end,convexFunctions))>0 || nnz(data.A(1+model.K.f+K.l:end,concaveFunctions))>0
              output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
              return
         end
@@ -101,7 +103,7 @@ if ~isempty(model.evalMap)
         end
     end
 
-     % Scalarize kullbackleibler operator
+    % Scalarize kullbackleibler operator
     if ~isempty(vectorkullback)
         for i = vectorkullback(:)'
             involved = model.evalMap{i}.variableIndex;
@@ -120,6 +122,39 @@ if ~isempty(model.evalMap)
             for j = 2:length(involved)/2
                 model.evalMap{end+1} = model.evalMap{i};
                 model.evalMap{end}.variableIndex = involved([j j+m]);
+                model.evalMap{end}.computes = n+j;
+            end
+        end
+    end
+    % Scalarize logsumexp operator 
+    % write log(expx1+expx2..)<= z as exp(x1-z)+exp(x2-z)+...<=1
+    if ~isempty(vectorlogsumexp)
+        for i = vectorlogsumexp(:)'
+            involved = model.evalMap{i}.variableIndex;
+            computes = model.evalMap{i}.computes;
+            % Orignal #variables
+            n = length(data.c);
+            % Number of terms in logsumexp
+            m = length(involved);           
+            
+            % exp(x1-z)+exp(x2-z)+...<=1
+            data.A = [data.A(1:cones.f,:) spalloc(cones.f,m,0);
+                      spalloc(1,n,0) ones(1,m);
+                      data.A(cones.f+1:end,:) spalloc(cones.l+sum(cones.q)+sum(cones.s),m,0)];
+            data.b = [data.b(1:cones.f);
+                      1;
+                      data.b(cones.f+1:end)];
+            data.c = [data.c;zeros(m,1)];
+            cones.l = cones.l + 1;   
+            
+            % The original strucuture now just relates to the first new term
+            model.evalMap{i}.computes = n+1;
+            model.evalMap{i}.variableIndex = [involved(1) computes];
+            model.evalMap{i}.fcn = 'expdiff';
+            % and then we add some new
+            for j = 2:length(involved)
+                model.evalMap{end+1} = model.evalMap{i};
+                model.evalMap{end}.variableIndex = [involved(j) computes];
                 model.evalMap{end}.computes = n+j;
             end
         end
@@ -166,6 +201,12 @@ if ~isempty(model.evalMap)
                 z = model.evalMap{i}.variableIndex(2);
                 data.A = [data.A;sparse([1;2;3],[x y z],[1 -1 -1],3,size(data.A,2))];
                 data.b = [data.b;[0;0;0]];
+            case 'expdiff'
+                % exp(xv(1)-xv(2)) <= xc
+                x = model.evalMap{i}.variableIndex;
+                z = model.evalMap{i}.computes;
+                data.A = [data.A;sparse([1;1;3],[x(1) x(2) z],[-1 1 -1],3,size(data.A,2))];
+                data.b = [data.b;[0;1;0]];
             otherwise
         end
     end
