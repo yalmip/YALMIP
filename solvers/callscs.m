@@ -152,7 +152,7 @@ if ~isempty(model.evalMap)
                 z = model.evalMap{i}.variableIndex;
                 x = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
-                data.b = [data.b;[1;1;0]];
+                data.b = [data.b;0;1;1];
             case 'entropy'
                 % -xv*log(xv)>=xc i.e. 1 >= exp(xc/xv)*xv
                 x = model.evalMap{i}.computes;
