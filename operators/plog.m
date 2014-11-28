@@ -12,6 +12,10 @@ function varargout = plog(varargin)
 switch class(varargin{1})
     
     case 'double'
+        
+        if ~isequal(prod(size(varargin{1})),2)
+            error('PLOG only defined for 2x1 arguments');
+        end
         x = varargin{1};
         % Safe version with defined negative values (helps fmincon when
         % outside feasible region)
@@ -24,8 +28,8 @@ switch class(varargin{1})
 
     case 'sdpvar'
 
-        if max(size(varargin{1}))~=2
-            error('PLOG only defined for scalar arguments');
+        if ~isequal(prod(size(varargin{1})),2)
+            error('PLOG only defined for 2x1 arguments');
         else
             varargout{1} = yalmip('define',mfilename,varargin{1});
         end
