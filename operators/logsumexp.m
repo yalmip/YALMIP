@@ -19,6 +19,8 @@ switch class(varargin{1})
 
         if min(size(varargin{1}))>1
             error('LOGSUMEXP only defined for vector arguments');
+        elseif max(size(varargin{1}))==1
+            varargout{1} = varargin{1};
         else
             varargout{1} = yalmip('define',mfilename,varargin{1});
         end
