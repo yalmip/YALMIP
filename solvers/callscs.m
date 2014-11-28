@@ -31,11 +31,9 @@ if ~isempty(model.evalMap)
     vectorlogsumexp = [];
     for i = 1:length(model.evalMap)
         switch model.evalMap{i}.fcn
-            case 'exp'
+            case {'exp','pexp'}
                 convexFunctions = [convexFunctions model.evalMap{i}.computes];               
-            case 'log'
-                concaveFunctions = [concaveFunctions model.evalMap{i}.computes];
-            case 'slog'
+            case {'log','plog','slog'}
                 concaveFunctions = [concaveFunctions model.evalMap{i}.computes];
             case 'entropy'                              
                 concaveFunctions = [concaveFunctions model.evalMap{i}.computes];
@@ -49,9 +47,7 @@ if ~isempty(model.evalMap)
                 end
             case 'logsumexp'
                 convexFunctions = [convexFunctions model.evalMap{i}.computes];                
-                vectorlogsumexp = [vectorlogsumexp i];  
-            case 'plog'
-                convexFunctions = [convexFunctions model.evalMap{i}.computes];          
+                vectorlogsumexp = [vectorlogsumexp i];                   
             otherwise
                 % Standard interface, return solver not applicable
                 output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
@@ -178,12 +174,27 @@ if ~isempty(model.evalMap)
                 z = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
+            case 'pexp'
+                % xv(1)*exp(xv(2)/xv(1)) <= xc    
+                x = model.evalMap{i}.variableIndex(2);
+                y = model.evalMap{i}.variableIndex(1);
+                z = model.evalMap{i}.computes;
+                data.A = [data.A;sparse([1;2;3],[x y z],[-1 -1 -1],3,size(data.A,2))];
+                data.b = [data.b;[0;0;0]]; 
             case 'log'
                 % log(xv) >= xc i.e. xv >= exp(xc/1)*1
                 z = model.evalMap{i}.variableIndex;
                 x = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
+            case 'plog'
+                % xv(1)log(xv(2)/xv(1))>=xc i.e.
+                % -xc >= -xv(1)log(xv(2)/xv(1))
+                z = model.evalMap{i}.computes;
+                y = model.evalMap{i}.variableIndex(1);
+                x = model.evalMap{i}.variableIndex(2);
+                data.A = [data.A;sparse([1;2;3],[x y z],[1 -1 1],3,size(data.A,2))];
+                data.b = [data.b;[0;0;0]];
             case 'slog'
                 % log(1+xv) >= xc i.e. (1+xv) >= exp(xc/1)*1
                 z = model.evalMap{i}.variableIndex;
@@ -208,15 +219,7 @@ if ~isempty(model.evalMap)
                 x = model.evalMap{i}.variableIndex;
                 z = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;1;3],[x(1) x(2) z],[-1 1 -1],3,size(data.A,2))];
-                data.b = [data.b;[0;1;0]];
-            case 'plog'
-                % -xv(1)log(xv(2)/xv(1))<=xc i.e.
-                % xv(1)exp(-xc/xv(1))<=xv(2)
-                x = model.evalMap{i}.computes;
-                y = model.evalMap{i}.variableIndex(1);
-                z = model.evalMap{i}.variableIndex(2);
-                data.A = [data.A;sparse([1;2;3],[x y z],[1 -1 -1],3,size(data.A,2))];
-                data.b = [data.b;[0;0;0]];
+                data.b = [data.b;[0;1;0]];                                       
             otherwise
         end
     end
