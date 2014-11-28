@@ -49,7 +49,9 @@ if ~isempty(model.evalMap)
                 end
             case 'logsumexp'
                 convexFunctions = [convexFunctions model.evalMap{i}.computes];                
-                vectorlogsumexp = [vectorlogsumexp i];                
+                vectorlogsumexp = [vectorlogsumexp i];  
+            case 'plog'
+                convexFunctions = [convexFunctions model.evalMap{i}.computes];          
             otherwise
                 % Standard interface, return solver not applicable
                 output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
@@ -207,6 +209,14 @@ if ~isempty(model.evalMap)
                 z = model.evalMap{i}.computes;
                 data.A = [data.A;sparse([1;1;3],[x(1) x(2) z],[-1 1 -1],3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
+            case 'plog'
+                % -xv(1)log(xv(2)/xv(1))<=xc i.e.
+                % xv(1)exp(-xc/xv(1))<=xv(2)
+                x = model.evalMap{i}.computes;
+                y = model.evalMap{i}.variableIndex(1);
+                z = model.evalMap{i}.variableIndex(2);
+                data.A = [data.A;sparse([1;2;3],[x y z],[1 -1 -1],3,size(data.A,2))];
+                data.b = [data.b;[0;0;0]];
             otherwise
         end
     end
