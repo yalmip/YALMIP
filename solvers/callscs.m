@@ -265,7 +265,11 @@ solvertime = toc;
 % Internal format. Only recover the original variables
 Primal = H*x_s+xsol; 
 Primal = Primal(1:length(model.c));
-Dual   = y_s;
+if isempty(model.evalMap)
+    Dual = [];
+else
+    Dual = y_s;
+end
 
 switch info.status
     case 'Solved'
