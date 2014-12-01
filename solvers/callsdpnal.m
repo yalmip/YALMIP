@@ -71,18 +71,29 @@ end
 Primal = -y;  % Primal variable in YALMIP
 
 % No error code available
-switch info.termcode
-    case -1
-        problem = 4;
-    case 0
-        problem = 0;
-    case 1
-        problem = 5;
-    case 2
-        problem = 3;   
-    otherwise
-        problem = 11;
+if isfield(info,'termcode')
+    switch info.termcode
+        case -1
+            problem = 4;
+        case 0
+            problem = 0;
+        case 1
+            problem = 5;
+        case 2
+            problem = 3;
+        otherwise
+            problem = 11;
+    end
+else
+    if isfield(info,'msg')
+        if isequal(info.msg,'maximum iteration reached')
+            problem = 3; 
+        else
+            problem = 9;
+        end
+    end
 end
+
 infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolveroutput
