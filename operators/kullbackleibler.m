@@ -3,7 +3,8 @@ function varargout = kullbackleibler(varargin)
 %
 % y = KULLBACKLEIBLER(x,y)
 %
-% Computes/declares Kullback-Leibler divergence sum(x.*log(x./y))
+% Computes/declares the convex Kullback-Leibler divergence sum(x.*log(x./y))
+% Alternatively -sum(x.*log(y/x)), i.e., negated perspectives of log(y)
 
 switch class(varargin{1})
 

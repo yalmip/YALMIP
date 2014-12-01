@@ -3,7 +3,7 @@ function varargout = slog(varargin)
 %
 % y = SLOG(x)
 %
-% Computes/declares shifted logarithm log(1+x)
+% Computes/declares concave shifted logarithm log(1+x)
 %
 % Implemented as evalutation based nonlinear operator. Hence, the concavity
 % of this function is exploited to perform convexity analysis and rigorous

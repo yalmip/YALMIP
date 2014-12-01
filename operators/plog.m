@@ -3,7 +3,7 @@ function varargout = plog(varargin)
 %
 % y = PLOG(x)
 %
-% Computes perspective log, x(1)*log(x(2)/x(1)) on x>0
+% Computes concave perspective log, x(1)*log(x(2)/x(1)) on x>0
 %
 % Implemented as evalutation based nonlinear operator. Hence, the concavity
 % of this function is exploited to perform convexity analysis and rigorous

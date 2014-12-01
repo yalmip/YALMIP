@@ -3,7 +3,7 @@ function varargout = entropy(varargin)
 %
 % y = ENTROPY(x)
 %
-% Computes/declares entropy -sum(x.*log(x))
+% Computes/declares concave entropy -sum(x.*log(x))
 %
 % Implemented as evalutation based nonlinear operator. Hence, the concavity
 % of this function is exploited to perform convexity analysis and rigorous
