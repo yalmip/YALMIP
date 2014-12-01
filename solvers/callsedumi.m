@@ -142,14 +142,8 @@ else
 end
 
 % Standard interface 
-output.Primal      = Primal;
-output.Dual        = Dual;
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+
  
 function [new_F_struc,K] = fix1Dqcone(F_struc,K); 
 
