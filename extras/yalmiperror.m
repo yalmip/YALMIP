@@ -68,7 +68,7 @@ case -3
  case -2
   error_string = 'No suitable solver';
  case -1
-  error_string = 'Unknown error';
+  error_string = ['Unknown error ' solver];
  case 0
   error_string = ['Successfully solved ' solver ];
  case 1
