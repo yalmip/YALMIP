@@ -22,26 +22,18 @@ function varargout = or(varargin)
 switch class(varargin{1})
     case 'char'
         z = varargin{2};
-        x = varargin{3};
-        y = varargin{4};        
-          
-        % *******************************************************
-        % For *some* efficiency,we merge expressions like A|B|C|D
-        xvars = getvariables(x);
-        yvars = getvariables(y);
+        
+        xy = [];
         allextvars = yalmip('extvariables');
-        
-        if (length(xvars)==1) & ismembc(xvars,allextvars)
-            x = expandor(x,allextvars);
+        for i = 3:nargin
+            x = varargin{i};
+            xvars = getvariables(x);
+            if (length(xvars)==1) & ismembc(xvars,allextvars)
+                x = expandor(x,allextvars);
+            end
+            xy = [xy x];
         end
-        
-        if (length(yvars)==1) & ismembc(yvars,allextvars)
-            y = expandor(y,allextvars);
-        end
-        % *******************************************************
-                 
-        xy=[x y];
-        
+                
         varargout{1} = (sum(xy) >= z) + (z >= xy) +(binary(z));
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = xy;
@@ -60,9 +52,7 @@ switch class(varargin{1})
                 end
                  varargout{1} = temp;
             end           
-        else
-            x = varargin{1};
-            y = varargin{2};
+        else          
             varargout{1} = yalmip('define','or',varargin{:});
         end
     otherwise

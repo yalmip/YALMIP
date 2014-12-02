@@ -1,43 +1,40 @@
 function varargout = xor(varargin)
 %XOR (overloaded)
+%   
+%    z = xor(x,y)
 %
-%    z = xor(x1,x2,...,xn)
-%
-% The OR operator is implemented using the concept of nonlinear operators
-% in YALMIP. XOR defines a new so called derived variable that can be
-% treated as any other variable in YALMIP. When SOLVESDP is issued,
+% The XOR operator is implemented using the concept of nonlinear operators
+% in YALMIP. xor(X,Y) defines a new so called derived variable that can be
+% treated as any other variable in YALMIP. When OPTIMIZE is issued,
 % constraints are added to the problem to model the XOR operator. The new
-% constraints add constraints to ensure that z and x satisfy the
-% truth-table for XOR.
-%
-% It is assumed that x are binary variables (either explicitely
+% constraints add constraints to ensure that z,x and y satisfy the
+% truth-table for XOR. 
+
+% It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
-% See also SDPVAR/AND, SDPVAR/OR, BINVAR, BINARY
+%   See also SDPVAR/AND, BINVAR, BINARY
 
-% Models OR using a nonlinear operator definition
+% Models XOR using a nonlinear operator definition
 switch class(varargin{1})
     case 'char'
         z = varargin{2};
-
-        allextvars = yalmip('extvariables');
+        
         xy = [];
+        allextvars = yalmip('extvariables');
         for i = 3:nargin
-            x{i-2} = varargin{i};
-            xvars = getvariables(x{i-2});
+            x = varargin{i};
+            xvars = getvariables(x);
             if (length(xvars)==1) & ismembc(xvars,allextvars)
-                x = expandor(x,allextvars);
+                x = expandxor(x,allextvars);
             end
-            xy = [xy x{i-2}];
+            xy = [xy x];
         end
-
-        n = length(xy);
-
         [M,m] = derivebounds(z);
 
         % If user has constrained the XOR operator to true, we can add that
         % constraint very easily
-        if m>=1
+        if m>0
             varargout{1} = (sum(xy) == 1);
         else
             T1 = -ones(n);
@@ -50,30 +47,44 @@ switch class(varargin{1})
             end
             varargout{1} = (2 - T2*reshape(xy,n,1) >= z) + (z >= T1*reshape(xy,n,1)) +(binary(z));
         end
-
+        
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = xy;
 
     case 'sdpvar'
-        x = varargin{1};
-        y = varargin{2};
-        varargout{1} = yalmip('addextendedvariable','xor',varargin{:});
-
+        if nargin == 1
+            if length(varargin{1})==1
+                varargout{1} = varargin{1}
+            else
+                x = varargin{1};
+                % bug in matlab...
+                %temp = or(x(1),x(2));
+                temp = xor(extsubsref(x,1),extsubsref(x,2));
+                for i = 3:length(x)
+                    temp = xor(temp,extsubsref(x,i));
+                end
+                 varargout{1} = temp;
+            end           
+        else
+            x = varargin{1};
+            y = varargin{2};
+            varargout{1} = yalmip('define','xor',varargin{:});
+        end
     otherwise
 end
 
-function x = expandor(x,allextvars)
+function x = expandxor(x,allextvars)
 
 xmodel = yalmip('extstruct',getvariables(x));
 
-if isequal(xmodel.fcn,'or')
+if isequal(xmodel.fcn,'xor')
     x1 = xmodel.arg{1};
     x2 = xmodel.arg{2};
     if  ismembc(getvariables(xmodel.arg{1}),allextvars)
-        x1 = expandor(xmodel.arg{1},allextvars);
+        x1 = expandxor(xmodel.arg{1},allextvars);     
     end
     if  ismembc(getvariables(xmodel.arg{2}),allextvars)
-        x2 = expandor(xmodel.arg{2},allextvars);
+        x2 = expandxor(xmodel.arg{2},allextvars);     
     end
     x = [x1 x2];
 end
