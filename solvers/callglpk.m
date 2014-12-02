@@ -150,6 +150,7 @@ output.Primal      = x;
 output.Dual        = D_struc;
 output.Slack       = [];
 output.problem     = problem;
+output.infostr     = yalmiperror(problem,interfacedata.solver.tag);
 output.solverinput = solverinput;
 output.solveroutput= solveroutput;
 output.solvertime  = solvertime;
