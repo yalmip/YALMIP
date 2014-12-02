@@ -21,8 +21,8 @@ if ~isempty(model.binary_variables)
     ubfixed = fix(model.ub(model.binary_variables));
     fixlb = find(model.lb(model.binary_variables) == lbfixed);
     fixub = find(model.ub(model.binary_variables) == ubfixed);
-    model.lb(model.binary_variables) = fix(model.lb(model.binary_variables)-1e-4);
-    model.ub(model.binary_variables) = fix(model.ub(model.binary_variables)+1e-4);
+    model.lb(model.binary_variables) = ceil(model.lb(model.binary_variables)-1e-4);
+    model.ub(model.binary_variables) = floor(model.ub(model.binary_variables)+1e-4);
     if ~isempty(fixlb)
         model.lb(model.binary_variables(fixlb)) = lbfixed(fixlb);
     end
