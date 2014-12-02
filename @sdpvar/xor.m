@@ -66,8 +66,6 @@ switch class(varargin{1})
                  varargout{1} = temp;
             end           
         else
-            x = varargin{1};
-            y = varargin{2};
             varargout{1} = yalmip('define','xor',varargin{:});
         end
     otherwise
