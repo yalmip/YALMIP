@@ -39,7 +39,11 @@ try
                 case 2
                     y = subsref2d(X,Y.subs{1},Y(1).subs{2},Y);
                 otherwise
-                    error('Indexation error.');
+                    if all( [Y(1).subs{3:end}]==1)
+                        y = subsref2d(X,Y.subs{1},Y(1).subs{2},Y);
+                    else
+                        error('Indexation error.');
+                    end
             end
         case '{}'
             varargout{nargout} = [];
