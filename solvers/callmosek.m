@@ -348,7 +348,6 @@ else
     [r,res] = mosekopt('minimize info',prob,param);
     solvertime = toc;
 end
-solvertime = etime(clock,solvertime);
 
 if res.rcode == 2001
     res.sol.itr.prosta = 'DUAL_INFEASIBLE';
