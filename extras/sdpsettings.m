@@ -101,6 +101,12 @@ else
     options.mpcvx = setup_mpcvx_options;
     Names = appendOptionNames(Names,options.mpcvx,'mpcvx');
     
+    options.penbmi = setup_penbmi_options;
+    Names = appendOptionNames(Names,options.penbmi,'penbmi');
+    
+    options.penlab = setup_penlab_options;
+    Names = appendOptionNames(Names,options.penlab,'penlab');
+        
     options.plot = setup_plot_options;
     Names = appendOptionNames(Names,options.plot,'plot');
     
@@ -779,11 +785,11 @@ penbmi.ALPHA_UP = 1.0;
 penbmi.PRECISION_2 = 1e-6; %!1e-7
 penbmi.CG_TOL_DIR = 5e-2;
 
-function penlab = setup_penlab_options
+function ops = setup_penlab_options
 try
-    penlab = penlab.defopts(1);
+    ops = penlab.defopts(1);
 catch
-    penlab = [];
+    ops = [];
 end
 
 function pennlp = setup_pennlp_options
