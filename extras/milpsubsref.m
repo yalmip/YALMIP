@@ -69,6 +69,7 @@ switch class(varargin{1})
         X = varargin{3};
         Y = varargin{2};
         if length(varargin{4}.subs) == 1
+            X = X(:);
             i = varargin{4}.subs{1};
             M = length(X);
             m = 1;
