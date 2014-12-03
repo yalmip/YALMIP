@@ -100,13 +100,7 @@ else
     
     options.mpcvx = setup_mpcvx_options;
     Names = appendOptionNames(Names,options.mpcvx,'mpcvx');
-    
-    options.penbmi = setup_penbmi_options;
-    Names = appendOptionNames(Names,options.penbmi,'penbmi');
-    
-    options.penlab = setup_penlab_options;
-    Names = appendOptionNames(Names,options.penlab,'penlab');
-        
+           
     options.plot = setup_plot_options;
     Names = appendOptionNames(Names,options.plot,'plot');
     
@@ -210,6 +204,27 @@ else
     options.ooqp = setup_ooqp_options;
     Names = appendOptionNames(Names,options.ooqp,'ooqp');
     
+    options.penbmi = setup_penbmi_options;
+    Names = appendOptionNames(Names,options.penbmi,'penbmi');
+    
+    options.penlab = setup_penlab_options;
+    Names = appendOptionNames(Names,options.penlab,'penlab');
+    
+    options.pensdp = setup_pensdp_options;
+    Names = appendOptionNames(Names,options.pensdp,'pensdp');
+    
+    options.qpoases = setup_qpoases_options;
+    Names = appendOptionNames(Names,options.qpoases,'qpoases');
+    
+    options.qsopt = setup_qsopt_options;
+    Names = appendOptionNames(Names,options.qsopt,'qsopt');
+    
+    options.quadprog = setup_quadprog_options;
+    Names = appendOptionNames(Names,options.quadprog,'quadprog');
+    
+    options.quadprogbb = setup_quadprogbb_options;
+    Names = appendOptionNames(Names,options.quadprogbb,'quadprogbb');
+    
     options.scip = setup_scip_options;
     Names = appendOptionNames(Names,options.scip,'scip');
         
@@ -239,19 +254,7 @@ else
     
     options.vsdp = setup_vsdp_options;
     Names = appendOptionNames(Names,options.vsdp,'vsdp');
-    
-    options.qpoases = setup_qpoases_options;
-    Names = appendOptionNames(Names,options.qpoases,'qpoases');
-    
-    options.qsopt = setup_qsopt_options;
-    Names = appendOptionNames(Names,options.qsopt,'qsopt');
-    
-    options.quadprog = setup_quadprog_options;
-    Names = appendOptionNames(Names,options.quadprog,'quadprog');
-    
-    options.quadprogbb = setup_quadprogbb_options;
-    Names = appendOptionNames(Names,options.quadprogbb,'quadprogbb');
-    
+        
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
 end
