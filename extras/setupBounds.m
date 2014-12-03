@@ -17,6 +17,8 @@ end
 extstruct = yalmip('extstruct');
 for i = 1:length(extstruct)
     switch extstruct(i).fcn
+        case 'milpsubsref'
+            LU = extract_bounds_from_milpsubsref_operator(LU,extstruct,extendedvariables,i);
         case 'abs'
             LU = extract_bounds_from_abs_operator(LU,extstruct,extendedvariables,i);
         case 'norm'
