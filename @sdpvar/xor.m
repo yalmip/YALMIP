@@ -10,17 +10,11 @@ function varargout = xor(varargin)
 
 switch class(varargin{1})
     case 'char'
-        z = varargin{2};
         
-        xy = [];
-        allextvars = yalmip('extvariables');
-        for i = 3:nargin
-            x = varargin{i};
-            xvars = getvariables(x);
-            if (length(xvars)==1) & ismembc(xvars,allextvars)
-                x = expandxor(x,allextvars);
-            end
-            xy = [xy x];
+        z = varargin{2};        
+        xy = [];        
+        for i = 3:nargin            
+            xy = [xy varargin{i}];
         end
         [M,m] = derivebounds(z);
 
@@ -61,20 +55,4 @@ switch class(varargin{1})
             varargout{1} = yalmip('define','xor',varargin{:});
         end
     otherwise
-end
-
-function x = expandxor(x,allextvars)
-
-xmodel = yalmip('extstruct',getvariables(x));
-
-if isequal(xmodel.fcn,'xor')
-    x1 = xmodel.arg{1};
-    x2 = xmodel.arg{2};
-    if  ismembc(getvariables(xmodel.arg{1}),allextvars)
-        x1 = expandxor(xmodel.arg{1},allextvars);     
-    end
-    if  ismembc(getvariables(xmodel.arg{2}),allextvars)
-        x2 = expandxor(xmodel.arg{2},allextvars);     
-    end
-    x = [x1 x2];
 end

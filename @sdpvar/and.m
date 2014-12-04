@@ -18,15 +18,9 @@ switch class(varargin{1})
     case 'char'
         
         z = varargin{2};        
-        xy = [];
-        allextvars = yalmip('extvariables');
-        for i = 3:nargin
-            x = varargin{i};
-            xvars = getvariables(x);
-            if (length(xvars)==1) & ismembc(xvars,allextvars)
-                x = expandand(x,allextvars);
-            end
-            xy = [xy x];
+        xy = [];        
+        for i = 3:nargin            
+            xy = [xy varargin{i}];
         end
 
         varargout{1} = (xy >= z) + (length(xy)-1+z >= sum(xy)) + (binary(z));
@@ -37,19 +31,4 @@ switch class(varargin{1})
         varargout{1} = yalmip('define','and',varargin{:});
 
     otherwise
-end
-
-function x = expandand(x,allextvars)
-
-xmodel = yalmip('extstruct',getvariables(x));
-
-if isequal(xmodel.fcn,'and')
-    x = [];
-    for i = 1:length(xmodel.arg)
-        xi = xmodel.arg{i};
-        if  ismembc(getvariables(xi),allextvars)
-            xi = expandand(xi,allextvars);
-        end
-        x = [x xi];
-    end
 end

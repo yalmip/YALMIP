@@ -13,17 +13,11 @@ function varargout = or(varargin)
 
 switch class(varargin{1})
     case 'char'
-        z = varargin{2};
         
-        xy = [];
-        allextvars = yalmip('extvariables');
-        for i = 3:nargin
-            x = varargin{i};
-            xvars = getvariables(x);
-            if (length(xvars)==1) & ismembc(xvars,allextvars)
-                x = expandor(x,allextvars);
-            end
-            xy = [xy x];
+        z = varargin{2};        
+        xy = [];        
+        for i = 3:nargin            
+            xy = [xy varargin{i}];
         end
                 
         varargout{1} = (sum(xy) >= z) + (z >= xy) +(binary(z));
@@ -48,20 +42,4 @@ switch class(varargin{1})
             varargout{1} = yalmip('define','or',varargin{:});
         end
     otherwise
-end
-
-function x = expandor(x,allextvars)
-
-xmodel = yalmip('extstruct',getvariables(x));
-
-if isequal(xmodel.fcn,'or')
-    x1 = xmodel.arg{1};
-    x2 = xmodel.arg{2};
-    if  ismembc(getvariables(xmodel.arg{1}),allextvars)
-        x1 = expandor(xmodel.arg{1},allextvars);     
-    end
-    if  ismembc(getvariables(xmodel.arg{2}),allextvars)
-        x2 = expandor(xmodel.arg{2},allextvars);     
-    end
-    x = [x1 x2];
 end
