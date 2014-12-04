@@ -494,8 +494,8 @@ switch varargin{1}
             if isa(varargin{i},'sdpvar')
                 yalmip('setdependence',getvariables(y),getvariables(varargin{i}));
             end
-        end
-        varargout{1} = flush(y);
+        end        
+        varargout{1} = flush(clearconic(y));
         return
         
     case 'setdependence'
