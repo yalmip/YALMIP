@@ -23,33 +23,24 @@ if isa(varargin{1},'double')
 end
 switch class(varargin{1})
     case 'char'
-        z = varargin{2};
-        x = varargin{3};
-        y = varargin{4};
-
-        % *******************************************************
-        % For *some* efficiency,we merge expressions like A&B&C&D
-        xvars = getvariables(x);
-        yvars = getvariables(y);
+        
+        z = varargin{2};        
+        xy = [];
         allextvars = yalmip('extvariables');
-
-        if (length(xvars)==1) & ismembc(xvars,allextvars)
-            x = expandand(x,allextvars);
+        for i = 3:nargin
+            x = varargin{i};
+            xvars = getvariables(x);
+            if (length(xvars)==1) & ismembc(xvars,allextvars)
+                x = expandand(x,allextvars);
+            end
+            xy = [xy x];
         end
 
-        if (length(yvars)==1) & ismembc(yvars,allextvars)
-            y = expandand(y,allextvars);
-        end
-        % *******************************************************
-
-        varargout{1} = (x >= z) + (y >= z) + (length(x)+length(y)-1+z >= sum(x)+sum(y)) + (binary(z));
+        varargout{1} = (xy >= z) + (length(xy)-1+z >= sum(xy)) + (binary(z));
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
-        varargout{3} = [x y];
+        varargout{3} = xy;
 
     case 'sdpvar'
-        x = varargin{1};
-        y = varargin{2};
-
         varargout{1} = yalmip('define','and',varargin{:});
 
     otherwise
