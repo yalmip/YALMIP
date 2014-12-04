@@ -1,22 +1,15 @@
 function varargout = and(varargin)
-%ANd (overloaded)
+%AND (overloaded)
 %   
 %    z = and(x,y)
 %    z = x & y
 %
-% The AND operator is implemented using the concept of nonlinear operators
-% in YALMIP. X|Y defines a new so called derived variable that can be
-% treated as any other variable in YALMIP. When SOLVESDP is issued,
-% constraints are added to the problem to model the AND operator. The new
-% constraints add constraints to ensure that z, x and y satisfy the
-% truth-table for AND.
-%
-% The model for ARE is (z<=x)+(z<=y)+(1+z>=x+y)+(binary(z))
+% The model for AND is (z<=x)+(z<=y)+(1+z>=x+y)+(binary(z))
 %
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
-%   See also SDPVAR/AND, BINVAR, BINARY
+% See also SDPVAR/OR, SDPVAR/XOR, SDPVAR/NOT, BINVAR, BINARY
 
 if isa(varargin{1},'double')
     varargin = {varargin{[2:nargin 1]}};
@@ -51,13 +44,12 @@ function x = expandand(x,allextvars)
 xmodel = yalmip('extstruct',getvariables(x));
 
 if isequal(xmodel.fcn,'and')
-    x1 = xmodel.arg{1};
-    x2 = xmodel.arg{2};
-    if  ismembc(getvariables(xmodel.arg{1}),allextvars)
-        x1 = expandand(xmodel.arg{1},allextvars);
+    x = [];
+    for i = 1:length(xmodel.arg)
+        xi = xmodel.arg{i};
+        if  ismembc(getvariables(xi),allextvars)
+            xi = expandand(xi,allextvars);
+        end
+        x = [x xi];
     end
-    if  ismembc(getvariables(xmodel.arg{2}),allextvars)
-        x2 = expandand(xmodel.arg{2},allextvars);
-    end
-    x = [x1 x2];
 end

@@ -3,19 +3,11 @@ function varargout = xor(varargin)
 %   
 %    z = xor(x,y)
 %
-% The XOR operator is implemented using the concept of nonlinear operators
-% in YALMIP. xor(X,Y) defines a new so called derived variable that can be
-% treated as any other variable in YALMIP. When OPTIMIZE is issued,
-% constraints are added to the problem to model the XOR operator. The new
-% constraints add constraints to ensure that z,x and y satisfy the
-% truth-table for XOR. 
-
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
-%   See also SDPVAR/AND, BINVAR, BINARY
+% See also SDPVAR/XOR, SDPVAR/AND, SDPVAR/NOT, BINVAR, BINARY
 
-% Models XOR using a nonlinear operator definition
 switch class(varargin{1})
     case 'char'
         z = varargin{2};
