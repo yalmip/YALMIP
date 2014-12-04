@@ -10,12 +10,18 @@ function [F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomia
 %     options   : SDPSETTINGS structure [optional]
 %     params    : Parametric variables in model [optional]
 %     monomials : Prespecified monomials to be used [optional]
+%
 %    Outputs
 %     F         : Constraints defining the problem
 %     h         : Objective function
 %     m         : Monomials used in the decomposition
+%
+% NOTE: If you use compilesos together with optimizer to solve many sos
+% problems repeatedly, you must set sos.model option to 2. This is done
+% automatically if you define a sos problem directly through optimizer,
+% thus bypassing compilesos.  
 % 
-% See also SOLVESOS, SOS
+% See also OPTIMIZE, SOS, OPTIMIZER
 
 % ************************************************
 %% Check #inputs
