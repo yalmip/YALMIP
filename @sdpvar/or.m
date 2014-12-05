@@ -4,8 +4,6 @@ function varargout = or(varargin)
 %    z = or(x,y)
 %    z = x | y
 %
-% The model for OR is [z>=x, z>=y, z<=x+y, binary(z)]
-%
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %

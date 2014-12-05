@@ -6,7 +6,7 @@ function varargout = xor(varargin)
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
-% See also SDPVAR/XOR, SDPVAR/AND, SDPVAR/NOT, BINVAR, BINARY
+% See also SDPVAR/OR, SDPVAR/AND, SDPVAR/NOT, BINVAR, BINARY
 
 switch class(varargin{1})
     case 'char'

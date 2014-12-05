@@ -4,8 +4,6 @@ function varargout = and(varargin)
 %    z = and(x,y)
 %    z = x & y
 %
-% The model for AND is (z<=x)+(z<=y)+(1+z>=x+y)+(binary(z))
-%
 % It is assumed that x and y are binary variables (either explicitely
 % declared using BINVAR, or constrained using BINARY.)
 %
