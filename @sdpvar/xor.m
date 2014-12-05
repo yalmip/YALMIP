@@ -40,17 +40,16 @@ switch class(varargin{1})
     case 'sdpvar'
         if nargin == 1
             if length(varargin{1})==1
-                varargout{1} = varargin{1}
+                varargout{1} = varargin{1};
             else
                 x = varargin{1};
-                % bug in matlab...
-                %temp = or(x(1),x(2));
-                temp = xor(extsubsref(x,1),extsubsref(x,2));
-                for i = 3:length(x)
-                    temp = xor(temp,extsubsref(x,i));
+                x = reshape(x,[],1);
+                for i = 1:length(x)
+                    temp = extsubsref(x,i);
+                    varargin{i} = temp;
                 end
-                 varargout{1} = temp;
-            end           
+                varargout{1} = yalmip('define','xor',varargin{:});
+            end
         else
             varargout{1} = yalmip('define','xor',varargin{:});
         end
