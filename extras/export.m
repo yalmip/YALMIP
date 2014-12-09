@@ -1,8 +1,8 @@
 function [model,recoverdata,diagnostic,interfacedata] = export(varargin)
 %EXPORT  Exports YALMIP problem to solver specific format
 %
-%   [MODEL,RECOVERYMODEL,DIAGNOSTIC,INTERNAL] = EXPORT(F,h,options) is the common command to
-%   export optimization problems of the following kind
+%   [MODEL,RECOVERYMODEL,DIAGNOSTIC,INTERNAL] = EXPORT(F,h,options) is the
+%   common command to export optimization problems of the following kind
 %
 %    min        h
 %    subject to
