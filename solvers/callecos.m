@@ -13,7 +13,6 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
-solvertime = clock;
 if isempty(model.A)   
     tic
     [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.opts);  
@@ -65,12 +64,5 @@ else
     solveroutput = [];
 end
 
-% Standard interface
-output.Primal      = Primal;
-output.Dual        = Dual;
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
+% Standard interface 
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);

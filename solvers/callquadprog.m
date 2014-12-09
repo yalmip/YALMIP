@@ -11,7 +11,6 @@ if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],optio
 tic
 solveroutput = callsolver(model,options);
 solvertime = toc;
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
 solution = quadprogsol2yalmipsol(solveroutput,model);
 
 % Save all data sent to solver?
@@ -25,22 +24,23 @@ if ~options.savesolveroutput
 end
 
 % Standard interface
-output.Primal      = solution.x(:);
-output.Dual        = solution.D_struc;
-output.Slack       = [];
-output.problem     = solution.problem;
-output.infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
-output.solvertime  = solvertime;
+Primal      = solution.x(:);
+Dual        = solution.D_struc;
+problem     = solution.problem;
+infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
 if ~options.savesolverinput
-    output.solverinput = [];
+    solverinput = [];
 else
-    output.solverinput = model;
+    solverinput = model;
 end
 if ~options.savesolveroutput
-    output.solveroutput = [];
+    solveroutput = [];
 else
-    output.solveroutput = solveroutput;
+    solveroutput = solveroutput;
 end
+% Standard interface 
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+
 
 function solveroutput = callsolver(model,options)
 x = [];

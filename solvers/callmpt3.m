@@ -105,14 +105,9 @@ else
 end
 
 % Standard interface
-output.Primal      = nan*ones(length(interfacedata.c),1);
-output.Dual        = [];
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
+Primal      = nan*ones(length(interfacedata.c),1);
+Dual        = [];
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
 
 function Matrices = removeExplorationConstraints(Matrices);
 candidates = find((~any(Matrices.G,2)) & (sum(Matrices.E | Matrices.E,2) == 1));

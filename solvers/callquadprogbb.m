@@ -24,22 +24,22 @@ if ~options.savesolveroutput
 end
 
 % Standard interface
-output.Primal      = solution.x(:);
-output.Dual        = solution.D_struc;
-output.Slack       = [];
-output.problem     = solution.problem;
-output.infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
-output.solvertime  = solvertime;
+Primal      = solution.x(:);
+Dual        = solution.D_struc;
+problem     = solution.problem;
+infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
 if ~options.savesolverinput
-    output.solverinput = [];
+    solverinput = [];
 else
-    output.solverinput = model;
+    solverinput = model;
 end
 if ~options.savesolveroutput
-    output.solveroutput = [];
+    solveroutput = [];
 else
-    output.solveroutput = solveroutput;
+    solveroutput = solveroutput;
 end
+% Standard interface 
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
 
 function solveroutput = callsolver(model,options)
 x = [];

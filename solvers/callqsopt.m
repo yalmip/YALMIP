@@ -69,12 +69,36 @@ else
 	solveroutput = [];
 end
 
+% Standard interface
+Primal      = solution.x(:);
+Dual        = solution.D_struc;
+problem     = solution.problem;
+infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
+if ~options.savesolverinput
+    solverinput = [];
+else
+    solverinput = model;
+end
+if ~options.savesolveroutput
+    solveroutput = [];
+else
+    solveroutput = solveroutput;
+end
+% Standard interface
+Primal      = solution.x(:);
+Dual        = solution.D_struc;
+problem     = solution.problem;
+infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
+if ~options.savesolverinput
+    solverinput = [];
+else
+    solverinput = model;
+end
+if ~options.savesolveroutput
+    solveroutput = [];
+else
+    solveroutput = solveroutput;
+end
 % Standard interface 
-output.Primal      = x(:);
-output.Dual        = D_struc;
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+

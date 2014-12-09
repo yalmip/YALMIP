@@ -84,15 +84,6 @@ else
 end
 
 % Standard interface
-output.Primal      = nan*ones(length(interfacedata.c),1);
-output.Dual        = [];
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
-
-
-
-
+Primal      = nan*ones(length(interfacedata.c),1);
+Dual        = [];
+output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);

@@ -124,11 +124,4 @@ else
 end
 
 % Standard interface 
-output.Primal      = x;
-output.Dual        = Dual;
-output.Slack       = Slack;
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
+output = createOutputStructure(x,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);

@@ -75,11 +75,4 @@ else
 end
 
 % Standard interface 
-output.Primal      = OUT.xopt;
-output.Dual        = D_struc;
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
+output = createOutputStructure(OUT.xopt,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);

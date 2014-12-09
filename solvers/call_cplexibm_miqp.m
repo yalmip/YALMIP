@@ -94,17 +94,9 @@ end
 if isempty(x)
     x = zeros(length(model.f),1);
 end
-% Standard interface
-output.Primal      = x;
-output.Dual        = D_struc;
-output.Slack       = [];
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
 
-
+% Standard interface 
+output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
 
 function [x,fval,exitflag,output,lambda] = localSolverCall(model)
 

@@ -118,23 +118,20 @@ if ~options.savesolveroutput
     solveroutput = [];
 end
 
-% Standard interface
-output.Primal      = solution.x(:);
-output.Dual        = solution.D_struc;
-output.Slack       = [];
-output.problem     = solution.problem;
-output.infostr     = yalmiperror(solution.problem,interfacedata.solver.tag);
-output.solvertime  = solvertime;
 if ~options.savesolverinput
-    output.solverinput = [];
+    solverinput = [];
 else
-    output.solverinput = model;
+    solverinput = model;
 end
 if ~options.savesolveroutput
-    output.solveroutput = [];
+    solveroutput = [];
 else
-    output.solveroutput = solveroutput;
+    solveroutput = solveroutput;
 end
+
+% Standard interface 
+output = createOutputStructure(solution.x(:),solution.D_struc,[],solution.problem,yalmiperror(solution.problem,interfacedata.solver.tag),solverinput,solveroutput,solvertime);
+
 
 
 function output = error_output(e)

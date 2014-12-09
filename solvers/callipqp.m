@@ -83,13 +83,5 @@ else
     solveroutput = [];
 end
 
-
-
 % Standard interface 
-output.x           = x;
-output.problem     = problem;
-output.infostr     = infostr;
-output.solverinput = solverinput;
-output.solveroutput= solveroutput;
-output.solvertime  = solvertime;
-output.D_struc = D_struc;
+output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
