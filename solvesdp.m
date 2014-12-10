@@ -35,25 +35,21 @@ function diagnostic = solvesdp(varargin)
 
 yalmiptime = clock; % Let us see how much time we spend
 
-% Avoid warning
-if length(varargin)>=2
+% *********************************
+% CHECK INPUT
+% *********************************
+nargin = length(varargin);
+
+% Check objective
+if nargin>=2
     if isa(varargin{2},'double')
         varargin{2} = [];
-    end
-end
-
-if length(varargin)>=2
-    if isa(varargin{2},'sdpvar') && prod(size(varargin{2}))>1
+    elseif isa(varargin{2},'sdpvar') && numel(varargin{2})>1
         % Several objectives
         diagnostic = solvesdp_multiple(varargin{:});
         return
     end
 end
-
-% *********************************
-% CHECK INPUT
-% *********************************
-nargin = length(varargin);
 
 if nargin<1
     help solvesdp
