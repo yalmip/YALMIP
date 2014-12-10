@@ -1,4 +1,4 @@
-function [solver,problem,forced_choice] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
+function [solver,problem,forced_choice] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc,allsolvers);
 %SELECTSOLVER Internal function to select solver based on problem category
 
 problem = 0;
@@ -19,12 +19,7 @@ if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
         options.solver = strrep(options.solver,'+','');
     end
     % Create tags with version also        
-    temp = solvers;
-    for i = 1:length(temp)
-        if length(temp(i).version)>0
-            temp(i).tag = lower([temp(i).tag '-' temp(i).version]);
-        end
-    end
+    temp = expandSolverName(solvers);  
     
     opsolver = lower(options.solver);
     splits = findstr(opsolver,',');
@@ -46,8 +41,19 @@ if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
         index2 = [index1 find(strcmp(lower({temp.tag}),names{i}))];
     end
     if isempty(index1) & isempty(index2)
+        % Specified solver not found among available solvers
+        % Is it even a supported solver
+        temp = expandSolverName(allsolvers);
+        for i = 1:length(names)
+            index1 = [index1 find(strcmp(lower({allsolvers.tag}),names{i}))];
+            index2 = [index1 find(strcmp(lower({temp.tag}),names{i}))];
+        end
+        if isempty(index1) & isempty(index2)
+            problem = -9;
+        else
+            problem = -3;
+        end
         solver = [];
-        problem = -3;
         return;
     else
         solvers = solvers(union(index1,index2));
@@ -498,4 +504,10 @@ if ~isempty(solver)
     end
 end
 
+function temp = expandSolverName(temp)
+for i = 1:length(temp)
+    if length(temp(i).version)>0
+        temp(i).tag = lower([temp(i).tag '-' temp(i).version]);
+    end
+end
 

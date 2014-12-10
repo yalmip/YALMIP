@@ -270,7 +270,7 @@ end
 % *************************************************************************
 %% SELECT SUITABLE SOLVER
 % *************************************************************************
-[solver,problem] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc);
+[solver,problem] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc,allsolvers);
 if isempty(solver)
     diagnostic.solvertime = 0;
     if problem == -4 || problem == -3 || problem == -9 
