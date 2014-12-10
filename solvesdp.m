@@ -29,9 +29,9 @@ function diagnostic = solvesdp(varargin)
 %   EXAMPLE
 %    A = randn(15,5);b = rand(15,1)*5;c = randn(5,1);
 %    x = sdpvar(5,1);
-%    solvesdp([x>=0, A*x<=b],c'*x);double(x)
+%    solvesdp([x>=0, A*x<=b],c'*x);value(x)
 %
-%   See also DUAL, @SDPVAR/DOUBLE, SDPSETTINGS, YALMIPERROR
+%   See also DUAL, @SDPVAR/VALUE, SDPSETTINGS, YALMIPERROR
 
 yalmiptime = clock; % Let us see how much time we spend
 

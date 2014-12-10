@@ -24,8 +24,8 @@ function varargout = optimize(varargin)
 %   EXAMPLE
 %    A = randn(15,5);b = rand(15,1)*5;c = randn(5,1);
 %    x = sdpvar(5,1);
-%    diagnostics = optimize(A*x<=b,c'*x);double(x)
+%    diagnostics = optimize(A*x<=b,c'*x);value(x)
 %
-%   See also SDPVAR, @SDPVAR/DOUBLE, SDPSETTINGS, YALMIPERROR
+%   See also SDPVAR, @SDPVAR/VALUE, SDPSETTINGS, YALMIPERROR
 
 varargout{:} = solvesdp(varargin{:});
