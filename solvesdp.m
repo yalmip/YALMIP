@@ -40,7 +40,7 @@ yalmiptime = clock; % Let us see how much time we spend
 % *********************************
 nargin = length(varargin);
 
-% Check objective
+% First check of objective for early transfer to multiple solves
 if nargin>=2
     if isa(varargin{2},'double')
         varargin{2} = [];
@@ -331,14 +331,7 @@ else
     try
         eval(['output = ' solver.call '(interfacedata);']);
     catch
-        output.Primal = zeros(length(interfacedata.c),1)+NaN;
-        output.Dual  = [];
-        output.Slack = [];
-        output.solvertime   = nan;
-        output.solverinput  = [];
-        output.solveroutput = [];
-        output.problem = 9;
-        output.infostr = yalmiperror(output.problem,lasterr);
+        output = createOutputStructure(zeros(length(interfacedata.c),1)+NaN,[],[],9,yalmiperror(9,lasterr),[],[],nan);        
     end
 end
 
