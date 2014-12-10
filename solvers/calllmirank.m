@@ -65,9 +65,6 @@ switch info.solved
         problem = 11;
 end
 
-% Duals not computed
-D_struc = [];
-
 % Save ALL data sent to solver
 if options.savesolverinput
     solverinput.At = -F_struc(:,2:end);
