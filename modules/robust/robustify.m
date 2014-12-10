@@ -66,6 +66,10 @@ nInitial = yalmip('nvars');
 x = VariableType.x;
 w = VariableType.w;
 
+if isempty(UncertainModel.F_xw)
+    error('The uncertainty does not enter the model anywhere.');
+end
+
 % Experimental code for conic-conic case
 if (any(is(UncertainModel.F_xw,'sdp')) |  any(is(UncertainModel.F_xw,'socp'))) && (any(is(Uncertainty.F_w,'sdp')) |  any(is(Uncertainty.F_w,'socp')))
     SOSModel = [];
