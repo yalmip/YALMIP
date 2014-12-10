@@ -287,22 +287,6 @@ if strfind(solver.tag,'STRUL')
     return
 end
 
-% ******************************************
-% DID WE SELECT THE BMILIN SOLVER (obsolete)
-% ******************************************
-if strcmpi(solver.tag,'bmilin')
-    diagnostic = callbmilin(F,h,options);
-    return
-end
-
-% ******************************************
-% DID WE SELECT THE BMIALT SOLVER (obsolete)
-% ******************************************
-if strcmp(solver.tag,'bmialt')
-    diagnostic = callbmialt(F,h,options);
-    return
-end
-
 %******************************************
 % DID WE SELECT THE MPT solver (backwards comb)
 %******************************************
