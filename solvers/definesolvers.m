@@ -591,7 +591,7 @@ solver(i).version = '0.1';
 solver(i).checkfor= {'logdetppa'};
 solver(i).call    = 'calllogdetppa';
 solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 0;
 solver(i).objective.maxdet.convex = 1;
 i = i+1;
 
