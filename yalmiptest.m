@@ -739,7 +739,7 @@ A = [-1 2;-3 -4];
 P = sdpvar(2,2);
 alpha = sdpvar(1,1);
 F = (P>=eye(2))+(A'*P+P*A <= -2*alpha*P)+(alpha >= 0);
-sol = solvesdp(F,-alpha,ops);
+sol = solvesdp([F,P(:) <= 100],-alpha,ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 result = 'N/A';
 if pass
