@@ -2,11 +2,8 @@
 %
 % See also YALMIPTEST
 
-% Author Johan Löfberg
-% $Id: yalmipdemo.m,v 1.7 2007-04-04 07:30:58 joloef Exp $
-
-disp('Please run examples from YALMIP Wiki instead.')
 disp('The examples here are obsolute.')
+disp(sprintf('Please check out the <a href="http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Tutorials.Tutorials">on-line tutorials</a> on the YALMIP Wiki instead'));
 return
 
 % Check for paths
