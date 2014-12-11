@@ -37,7 +37,14 @@ else
     A = base(:,1);base = base(:,2:end);
     C = base(:,ismember(g_vars,x_vars));
     B = (base(:,ismember(g_vars,q_vars)));
-    [Bnull,Q1,R1] = sparsenull(B);Bnull(abs(Bnull) < 1e-12) = 0;
+    [Bnull,Q1,R1] = sparsenull(B);
+    [ii,jj,kk] = find(Bnull);
+    %Bnull(abs(Bnull) < 1e-12) = 0;
+    small = find(kk<1e-12);
+    ii(small)=[];
+    jj(small)=[];
+    kk(small)=[];
+    Bnull = sparse(ii,jj,kk,size(Bnull,1),size(Bnull,2));    
     t = sdpvar(size(Bnull,2),1);
     if options.sos.model == 2
         imQ = -Q1*(R1'\(A+C*recover(x_vars)))+Bnull*t;
