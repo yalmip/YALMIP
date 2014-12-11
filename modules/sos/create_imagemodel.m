@@ -91,21 +91,11 @@ for i = 1:length(BlockedQ)
         if ~isa(Q_new,'double')
             switch options.sos.model
                 case {2,4}
-                    F_sos = F_sos + (Q_new>=0);
-                case 5
-                    S = ones(length(Q_new));S = S - diag(diag(S));
-                    F_sos = F_sos + [diag(Q_new) >= sum(abs(S.*Q_new),2)];
+                    F_sos = F_sos + [Q_new>=0];
+                case 5                    
+                    F_sos = F_sos + [dd(Q_new)];
                 case 6
-                    M = 0;
-                    nn = size(Q_new,1);
-                    for ii = 1:nn
-                        for jj = ii+1:nn
-                            Mij = sdpvar(2);
-                            F_sos = F_sos + sdp2socp(Mij);
-                            M = M + sparse([ii jj ii jj],[ii ii jj jj],Mij(:),nn,nn);
-                        end
-                    end
-                    F_sos = F_sos + [M == Q_new];                            
+                    F_sos = F_sos + [sdd(Q_new)];                                             
                 otherwise
             end
         elseif min(eig(Q_new))<-1e-8
@@ -131,6 +121,3 @@ end
 if ~isempty(parobj)
     obj = parobj;
 end
-
-function F = sdp2socp(M)
-F=rcone(M(1,2),.5*M(1,1),M(2,2));
