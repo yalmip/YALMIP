@@ -18,8 +18,8 @@ for i = 1:Counter
                 else
                     % Fast without tracking
                     reF=real(F.clauses{j}.data);
-                    imF=imag(F.clauses{j}.data);                                            
-                    Freal.clauses{j}.data = kron(eye(2),reF) + kron([0 1;-1 0],imF);
+                    imF=imag(F.clauses{j}.data);                                                               
+                    Freal.clauses{j}.data = [reF imF;-imF reF];
                 end
                 
                 j = j+1;
