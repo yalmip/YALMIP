@@ -1,6 +1,7 @@
 function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric)
 
 persistent CACHED_SOLVERS
+persistent allsolvers
 persistent EXISTTIME
 persistent NCHECKS
 
