@@ -22,6 +22,7 @@ schur_funs = [];
 schur_variables = [];
 
 sdp_con = find(type_of_constraint == 1 | type_of_constraint == 9 | type_of_constraint == 40);
+sdpstack_con = find(type_of_constraint == 57);
 lin_con = find(type_of_constraint == 2 | type_of_constraint == 12);
 equ_con = find(type_of_constraint == 3);
 qdr_con = find(type_of_constraint == 4);
