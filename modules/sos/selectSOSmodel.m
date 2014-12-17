@@ -1,4 +1,4 @@
-function options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData);
+function options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData);
 switch options.sos.model
     case 0
         constraint_classes = constraintclass(F);

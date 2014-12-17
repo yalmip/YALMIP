@@ -225,7 +225,7 @@ end
 %% IMAGE OR KERNEL REPRESENTATION?
 % ************************************************
 noRANK = all(isinf(ranks));
-options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData);
+options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData);
 
 if ~isempty(yalmip('extvariables')) & options.sos.model == 2 & nargin<4
     disp(' ')
