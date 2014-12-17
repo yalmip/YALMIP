@@ -39,9 +39,13 @@ end
 nblocks = size(varargin,2);
 
 isasdpvar = zeros(nblocks,1);
+isachar = zeros(nblocks,1);
 for i = 1:nblocks
-    isasdpvar(i) = isa(varargin{i},'sdpvar');
-    isachar(i)   = isa(varargin{i},'char');
+    if isa(varargin{i},'sdpvar')
+        isasdpvar(i) = 1;
+    elseif isa(varargin{i},'char');
+        isachar(i) = 1;
+    end
 end
 
 % Finish if this is a symbolic expression
