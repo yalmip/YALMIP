@@ -854,9 +854,14 @@ oldc = [];
 oldK = K;
 Fremoved = [];
 if (K.f>0)
+    if (isequal(solver.tag,'BNB') && ~solver.lower.constraint.equalities.linear) ||  (isequal(solver.tag,'BMIBNB') && ~solver.lowersolver.constraint.equalities.linear)
+        badLower = 1;
+    else
+        badLower = 0;
+    end
     % reduce if user explicitely says remove, or user says nothing but
     % solverdefinitions does, and there are no nonlinear variables
-    if ((options.removeequalities==1 | options.removeequalities==2) & isempty(intersect(used_variables,nonlinearvariables))) | ((options.removeequalities==0) & (solver.constraint.equalities.linear==-1))
+    if ~badLower && ((options.removeequalities==1 | options.removeequalities==2) & isempty(intersect(used_variables,nonlinearvariables))) | ((options.removeequalities==0) & (solver.constraint.equalities.linear==-1))
         showprogress('Solving equalities',options.showprogress);
         [x_equ,H,A_equ,b_equ,factors] = solveequalities(F_struc,K,options.removeequalities==1);
         % Exit if no consistent solution exist
@@ -910,10 +915,11 @@ if (K.f>0)
         Q = H'*Q*H;Q=((Q+Q')/2);
         % LMI in new basis
         F_struc = [F_struc*[1;x_equ] F_struc(:,2:end)*H];
-    else
+    else      
         % Solver does not support equality constraints and user specifies
-        % double-sided inequalitis to remove them
-        if (solver.constraint.equalities.linear==0 | options.removeequalities==-1)
+        % double-sided inequalitis to remove them, or solver is used from
+        % lmilab or similiar solver
+        if (solver.constraint.equalities.linear==0 | options.removeequalities==-1 | badLower)
             % Add equalities
             F_struc = [-F_struc(1:1:K.f,:);F_struc];
             K.l = K.l+K.f*2;
