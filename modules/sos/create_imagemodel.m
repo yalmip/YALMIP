@@ -40,7 +40,7 @@ else
     [Bnull,Q1,R1] = sparsenull(B);
     [ii,jj,kk] = find(Bnull);
     %Bnull(abs(Bnull) < 1e-12) = 0;
-    small = find(kk<1e-12);
+    small = find(abs(kk)<1e-12);
     ii(small)=[];
     jj(small)=[];
     kk(small)=[];
