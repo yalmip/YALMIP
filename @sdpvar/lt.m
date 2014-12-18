@@ -9,22 +9,10 @@ if isa(Y,'blkvar')
     Y = sdpvar(Y);
 end
 
-warned = 0;
-if isa(X,'sdpvar')
-    if ~is(X,'quantized')
-        warning('YALMIP:strict','Strict inequalities will only (if at all) be supported on binvar/intvar variables in future versions of YALMIP. Turn off this warning using warning(''off'',''YALMIP:strict'')');
-    end
-end
-if warned == 0
-    if isa(Y,'sdpvar')
-        if ~is(Y,'quantized')
-            warning('YALMIP:strict','Strict inequalities will only (if at all) be supported on binvar/intvar variables in future versions of YALMIP. Turn off this warning using warning(''off'',''YALMIP:strict'')');
-        end
-    end
-end
+warning('YALMIP:strict','Strict inequalities are not supported. A non-strict has been added instead'')');
 
 try
-    y = constraint(X,'<',Y);
+    y = constraint(X,'<=',Y);
 catch
     error(lasterr)
 end
