@@ -260,13 +260,13 @@ clc
 yalmiptable([],header,data,formats)
 
 % Test if any LMI solver is installed.
-x = sdpvar(2);[p,~,~,m] = export(x>=0,[],[],[],[],0);
+x = sdpvar(2);[p,aux1,aux2,m] = export(x>=0,[],[],[],[],0);
 if ~isempty(m)
   only_lmilab = strcmpi(m.solver.tag,'lmilab');
 else
   only_lmilab = 0;
 end
-x = binvar(1);[p,~,~,m] = export(x>=0,[],[],[],[],0);
+x = binvar(1);[p,aux1,aux2,m] = export(x>=0,[],[],[],[],0);
 if ~isempty(m)
   only_bnb = strcmpi(m.solver.tag,'bnb');
 else
