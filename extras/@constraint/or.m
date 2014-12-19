@@ -1,6 +1,8 @@
 function varargout = or(varargin)
 %OR (overloaded)
 
+% Prune empty clauses
+varargin = {varargin{find(~cellfun('isempty',varargin))}};
 % Models OR using a nonlinear operator definition
 switch class(varargin{1})
     case 'char'
