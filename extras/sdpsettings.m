@@ -1146,7 +1146,7 @@ end
 
 function linprog = setup_linprog_options
 try
-    linprog = trytoset('quadprog');
+    linprog = trytoset('linprog');
 catch
     linprog.param = [];
 end
