@@ -36,7 +36,7 @@ if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showp
 
 problem = 0;  
 warnState = warning;
-tic
+solvertime = tic;
 try
     [x_s,y_s,info] = sedumi(-F_struc(:,2:end),-c,F_struc(:,1),K,pars);
 catch
@@ -67,7 +67,7 @@ catch
     end
 end
 warning(warnState);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 
 
