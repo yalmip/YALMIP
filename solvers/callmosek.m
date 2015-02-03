@@ -238,7 +238,15 @@ switch res.sol.itr.prosta
     case 'MSK_RES_TRM_STALL'
         problem = 4;
     case 'UNKNOWN'
-        problem = 9;
+        try
+            if isequal(res.rcodestr,'MSK_RES_TRM_STALL')
+                problem = 4;
+            else
+                problem = 9;
+            end
+        catch
+            problem = 9;
+        end
     otherwise
         problem = -1;
 end
@@ -377,7 +385,15 @@ switch res.sol.itr.prosta
     case 'PRIMAL_INFEASIBLE'
         problem = 2;
     case 'UNKNOWN'
-        problem = 9;
+        try
+            if isequal(res.rcodestr,'MSK_RES_TRM_STALL')
+                problem = 4;
+            else
+                problem = 9;
+            end
+        catch
+            problem = 9;
+        end
     otherwise
         problem = -1;
 end
