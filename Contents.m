@@ -1,5 +1,5 @@
 % YALMIP
-% Version 18-Dec-2014
+% Version 04-Feb-2015
 %
 % Information
 %
