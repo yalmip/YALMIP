@@ -186,17 +186,21 @@ catch
 end
 
 if model.options.saveduals & ~isempty(x)
-    D_struc = [res.sol.itr.xx];    
-    top = 1;
-    for i = 1:length(model.K.s)
-        X = zeros(model.K.s(i));
-        n = model.K.s(i);
-        I = find(tril(ones(n)));
-        X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
-        X = X + tril(X,-1)';
-        D_struc = [D_struc;X(:)];
-        top = top + n*(n+1)/2;
-    end
+   try
+        D_struc = [res.sol.itr.xx];
+        top = 1;
+        for i = 1:length(model.K.s)
+            X = zeros(model.K.s(i));
+            n = model.K.s(i);
+            I = find(tril(ones(n)));
+            X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
+            X = X + tril(X,-1)';
+            D_struc = [D_struc;X(:)];
+            top = top + n*(n+1)/2;
+        end
+   catch
+        D_struc = [];
+   end
 else
     D_struc = [];
 end
