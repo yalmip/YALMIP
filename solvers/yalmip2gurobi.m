@@ -110,7 +110,7 @@ model.lb = LB;
 model.ub = UB;
 model.objcon = full(interfacedata.f);
 model.vtype = VARTYPE;
-model.Q = Q;
+model.Q = sparse(Q);
 
 if ~isequal(K.q,0)
     top = n_original + 1;
