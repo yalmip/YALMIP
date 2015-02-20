@@ -63,7 +63,7 @@ for i = 1:length(p)
         [exponent_p,p_base] = getexponentbase(p(i),recover(depends(p(i))));
         ParametricIndicies = find(ismember(allvar,t));
         % FIX : don't define it here, wait until sparser below. Speed!!
-        tempbase = parameterizedbase(p(i),[],recover(t),ParametricIndicies,exponent_p,p_base);
+        tempbase = parameterizedbase(p(i),[],recover(t),ParametricIndicies,exponent_p,p_base,allvar);
         [i,j,k] = unique(full(exponent_p(:,find(~ismember(allvar,t)))),'rows');
         V = sparse(1:length(k),k,1,length(tempbase),max(k))';
         base = [base;V*tempbase];
@@ -159,7 +159,7 @@ else
 end
 
 
-function p_base_parametric = parameterizedbase(p,z, params,ParametricIndicies,exponent_p,p_base)
+function p_base_parametric = parameterizedbase(p,z, params,ParametricIndicies,exponent_p,p_base,allvar)
 
 % Check for linear parameterization
 parametric_basis = exponent_p(:,ParametricIndicies);
@@ -192,7 +192,7 @@ else
     % Bummer, nonlinear parameterization sucks...
     [mt,variabletype,hashedmonoms,hashkey] = yalmip('monomtable');
     exponent_p_ParametricIndicies = exponent_p(:,ParametricIndicies);
-    LocalHash = exponent_p_ParametricIndicies*hashkey(ParametricIndicies);
+    LocalHash = exponent_p_ParametricIndicies*hashkey(allvar(ParametricIndicies));
     [yn,loc] = ismember(LocalHash,hashedmonoms);
     something = any(exponent_p_ParametricIndicies,2);
     dummy = sdpvar(1);
