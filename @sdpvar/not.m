@@ -23,7 +23,14 @@ switch class(varargin{1})
         if nargin > 1
             error('Wrong numbers of arguments.');
         end
-        varargout{1} = yalmip('define','not',varargin{1});
         
+        dim = size(varargin{1});
+        allnot = [];
+        for j = 1:prod(dim)
+            temp = extsubsref(varargin{1},j);
+            allnot = [allnot; yalmip('define','not',temp)];
+        end
+        varargout{1} = reshape(allnot,dim);
+                
     otherwise
 end
