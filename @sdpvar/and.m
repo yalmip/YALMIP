@@ -22,8 +22,9 @@ switch class(varargin{1})
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = xy;
 
-    case {'sdpvar','double','logical'}
-        varargout{1} = yalmip('define','and',varargin{:});
+    case {'sdpvar','double','logical'}   
+        
+        varargout{1} = vectorizedlogic(@and,varargin{:});
 
     otherwise
 end

@@ -38,20 +38,10 @@ switch class(varargin{1})
         varargout{3} = xy;
 
     case {'sdpvar','double','logical'}
-        if nargin == 1
-            if length(varargin{1})==1
-                varargout{1} = varargin{1};
-            else
-                x = varargin{1};
-                x = reshape(x,[],1);
-                for i = 1:length(x)
-                    temp = extsubsref(x,i);
-                    varargin{i} = temp;
-                end
-                varargout{1} = yalmip('define','xor',varargin{:});
-            end
-        else
-            varargout{1} = yalmip('define','xor',varargin{:});
-        end
+        
+        varargout{1} = vectorizedlogic(@xor,varargin{:});
+      
     otherwise
 end
+
+

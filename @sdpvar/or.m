@@ -23,21 +23,8 @@ switch class(varargin{1})
         varargout{3} = xy;
             
     case {'sdpvar','double','logical'}
-        if nargin == 1
-            if length(varargin{1})==1
-                varargout{1} = varargin{1}
-            else
-                x = varargin{1};
-                % bug in matlab...
-                %temp = or(x(1),x(2));
-                temp = or(extsubsref(x,1),extsubsref(x,2));
-                for i = 3:length(x)
-                    temp = or(temp,extsubsref(x,i));
-                end
-                 varargout{1} = temp;
-            end           
-        else          
-            varargout{1} = yalmip('define','or',varargin{:});
-        end
+        
+        varargout{1} = vectorizedlogic(@or,varargin{:});
+
     otherwise
 end
