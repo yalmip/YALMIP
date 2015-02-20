@@ -9,9 +9,6 @@ function varargout = and(varargin)
 %
 % See also SDPVAR/OR, SDPVAR/XOR, SDPVAR/NOT, BINVAR, BINARY
 
-if isa(varargin{1},'double')
-    varargin = {varargin{[2:nargin 1]}};
-end
 switch class(varargin{1})
     case 'char'
         
@@ -25,7 +22,7 @@ switch class(varargin{1})
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = xy;
 
-    case 'sdpvar'
+    case {'sdpvar','double','logical'}
         varargout{1} = yalmip('define','and',varargin{:});
 
     otherwise

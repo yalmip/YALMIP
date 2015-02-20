@@ -21,8 +21,8 @@ switch class(varargin{1})
         varargout{1} = (sum(xy) >= z) + (z >= xy) +(binary(z));
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
         varargout{3} = xy;
-
-    case 'sdpvar'
+            
+    case {'sdpvar','double','logical'}
         if nargin == 1
             if length(varargin{1})==1
                 varargout{1} = varargin{1}
