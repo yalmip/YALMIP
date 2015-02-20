@@ -1,7 +1,7 @@
 function varargout = vectorizedlogic(fun,varargin);
 if nargin-1 == 1
     if length(varargin{1})==1
-       % What should be returned on OR(1) etc?
+       % What should be returned on operator(scalar)?
        varargout{1} = varargin{1};
     else
         x = varargin{1};        
@@ -14,12 +14,12 @@ if nargin-1 == 1
 else
     dim = size(varargin{1});
     if max(dim) > 1
-        % Vectorized xor
+        % Vectorized operator
         % First normalize to vectors
         for i = 1:nargin-1
             varargin{i} = reshape(varargin{i},prod(dim),1);
         end
-        % And now for every element, create an or operator
+        % And now for every element, create an operator
         result = [];
         for j = 1:prod(dim)
             for i = 1:nargin-1
@@ -30,7 +30,7 @@ else
         % Devectorize to original shape
         varargout{1} = reshape(result,dim);
     else
-        % Scalar xor(x,y,z,...)
+        % Scalar operator(x,y,z,...)
         varargout{1} = yalmip('define',func2str(fun),varargin{:});
     end
 end
