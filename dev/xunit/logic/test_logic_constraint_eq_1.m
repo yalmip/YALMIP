@@ -8,6 +8,25 @@ mbg_asserttrue(sol.problem == 0);
 % Since a is 0, b has to be false or constraint violated
 mbg_asserttrue(double(a)==0 && (double(b)==0 || double(x)>=5));
 
+F = true(or(0,a));
+sol = solvesdp(F,a);
+mbg_asserttrue(sol.problem == 0);
+mbg_asserttrue(double(1)==1);
+
+F = true(and(0,a));
+sol = solvesdp(F,a);
+mbg_asserttrue(sol.problem == 1);
+
+F = true(xor(0,a));
+sol = solvesdp(F,a);
+mbg_asserttrue(sol.problem == 0);
+mbg_asserttrue(double(1)==1);
+
+F = true(xor(1,a));
+sol = solvesdp(F,-a);
+mbg_asserttrue(sol.problem == 0);
+mbg_asserttrue(double(1)==0);
+
 sol = solvesdp(F,x^2 + 1-b)
 mbg_asserttrue(double(a)==1 && (double(b)==1 || double(x)==0));
 
