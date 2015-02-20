@@ -4,9 +4,7 @@ if nargin-1 == 1
        % What should be returned on OR(1) etc?
        varargout{1} = varargin{1};
     else
-        x = varargin{1};
-        % bug in matlab...
-        %temp = xor(x(1),x(2));
+        x = varargin{1};        
         temp = fun(x(1),x(2));
         for i = 3:length(x)
             temp = fun(temp,x(i));
