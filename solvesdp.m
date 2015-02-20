@@ -428,7 +428,7 @@ if ~isempty(output.Primal)
         yalmip('setsolution',solution_internal);
     end
 end
-if interfacedata.options.saveduals & solver.dual
+if interfacedata.options.saveduals & solver.dual 
     if isempty(interfacedata.Fremoved) | (nnz(interfacedata.Q)>0)
         try
             setduals(F,output.Dual,interfacedata.K);
@@ -455,13 +455,20 @@ end
 if strcmp(solver.tag,'GUROBI-GUROBI')
     if length(ForiginalQuadratics) > 0
         if isfield(output,'qcDual')
-            if length(output.qcDual) == length(ForiginalQuadratics)
-                Ktemp.l = length(output.qcDual);
-                Ktemp.f = 0;
-                Ktemp.q = 0;
-                Ktemp.s = 0;
-                Ktemp.r = 0;
-                setduals(ForiginalQuadratics,-output.qcDual,Ktemp);
+            if length(output.qcDual) == length(ForiginalQuadratics)               
+             %   Ktemp.l = length(output.qcDual);
+             %   Ktemp.f = 0;
+             %   Ktemp.q = 0;
+             %   Ktemp.s = 0;
+             %   Ktemp.r = 0;
+                Ftemp = F + ForiginalQuadratics;
+                K = interfacedata.K;
+                Ktemp = K;
+                Ktemp.l = Ktemp.l + length(ForiginalQuadratics);
+                tempdual = output.Dual;
+                tempdual = [tempdual(1:K.f + K.l);-output.qcDual;tempdual(1+K.f+K.l:end)];
+                setduals(Ftemp,tempdual,Ktemp);
+%                setduals(ForiginalQuadratics,-output.qcDual,Ktemp);
             end
         end
     end
