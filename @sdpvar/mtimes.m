@@ -577,7 +577,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
             if ~isa(Y,'double')
                 Y = double(Y);
             end
-            Z.basis = kron(Y.',speye(n_X))*X.basis;
+            temp_n = size(X.basis, 1) / n_Y;
+            temp_m = size(X.basis, 2);
+            Z.basis = reshape(reshape(X.basis.', [temp_n*temp_m n_Y])*Y, [temp_m m_Y*temp_n]).';
         end
         Z.conicinfo = [0 0];
         Z.extra.opname='';
@@ -661,9 +663,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 if ~isa(X,'double')
                     X = double(X);
                 end
-                speyemy = speye(m_Y);
-                kronX = kron(speyemy,X);
-                Z.basis = kronX*Y.basis;
+                temp_n = size(Y.basis, 1) / m_X;
+                temp_m = size(Y.basis, 2);
+                Z.basis = reshape(X*reshape(Y.basis, [m_X m_Y*temp_m]), [n_X*temp_n temp_m]);
             catch
                 disp('Multiplication of SDPVAR object caused memory error');
                 disp('Continuing using unvectorized version which is extremely slow');
