@@ -63,7 +63,7 @@ end
 % Quick cell-based only for real full/symmetric matrices, so just
 % iteratively call sdpvar to generate all cells
 if length(varargin{1}) > 2 && nargin <= 4 && nargin > 2
-    if (nargin == 4 && strfind('complex',varargin{4})) || (nargin >= 3 && (isequal('toeplitz',varargin{3}) || isequal('hankel',varargin{3})))
+    if (nargin == 4 && isequal('complex',varargin{4})) || (nargin >= 3 && (isequal('toeplitz',varargin{3}) || isequal('hankel',varargin{3})))
         n = varargin{1};
         m = varargin{2};
         structure = varargin{3};
