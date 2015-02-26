@@ -108,7 +108,16 @@ elseif isequal(subs.type,'{}')
             % presolve has benefits when the are stuff like log
             self.model.presolveequalities = length(self.model.evalMap > 0);
             if ~infeasible                          
+                if self.model.options.usex0                 
+                    self.model.x0 = zeros(length(self.model.c),1);
+                    self.model.x0 = self.lastsolution;
+                else
+                    self.model.x0 = [];
+                end
                 eval(['output = ' self.model.solver.call '(self.model);']);
+                if output.problem == 0 && self.model.options.usex0                    
+                     self.lastsolution = output.Primal;
+                end
                 x = originalModel.c*0;
                 x(keptvariables) = output.Primal;
                 output.Primal = x;
@@ -125,8 +134,16 @@ elseif isequal(subs.type,'{}')
                     error('After fixing parameters, there are still nonlinear operators in the model, but the solver does not support this. Note that YALMIP is not guaranteed to remove all operators, even though they only contain parametric expressions. As an example, exp(1+parameter) will not be reduced, while exp(parameter) will. You will have to use another solver, or reparameterize your model (look at exp(1+parameter) as a new parameter instead)');
                 end
                 self.model.F_struc(1:prod(self.dimin),1) = thisData(:);
-            end         
-            output = self.model.solver.callhandle(self.model);           
+            end
+            if self.model.options.usex0
+                self.model.x0 = self.lastsolution;
+            else
+                self.model.x0 = [];
+            end
+            output = self.model.solver.callhandle(self.model);
+            if output.problem == 0 && self.model.options.usex0
+                self.lastsolution = output.Primal;
+            end
         end
         if output.problem==1
             output.Primal = output.Primal+nan;
