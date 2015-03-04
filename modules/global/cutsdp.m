@@ -741,7 +741,7 @@ function p_lp = removeRedundant(p_lp);
 
 F = unique(p_lp.F_struc(1+p_lp.K.f:end,:),'rows');
 if size(F,1) < p_lp.K.l
-    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f:end,:);F];
+    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);F];
     p_lp.K.l = size(F,1);
 end
 
