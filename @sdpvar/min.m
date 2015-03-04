@@ -76,7 +76,7 @@ switch nargin
             X = X*ones(ny,my);
             nx = ny;
             mx = my;
-        elseif ny==my
+        elseif ny*my==1
             Y = Y*ones(nx,mx);
             ny = nx;
             my = mx;
