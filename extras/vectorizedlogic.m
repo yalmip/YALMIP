@@ -13,11 +13,22 @@ if nargin-1 == 1
     end
 else
     dim = size(varargin{1});
+    % Non-scalar element?
+    for i = 2:length(varargin)
+        if prod(size(varargin{i})) > prod(size(dim)) 
+            dim = size(varargin{i});
+        end
+    end
+    
     if max(dim) > 1
         % Vectorized operator
         % First normalize to vectors
         for i = 1:nargin-1
-            varargin{i} = reshape(varargin{i},prod(dim),1);
+            if numel(varargin{i}) == 1
+                varargin{i} = repmat(varargin{i},prod(dim),1);
+            else
+                varargin{i} = reshape(varargin{i},prod(dim),1);
+            end
         end
         % And now for every element, create an operator
         result = [];
