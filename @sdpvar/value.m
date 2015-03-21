@@ -180,11 +180,26 @@ if ~isempty(allextended)
                         end
                 
                     case 'or'
-                        val = any([extstruct.arg{1:end-1}]);
+                        temp = [extstruct.arg{1:end-1}];
+                        if any(isnan(temp))
+                            val = NaN;
+                        else
+                            val = any(temp);
+                        end
                     case 'and'
-                        val = all([extstruct.arg{1:end-1}]);
+                        temp = [extstruct.arg{1:end-1}];
+                        if any(isnan(temp))
+                            val = NaN;
+                        else
+                            val = all(temp);
+                        end
                     case 'xor'
-                        val = nnz([extstruct.arg{1:end-1}]) == 1;
+                        temp = [extstruct.arg{1:end-1}];
+                        if any(isnan(temp))
+                            val = NaN;
+                        else
+                            val = nnz([extstruct.arg{1:end-1}]) == 1;
+                        end
                     case 'abs'
                         try
                             % ABS has predefined binary appended to
