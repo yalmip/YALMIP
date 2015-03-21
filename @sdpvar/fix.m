@@ -17,7 +17,7 @@ switch class(varargin{1})
         
     case 'char' % YALMIP send 'graph' when it wants the epigraph or hypograph
         switch varargin{1}
-            case {'milp','graph'}
+            case {'milp','graph','exact'}
                 % Description using epigraphs
                 t = varargin{2};
                 X = varargin{3};
