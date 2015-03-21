@@ -1,20 +1,33 @@
 function SOSModel = dualtososrobustness(UncertainConstraint,UncertaintySet,UncertainVariables,DecisionVariables,p_tau_degree,localizer_tau_degree,Z_degree)
   
 [E,F] = getEFfromSET(UncertaintySet);
-[F0,Fz,Fx] = getFzxfromSET(UncertainConstraint,UncertainVariables,DecisionVariables);
+[F0,Fz,Fx,Fxz] = getFzxfromSET(UncertainConstraint,UncertainVariables,DecisionVariables);
 
 if is(UncertainConstraint,'sdp')
     n = length(F0);
     v = sdpvar(n,1);
     d = v'*F0*v;
     b = [];for i = 1:length(Fx);b = [b;v'*Fx{i}*v];end
-    c = [];for i = 1:length(Fz);c = [c;v'*Fz{i}*v];end
+    c = [];for i = 1:length(Fz);c = [c;v'*Fz{i}*v];end   
+    if ~isempty(Fxz)
+        A = [];
+        for i = 1:size(Fxz,1);
+            a = [];
+            for j = 1:size(Fxz,2);
+                a = [a v'*Fxz{i,j}*v];
+            end
+            A = [A;a];
+        end
+    else
+        A = zeros(length(Fx),length(Fz));
+    end
 elseif is(UncertainConstraint,'socp')
     n = length(F0)-1;
     v = sdpvar(n,1);
     d = [1 v']*F0;
     b = [];for i = 1:length(Fx);b = [b;[1 v']*Fx{i}];end
     c = [];for i = 1:length(Fz);c = [c;[1 v']*Fz{i}];end
+    A = zeros(length(Fx),length(Fz));
 end
 [Z,coeffs] = createDualParameterization(UncertaintySet,v,Z_degree);
 
@@ -23,7 +36,7 @@ Zblock = blkdiag(Z{:});
 
 D = [];
 for i = 1:length(F)
-    D = [D, coefficients(trace(Zblock'*F{i})-c(i),v)==0];
+    D = [D, coefficients(trace(Zblock'*F{i})-(A(:,i)'*DecisionVariables + c(i)),v)==0];
 end
 
 [trivialFixed,thevalue] = fixedvariables(D);
