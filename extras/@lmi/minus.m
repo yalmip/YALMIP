@@ -11,6 +11,10 @@ if isempty(Y)
     return
 end
 
+if isa(Y,'double') || isa(X,'double')
+    error('You cannot substract a point from a set of constraint. Constraint substraction is only used removal of constraints. To translate a set, use REPLACE')
+end
+
 idX = getlmiid(X);
 idY = getlmiid(Y);
 YinX = find(~ismember(idX,idY));
