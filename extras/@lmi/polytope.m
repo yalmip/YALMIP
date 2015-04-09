@@ -5,8 +5,8 @@ function [P,x] = polytope(X,options)
 % [P,x] = polytope(F)
 %
 % P : polytope object (Requires the Multi-parametric Toolbox)
-% x : sdpvar object defining the variables in the polytope P.H*x<P.K
-% F : set-object with linear inequalities
+% x : sdpvar object defining the variables in the polytope P.H*x<=P.K
+% F : Constraint object with linear inequalities
 
 if nargin < 2
     options = sdpsettings;
