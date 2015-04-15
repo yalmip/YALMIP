@@ -27,7 +27,7 @@ elseif isa(X,'sdpvar') & is(X,'binary') & is(X,'lpcone') &  isa(Y,'double') &  i
         lhs = lhs + sum(1-extsubsref(X,ov));
     end
     F = (lhs >=1);
-elseif isa(X,'sdpvar') & is(X,'integer') &  isa(Y,'double')
+elseif isa(X,'sdpvar') & is(X,'integer')% &  isa(Y,'double')
     X = reshape(X,[],1);
     Y = reshape(Y,[],1);
     if length(X)>1 & length(Y)==1
