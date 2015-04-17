@@ -58,7 +58,7 @@ newMonoms = [];
 for i = 1:length(model.evaluation_scheme)
     switch model.evaluation_scheme{i}.group
         case 'eval'
-            if i>1
+            if i>1              
                 for variable = 1:length(model.linearindicies)
                     if ss(variable)
                         for j = recursivederivativeprecompute{variable,i}
@@ -66,7 +66,11 @@ for i = 1:length(model.evaluation_scheme)
                             if length(model.evalMap{j}.computes) == 1
                                 dX(model.evalMap{j}.computes,variable) = dX(k,variable)'*z{i,j};
                             else
-                                dX(model.evalMap{j}.computes,variable) = dX(k,variable).*z{i,j};
+                             val = dX(k,variable).*z{i,j};
+                             if any(val)
+                                 idx = find(val);
+                                 dX(model.evalMap{j}.computes(idx),variable) = val(idx);
+                             end
                             end
                         end
                     end
@@ -83,13 +87,16 @@ for i = 1:length(model.evaluation_scheme)
                 if ~isempty(Bilinears)
                     x1 = model.BilinearsList(Bilinears,1);
                     x2 = model.BilinearsList(Bilinears,2);
-                    dX(sub2ind(size(dX),[Bilinears(:);Bilinears(:)],[x1;x2]))=x([x2;x1]);
+                    [~,x1loc] = ismember(x1,model.linearindicies);
+                    [~,x2loc] = ismember(x2,model.linearindicies);
+                    dX(sub2ind(size(dX),[Bilinears(:);Bilinears(:)],[x1loc;x2loc]))=x([x2;x1]);
                 end
                 QuadraticIndex = find(model.variabletype(computed)==2);
                 Quadratics = computed(QuadraticIndex);
                 if ~isempty(Quadratics)
                     x1 =  model.QuadraticsList(Quadratics,1);
-                    dX(sub2ind(size(dX),Quadratics',x1))=2*x(x1);
+                    [~,x1loc] = ismember(x1,model.linearindicies);
+                    dX(sub2ind(size(dX),Quadratics',x1loc))=2*x(x1);
                 end
                 computed([BilinearIndex QuadraticIndex])=[];
             end
