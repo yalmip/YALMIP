@@ -84,7 +84,7 @@ if nargin > 1
     be = b(1:p_cut.K.f,:);
     A = A(1+p_cut.K.f:end,:);
     b = b(1+p_cut.K.f:end,:);
-    P = Polyhedron('A',A,'b',b,'Ae',Ae,'be',be);
+    P = Polyhedron('A',A,'b',b,'Ae',full(Ae),'be',full(be));
     P = projection(P,1:length(xi));
     E = ismember(x,P);
 else
