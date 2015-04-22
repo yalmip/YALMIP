@@ -79,12 +79,16 @@ elseif isequal(subs.type,'{}')
     aux2 = [];
     for i = 1:dimBlocks(1)
         aux2 = [];
+        try
         for j = 1:length(subs.subs{1})
             temp = subs.subs{1}{j}(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
             temp = temp(:);
             temp = temp(self.mask{j});
             aux2 = [aux2;temp];
              left(j) = left(j) + self.diminOrig{j}(2);
+        end
+        catch
+            error('The dimension on a supplied parameter value does not match the definition.');
         end
         %left = left + self.diminOrig{1}(2);
         aux = [aux aux2];
