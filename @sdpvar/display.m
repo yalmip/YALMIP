@@ -15,7 +15,7 @@ switch(X.typeflag)
                 if linearbilinearquadraticsigmonial(1)
                     classification = 'Linear scalar ';
                 elseif linearbilinearquadraticsigmonial(4)
-                    classification = 'Sigmonial scalar ';
+                    classification = 'Signomial scalar ';
                 elseif linearbilinearquadraticsigmonial(2)
                     classification = 'Bilinear scalar ';
                 elseif linearbilinearquadraticsigmonial(3)
@@ -87,7 +87,7 @@ switch(X.typeflag)
                 if islinear(X)
                     classification = 'Linear matrix variable ';
                 elseif is(X,'sigmonial')
-                    classification = 'Sigmonial matrix variable ';
+                    classification = 'Signomial matrix variable ';
                 elseif is(X,'bilinear')
                     classification = 'Bilinear matrix variable ';
                 elseif is(X,'quadratic')
