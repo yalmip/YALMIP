@@ -33,6 +33,10 @@ if output.cplexstatus == 4 | output.cplexstatus == 119
 end
 
 % Inconstency in early version of CPLEX
+dots = find(interfacedata.solver.subversion == '.');
+if length(dots)>1
+    interfacedata.solver.subversion(dots(2:end))=[];
+end
 if str2num(interfacedata.solver.subversion)>=12.3
     the_sign = 1;
 else
