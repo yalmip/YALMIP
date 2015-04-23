@@ -77,9 +77,9 @@ else
                 K = aux.K;
                 A = -aux.F_struc((1+K.f):(K.f + K.l),2:end);
                 b =  aux.F_struc((1+K.f):(K.f + K.l),1);
-                P = polytope(A,b);
+                P = polytope(full(A),full(b));
                 try
-                    vertices = extreme(polytope(A,b))';
+                    vertices = extreme(P)';
                 catch
                     error('The uncertainty space is unbounded (could be an artefact of YALMIPs modelling of nonolinear oeprators).')
                 end
