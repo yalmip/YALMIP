@@ -89,7 +89,7 @@ case -3
  case 8
   error_string = ['Feasibility cannot be determined ' solver ];	
  case 9
-  error_string = ['Unknown problem in solver (try using ''debug''-flag in sdpsettings) ' solver ];
+  error_string = ['Unknown problem in solver (Turn on ''debug'' in sdpsettings) ' solver ];
  case 10
   error_string = ['bigM failed, increase sp.Mfactor ' solver ];
  case 11
