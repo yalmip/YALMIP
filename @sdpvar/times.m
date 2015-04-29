@@ -18,6 +18,16 @@ if isa(Y,'blkvar')
     Y = sdpvar(Y);
 end
 
+if isa(X,'double')
+    if any(isnan(X))
+        error('Multiplying NaN with an SDPVAR makes no sense.');
+    end
+end
+if isa(Y,'double')
+    if any(isnan(Y))
+        error('Multiplying NaN with an SDPVAR makes no sense.');
+    end
+end
 
 if isempty(X)
     YY = full(reshape(Y.basis(:,1),Y.dim(1),Y.dim(2)));

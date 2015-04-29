@@ -44,6 +44,17 @@ if X_is_spdvar && Y_is_spdvar
     end
 end
 
+if ~X_is_spdvar
+    if any(isnan(X))
+       error('Multiplying NaN with an SDPVAR makes no sense.');
+    end
+end
+if ~Y_is_spdvar
+    if any(isnan(Y))
+       error('Multiplying NaN with an SDPVAR makes no sense.');
+    end
+end
+
 % Different code for
 % 1 : SDPVAR * DOUBLE
 % 2 : DOUBLE * SDPVAR

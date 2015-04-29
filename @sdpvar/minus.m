@@ -37,11 +37,19 @@ if X_is_spdvar
         y = X + uminus(Y);
         return
     end
+else
+    if any(isnan(X))
+        error('Adding NaN to an SDPVAR makes no sense.');
+    end
 end
 if Y_is_spdvar
     if is(Y,'gkyp') 
         y =X + uminus(Y);
         return
+    end
+else
+    if any(isnan(Y))
+        error('Adding NaN to an SDPVAR makes no sense.');
     end
 end
 

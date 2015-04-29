@@ -41,12 +41,20 @@ if X_is_spdvar
         y = addgkyp(X,Y);
         return
     end
+else
+    if any(isnan(X))
+        error('Adding NaN to an SDPVAR makes no sense.');
+    end
 end
 if Y_is_spdvar
     if Y.typeflag == 40
         y = addgkyp(Y,X);
         return
     end
+else
+     if any(isnan(Y))
+        error('Adding NaN to an SDPVAR makes no sense.');
+     end
 end
 
 switch 2*X_is_spdvar+Y_is_spdvar
