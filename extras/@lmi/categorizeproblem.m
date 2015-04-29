@@ -436,16 +436,20 @@ if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
                 [R,p]=chol(Q);
             end
             if p~=0
-                Q = full(Q);
-                if min(eig(Q))>=-1e-10
-                    p=0;
-                    try
-                        [U,S,V]=svd(Q);
-                    catch
-                        [U,S,V]=svd(full(Q));
+                if any(~diag(Q) & any(triu(Q,1),2))
+                    % Diagonal zero but non-zero outside, cannot be convex
+                else
+                    Q = full(Q);
+                    if min(eig(Q))>=-1e-10
+                        p=0;
+                        try
+                            [U,S,V]=svd(Q);
+                        catch
+                            [U,S,V]=svd(full(Q));
+                        end
+                        i = find(diag(S)>1e-10);
+                        R = sqrt(S(1:max(i),1:max(i)))*V(:,1:max(i))';
                     end
-                    i = find(diag(S)>1e-10);
-                    R = sqrt(S(1:max(i),1:max(i)))*V(:,1:max(i))';
                 end
             end
             if p==0
