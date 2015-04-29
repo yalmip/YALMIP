@@ -54,9 +54,9 @@ else
 end
 
 %warning('off','optim:fmincon:NLPAlgLargeScaleConflict')
-tic
+solvertime = tic;
 [xout,fmin,flag,output,lambda] = fmincon('fmincon_fun',model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,callback_con,model.options.fmincon,model);
-solvertime = toc;
+solvertime = toc(solvertime);
 %warning('on','optim:fmincon:NLPAlgLargeScaleConflict')
 
 x = RecoverNonlinearSolverSolution(model,xout);

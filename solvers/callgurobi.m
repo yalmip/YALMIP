@@ -9,9 +9,9 @@ if interfacedata.options.savedebug
 end
 
 if options.showprogress;showprogress('Calling GUROBI',options.showprogress);end
-tic
+solvertime = tic;
 result = gurobi(model,model.params);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Gurobi assumes semi-continuous variables only can take negative values so
 % we negate semi-continuous violating this

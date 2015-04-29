@@ -11,9 +11,9 @@ if interfacedata.options.savedebug
     save cplexdebug model
 end
 
-tic
+solvertime = tic;
 [x,fval,exitflag,output,lambda] = localSolverCall(model);
-solvertime = toc;
+solvertime = toc(solvertime);
 if output.cplexstatus == 4 | output.cplexstatus == 119
     % CPLEX reports infeasible OR unbounded
     % Remove objective and resolve

@@ -114,13 +114,13 @@ if problem == 0
     % Call MOSEK   
     showprogress('Calling MOSEK',model.options.showprogress);    
     if model.options.verbose == 0  
-        tic
+        solvertime = tic;
         res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize echo(0)');
-        solvertime = toc;
+        solvertime = toc(solvertime);
     else
-        tic
+        solvertime = tic;
     	res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');     
-        solvertime = toc;
+        solvertime = toc(solvertime);
     end
     sol = res.sol;
     
