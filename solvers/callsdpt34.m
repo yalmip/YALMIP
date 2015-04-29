@@ -148,9 +148,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 [obj,X,y,Z,info,runhist] =  sdpt3(blk,A,C,b,options.sdpt3,[],x0,[]);            
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create YALMIP dual variable and slack
 Dual = [];
