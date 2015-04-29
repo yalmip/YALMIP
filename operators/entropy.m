@@ -45,8 +45,7 @@ switch class(varargin{1})
         operator.domain = [0 inf];
         operator.bounds = @bounds;
         operator.convexhull = @convexhull;
-        operator.derivative = @(x) (-1-log(x));
-
+        operator.derivative = @derivative;
         varargout{1} = F;
         varargout{2} = operator;
         varargout{3} = X;
@@ -55,6 +54,9 @@ switch class(varargin{1})
         error('SDPVAR/LOG called with CHAR argument?');
 end
 
+function df = derivative(x)
+x(x<=0)=eps;
+df = (-1-log(x));
 
 function [L, U] = bounds(xL,xU)
 
