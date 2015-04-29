@@ -500,6 +500,7 @@ if ~isempty(solver)
             solver.constraint.inequalities.semidefinite.quadratic = 1;
             solver.constraint.inequalities.semidefinite.polynomial = 1;
             solver.dual = 1;
+            solver.evaluation = 1;
         end
     end
 end
