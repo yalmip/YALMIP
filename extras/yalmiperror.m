@@ -26,7 +26,8 @@ function error_string = yalmiperror(errorcode,solver)
 %     8 Feasibility cannot be determined
 %     9 Unknown problem in solver
 %    10 bigM failed (obsolete)  
-%    11 Other identified error
+%    11 Other identified error (use savesolveroutput and refer to solver
+%    documentation)
 %    12 Infeasible or unbounded
 %    13 YALMIP cannot determine status in solver
 %    14 Model creation failed
