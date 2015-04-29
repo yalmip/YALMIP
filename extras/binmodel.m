@@ -241,7 +241,7 @@ function F = binary_times_cont(d,y, z)
 if infbound
     error('Some of your continuous variables are not explicitly bounded.')
 end
-F = [(1-d)*M >= y - z >= m*(1-d), d*m <= z <= d*M, m <= z <= M];
+F = [(1-d)*M >= y - z >= m*(1-d), d*m <= z <= d*M, min(0,m) <= z <= max(0,M)];
                 
 
 
