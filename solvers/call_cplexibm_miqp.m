@@ -71,6 +71,8 @@ switch output.cplexstatus
         problem = 15;
     case {5,6,109,110}
         problem = 4; % Numerics
+    case 24
+        problem = 11;
     otherwise
         problem = -1;
 end
