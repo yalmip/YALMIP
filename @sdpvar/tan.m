@@ -14,7 +14,7 @@ switch class(varargin{1})
         operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
         operator.convexhull = [];
         operator.bounds = @bounds;
-        operator.derivative = @(x)(-1./cos(x));
+        operator.derivative = @(x)(sec(x).^2);
 
         varargout{1} = [];
         varargout{2} = operator;
