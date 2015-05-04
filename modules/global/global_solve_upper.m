@@ -57,6 +57,10 @@ catch
     output.Primal = zeros(length(p_upper.lb),1);
     output.Problem = -1;
 end
+if isempty(output.Primal)
+     output.Primal = zeros(length(p_upper.lb),1);
+end
+
 timing.uppersolve = timing.uppersolve + toc(tstart);
 
 % Project into the box (numerical issue)
