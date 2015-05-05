@@ -224,6 +224,9 @@ switch lower(solver.tag)
                 
     case 'pensdp-penopt'        
         model = yalmip2pensdp(interfacedata);
+        
+    case 'penlab'
+        model.penstruct = sedumi2penbmi(interfacedata.F_struc,interfacedata.c,interfacedata.Q,interfacedata.K,interfacedata.monomtable,interfacedata.options,interfacedata.x0);
                 
     case 'mpt'
         interfacedata.parametric_variables = find(ismember(recoverdata.used_variables,getvariables(F(find(is(F,'parametric'))))));
