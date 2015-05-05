@@ -19,6 +19,7 @@ if model.f > 0
     obj = [obj '+' num2str(model.f)];
 end
 if length(obj)>0
+    obj = strrep(obj,'+-','-');
     obj = ['@(x) ' obj];
     obj = eval(obj);
 else
