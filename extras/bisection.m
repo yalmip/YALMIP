@@ -1,4 +1,19 @@
 function optimal = bisection(Constraints,Objective,options,tolerance,lower,upper)
+%BISECTION Solve simple quasi-convex MAXIMIZATION problem by bisection
+%
+%   OPTIMALH = BISECTION(F,h,options,tolerance,lower,upper)
+%
+%    max   h
+%    subject to
+%            F(x,h) >=0
+%
+%   NOTES
+%    It is assumed that the problem is quasi-convex in the scalar simple
+%    variable h. 
+%
+%    By default, the lower bound is 0. Upper bound is initialized 
+%    automatically if required. Default tolerance 1e-5.
+
 
 if length(getvariables(Objective)) > 1
     error('The objective should be a simple variable');
@@ -7,6 +22,10 @@ end
 % Create an optimizer object which solves for a particular value
 % of the sought variable
 P = optimizer(Constraints, Objective,options,Objective,recover(depends(Constraints)));
+
+if nargin < 4 || isempty(tolerance)
+    tolerance = 1e-4;
+end
 
 % Initialize the lower bound
 if nargin < 5 || isempty(lower)
@@ -18,7 +37,7 @@ end
 if flag ~=0
     error('Cannot initialize the bisection at lower bound')
 end
-working_sol = sol;
+v = sol;
 optimal = lower;
 
 % Now find an upper bound by simply increasing a bound until infeasible
@@ -26,6 +45,12 @@ if nargin < 6 || isempty(upper)
     upper = lower + 1;
     [sol, flag] = P{upper};
     while flag ~= 1
+        if flag == 0
+            % lower can be improved
+            lower = upper;
+            working_sol = sol;
+            optimal = lower;
+        end
         upper = upper*2;
         [sol, flag] = P{upper};
         if upper > 1e6
