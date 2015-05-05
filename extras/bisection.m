@@ -1,4 +1,8 @@
-function optimal = bisection(Constraints,Objective,options, tolerance,lower,upper)
+function optimal = bisection(Constraints,Objective,options,tolerance,lower,upper)
+
+if length(getvariables(Objective)) > 1
+    error('The objective should be a simple variable');
+end
 
 % Create an optimizer object which solves for a particular value
 % of the sought variable
@@ -17,8 +21,8 @@ end
 working_sol = sol;
 optimal = lower;
 
-% Now find an upper bound by siply increasing a bound until infeasible
-if nargin < 6 || isempty(uper)
+% Now find an upper bound by simply increasing a bound until infeasible
+if nargin < 6 || isempty(upper)
     upper = lower + 1;
     [sol, flag] = P{upper};
     while flag ~= 1
