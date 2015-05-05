@@ -20,21 +20,23 @@ if all(isinf(p.lb(usedVariables))) & all(isinf(p.ub(usedVariables)))
 end
 
 if p.K.f >0
-    interestingRows = find(p_F_struc(1:p.K.f,1));
+    interestingRows = find(p_F_struc(1:p.K.f,1));    
     if ~isempty(interestingRows)
+        S = p_F_struc(interestingRows,:);
+        S(:,1)=0;
+        S = sum(S|S,2) - abs(sum(S,2));
+        interestingRows = interestingRows(find(S==0));
         for j = interestingRows(:)'
             thisrow = p_F_struc(j,:);
             if thisrow(1)<0
                 thisrow = -thisrow;
             end
-            if thisrow(1)>0
-                [row,col,val] = find(thisrow);
-                % Find bounds from sum(xi) = 1, xi>0
-                if all(val(2:end) < 0)
-                    usedVars = col(2:end)-1;
-                    if all(p.lb(usedVars)>=0)
-                        p.ub(usedVars) = min( p.ub(usedVars) , val(1)./abs(val(2:end)'));
-                    end
+            [row,col,val] = find(thisrow);
+            % Find bounds from sum(xi) = 1, xi>0
+            if all(val(2:end) < 0)
+                usedVars = col(2:end)-1;
+                if all(p.lb(usedVars)>=0)
+                    p.ub(usedVars) = min( p.ub(usedVars) , val(1)./abs(val(2:end)'));
                 end
             end
         end
