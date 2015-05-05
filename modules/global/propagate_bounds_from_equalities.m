@@ -41,31 +41,33 @@ if p.K.f >0
     end
     
     % Presolve from bilinear x*y == k
-    for j = 1:p.K.f
-        if p_F_struc_forbilin(j,1)~=0
-            [row,col,val] = find(p_F_struc_forbilin(j,:));
-            
-            % Find bounds from sum(xi) = 1, xi>0
-            if length(col)==2
-                val = val/val(2); % val(1) + x==0
-                var = col(2)-1;
-                if p.variabletype(var)==1
-                    [ij] = find(p.monomtable(var,:));
-                    if p.lb(ij(1))>=0 & p.lb(ij(2))>=0
-                        % xi*xj == val(1)
-                        if -val(1)<0
-                            p.feasible = 0;
-                            return
-                        else
-                            p.ub(ij(2)) = min( p.ub(ij(2)),-val(1)/p.lb(ij(1)));
-                            p.ub(ij(1)) = min( p.ub(ij(1)),-val(1)/p.lb(ij(2)));
-                            p.lb(ij(2)) = max( p.lb(ij(2)),-val(1)/p.ub(ij(1)));
-                            p.lb(ij(1)) = max( p.lb(ij(1)),-val(1)/p.ub(ij(2)));                            
+    if any(p.variabletype == 1)
+        for j = 1:p.K.f
+            if p_F_struc_forbilin(j,1)~=0
+                [row,col,val] = find(p_F_struc_forbilin(j,:));
+                
+                % Find bounds from sum(xi) = 1, xi>0
+                if length(col)==2
+                    val = val/val(2); % val(1) + x==0
+                    var = col(2)-1;
+                    if p.variabletype(var)==1
+                        [ij] = find(p.monomtable(var,:));
+                        if p.lb(ij(1))>=0 & p.lb(ij(2))>=0
+                            % xi*xj == val(1)
+                            if -val(1)<0
+                                p.feasible = 0;
+                                return
+                            else
+                                p.ub(ij(2)) = min( p.ub(ij(2)),-val(1)/p.lb(ij(1)));
+                                p.ub(ij(1)) = min( p.ub(ij(1)),-val(1)/p.lb(ij(2)));
+                                p.lb(ij(2)) = max( p.lb(ij(2)),-val(1)/p.ub(ij(1)));
+                                p.lb(ij(1)) = max( p.lb(ij(1)),-val(1)/p.ub(ij(2)));
+                            end
+                        elseif -val(1)>0 &  p.lb(ij(1))>=0
+                            p.lb(ij(2)) = max(0,p.lb(ij(2)));
+                        elseif -val(1)>0 &  p.lb(ij(2))>=0
+                            p.lb(ij(1)) = max(0,p.lb(ij(1)));
                         end
-                    elseif -val(1)>0 &  p.lb(ij(1))>=0
-                         p.lb(ij(2)) = max(0,p.lb(ij(2)));
-                    elseif -val(1)>0 &  p.lb(ij(2))>=0
-                         p.lb(ij(1)) = max(0,p.lb(ij(1)));     
                     end
                 end
             end
