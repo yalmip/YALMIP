@@ -5,11 +5,11 @@ function output = call_cplexibm_miqp(interfacedata)
 %Turn on support for nonconvex QP if required and user hasn't touched this
 if interfacedata.ProblemClass.objective.quadratic.nonconvex
     if isfield(interfacedata.options.cplex,'solutiontarget')
-        if ~interfacedata.options.cplex.solutiontarget
-            interfacedata.options.cplex.solutiontarget = 2;
+        if ~interfacedata.options.cplex.solutiontarget          
+            interfacedata.options.cplex.solutiontarget = 3;
         end
     else
-        interfacedata.options.cplex.solutiontarget = 2;
+        interfacedata.options.cplex.solutiontarget = 3;
     end
 end
 
