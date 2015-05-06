@@ -28,4 +28,4 @@ function varargout = optimize(varargin)
 %
 %   See also SDPVAR, @SDPVAR/VALUE, SDPSETTINGS, YALMIPERROR
 
-varargout{:} = solvesdp(varargin{:});
+[varargout{1:nargout}] = solvesdp(varargin{:});
