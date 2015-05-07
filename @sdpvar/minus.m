@@ -1,6 +1,8 @@
 function y = minus(X,Y)
 %MINUS (overloaded)
 
+global FACTORTRACKING
+
 % Cannot use isa here since blkvar is marked as sdpvar
 X_class = class(X);
 Y_class = class(Y);
@@ -8,7 +10,7 @@ X_is_spdvar = strcmp(X_class,'sdpvar');
 Y_is_spdvar = strcmp(Y_class,'sdpvar');
   
 % Convert block objects
-if ~X_is_spdvar
+if ~X_is_spdvar && ~strcmp(X_class,'double')
     if isa(X,'blkvar')
         X = sdpvar(X);
         X_is_spdvar = isa(X,'sdpvar');
@@ -20,7 +22,7 @@ if ~X_is_spdvar
     end
 end
 
-if ~Y_is_spdvar
+if ~Y_is_spdvar && ~strcmp(Y_class,'double')
     if isa(Y,'blkvar')
         Y = sdpvar(Y);
         Y_is_spdvar = isa(Y,'sdpvar');
@@ -43,7 +45,7 @@ else
     end
 end
 if Y_is_spdvar
-    if is(Y,'gkyp') 
+    if Y.typeflag == 40
         y =X + uminus(Y);
         return
     end
@@ -80,7 +82,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % Reset info about conic terms
             y.conicinfo = [0 0];
             y.extra.opname='';
-            y = addfactors(y,X,-Y);
+            if FACTORTRACKING, y = addfactors(y,X,-Y);end
             return
         end
 
@@ -100,7 +102,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y = addfactors(y,X,-Y);
+        if FACTORTRACKING, y = addfactors(y,X,-Y);end
     case 2
 
         if isempty(Y)
@@ -132,7 +134,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % Reset info about conic terms
             y.conicinfo = [0 0];
             y.extra.opname='';
-            y = addfactors(y,X,-Y);
+            if FACTORTRACKING, y = addfactors(y,X,-Y);end
             return
         end
 
@@ -159,7 +161,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % else
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y = addfactors(y,X,-Y);
+        if FACTORTRACKING, y = addfactors(y,X,-Y);end
         % end
 
 
@@ -183,25 +185,30 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         end
 
+        yFirst = 0;
+        xFirst = 0;
         if Y.lmi_variables(end) < X.lmi_variables(1)
             all_lmi_variables = [Y.lmi_variables X.lmi_variables];
+            yFirst = 1;
         elseif X.lmi_variables(end) < Y.lmi_variables(1)
             all_lmi_variables = [X.lmi_variables Y.lmi_variables];
+            xFirst = 1;
         else
             all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
         end
-        
+              
         y = X;
         %X.basis = []; % Returns memory?
         y.lmi_variables = all_lmi_variables;
         
         if isequal(all_lmi_variables,X.lmi_variables)
             in_X_logical = ones(1,length(X.lmi_variables));
-            in_X = 1:length(X.lmi_variables);            
+            in_X = 1:length(X.lmi_variables);     
         else
             in_X_logical = ismembcYALMIP(all_lmi_variables,X.lmi_variables);
             in_X = find(in_X_logical);
         end
+        
         if isequal(all_lmi_variables,Y.lmi_variables)
             in_Y_logical = ones(1,length(Y.lmi_variables));
             in_Y = 1:length(Y.lmi_variables);
@@ -219,7 +226,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 else
                     y.conicinfo = [0 0];
                     y.extra.opname='';
-                    y = addfactors(y,X,-Y);
+                    if FACTORTRACKING, y = addfactors(y,X,-Y);end
                 end
                 return
             end
@@ -264,7 +271,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
 
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y = addfactors(y,X,-Y);
+        if FACTORTRACKING, y = addfactors(y,X,-Y);end
         if nnz(in_Y_logical & in_X_logical)>0
             y = clean(y);
         end
