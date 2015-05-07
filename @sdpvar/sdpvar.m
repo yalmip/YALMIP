@@ -47,6 +47,7 @@ function sys = sdpvar(varargin)
 %   See also INTVAR, BINVAR, methods('sdpvar'), SEE
 
 % Turn this on if you want to use factor tracking (i.e, the solver STRUL)
+global FACTORTRACKING 
 FACTORTRACKING = 0;
 
 superiorto('double');

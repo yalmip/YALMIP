@@ -321,7 +321,7 @@ switch varargin{1}
             end
                                                                          
             for i = correct_operator                
-                if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
+             %   if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
                     if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
                             varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
@@ -331,7 +331,7 @@ switch varargin{1}
                         varargout{1} = setoperatorname(varargout{1},varargin{2});
                         return
                     end
-                end
+             %   end
             end
         else
             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
@@ -473,20 +473,35 @@ switch varargin{1}
                     % variables, and thus assumes no z in between. This
                     % will be generalized when R^n -> R^m is supported for
                     % real
-                    z = sdpvar(size(varargin{3},1),size(varargin{3},2),'full'); % Standard format     y=f(z),z==arg
-                    internal_sdpvarstate.auxVariables = [ internal_sdpvarstate.auxVariables  getvariables(z)];
+                    
+                    % Actually, we can skip these normalizing variables for
+                    % everything which isn't based on callbacks. This saves
+                    % a lot of setup time on huge models
+                    if ~(strcmp(varargin{2},'norm') || strcmp(varargin{2},'abs'))
+                        z = sdpvar(size(varargin{3},1),size(varargin{3},2),'full'); % Standard format     y=f(z),z==arg
+                        internal_sdpvarstate.auxVariables = [ internal_sdpvarstate.auxVariables  getvariables(z)];
+                    else
+                        z = [];
+                    end
                     internal_sdpvarstate.auxVariables = [ internal_sdpvarstate.auxVariables  getvariables(y)];
                 else
                     z = [];
                 end
                 for i = 1:nout
+                    % Avoid subsref to save time
+                    if nout == 1
+                        yi = y;
+                    else
+                        yi = y(i);
+                    end
+                    yv = getvariables(y);
                     internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
                     internal_sdpvarstate.ExtendedMap(end).arg = {varargin{3:end},z};
-                    internal_sdpvarstate.ExtendedMap(end).var = y(i);
-                    internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);
+                    internal_sdpvarstate.ExtendedMap(end).var = yi;
+                    internal_sdpvarstate.ExtendedMap(end).computes = yv;
                     internal_sdpvarstate.ExtendedMap(end).Hash = this_hash;
                     internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes this_hash];
-                    internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(y(i))];
+                    internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables yv];
                 end
                 y = setoperatorname(y,varargin{2});
         end
