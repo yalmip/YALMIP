@@ -45,6 +45,8 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
     if (X.typeflag==5) && (Y.typeflag==5)
         error('Product of norms not allowed');
     end
+    
+  
 
     try
         
@@ -58,6 +60,15 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
         if length(X.lmi_variables)==numel(X) 
             if length(Y.lmi_variables) == numel(Y) 
                 if numel(X)==numel(Y)
+                    
+                    % This looks promising. write as (x0+X)*(y0+Y)
+                    X0 = reshape(X.basis(:,1),X.dim);
+                    Y0 = reshape(Y.basis(:,1),Y.dim);
+                    Xsave = X;
+                    Ysave = Y;
+                    X.basis(:,1)=0;
+                    Y.basis(:,1)=0;
+                                          
                     if nnz(X.basis)==numel(X)
                         if nnz(Y.basis)==numel(Y)
                             D = [spalloc(numel(Y),1,0) speye(numel(Y))];
@@ -108,6 +119,7 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
                                     
                                     Z.conicinfo = [0 0];
                                     Z.extra.opname='';
+                                    Z = Z + X0.*Y0 + X0.*Y + X.*Y0;
                                     Z = flush(Z);
                                     y = clean(Z);
                                     return
@@ -116,6 +128,8 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
                         end
                     end
                 end
+                X = Xsave;
+                Y = Ysave;
             end
         end
         
