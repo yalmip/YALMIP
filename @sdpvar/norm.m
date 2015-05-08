@@ -121,8 +121,7 @@ switch class(varargin{1})
                                 F = F + (sum(Z) <= t);
                             end
                         end
-                    case 2
-                        Z = sdpvar(size(X,1),size(X,2));
+                    case 2                    
                         if min(size(X))>1
                             F = ([t*eye(size(X,1)) X;X' t*eye(size(X,2))])>=0;
                         else
