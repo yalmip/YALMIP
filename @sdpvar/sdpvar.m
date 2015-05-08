@@ -485,7 +485,16 @@ switch nargin
             sys.midfactors{1} = sys;
         end
         return
-
+        
+    case 8
+        sys = varargin{8};
+        if isempty(sys.lmi_variables)
+            sys = full(reshape(sys.basis(:,1),sys.dim(1),sys.dim(2)));
+        else
+            sys = class(sys,'sdpvar');
+        end
+        return
+                
     otherwise
         error('Wrong number of arguments in sdpvar creation');
 end

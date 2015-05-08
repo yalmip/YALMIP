@@ -19,9 +19,13 @@ if min(lmi_variables)>m_mt % New variables
     if isempty(mt)        
         mt = speye(length(lmi_variables));
         newmt = mt;
+    elseif length(lmi_variables)==1  
+        % Slightly faster than general case
+       newmt = sparse(1);
+       mt(end+1,end+1) = newmt;
     else
-        newmt = speye(length(lmi_variables));
-        mt=blkdiag(mt,speye(length(lmi_variables)));
+        newmt = speye(length(lmi_variables));       
+        mt=blkdiag(mt,newmt);      
     end
 else
     mt(lmi_variables,lmi_variables) = speye(length(lmi_variables));
