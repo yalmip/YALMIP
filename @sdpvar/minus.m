@@ -185,39 +185,41 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         end
 
+        Xlmi_variables = X.lmi_variables;
+        Ylmi_variables = Y.lmi_variables;
         yFirst = 0;
         xFirst = 0;
-        if Y.lmi_variables(end) < X.lmi_variables(1)
-            all_lmi_variables = [Y.lmi_variables X.lmi_variables];
+        if Ylmi_variables(end) < Xlmi_variables(1)
+            all_lmi_variables = [Ylmi_variables Xlmi_variables];
             yFirst = 1;
-        elseif X.lmi_variables(end) < Y.lmi_variables(1)
-            all_lmi_variables = [X.lmi_variables Y.lmi_variables];
+        elseif Xlmi_variables(end) < Ylmi_variables(1)
+            all_lmi_variables = [Xlmi_variables Ylmi_variables];
             xFirst = 1;
         else
-            all_lmi_variables = uniquestripped([X.lmi_variables Y.lmi_variables]);
+            all_lmi_variables = uniquestripped([Xlmi_variables Ylmi_variables]);
         end
               
         y = X;
         %X.basis = []; % Returns memory?
         y.lmi_variables = all_lmi_variables;
         
-        if isequal(all_lmi_variables,X.lmi_variables)
-            in_X_logical = ones(1,length(X.lmi_variables));
-            in_X = 1:length(X.lmi_variables);     
+        if isequal(all_lmi_variables,Xlmi_variables)
+            in_X_logical = ones(1,length(Xlmi_variables));
+            in_X = 1:length(Xlmi_variables);     
         else
-            in_X_logical = ismembcYALMIP(all_lmi_variables,X.lmi_variables);
+            in_X_logical = ismembcYALMIP(all_lmi_variables,Xlmi_variables);
             in_X = find(in_X_logical);
         end
         
-        if isequal(all_lmi_variables,Y.lmi_variables)
-            in_Y_logical = ones(1,length(Y.lmi_variables));
-            in_Y = 1:length(Y.lmi_variables);
+        if isequal(all_lmi_variables,Ylmi_variables)
+            in_Y_logical = ones(1,length(Ylmi_variables));
+            in_Y = 1:length(Ylmi_variables);
         else
-            in_Y_logical = ismembcYALMIP(all_lmi_variables,Y.lmi_variables);
+            in_Y_logical = ismembcYALMIP(all_lmi_variables,Ylmi_variables);
             in_Y = find(in_Y_logical);
         end
                 
-        if isequal(X.lmi_variables,Y.lmi_variables) && n_Y==n_X && m_Y==m_X
+        if isequal(Xlmi_variables,Ylmi_variables) && n_Y==n_X && m_Y==m_X
             y.basis = y.basis - Y.basis;
             % Super special case f(scalar)-f(scalar)
             if length(X.lmi_variables)==1
@@ -230,10 +232,10 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
                 return
             end
-        elseif max(X.lmi_variables) < min(Y.lmi_variables) &&  n_Y==n_X && m_Y==m_X
+        elseif max(Xlmi_variables) < min(Ylmi_variables) &&  n_Y==n_X && m_Y==m_X
             % Disjoint variables in X - Y
             y.basis = [y.basis(:,1) - Y.basis(:,1) y.basis(:,2:end) -Y.basis(:,2:end)];
-        elseif max(Y.lmi_variables) < min(X.lmi_variables) &&  n_Y==n_X && m_Y==m_X
+        elseif max(Ylmi_variables) < min(Xlmi_variables) &&  n_Y==n_X && m_Y==m_X
             % Disjoint variables in X - Y
             y.basis = [y.basis(:,1) - Y.basis(:,1) -Y.basis(:,2:end) y.basis(:,2:end)];
         else
