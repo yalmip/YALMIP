@@ -493,15 +493,14 @@ switch varargin{1}
                         yi = y;
                     else
                         yi = y(i);
-                    end
-                    yv = getvariables(y);
+                    end                
                     internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
                     internal_sdpvarstate.ExtendedMap(end).arg = {varargin{3:end},z};
                     internal_sdpvarstate.ExtendedMap(end).var = yi;
-                    internal_sdpvarstate.ExtendedMap(end).computes = yv;
+                    internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y);
                     internal_sdpvarstate.ExtendedMap(end).Hash = this_hash;
                     internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes this_hash];
-                    internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables yv];
+                    internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(yi)];
                 end
                 y = setoperatorname(y,varargin{2});
         end
