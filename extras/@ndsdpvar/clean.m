@@ -10,8 +10,8 @@ while i>2
         break
     end
 end
-if length(Y.dim) == 2;
-    Y = reshape(sdpvar(Y),Y.dim(1),Y.dim(2));
+if length(Y.dim) == 2;    
+    Y = sdpvar([],[],[],[],[],[],[],struct(Y));
     Y = clean(Y);
 else
     temp = any(Y.basis,1);
