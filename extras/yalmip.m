@@ -1202,5 +1202,6 @@ X = [];
 for i = 1:length(List)
     if isa(List{i},'sdpvar')
         X = List{i};
+        break
     end
 end
