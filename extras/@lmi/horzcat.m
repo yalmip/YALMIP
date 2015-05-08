@@ -12,7 +12,7 @@ else
 end
 
 for i=top:1:nargin
-    if isa(varargin{i},'double') & ~isempty(varargin{i})
+    if isa(varargin{i},'double') && ~isempty(varargin{i})
         warning('One of the constraints evaluates to a DOUBLE variable');
     elseif isa(varargin{i},'logical')
         if all(varargin{i}==1)
