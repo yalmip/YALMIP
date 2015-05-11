@@ -165,13 +165,14 @@ for i = 1:length(cmp_con)
     K.c(i) = n;
 end
 
+qdr_con = union(qdr_con,mqdr_con);
 if length(qdr_con) > 0
     [F_struc,K,KCut] = recursive_socp_fix(F,F_struc,K,KCut,qdr_con,nvars,8,1);
 end
-
-if length(mqdr_con) > 0
-    [F_struc,K,KCut] = recursive_msocp_fix(F,F_struc,K,KCut,mqdr_con,nvars,inf,1);
-end
+% % 
+% if length(mqdr_con) > 0
+%    [F_struc,K,KCut] = recursive_msocp_fix(F,F_struc,K,KCut,mqdr_con,nvars,inf,1);
+% end
 
 
 % Rotated Lorentz cone constraints
@@ -516,17 +517,21 @@ function [F_struc,K,KCut] = recursive_socp_fix(F,F_struc,K,KCut,qdr_con,nvars,ma
 if length(qdr_con)>2*maxnsocp
     % recursing costs, so do 4 in one step
     ind = 1+ceil(length(qdr_con)*(0:0.25:1));
-    [F_struc1,K,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(1):ind(2)-1),nvars,maxnsocp,startindex+ind(1)-1);
-    [F_struc2,K,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(2):ind(3)-1),nvars,maxnsocp,startindex+ind(2)-1);
-    [F_struc3,K,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(3):ind(4)-1),nvars,maxnsocp,startindex+ind(3)-1);
-    [F_struc4,K,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(4):ind(5)-1),nvars,maxnsocp,startindex+ind(4)-1);
+    [F_struc1,K1,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(1):ind(2)-1),nvars,maxnsocp,startindex+ind(1)-1);
+    [F_struc2,K2,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(2):ind(3)-1),nvars,maxnsocp,startindex+ind(2)-1);
+    [F_struc3,K3,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(3):ind(4)-1),nvars,maxnsocp,startindex+ind(3)-1);
+    [F_struc4,K4,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(ind(4):ind(5)-1),nvars,maxnsocp,startindex+ind(4)-1);
     F_struc = [F_struc F_struc1 F_struc2 F_struc3 F_struc4];
+    K.q = [K1.q K2.q K3.q K4.q];
+    K.q(K.q==0)=[];
     return
 elseif length(qdr_con)>maxnsocp
     mid = ceil(length(qdr_con)/2);
-    [F_struc1,K,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(1:mid),nvars,maxnsocp,startindex);
-    [F_struc2,K,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(mid+1:end),nvars,maxnsocp,startindex+mid);
+    [F_struc1,K1,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(1:mid),nvars,maxnsocp,startindex);
+    [F_struc2,K2,KCut] = recursive_socp_fix(F,[],K,KCut,qdr_con(mid+1:end),nvars,maxnsocp,startindex+mid);
     F_struc = [F_struc  F_struc1  F_struc2];
+    K.q = [K1.q K2.q];
+    K.q(K.q==0)=[];
     return
 end
 
@@ -555,7 +560,8 @@ for i = 1:length(qdr_con)
     end
     % ...and add them together (efficient for large structures)
     F_struc = [F_struc F_structemp];
-    K.q(i+startindex-1) = n;
+   % K.q(i+startindex-1) = n;
+    K.q = [K.q ones(1,m)*n];
 end
 
 
