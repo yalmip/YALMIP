@@ -563,7 +563,7 @@ for i = 1:length(qdr_con)
    % K.q(i+startindex-1) = n;
     K.q = [K.q ones(1,m)*n];
 end
-
+K.q(K.q==0)=[];
 
 function [F_struc,K,KCut] = recursive_msocp_fix(F,F_struc,K,KCut,qdr_con,nvars,maxnsocp,startindex);
 
