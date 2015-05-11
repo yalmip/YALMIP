@@ -199,7 +199,14 @@ errorstatus = sol.problem;
 
 
 function p = plotSet(x_opt,color,options)
-if size(x_opt,1)==2
+if size(x_opt,1)==1
+    p = line(x_opt,[0 0],'color',color);
+    set(p,'LineStyle',options.plot.wirestyle);   
+    set(p,'LineStyle',options.plot.wirestyle);   
+    set(p,'LineWidth',options.plot.linewidth);
+    set(p,'EdgeColor',options.plot.edgecolor);
+    set(p,'Facealpha',options.plot.shade);    
+elseif size(x_opt,1)==2
     p = patch(x_opt(1,:),x_opt(2,:),color);
     set(p,'LineStyle',options.plot.wirestyle);   
     set(p,'LineWidth',options.plot.linewidth);
@@ -248,6 +255,8 @@ try % Try to ensure that we close h
     angles = (0:(n))*2*pi/n;
     if length(x)==2
         c = [cos(angles);sin(angles)];
+    elseif length(x) == 1
+        c = [-1 1];n = 2;
     else
         c = randn(3,n);
     end
