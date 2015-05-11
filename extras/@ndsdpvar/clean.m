@@ -15,10 +15,15 @@ if length(Y.dim) == 2;
     Y = clean(Y);
 else
     temp = any(Y.basis,1);
-    temp = temp(2:end);
+ %   temp = temp(2:end);
     index = find(temp);
-    if ~isempty(index)
+    if ~isequal(index,1)%~isempty(index)
         Z = Y;
+        if index(1)==1
+            index = index(2:end)-1;
+        else
+            index = index-1;
+        end
         if length(index)~=length(Y.lmi_variables)
             Y.basis = Y.basis(:,[1 1+index]);
             Y.lmi_variables = Y.lmi_variables(index);
@@ -31,6 +36,6 @@ else
             Y.basis = basis_real + sqrt(-1)*basis_imag;
         end
     else
-        Y = full(reshape(Y.basis(:,1),Y.dim));
+        Y = reshape(full(Y.basis(:,1)),Y.dim);
     end
 end

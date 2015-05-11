@@ -411,7 +411,7 @@ if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
         if info==0
             % OK, we have some kind of quadratic expression
             % Find involved variables
-            if all(Q>=0)
+            if all(nonzeros(Q)>=0)
                 problem.objective.quadratic.nonnegative = 1;
             else
                 problem.objective.quadratic.nonnegative = 0;
