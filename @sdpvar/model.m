@@ -48,9 +48,12 @@ try
         F = lmi(F);
     end
     newAux = n+1:yalmip('nvars');
-    involved = [];
-    for i = 1:length(extstruct.arg)-1
-        involved = union(involved,getvariables(extstruct.arg{i}));
+    involved = getvariables(extstruct.arg{1});
+    for i = 2:length(extstruct.arg)-1
+        vars = getvariables(extstruct.arg{i});
+        if ~isempty(vars)           
+            involved = union(involved,vars);
+        end
     end
     if ~isempty(options)
         if ~(strcmp(options.robust.auxreduce,'none'))
