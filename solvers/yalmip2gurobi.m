@@ -115,8 +115,9 @@ model.Q = sparse(Q);
 if ~isequal(K.q,0)
     top = n_original + 1;
     for i = 1:length(K.q)
-        model.cones(i).index = [top top+(1:K.q(i)-1)];
-        top = top + K.q(i);
+        n = K.q(i);
+        model.cones(i).index = top:top+n-1;
+        top = top + n;
     end 
 end
 
