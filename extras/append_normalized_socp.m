@@ -18,9 +18,11 @@ if K.q(1)>0
     %c = [c;spalloc(nNew,1,0)];
     %Q = blkdiag(Q,spalloc(nNew,nNew,0));
     UB = [UB;inf(nNew,1)];
-    for i = 1:length(K.q);
-        LB = [LB;0;-inf(K.q(i)-1,1)];
-    end
+    lb_local = -inf(sum(K.q),1);lb_local([1 1+cumsum(K.q(1:end-1))])=0;
+    LB = [LB;lb_local];
+  %  for i = 1:length(K.q);
+  %      LB = [LB;0;-inf(K.q(i)-1,1)];
+  %  end
     if nargout > 7
         % Cplex interface needs explicit representations of z'Q*z+Lz+r
         top = nOriginal+1;
