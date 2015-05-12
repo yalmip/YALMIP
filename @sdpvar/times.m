@@ -102,7 +102,7 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
                                     if any(keep)
                                         keep = find(keep);
                                         mt = [mt;generated_monoms(keep,:)];
-                                        yalmip('setmonomtable',mt);
+                                        yalmip('setmonomtable',mt,[],[hashedMT;generated_hash(keep)],hash);
                                     end
                                                                                                              
                                     if any(diff(Z.lmi_variables)<0)

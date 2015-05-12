@@ -120,7 +120,7 @@ switch varargin{1}
             temp = internal_sdpvarstate.monomtable(end-need_new+1:end,:);
             internal_sdpvarstate.hashedmonomtable = [internal_sdpvarstate.hashedmonomtable;temp*internal_sdpvarstate.hash];
         end
-        if nargin >= 3
+        if nargin >= 3 && ~isempty(varargin{3})
             internal_sdpvarstate.variabletype = varargin{3};
             if length(internal_sdpvarstate.variabletype) ~=size(internal_sdpvarstate.monomtable,1)
                 error('ASSERT')
