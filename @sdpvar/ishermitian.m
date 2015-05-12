@@ -9,6 +9,8 @@ if (n==m)
     if isequal(X.conicinfo,[1 0])
         issym = 1;
         return
+    elseif isequal(X.conicinfo,[-1 0])
+        issym = 0;
     end
     
     if isa(X.basis,'lazybasis')
