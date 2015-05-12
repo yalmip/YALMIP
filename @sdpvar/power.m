@@ -129,9 +129,9 @@ d = d(1);
 var = getvariables(x);
 
 usedmt = mt(var,:);
-hashV = (usedmt*d)*hash;
-if ~any(ismember(hashV,hashM))   
-    newmt =  usedmt*d;
+newmt = usedmt*d;
+hashV = newmt*hash;
+if ~any(ismember(hashV,hashM))      
     variabletype = [variabletype newvariabletypegen(newmt)];
     y = size(mt,1) + (1:length(var));
     mt = [mt;newmt];
