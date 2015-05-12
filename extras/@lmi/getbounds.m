@@ -1,10 +1,12 @@
-function LU = getbounds(F,avoidequalitybounds)
+function LU = getbounds(F,avoidequalitybounds,LU)
 
 K.f = 0;
 K.l = 0;
 L = [];
 U = [];
-LU =  yalmip('getbounds',1:yalmip('nvars'));
+if nargin < 3
+    LU =  yalmip('getbounds',1:yalmip('nvars'));
+end
 binary = yalmip('binvariables');
 LU(binary,1) = 0;
 LU(binary,2) = 1;

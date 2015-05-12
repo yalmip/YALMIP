@@ -1,12 +1,14 @@
 function LU = setupBounds(F,options,extendedvariables)
 nv = yalmip('nvars');
-yalmip('setbounds',1:nv,repmat(-inf,nv,1),repmat(inf,nv,1));
+L = repmat(-inf,nv,1);
+U = repmat(inf,nv,1);
+yalmip('setbounds',1:nv,L,U);
 % This is a hack to avoid bound propagation when this function is
 % called from optimizer.m
 if isfield(options,'avoidequalitybounds')
     LU = getbounds(F,0);
 else
-    LU = getbounds(F);
+    LU = getbounds(F,[],[L U]);
 end
 % In models with nonconvex terms including x, but where bounds only are
 % set on abs(x), we have to use the bound on abs(x) to improve the
