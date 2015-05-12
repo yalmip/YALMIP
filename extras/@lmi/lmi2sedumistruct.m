@@ -422,8 +422,10 @@ F_struc = [oldF_struc F_struc];
 
 function [F_struc,K,KCut,schur_funs,schur_data,schur_variables] = recursive_sdp_fix(F,F_struc,K,KCut,schur_funs,schur_data,schur_variables,sdp_con,nvars,maxnsdp,startindex)
 
-% Check if we should recurse
-if length(sdp_con)>2*maxnsdp
+if isempty(sdp_con)
+    return
+    % Check if we should recurse
+elseif length(sdp_con)>2*maxnsdp
     % recursing costs, so do 4 in one step
     ind = 1+ceil(length(sdp_con)*(0:0.25:1));
     [F_struc1,K,KCut,schur_funs,schur_data,schur_variables] = recursive_sdp_fix(F,[],K,KCut,schur_funs,schur_data,schur_variables,sdp_con(ind(1):ind(2)-1),nvars,maxnsdp,startindex+ind(1)-1);
