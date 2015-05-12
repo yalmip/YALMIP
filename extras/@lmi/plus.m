@@ -44,8 +44,21 @@ if yBlock && xBlock && length(X.clauses{1})>1  && length(Y.clauses{1})>1
     end
 elseif ~xBlock && ~yBlock
     % Both have been flattened
-    for i = 1:length(Y.clauses)
-        X.clauses{end+1} = Y.clauses{i};
+    
+    % Maybe we should build cells of cells
+    if length(X.clauses)> 99
+        temp = X.clauses;
+        X.clauses = [];
+        X.clauses{1} = temp;
+        X.clauses{2} = {};
+        jx = length(X.clauses);
+        for i = 1:length(Y.clauses)
+            X.clauses{jx}{end+1} = Y.clauses{i};
+        end
+    else
+        for i = 1:length(Y.clauses)
+            X.clauses{end+1} = Y.clauses{i};
+        end
     end
 else
     % This is the standard case. X has been populated with a bunch of
