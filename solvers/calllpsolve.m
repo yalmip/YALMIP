@@ -95,9 +95,9 @@ end
 
 try    
     if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-    tic
+    solvertime = tic;
     result=mxlpsolve('solve', lp);
-    solvertime = toc;
+    solvertime = toc(solvertime);
     if result == 0 | result == 1 | result == 11 | result == 12        
         [obj, x, duals] = mxlpsolve('get_solution', lp);
     else

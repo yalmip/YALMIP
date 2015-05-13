@@ -114,9 +114,9 @@ matrixinfo.M  = Mi;
 matrixinfo.A  = A;
 
 try
-    solvertime = clock; 
+    solvertime = tic; 
     [u,Popt,xopt,Zopt] = kypd_solver(matrixinfo,options);
-    solvertime = etime(clock,solvertime);
+    solvertime = toc(solvertime);
     
     % SAVE PRIMALS
     setsdpvar(recover(x_variables),xopt);

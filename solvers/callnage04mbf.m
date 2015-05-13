@@ -47,9 +47,9 @@ otherwise
     msglev = 5*options.verbose;
     ifail = -1;
 end
-tic
+solvertime = tic;
 [x,istate,objlp,clambda,ifail] = e04mbf(full(lb),full(ub),zeros(length(c),1),full(c),full(A),msglev,options.nag.itmax,ifail);%options.nag.bigbnd,options.nag.orthog);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 % Internal format for duals

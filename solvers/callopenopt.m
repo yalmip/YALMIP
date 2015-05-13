@@ -102,9 +102,9 @@ prob.beq = beq;
 prob.lb = lb;
 prob.ub = ub;
 
-tic
+solvertime = tic;
 r = ooRun(prob, 'ralg');
-solvertime = toc;
+solvertime = toc(solvertime);
 
 if isempty(nonlinearindicies)
     x = r.xf(:);

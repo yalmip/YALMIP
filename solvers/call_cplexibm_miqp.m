@@ -31,9 +31,9 @@ if output.cplexstatus == 4 | output.cplexstatus == 119
     % Remove objective and resolve
     model.H = model.H*0;
     model.f = model.f*0;
-    tic
+    solvertime = tic;
     [x,fval,exitflag,output,lambda] = localSolverCall(model);
-    solvertime = toc;
+    solvertime = toc(solvertime);
     switch output.cplexstatus
         case {1,101,102} % It was ok, hence it must have been unbounded
             output.cplexstatus = 2;

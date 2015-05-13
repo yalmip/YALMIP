@@ -61,10 +61,10 @@ else
 end
 snseti('Minimize',1)  
 
-tic
+solvertime = tic;
 [xout,F,xmul,Fmul,inform, xstate, Fstate, ns, ninf, sinf, mincw, miniw, minrw] = snoptcmex( solveopt, x0, xlow, xupp, xmul, xstate, Flow, Fupp, Fmul, Fstate,ObjAdd, ObjRow, A, iAfun(:), jAvar(:),iGfun(:), jGvar(:), usrf );
-solvertime = toc;
-   
+solvertime = toc(solvertime);
+
 lambda = Fmul(2:end);   
 
 x = RecoverNonlinearSolverSolution(model,xout);

@@ -188,9 +188,9 @@ end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 
-tic
+solvertime = tic;
 [f,xout,u,iflag,niter,feas] = penbmim(pen);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 if options.saveduals & isempty(zrow)
     

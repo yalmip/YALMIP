@@ -51,9 +51,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 [x,y,s,w,how] = bp(Q, A, b, c, e,llist,lval,ulist,uval,opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 problem = 0;
 

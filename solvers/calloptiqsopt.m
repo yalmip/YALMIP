@@ -26,9 +26,9 @@ if options.savedebug
     save qsoptdebug c A b  lb ub opts
 end
 
-tic
+solvertime = tic;
 [x,fval,exitflag] = qsopt(full(c), A, full(b), full(lb), full(ub),opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % No duals
 D_struc = [];

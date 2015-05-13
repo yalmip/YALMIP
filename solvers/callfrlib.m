@@ -61,10 +61,10 @@ if any(model.K.q) && any(model.K.q == 0)
 end
 
 % Call SDP solver
-tic
+solvertime = tic;
 output = feval(model.solver.solver.call,model);
-solvertime = toc;
-
+solvertime = toc(solvertime);
+ 
 [x,y,dual_recov_success] = prgR.Recover(output.Dual,output.Primal);
 output.Dual = x;
 output.Primal = y;

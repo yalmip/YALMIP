@@ -8,9 +8,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 solution = callsolver(model,options);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 switch solution.exitflag
     case 0

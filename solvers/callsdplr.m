@@ -107,14 +107,14 @@ end
 % CALL SDPLR
 % *********************************************
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 if isempty(lrA)    
    [x_s,y_s,info] = sdplr(F_struc(:,2:end),c,F_struc(:,1),K);
 else   
    % pars.reduce = 0;
     [x_s,y_s,info] = sdplr(F_struc(:,2:end),full(c),full(F_struc(:,1)),K,pars,lrA);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % YALMIP format
 D_struc = x_s;

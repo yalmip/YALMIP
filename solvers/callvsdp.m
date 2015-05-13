@@ -25,7 +25,7 @@ end
 % Solver to be used in VSDP
 options.vsdp.model = interfacedata;
 
-tic     
+solvertime = tic;     
 [objt,Xt,yt,Zt,info] = mysdps_yalmip(blk,A',C,b,options);
 
 % Compute rigorous lower bound (default behaviour)
@@ -53,7 +53,7 @@ else
     lb = [];
 end
 
-solvertime = toc;
+solvertime = toc(solvertime);
 
 Dual = [];
 Slack = [];

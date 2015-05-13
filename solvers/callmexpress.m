@@ -58,9 +58,9 @@ if options.savedebug
 end
 
 % Call mex-interface
-tic
+solvertime = tic;
 [x,FMIN,STATUS,EXTRA] = mexpress(SENSE,H,C,A,B,CTYPE,LB,UB,VARTYPE,options.xpress,0);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 if isstruct(EXTRA)
     D_struc = -EXTRA.lambda;    

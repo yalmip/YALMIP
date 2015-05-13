@@ -22,13 +22,13 @@ if options.savedebug
 end
     
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 if options.verbose==0 % to fix display bug reported from user
     evalc('[x_s,y_s,z_s,info]=csdp(-F_struc(:,2:end),-c,F_struc(:,1),K,pars);');
 else
     [x_s,y_s,z_s,info]=csdp(-F_struc(:,2:end),-full(c),F_struc(:,1),K,pars);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % We solve dual problem with CSDP
 Dual = x_s;

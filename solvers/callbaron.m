@@ -74,9 +74,9 @@ if model.options.savedebug
     save barondebug obj con A ru rl cl cu lb ub x0 opts
 end
 
-tic
+solvertime = tic;
 [x,fval,exitflag,info,allsol] = baron(obj,A,rl,ru,lb,ub,con,cl,cu,xtype,x0,opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Check, currently not exhaustive...
 switch exitflag

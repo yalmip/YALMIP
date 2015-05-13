@@ -92,13 +92,13 @@ problem = 0;
 lb(isinf(lb)) = -1.0e10;
 ub(isinf(ub)) = 1.0e10;
 
-tic
+solvertime = tic;
 if options.verbose==0
     evalc('[param,SDPobjValue,POP,cpuTime,SDPsolverInfo,SDPinfo] = sparsePOP(obj,constraint,lb,ub,paramin);');
 else
     [param,SDPobjValue,POP,cpuTime,SDPsolverInfo,SDPinfo] = sparsePOP(obj,constraint,lb,ub,paramin);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 if ~isempty(POP.xVect)
     Primal = zeros(length(c),1);

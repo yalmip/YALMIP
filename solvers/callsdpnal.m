@@ -22,13 +22,14 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 if options.verbose==0
    evalc('[obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);');
 else
     [obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);            
 end
-solvertime = toc;
+solvertime = toc(solvertime);
+
 % Create YALMIP dual variable and slack
 Dual = [];
 Slack = [];

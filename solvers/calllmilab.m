@@ -62,13 +62,13 @@ end
 
 % Solve...
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 if nnz(c)==0
     [copt,x]=feasp(lmisys,ops);
 else
     [copt,x]=mincx(lmisys,full(c),ops);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % No status
 if isempty(x)

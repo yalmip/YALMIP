@@ -50,7 +50,7 @@ else
     % Pre-solve required on binary problems
     options.mp.presolve = 1;
 
-    tic
+    solvertime = tic;
     
  %   if Matrices.qp &  options.mp.algorithm == 3
  %        options.mp.algorithm = 1;
@@ -76,7 +76,7 @@ else
             
         otherwise
     end
-    solvertime = toc;
+    solvertime = toc(solvertime);
 end
 
 if isempty(model)

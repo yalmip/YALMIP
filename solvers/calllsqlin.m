@@ -75,9 +75,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 [X,RESNORM,RESIDUAL,EXITFLAG,OUTPUT,LAMBDA] = lsqlin(model);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 solveroutput.X = X;
 solveroutput.RESNORM = RESNORM;

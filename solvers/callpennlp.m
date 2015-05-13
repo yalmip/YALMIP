@@ -130,10 +130,11 @@ if options.savedebug
     save pennlpdebug pen
 end
 
-showprogress('Calling FMINCON',options.showprogress);
-tic
+showprogress('Calling PENNLP',options.showprogress);
+
+solvertime = tic;
 [obj,xout,duals,flag] = pennlpm(pen);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 if isempty(nonlinearindicies)
     x = xout(:);

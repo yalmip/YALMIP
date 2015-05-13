@@ -153,14 +153,14 @@ if nErr ~= LSERR_NO_ERROR;output = createoutput(11); return; end;
 if nErr ~= LSERR_NO_ERROR;output = createoutput(11); return; end;
 
 % Optimize model
-solvertime = clock;
+solvertime = tic;
 
 if isempty(interfacedata.integer_variables)
     solver = 2;
 else
     solver = 1;
 end
-solvertime = clock;
+solvertime = tic;
 switch solver
     case 1
         [solstat,nErr] = mxlindo('LSsolveMIP', iModel);
@@ -181,7 +181,7 @@ switch solver
         [x,nErr] = mxlindo('LSgetPrimalSolution',iModel);
     otherwise
 end
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc(solvertime);
 
 w = zeros(length(c),1);w(linearindicies) =x;
 y = [];

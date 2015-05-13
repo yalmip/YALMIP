@@ -49,13 +49,13 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 if options.usex0
     [y,info] = lmirank(-F_struc(:,2:end),F_struc(:,1),K,pars,x0);
 else
     [y,info] = lmirank(-F_struc(:,2:end),F_struc(:,1),K,pars);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 x = y;
 
 switch info.solved

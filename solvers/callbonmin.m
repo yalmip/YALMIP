@@ -113,9 +113,9 @@ if ~isempty(model.binary_variables) | ~isempty(model.integer_variables)
 end
 
 showprogress('Calling BONMIN',model.options.showprogress);
-tic
+solvertime = tic;
 [xout,info] = bonmin(model.x0,funcs,options);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 x = RecoverNonlinearSolverSolution(model,xout);
 

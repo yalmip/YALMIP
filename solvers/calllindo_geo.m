@@ -155,7 +155,7 @@ if isempty(interfacedata.integer_variables)
 else
     solver = 1;
 end
-solvertime = clock;
+solvertime = tic;
 switch solver
     case 1
         [solstat,nErr] = mxlindo('LSsolveMIP', iModel);
@@ -176,7 +176,7 @@ switch solver
         [x,nErr] = mxlindo('LSgetPrimalSolution',iModel);
     otherwise
 end
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc(solvertime);
 
 w = zeros(length(c),1);w(linearindicies) = exp(x);
 y = [];

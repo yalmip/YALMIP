@@ -30,9 +30,9 @@ end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 
-tic
+solvertime = tic;
 [objVal,x,X,Y,INFO]=sdpam(mDIM,nBLOCK,bLOCKsTRUCT,c,F,[],[],[],options.sdpa);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create variables in YALMIP internal format
 Primal = x;

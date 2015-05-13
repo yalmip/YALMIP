@@ -31,13 +31,13 @@ end
 
 showprogress('Calling SDPT3',options.showprogress);
 
-tic
+solvertime = tic;
 if options.verbose==0
     evalc('[obj,X,y,Z,gaphist,infeashist,info,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,[],x0,[],options.sdpt3);');
 else
     [obj,X,y,Z,gaphist,infeashist,info,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,[],x0,[],options.sdpt3);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create dual variable in internal format
 D_struc = [];

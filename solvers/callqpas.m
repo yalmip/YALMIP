@@ -14,9 +14,9 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 [x,flag,lm] = qpas(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, options.verbose);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Internal format for duals
 if ~isempty(lm)

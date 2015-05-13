@@ -16,10 +16,10 @@ if options.savedebug
     save csdpdebug model
 end
 
-tic
+solvertime = tic;
 model.ops = csdpset;
 [y,fvals,exitflag,stats,X] = csdp(model.f,model.A,model.b,model.lb,model.ub,model.sdcone,model.y0,model.ops);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create dual variable in internal format
 if options.saveduals

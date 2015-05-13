@@ -48,9 +48,9 @@ if options.savedebug
     save ooqpdebug c H lb ub Aeq beq A blow bupp opts
 end
 
-tic
+solvertime = tic;
 [x,fval,stat,iter] = ooqp(H, c, A, blow, bupp, Aeq,beq,lb,ub,opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % No duals
 D_struc = [];

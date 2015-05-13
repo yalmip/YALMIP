@@ -39,9 +39,9 @@ if ~isempty(lb)
     d = [d;-lb];
 end
 
-tic
+solvertime = tic;
 [x,problem] = ipqp(2*Q,c,C,d,A,b);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Internal format for duals
 D_struc = [];

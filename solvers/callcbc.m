@@ -12,9 +12,9 @@ if options.savedebug
 end
 
 showprogress('Calling CBC',options.showprogress);
-tic
+solvertime = tic;
 [x,fval,exitflag,nodes,xc] = cbc(model.H,model.f, model.A, model.rl, model.ru, model.lb, model.ub, model.xtype,model.sos,model.x0,model.opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % No duals
 D_struc = [];

@@ -95,9 +95,9 @@ end
 
 
 % Call mex-interface
-tic
+solvertime = tic;
 [x,FMIN,SOLSTAT,DETAILS] = cplexint(H, C, A, B, INDEQ, QC, LB, UB,VARTYPE,PARAM,OPTIONS);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 D_struc = -DETAILS.dual;    

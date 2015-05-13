@@ -76,9 +76,9 @@ otherwise
     ifail = -1;
 end
 
-tic
+solvertime = tic;
 [x,iter,obj,clambda,istate,ifail] = e04naf(full(lb),full(ub),'callnage04naf',zeros(length(c),1),full(c),full(A),0,lp, cold,istate,featol,msglev,options.nag.itmax,options.nag.bigbnd,options.nag.orthog,ifail);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 % Internal format for duals

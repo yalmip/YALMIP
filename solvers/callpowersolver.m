@@ -33,9 +33,9 @@ end
 K.p = K.p';
 K.e = 0;
 K.pd = 'd';
-tic
+solvertime = tic;
 [x_s,y_s,info] = powersolver(-F_struc(:,2:end)',-c,F_struc(:,1),K);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Internal format
 Primal = y_s; 

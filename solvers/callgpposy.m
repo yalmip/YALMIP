@@ -67,9 +67,9 @@ if problem == 0
         save gpposydebug A b szs
     end
        
-    tic
+    solvertime = tic;
     [x,status,lambda,nu] = gpposy(A,b,szs,G,h,lb,ub,double(options.verbose)==0);
-    solvertime = toc;
+    solvertime = toc(solvertime);
 
     Primal = zeros(length(c),1);
 

@@ -139,12 +139,12 @@ if problem == 0
     latest_x_f = [];
     latest_x_g = [];
 
-    tic
+    solvertime = tic;
     [xout,lambda,iters] = ipopt(x0,lb,ub,Flow,Fupp,...
         @ipoptgp_callback_f,@ipoptgp_callback_df,@ipoptgp_callback_g,@ipoptgp_callback_dg,'',...
         prob,'',[],...
         'jac_c_constant',jac_c_constant,'jac_d_constant',jac_d_constant,ops{:});
-    solvertime = toc;
+    ssolvertime = toc(solvertime);
 
     x = zeros(length(c),1);
     x(linear_variables) = exp(xout);

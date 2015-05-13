@@ -25,13 +25,13 @@ if options.savedebug
 end
 
 showprogress('Calling SDPT3',options.showprogress);
-tic
+solvertime = tic;
 if options.verbose==0 % SDPT3 does not run silent despite printyes=0!
    evalc('[obj,X,y,Z,info,runhist,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,options.sdpt3,[],x0,[]);');
 else
     [obj,X,y,Z,info,runhist,Xiter,yiter,Ziter] =  sqlp(blk,A,C,b,options.sdpt3,[],x0,[]);    
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create variables in internal format
 % A bit messy ...

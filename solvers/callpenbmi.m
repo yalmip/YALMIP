@@ -125,7 +125,7 @@ if options.savedebug
 end
 
 showprogress('Calling PENBMI',options.showprogress);
-tic
+solvertime = tic;
 try    
     if all(c==0)
         [xout, fx, u, iresults, fresults, iflag] = pen(penstruct,1);
@@ -140,7 +140,7 @@ catch
         [xout, fx, u, iresults, fresults, iflag] = pen(penstruct);
     end    
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Get dual variable
 % First, get the nonlinear scalars treated as BMIs

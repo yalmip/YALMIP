@@ -45,9 +45,9 @@ if options.savedebug
 end
 
 STATUS = 0;
-tic
+solvertime = tic;
 [x,fval] = oslprog(c,A,B,Aeq,Beq,lb,ub);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 % No duals returned

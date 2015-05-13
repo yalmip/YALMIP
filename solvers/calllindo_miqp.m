@@ -44,13 +44,13 @@ QCvar2 = QCvar2 - 1;
 objsen=LS_MIN;
 solver=eval(options.lindo.LS_METHOD);
 
-solvertime = clock;
+solvertime = tic;
 if nnz(Q)>0
     [x,D_struc,s,dj,pobj,solstat,nErr]  = LMsolvem(A,full(b),full(c),csense,lb,ub,vtype,QCrows-1,QCvar1,QCvar2,2*QCcoef,objsen,solver,options.verbose);
 else
     [x,D_struc,s,dj,pobj,solstat,nErr]  = LMsolvem(A,full(b),full(c),csense,lb,ub,vtype,[],[],[],[],objsen,solver,options.verbose);
 end
-if interfacedata.getsolvertime solvertime = etime(clock,solvertime);else solvertime = 0;end
+solvertime = toc(solvertime);
     
 switch solstat
     case {LS_STATUS_OPTIMAL,LS_STATUS_BASIC_OPTIMAL,7,8}

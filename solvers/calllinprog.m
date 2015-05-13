@@ -52,9 +52,9 @@ if options.savedebug
     save linprogdebug c A b Aeq beq lb ub ops x0
 end
 
-tic
+solvertime = tic;
 [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 % Internal format for duals

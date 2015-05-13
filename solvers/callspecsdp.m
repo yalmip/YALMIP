@@ -68,9 +68,9 @@ penopts = ops(7:end);
 % *********************************************
 showprogress('Calling Apkarian',options.showprogress);
 problem = 0;
-tic
+solvertime = tic;
 [x,laug,lmax]=SPSDPLSCX(nnnn,A0,AAval,irowA,icolA,Dims,c,opts,penopts,x0);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % *********************************************
 % Dual variables not available

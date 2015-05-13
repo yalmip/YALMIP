@@ -16,9 +16,9 @@ if options.savedebug
     save dsdpdebug model
 end
 
-tic
+solvertime = tic;
 [y,fvals,exitflag,stats,X] = dsdp(model.f,model.A,model.b,model.lb,model.ub,model.sdcone,model.y0,model.ops);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create dual variable in internal format
 if options.saveduals  

@@ -55,9 +55,9 @@ if options.savedebug
 end
 
 % Call mex-interfacec
-tic
+solvertime = tic;
 [x,lambda,problem] = clp(2*Q,c,A,b,Aeq,beq,lb,ub,ops);%,interfacedata.integer_variables);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 if options.saveduals
     D_struc = -lambda;    

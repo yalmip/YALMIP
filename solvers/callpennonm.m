@@ -130,9 +130,10 @@ latest_x = [];
 latest_x_g = [];
 
 % Solve
-tic
+solvertime = tic;
 [f,xout,u,inform,iresults,dresults] = pennonm(pen);
-solvertime = toc;
+solvertime = toc(solvertime);
+
 if ~isempty(sdp_data)
     % remove the S-variables
     xout(end-sum((model.K.s).*(model.K.s+1)/2)+1:end) = [];

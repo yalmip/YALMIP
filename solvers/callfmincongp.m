@@ -118,17 +118,17 @@ if problem == 0
     end
 
     prob = precalcgpstruct(prob);
-    
-    solvertime = clock;
+        
     options.fmincon.GradObj    = 'on';
     options.fmincon.GradConstr = 'on';
     warning('off','optim:fmincon:NLPAlgLargeScaleConflict')
+    solvertime = tic;
     if isfield(options.fmincon,'tlprob')
         [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,options.fmincon.tlprob,prob);
     else
         [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
     end
-    solvertime = etime(clock,solvertime);
+    solvertime = toc(solvertime);
     warning('on','optim:fmincon:NLPAlgLargeScaleConflict')
 
     

@@ -52,9 +52,9 @@ opts = model.options.nomad;
 opts.display_degree = model.options.verbose;
 
 showprogress('Calling NOMAD',model.options.showprogress);
-tic
+solvertime = tic;
 [x,fval,exitflag,iter,nfval] = nomad(funcs.objective,model.x0,lb,ub,funcs.constraints,nlrhs,xtype,opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Duals currently not supported
 lambda = [];

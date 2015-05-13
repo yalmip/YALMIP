@@ -14,13 +14,13 @@ end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 if isempty(model.A)   
-    tic
+    solvertime = tic;
     [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.opts);  
-    solvertime = toc;
+    solvertime = toc(solvertime);
 else    
-    tic
+    solvertime = tic;
     [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.A,model.b,model.opts);
-    solvertime = toc;
+    solvertime = toc(solvertime);
 end
 
 % Internal format

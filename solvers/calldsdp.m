@@ -27,7 +27,7 @@ if options.savedebug
     save dsdpdebug A C b options.dsdp
 end
 
-tic
+solvertime = tic;
 if isempty(x0)
     if options.saveduals | options.savesolveroutput
         if options.verbose==0 % to fix display bug reported from user
@@ -57,7 +57,7 @@ else
         end
     end
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create dual variable in internal format
 if options.saveduals

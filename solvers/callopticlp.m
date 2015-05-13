@@ -36,9 +36,9 @@ if options.savedebug
     save clpdebug c A b  lb ub opts H
 end
 
-tic
+solvertime = tic;
 [x,fval,exitflag,iter,lambda] = clp(H,full(c), A, rl, ru, lb, ub,opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % No duals
 D_struc = -lambda.dual_row;

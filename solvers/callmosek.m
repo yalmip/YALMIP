@@ -211,13 +211,13 @@ function [res,sol,solvertime] = doCall(prob,param,options)
 
 showprogress('Calling Mosek',options.showprogress);
 if options.verbose == 0
-    tic
+    solvertime = tic;
     [res,sol] = mosekopt('minimize echo(0)',prob,param);    
-    solvertime = toc;
+    solvertime = toc(solvertime);
 else
-    tic
+    solvertime = tic;
     [res,sol] = mosekopt('minimize info',prob,param);
-    solvertime = toc;
+    solvertime = toc(solvertime);
 end
 
 function problem = MosekYALMIPError(res)
@@ -346,13 +346,13 @@ if model.options.savedebug
 end
 
 if model.options.verbose == 0
-    tic
+    solvertime = tic;
     [r,res] = mosekopt('minimize echo(0)',prob,param);    
-    solvertime = toc;
+    solvertime = toc(solvertime);
 else
-    tic
+    solvertime = tic;
     [r,res] = mosekopt('minimize info',prob,param);
-    solvertime = toc;
+    solvertime = toc(solvertime);
 end
 
 if res.rcode == 2001
@@ -471,13 +471,13 @@ end
 % Call MOSEK
 showprogress('Calling MOSEK',model.options.showprogress);
 if model.options.verbose == 0
-    tic
+    solvertime = tic;
     [r,res] = mosekopt('minimize echo(0)',prob,param); 
-    solvertime = toc;
+    solvertime = toc(solvertime);
 else
-    tic
+    solvertime = tic;
     [r,res] = mosekopt('minimize',prob,param);     
-    solvertime = toc;
+    solvertime = toc(solvertime);
 end
 
 if (r == 1010) || (r == 1011) | (r==1001)

@@ -41,13 +41,13 @@ if options.savedebug
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-tic
+solvertime = tic;
 if options.verbose==0 % Sparsecolo does not run silent
     evalc('[x,y,infoCoLO,cliqueDomain,cliqueRange,LOP] = sparseCoLO(A,b,C,K,[],ops);');
 else    
     [x,y,infoCoLO,cliqueDomain,cliqueRange,LOP] = sparseCoLO(A,b,C,K,[],ops);
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Create YALMIP dual variable and slack
 Dual = x;

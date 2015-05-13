@@ -22,19 +22,19 @@ end
 if isempty(Matrices.binary_var_index)
 
     showprogress('Calling MPT',options.showprogress);
-    tic
+    solvertime = tic;
     if options.mp.presolve        
         [Matrices.lb,Matrices.ub] = mpt_detect_and_improve_bounds(Matrices,Matrices.lb,Matrices.ub,Matrices.binary_var_index,options);
     end        
 
     model = mpt_solvenode(Matrices,Matrices.lb,Matrices.ub,Matrices,[],options);
-    solvertime = toc;
+    solvertime = toc(solvertime);
 
 else  
     % Pre-solve required on binary problems
     options.mp.presolve = 1;
 
-    tic
+    solvertime = tic;
     switch options.mp.algorithm
         case 1
             showprogress('Calling MPT via enumeration',options.showprogress);
@@ -48,7 +48,7 @@ else
             
         otherwise
     end
-    solvertime = toc;
+    solvertime = toc(solvertime);
 end
 
 if isempty(model)

@@ -139,9 +139,9 @@ SQPLABDATA.beq = beq;
 
 lb_co = -[b;interfacedata.bnonlinineq];
 ub_co = inf + lb_co;
-tic
+solvertime = tic;
 [xout,ci,flag] = sqplab('sqplab_simul',x0,[],[lb;lb_co],[ub;ub_co]);    
-solvertime = toc;
+solvertime = toc(solvertime);
 
 if isempty(nonlinearindicies)
     x = xout(:);

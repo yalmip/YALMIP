@@ -103,9 +103,9 @@ if options.savedebug
     save bintprogdebug c A b Aeq beq ops
 end
 
-tic
+solvertime = tic;
 [x,fmin,flag,output] = bintprog(c, A, b, sparse(Aeq), beq, x0,ops);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Go back to integer variables
 if ~isempty(x)

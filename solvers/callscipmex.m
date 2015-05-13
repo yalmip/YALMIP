@@ -80,7 +80,7 @@ if options.savedebug
 end
 
 % Call mex-interface
-tic
+solvertime = tic;
 try
     [x,FMIN,STATUS,INFO] = scip(H, f, A, rl, ru, lb, ub, VARTYPE, sos,qc,[],ops);
 catch
@@ -90,7 +90,7 @@ catch
     STATUS = -1;
     INFO = [];
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 D_struc = [];
 

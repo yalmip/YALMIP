@@ -75,9 +75,9 @@ if model.options.savedebug
     save scipnldebug obj con A ru rl cl cu xtype lb ub x0 opts
 end
 
-tic;
+solvertime = tic;
 [x,fval,exitflag,info] = opti_scipnl(obj,A,rl,ru,lb,ub,con,cl,cu,xtype,[],opts);%,x0,opts);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Check, currently not exhaustive...
 switch exitflag

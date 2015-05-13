@@ -68,9 +68,9 @@ if options.glpk.msglev==1
 end
 
 % Call mex-interface
-tic
+solvertime = tic;
 [x,FMIN,STATUS,LAMBDA_EXTRA] = glpk(C,A,B,LB,UB,CTYPE,VARTYPE,SENSE);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 problem = 0;
 

@@ -49,9 +49,9 @@ end
 if options.savedebug
 save cplexmexdebug
 end
-tic
+solvertime = tic;
 [x,OPT,STATUS,EXTRA]= cplexmex(SENSE,H,C,A,B,CTYPE,LB,UB,VARTYPE,x0,options.cplexmex);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 D_struc = -EXTRA.lambda;

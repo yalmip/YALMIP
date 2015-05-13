@@ -130,14 +130,14 @@ if ~isempty(K.sos.type)
 end
 
 % Call mex-interface
-tic
+solvertime = tic;
 if isempty(binary_variables) & isempty(integer_variables) & isempty(semicont_variables)
     [x,val,flag,output,lambda] = gurobi_mex(C,SENSE,sparse(A),B,CTYPE,LB,UB,VARTYPE,options.gurobi);
 else
     [x,val,flag,output] = gurobi_mex(C,SENSE,sparse(A),B,CTYPE,LB,UB,VARTYPE,options.gurobi);
     lambda = [];
 end
-solvertime = toc;
+solvertime = toc(solvertime);
 
 % Gurobi assumes semi-continuous variables only can take negative values so
 % we negate semi-continuous violating this

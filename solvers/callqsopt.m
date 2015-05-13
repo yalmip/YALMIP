@@ -27,9 +27,9 @@ options.qsopt.verbose = options.verbose;
 if options.savedebug
     save qsoptdebug
 end
-tic
+solvertime = tic;
 [x,lambda,STATUS] = qsopt(c,-F_struc(1+K.f:end,2:end),F_struc(1+K.f:end,1),-F_struc(1:K.f,2:end),F_struc(1:K.f,1),lb,ub,options.qsopt);
-solvertime = toc;
+solvertime = toc(solvertime);
 problem = 0;
 
 if options.saveduals

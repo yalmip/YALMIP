@@ -32,13 +32,13 @@ end
 
 switch options.cdd.method
     case 'criss-cross'
-        tic
+        solvertime = tic;
         OUT = cddmex('solve_lp',IN); 
-        solvertime = toc;
+        solvertime = toc(solvertime);
     case 'dual-simplex'
-        tic
+        solvertime = tic;
         OUT = cddmex('solve_lp_DS',IN);
-        solvertime = toc;
+        solvertime = toc(solvertime);       
     otherwise
 end
 problem = 0;

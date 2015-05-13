@@ -51,9 +51,9 @@ if options.verbose==0
 else
     doprint = 'yes';
 end
-tic
+solvertime = tic;
 [status, x, gamma, phi, y, z, lambda, pi] = ooqp( c, 2*Q, xlow, xupp, A, dA, C, clow, cupp, doprint);
-solvertime = toc;
+solvertime = toc(solvertime);
 
 problem = 0;
 
