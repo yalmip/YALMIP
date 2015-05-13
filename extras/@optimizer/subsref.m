@@ -27,11 +27,15 @@ if isequal(subs.type,'()')
     
 elseif isequal(subs.type,'.')
     
-    switch subs.subs
-        case 'model'
-            varargout{1} = self.model;
-        otherwise
-            error('Field not accesible')
+    if length(subs) == 1
+        switch subs.subs            
+            case 'options'
+                varargout{1} = self.model.options;
+            otherwise
+                error('Field not accesible. You can only acsess P.options')
+        end
+    else
+        error('Field not accesible. You can only acsess P.options')
     end
     
 elseif isequal(subs.type,'{}')
