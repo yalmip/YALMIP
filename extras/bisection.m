@@ -60,9 +60,20 @@ if nargin < 6 || isempty(upper)
 end
 
 % Perform bisection
-while upper - lower > tolerance
+iter = 1;
+if options.verbose;
+    disp('Iteration  Lower bound   Current       Upper bound  Status current');
+end
+while upper - lower > tolerance    
     test = (upper + lower)/2;
     [sol, flag] = P{test};
+    if options.verbose;
+        if flag
+            fprintf(' %4.0f : %12.3E  %12.3E  %12.3E    %s\n',iter,lower,test, upper,'Infeasible');
+        else
+            fprintf(' %4.0f : %12.3E  %12.3E  %12.3E    %s\n',iter,lower,test, upper,'Feasible');
+        end
+    end
     if flag == 0
        working_sol = sol;
        optimal = test;
@@ -70,6 +81,7 @@ while upper - lower > tolerance
     else
         upper = test;
     end
+    iter = iter + 1;
 end
 
 % Assign computed solution
