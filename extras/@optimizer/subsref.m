@@ -31,6 +31,8 @@ elseif isequal(subs.type,'.')
         switch subs.subs            
             case 'options'
                 varargout{1} = self.model.options;
+            case 'model'  
+                varargout{1} = self.model;
             otherwise
                 error('Field not accesible. You can only acsess P.options')
         end
