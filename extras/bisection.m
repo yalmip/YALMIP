@@ -13,15 +13,23 @@ function optimal = bisection(Constraints,Objective,options,tolerance,lower,upper
 %
 %    By default, the lower bound is 0. Upper bound is initialized 
 %    automatically if required. Default tolerance 1e-5.
+%
+%    A suitable solver has to be specified in the solver options.
 
 
 if length(getvariables(Objective)) > 1
     error('The objective should be a simple variable');
 end
 
-% Create an optimizer object which solves for a particular value
-% of the sought variable
-P = optimizer(Constraints, Objective,options,Objective,recover(depends(Constraints)));
+if nargin < 3 || isempty(options)
+    error('An options structure with a specified solver has to be supplied.');
+elseif strcmp(options.solver,'')
+    error('An options structure with a specified solver has to be supplied.');
+end
+
+% Create an optimizer object which solves feasibility problem for a
+% particular value of the sought variable 
+P = optimizer(Constraints, [] ,options,Objective,recover(depends(Constraints)));
 
 if nargin < 4 || isempty(tolerance)
     tolerance = 1e-4;
@@ -41,7 +49,7 @@ v = sol;
 optimal = lower;
 
 % Now find an upper bound by simply increasing a bound until infeasible
-if nargin < 6 || isempty(upper)
+if nargin < 6 || isempty(upper) || isinf(upper)
     upper = lower + 1;
     [sol, flag] = P{upper};
     while flag ~= 1
@@ -54,7 +62,7 @@ if nargin < 6 || isempty(upper)
         upper = upper*2;
         [sol, flag] = P{upper};
         if upper > 1e6
-            error('I suspect there is no upper bound. Testing 1e6 and still feasible...')
+            error('I suspect there is no upper bound. Tested 1e6 and still feasible...')
         end
     end
 end
@@ -62,7 +70,7 @@ end
 % Perform bisection
 iter = 1;
 if options.verbose;
-    disp('Iteration  Lower bound   Current       Upper bound  Status current');
+    disp('Iteration  Lower bound   Test          Upper bound  Status at test');
 end
 while upper - lower > tolerance    
     test = (upper + lower)/2;
