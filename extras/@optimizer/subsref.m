@@ -36,6 +36,12 @@ elseif isequal(subs.type,'.')
     
 elseif isequal(subs.type,'{}')
 
+    if self.model.options.usex0
+        if nargout < 5
+            warning('If you intend to use initial guesses, you must save fifth output [sol,~,~,~,P] = P{p}');
+        end
+    end
+    
     % This is not really supported yet...
     if isa(subs.subs{1},'sdpvar')
         varargout{1} = yalmip('definemulti','optimizer_operator',subs(1).subs{1},self,self.dimout);
