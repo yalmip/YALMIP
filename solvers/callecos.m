@@ -6,6 +6,12 @@ options = yalmipmodel.options;
 model = yalmip2ecos(yalmipmodel);
 
 options.ecos.verbose = options.verbose~=0;
+if ~isempty(yalmipmodel.binary_variables)
+    options.ecos.bool_vars_idx = yalmipmodel.binary_variables;
+end
+if ~isempty(yalmipmodel.integer_variables)
+    options.ecos.int_vars_idx = yalmipmodel.integer_variables;
+end
 model.opts = options.ecos;
 
 if options.savedebug
@@ -40,6 +46,8 @@ switch info.exitflag
         problem = 4;
     case -7
         problem = 9;
+    case 10
+        problem = 3;
     otherwise
         problem = 9;
 end
