@@ -587,10 +587,10 @@ catch
 end
 
 function ecos = setup_ecos_options
-ecos.feastol = 1e-5;
-ecos.abstol = 1e-6;
-ecos.reltol = 1e-6;
-ecos.maxit = 30;
+ecos = ecosoptimset;
+ecos.mi_maxiter = 1000;
+ecos.mi_abs_eps = 1e-6;
+ecos.mi_rel_eps = 1e-3;
 
 function filtersd = setup_filtersd_options
 filtersd.maxiter = 1500;
