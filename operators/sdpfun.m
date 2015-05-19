@@ -8,7 +8,7 @@ if ~isa(varargin{1},'char')
         if isa(varargin{i},'sdpvar')
             % Overloaded operator for SDPVAR objects. Pass on args and save them.
             % try to figure out size of expected output (many->1 or many->many
-            if isequal(varargin{end}(1),'@')
+            if isstr(varargin{end}) && isequal(varargin{end}(1),'@')
                 fun = eval(varargin{end});
                 varargin{end} = fun;
             end
