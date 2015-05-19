@@ -1,5 +1,5 @@
 function [P,x] = polytope(X,options)
-% polytope  Converts set object to polytope object        
+% polytope  Converts constraints to polytope object        
 %
 % P     = polytope(F)
 % [P,x] = polytope(F)
