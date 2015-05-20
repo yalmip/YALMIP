@@ -34,6 +34,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    15 Problem either infeasible or unbounded
 %    16 User terminated
 %    17 Presolve recovery failed
+%    18 Missing non-negativity bounds in GP formulation
 %
 %   See also SOLVESDP
 
@@ -106,6 +107,8 @@ case -3
   error_string = ['User terminated ' solver ]; 
  case 17
   error_string = ['Presolve recovery failed ' solver ]; 
+ case 18
+  error_string = ['Missing non-negativity bounds in GP formulation ' solver ];         
   
   
  otherwise

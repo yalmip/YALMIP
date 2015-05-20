@@ -322,6 +322,44 @@ if isfield(options,'pureexport')
     return
 end
 
+if strcmpi(solver.version,'geometric')
+    % Actual linear user variables
+    if options.assertgpnonnegativity
+        check = find(interfacedata.variabletype==0);
+        check = setdiff(check,interfacedata.aux_variables);
+        check = setdiff(check,interfacedata.evalVariables);
+        check = setdiff(check,interfacedata.extended_variables);
+        [lb,ub] = findulb(interfacedata.F_struc,interfacedata.K);
+        if ~all(lb(check)>=0)
+            % User appears to have explictly selected a GP solver
+            if ~isempty(strfind(options.solver,'geometric')) || ~isempty(strfind(options.solver,'mosek')) || ~isempty(strfind(options.solver,'gpposy'))
+                % There are missing non-negativity bounds
+                output = createOutputStructure(zeros(length(interfacedata.c),1)+NaN,[],[],18,yalmiperror(18,''),[],[],nan);
+                diagnostic.yalmiptime = etime(clock,yalmiptime);
+                diagnostic.solvertime = output.solvertime;
+                try
+                    diagnostic.info = output.infostr;
+                catch
+                    diagnostic.info = yalmiperror(output.problem,solver.tag);
+                end
+                diagnostic.problem = output.problem;
+                if options.dimacs
+                    diagnostic.dimacs = dimacs;
+                end
+                return
+            else
+                % YALMIP selected solver and picked a GP solver. As this is
+                % no GP, we call again, but this time explicitly tell
+                % YALMIP that it isn't a GP
+                options.thisisnotagp = 1;
+                varargin{3} = options;
+                diagnostic = solvesdp(varargin{:});
+                return
+            end
+        end
+    end
+end
+
 % *************************************************************************
 % TRY TO SOLVE PROBLEM
 % *************************************************************************

@@ -8,6 +8,13 @@ force_solver = yalmip('solver');
 if length(force_solver)>0
     options.solver = force_solver;
 end
+
+% YALMIP has discovered in an previous call that the model isn't a GP, and
+% now searches for a non-GP solver
+if options.thisisnotagp
+    ProblemClass.gppossible = 0;
+end
+
 % ***************************************************
 % Maybe the user is stubborn and wants to pick solver
 % ***************************************************
