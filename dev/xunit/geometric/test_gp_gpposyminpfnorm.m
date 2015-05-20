@@ -26,7 +26,7 @@ constr = [...
   s == s_nom.*((ones(3,1)*(c(1)/c_nom(1))).^gamma).*...
               ((ones(3,1)*(c(2)/c_nom(2))).^delta);
 ];
-
+constr=[constr, lambda >= 0, b >=0, s>=0, v>=0, c>=0];
 % find the optimal eigenvalue
 sol = solvesdp(constr,obj,sdpsettings('solver','mosek,gpposy,fmincon-geometric'));
 obj

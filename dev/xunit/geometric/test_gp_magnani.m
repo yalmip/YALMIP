@@ -10,7 +10,7 @@ obj=x^2*y^3;
 F=F+(t<=1);
 F=F+(t>=1);
 F=F+(y^2<=4);
-
+F = [F, x>=0, y>=0];
 sol = solvesdp(F,obj);
 mbg_asserttolequal(sol.problem,0);
 mbg_asserttolequal(double(obj),1,1e-4);
@@ -32,7 +32,7 @@ obj=x^2*y^3;
 F=F+(t<=1);
 F=F+(t>=1);
 F=F+(y^2.5<=4);
-
+F = [F, x>=0];
 sol = solvesdp(F,obj);
 mbg_asserttolequal(sol.problem,0);
 mbg_asserttolequal(double(obj),1,1e-3);
