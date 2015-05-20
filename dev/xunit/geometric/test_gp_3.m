@@ -5,7 +5,7 @@ sdpvar h w d
 Awall  = 1;
 Afloor = 1;
 
-F = (0.5 <= h/w <= 2) + (0.5 <= d/w < 2);
+F = (0.5 <= h/w <= 2) + (0.5 <= d/w <= 2);
 F = F + (2*(h*w+h*d) <= Awall) + (w*d <= Afloor);
 
 sol = solvesdp(F,-(h*w*d))
