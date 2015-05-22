@@ -14,11 +14,13 @@ if islinear(F)
     return
 end
 
-if issigmonial(F)
-    return
-end
-
 [monomtable,variabletype] = yalmip('monomtable');
+
+if any(variabletype == 4)
+    if issigmonial(F)
+        return
+    end
+end
 
 Fconv = lmi;
 no_changed = 0;
