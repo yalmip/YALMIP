@@ -217,11 +217,12 @@ all_extstruct = yalmip('extstruct');
 while constraint <=length(F) & ~failure
     
     if ~already_expanded(constraint)
-        variables = uniquestripped([depends(F(constraint)) getvariables(F(constraint))]);
+        Fconstraint = F(constraint);
+        variables = uniquestripped([depends(Fconstraint) getvariables(Fconstraint)]);
         
         % If constraint is a cut, all generated constraints must be marked
         % as cuts too
-        CONSTRAINTCUTSTATE =  getcutflag(F(constraint));
+        CONSTRAINTCUTSTATE =  getcutflag(Fconstraint);
         [ix,jx,kx] = find(monomtable(variables,:));
         if ~isempty(jx) % Bug in 6.1
             if any(kx>1)
@@ -233,13 +234,13 @@ while constraint <=length(F) & ~failure
         if ~isempty(index_in_extended)
             if is(F(constraint),'equality')
                 if options.allowmilp | options.allownonconvex
-                    [F_expand,failure,cause] = expand(index_in_extended,variables,-sdpvar(F(constraint)),F_expand,extendedvariables,monomtable,variabletype,['constraint #' num2str(constraint)],0,options,'exact',[],allExtStructs,w);
+                    [F_expand,failure,cause] = expand(index_in_extended,variables,-sdpvar(Fconstraint),F_expand,extendedvariables,monomtable,variabletype,['constraint #' num2str(constraint)],0,options,'exact',[],allExtStructs,w);
                 else
                     failure = 1;
                     cause = ['integer model required for equality in constraint #' num2str(constraint)];
                 end
             else
-                [F_expand,failure,cause] = expand(index_in_extended,variables,-sdpvar(F(constraint)),F_expand,extendedvariables,monomtable,variabletype,['constraint #' num2str(constraint)],0,options,method,[],allExtStructs,w);
+                [F_expand,failure,cause] = expand(index_in_extended,variables,-sdpvar(Fconstraint),F_expand,extendedvariables,monomtable,variabletype,['constraint #' num2str(constraint)],0,options,method,[],allExtStructs,w);
             end
         end
     end
