@@ -163,20 +163,25 @@ for j = 1:nlmi
         resdual(j,1) = NaN;
     else
         switch F.clauses{j}.type
-        case {1,9}
-            resdual(j,1) = min(eig(dual));
-        case 2
-            resdual(j,1) = min(min(dual));
-        case 3
-            resdual(j,1) = -max(max(abs(dual)));
-        case 4
-            resdual(j,1) = dual(1)-norm(dual(2:end));
-        case 5
-            resdual(j,1) = 2*dual(1)*dual(2)-norm(dual(3:end))^2;
-        case 7
-            resdual(j,1) = nan;
-        otherwise
-            gap = nan;
+            case {1,9}
+                resdual(j,1) = min(eig(dual));
+            case 2
+                resdual(j,1) = min(min(dual));
+            case 3
+                resdual(j,1) = -max(max(abs(dual)));
+            case 4
+                resdual(j,1) = dual(1)-norm(dual(2:end));
+            case 5
+                resdual(j,1) = 2*dual(1)*dual(2)-norm(dual(3:end))^2;
+            case 7
+                resdual(j,1) = nan;
+            case 54
+                resdual(j,1) = inf;
+                for k = 1:size(dual,2)
+                    resdual(j,1) = min(resdual(j,1),full(dual(1,k)-norm(dual(2:end,k))));
+                end
+            otherwise
+                gap = nan;
         end
     end
     
