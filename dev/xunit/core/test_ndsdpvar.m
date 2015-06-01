@@ -14,8 +14,8 @@ assertTrue(isequal(double(sum(x,3)),sum(p,3)))
 
 assertTrue(isequal(double(diff(x)),diff(p)))
 assertTrue(isequal(double(diff(x,1)),diff(p,1)))
-assertTrue(isequal(double(diff(x,2)),diff(p,2)))
-assertTrue(isequal(double(diff(x,3)),diff(p,3)))
+assertVectorsAlmostEqual(double(diff(x,2)),diff(p,2))
+assertVectorsAlmostEqual(double(diff(x,3)),diff(p,3))
 
 assertTrue(isequal(double(diff(x)),diff(p)))
 assertTrue(isequal(double(diff(x,1,1)),diff(p,1,1)))
