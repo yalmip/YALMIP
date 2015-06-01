@@ -22,10 +22,12 @@ else
     p = circshift(i',length(X.dim)-(index))';
     X = permute(X,p);
     % Permute might have squeezed to 2 array
-    if length(size(X))==2
+    if length(size(X))~=length(size(Y))
         % Expand back last dimension
-        X = ndsdpvar(X);
-        X.dim = [X.dim 1];
+        if length(size(X))==2
+            X = ndsdpvar(X);
+        end
+        X.dim = [X.dim ones(1,length(size(Y))-length(size(X)))];
     end
     X = sum(X,length(X.dim));
     if isa(X,'sdpvar')
