@@ -4,10 +4,10 @@ function X = sum(varargin)
 Y = varargin{1};
 X = Y;
 X.basis = [];
-if nargin == 2 && isequal(varargin{2},3) && length(X.dim)==3
+if nargin == 2 && isequal(varargin{2},length(X.dim))
     % smash slices
-    X.basis = kron(ones(1,X.dim(end)),speye(prod(X.dim(1:2))))*Y.basis;
-    X.dim = X.dim(1:2);
+    X.basis = kron(ones(1,X.dim(end)),speye(prod(X.dim(1:end-1))))*Y.basis;
+    X.dim = X.dim(1:end-1);
 else
     for i = 1:size(Y.basis,2)
         base = reshape(full(Y.basis(:,i)),X.dim);
