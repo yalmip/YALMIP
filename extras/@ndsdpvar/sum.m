@@ -3,18 +3,29 @@ function X = sum(varargin)
 
 Y = varargin{1};
 X = Y;
-X.basis = [];
+%X.basis = [];
 if nargin == 2 && isequal(varargin{2},length(X.dim))
     % smash slices
     X.basis = kron(ones(1,X.dim(end)),speye(prod(X.dim(1:end-1))))*Y.basis;
     X.dim = X.dim(1:end-1);
 else
-    for i = 1:size(Y.basis,2)
-        base = reshape(full(Y.basis(:,i)),X.dim);
-        base = sum(base,varargin{2:end});
-        X.basis = [X.basis sparse(base(:))];
+    if nargin == 1
+        index = 1;
+    else
+        index = varargin{2};
     end
-    X.dim = size(base);
+    if index > length(X.dim)
+        return
+    end
+    % Permute to the case which we can do fast
+    i = 1:length(X.dim);
+    p = circshift(i',length(X.dim)-(index))';
+    X = permute(X,p);
+    X = sum(X,length(X.dim));
+    p = circshift((1:length(X.dim))',-(length(Y.dim)-(index)))';
+    X = permute(X,p);
+    X.dim = Y.dim;
+    X.dim(index) = 1;
 end
 X.conicinfo = [0 0];
 X = clean(X);
