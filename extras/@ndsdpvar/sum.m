@@ -10,7 +10,7 @@ if nargin == 2 && isequal(varargin{2},length(X.dim))
     X.dim = X.dim(1:end-1);
 else
     if nargin == 1
-        index = 1;
+        index = 2;
     else
         index = varargin{2};
     end
@@ -22,6 +22,10 @@ else
     p = circshift(i',length(X.dim)-(index))';
     X = permute(X,p);
     X = sum(X,length(X.dim));
+    if isa(X,'sdpvar')
+        X = ndsdpvar(X);
+        X.dim = [X.dim 1];
+    end
     p = circshift((1:length(X.dim))',-(length(Y.dim)-(index)))';
     X = permute(X,p);
     X.dim = Y.dim;
