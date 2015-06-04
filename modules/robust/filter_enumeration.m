@@ -20,9 +20,13 @@ else
                 vertices = [];
                 lb = separatedZmodel{1}.lb(:)';
                 ub = separatedZmodel{1}.ub(:)';
-                for i = 0:2^n-1
-                    vertices = [vertices;lb+dec2decbin(i,n).*(ub-lb)];
-                end
+                E = dec2bin(0:2^n-1,n)';                
+                E = double(E(:))-48;                
+                E = reshape(E,n,2^n);
+                vertices = (repmat(lb(:),1,2^n) + E.*(repmat(ub(:),1,2^n)-repmat(lb(:),1,2^n)))';
+                %for i = 0:2^n-1
+                %    vertices = [vertices;lb+dec2decbin(i,n).*(ub-lb)];
+                %end
                 if ops.verbose
                     disp([' - Enumerated ' num2str(2^n) ' vertices'])
                 end
