@@ -1142,10 +1142,6 @@ end
 function quadprog = setup_quadprog_options
 try
     quadprog = trytoset('quadprog');    
-    if isfield(quadprog, 'Algorithm') && ~isempty(quadprog.Algorithm)
-        quadprog.Algorithm = 'active-set';
-    end
-    quadprog.LargeScale = 'off';
 catch
     quadprog.param = [];
 end

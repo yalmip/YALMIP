@@ -9,13 +9,19 @@ Q       = interfacedata.Q;
 lb      = interfacedata.lb;
 ub      = interfacedata.ub;
 
+if nnz(Q)==0
+    ops = options.linprog;
+else
+    ops = options.quadprog;
+end
+
 switch options.verbose
 case 0
-    options.quadprog.Display = 'off';
+    ops.Display = 'off';
 case 1
-    options.quadprog.Display = 'final';
+    ops.Display = 'final';
 otherwise
-    options.quadprog.Display = 'iter';
+    ops.Display = 'iter';
 end
     
 % QUAPROG does not like lb==ub in (LINUX/6.1)
@@ -41,8 +47,8 @@ else
     beq = [];
 end
 
-if isfield(options.quadprog,'LargeScale')
-    if ~isequal(options.quadprog.LargeScale,'on')
+if isfield(ops,'LargeScale')
+    if ~isequal(ops.LargeScale,'on')
         Q = full(Q);
         c = full(c);
         A = full(A);
@@ -51,8 +57,6 @@ if isfield(options.quadprog,'LargeScale')
         beq = full(beq);
     end
 end
-
-ops = options.quadprog;
 
 model.Q = 2*Q;
 model.c = c;
