@@ -30,7 +30,7 @@ end
 
 
 % Create a bilinear decomposition of the constraints
-
+try
 xw = [x;w];
 xind = find(ismembcYALMIP(getvariables(xw),getvariables(x)));
 wind = find(ismembcYALMIP(getvariables(xw),getvariables(w)));
@@ -64,6 +64,10 @@ for i = 1:length(X)
 end
 % Linear uncertain constraint is (Bbetai*x + cdi) >= 0 for all w, or
 % (bi' + (Bi*w)')*x + (ci'*w + di).
+catch
+    % Complicated epression, so go for polynomial decomposition below
+    Q = [];
+end
 
 % Currently 3 special cases implemented
 if ops.verbose
@@ -83,6 +87,32 @@ if length(Q)> 0
             
         otherwise
             error('The detected norm-ball has not been implemented yet')
+    end
+elseif isequal(norm_p,'inf-norm')
+    % Quadratic decomposition failed. Let's try a general basis if simple
+    % inf-norm
+    F = [];
+    feasible = 1;
+    HigherOrder = [];
+    for i = 1:length(X)
+        try            
+            [c,v] = coefficients(X(i),allw,[1;allw]);
+            % Great, affine in uncertainty            
+            if isa(c(2:end),'double') && nnz(c(2:end))==0
+                % Trivial case, no uncertainty in model
+                F = [F, X(i) >= 0];
+            else
+                % c(1) +  c(2:end)'*w >= 0
+                % c(1) +  c(2:end)'*(center + r*wnormalized) >= 0
+                % c(1) +  c(2:end)'*center + r*c(2:end)'*wnormalized >= 0
+                center = (Zmodel.lb + Zmodel.ub)/2;
+                r = (Zmodel.ub - Zmodel.lb)/2;
+                t = sdpvar(length(allw),1);
+                F = [F, c(1) + c(2:end)'*center - sum(t) >= 0, -t <= r.*c(2:end) <= t];
+            end
+        catch
+            HigherOrder = [HigherOrder;i];
+        end
     end
 else
     F = [];
