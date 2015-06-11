@@ -721,7 +721,7 @@ function Z = fix_variable_order(Z)
 % Fucked up order (lmi_variables should be sorted)
 if any(diff(Z.lmi_variables)<0)
     [i,j]=sort(Z.lmi_variables);
-    Z.basis = [Z.basis(:,1) Z.basis(:,j+1)];
+    Z.basis = [Z.basis(1:end,1) Z.basis(:,j+1)];
     Z.lmi_variables = Z.lmi_variables(j);
 end
 
