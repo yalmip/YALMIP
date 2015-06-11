@@ -1,37 +1,5 @@
 function diagnostic = solvesdp(varargin)
-%SOLVESDP Computes solution to optimization problem
-%
-%   DIAGNOSTIC = SOLVESDP(F,h,options) is the common command to
-%   solve optimization problems of the following kind
-%
-%    min        h
-%    subject to
-%            F >=(<=,==) 0
-%
-%   NOTES
-%    Despite the name, SOLVESDP is the interface for solving all
-%    supported problem classes (LP, QP, SOCP, SDP, BMI, MILP, MIQP,...)
-%
-%    To obtain solution for a variable, use DOUBLE.
-%
-%    To obtain dual variable for a constraint, use DUAL.
-%
-%    See YALMIPERROR for error codes returned in output.
-%
-%   OUTPUT
-%     diagnostic : Diagnostic information
-%
-%   INPUT
-%     F          : Object describing the constraints. Can be [].
-%     h          : SDPVAR object describing the objective h(x). Can be [].
-%     options    : Options structure. See SDPSETTINGS. Can be [].
-%
-%   EXAMPLE
-%    A = randn(15,5);b = rand(15,1)*5;c = randn(5,1);
-%    x = sdpvar(5,1);
-%    solvesdp([x>=0, A*x<=b],c'*x);value(x)
-%
-%   See also DUAL, @SDPVAR/VALUE, SDPSETTINGS, YALMIPERROR
+%SOLVESDP Obsolete command, please use OPTIMIZE
 
 yalmiptime = clock; % Let us see how much time we spend
 
