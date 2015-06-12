@@ -13,7 +13,7 @@ if length(Y)==1
             i = i + 1;
         end
         if ok
-            varargin{2}.subs = {Y.subs{1:2}};
+            Y{2}.subs = {Y.subs{1:2}};
         else
             error('??? Index exceeds matrix dimensions.');
         end
