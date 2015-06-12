@@ -2,13 +2,12 @@ function index = end(X,position,numindices)
 %END (overloaded)
 
 switch position
-    case {1,2}
-        sizes = X.dim;
+    case {1,2}       
         if numindices == 1
             % User has written someting like X(end) or X(1:end)
-            index = prod(sizes);
+            index = prod(X.dim);
         else
-            index = sizes(position);
+            index = X.dim(position);
         end
     otherwise
         index = 1;
