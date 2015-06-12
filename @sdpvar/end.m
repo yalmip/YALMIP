@@ -1,18 +1,15 @@
 function index = end(X,position,numindices)
 %END (overloaded)
 
-switch numindices
-    case 1
-        % User has written someting like X(end)
+switch position
+    case {1,2}
         sizes = X.dim;
-        if min(sizes)>1
+        if numindices == 1
+            % User has written someting like X(end) or X(1:end)
             index = prod(sizes);
         else
-            index = max(sizes);
+            index = sizes(position);
         end
-    case 2
-        sizes = X.dim;
-        index = sizes(position);
     otherwise
-        error('Indexation dimension cannot exceed 2');
+        index = 1;
 end
