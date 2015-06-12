@@ -94,8 +94,9 @@ elseif isequal(norm_p,'inf-norm')
     F = [];
     feasible = 1;
     HigherOrder = [];
+   % [c] = coefficients([1+sum(allw);X],allw);
     for i = 1:length(X)
-        try            
+       % try            
             [c,v] = coefficients(X(i),allw,[1;allw]);
             % Great, affine in uncertainty            
             if isa(c(2:end),'double') && nnz(c(2:end))==0
@@ -110,9 +111,9 @@ elseif isequal(norm_p,'inf-norm')
                 t = sdpvar(length(allw),1);
                 F = [F, c(1) + c(2:end)'*center - sum(t) >= 0, -t <= r.*c(2:end) <= t];
             end
-        catch
-            HigherOrder = [HigherOrder;i];
-        end
+      %  catch
+      %      HigherOrder = [HigherOrder;i];
+      %  end
     end
 else
     F = [];

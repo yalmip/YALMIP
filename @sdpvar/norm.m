@@ -104,6 +104,8 @@ switch class(varargin{1})
                             if isreal(X)
                                 % Standard definition
                                 % F = (-t <= X <= t);
+                                X = reshape(X,[],1);
+                                Z = reshape(Z,[],1);
                                 Xbase = getbase(X);
                                 Constant = find(~any(Xbase(:,2:end),2));
                                 if ~isempty(Constant)
