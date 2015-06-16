@@ -211,12 +211,14 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     y = addfactors(y,X,Y);
                     return
                 else
-                    [ix,jx,sx] = find(y.basis);y.basis = [];
-                    [iy,jy,sy] = find(Y.basis);%Y.basis = [];
+                   % [ix,jx,sx] = find(y.basis);y.basis = [];
+                   % [iy,jy,sy] = find(Y.basis);%Y.basis = [];
                     mapX = [1 1+in_X];
                     mapY = [1 1+in_Y];
-                    basis_X = sparse(ix,mapX(jx),sx,n_X*m_X,1+length(all_lmi_variables));ix=[];jx=[];sx=[];
-                    basis_Y = sparse(iy,mapY(jy),sy,n_Y*m_Y,1+length(all_lmi_variables));iy=[];jy=[];sy=[];
+                   % basis_X = sparse(ix,mapX(jx),sx,n_X*m_X,1+length(all_lmi_variables));ix=[];jx=[];sx=[];
+                   % basis_Y = sparse(iy,mapY(jy),sy,n_Y*m_Y,1+length(all_lmi_variables));iy=[];jy=[];sy=[];
+                    basis_X = X.basis*(sparse(1:length(mapX),mapX,1,size(X.basis,2),length(all_lmi_variables)+1));
+                    basis_Y = Y.basis*(sparse(1:length(mapY),mapY,1,size(Y.basis,2),length(all_lmi_variables)+1));
                 end
             else
                 % MATLAB sparse fails on this for huge problems at a certain size
@@ -245,7 +247,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             else
                 % OK, solution is...
                 y.basis = basis_X;basis_X = [];
-                y.basis = y.basis+basis_Y;basis_Y = [];
+                y.basis = y.basis+basis_Y;basis_Y = [];               
             end
         end
         % Reset info about conic terms
