@@ -60,14 +60,13 @@ else
     snscreen('on');
 end
 snseti('Minimize',1)  
-snseti('Verify level',3)  
 
 solvertime = tic;
 if strcmpi(model.solver.version,'cmex')
     % Some old interface? Keep for safety
     [xout,F,xmul,Fmul,inform, xstate, Fstate, ns, ninf, sinf, mincw, miniw, minrw] = snoptcmex( solveopt, x0, xlow, xupp, xmul, xstate, Flow, Fupp, Fmul, Fstate,ObjAdd, ObjRow, A, iAfun(:), jAvar(:),iGfun(:), jGvar(:), usrf );
 else
-    [xout,F,inform,xmul,Fmul] = snopt(x0, xlow, xupp, xmul, xstate,Flow, Fupp, Fmul, Fstate, usrf,ObjAdd, ObjRow,A, iAfun, jAvar, iGfun, jGvar);    
+    [xout,F,inform,xmul,Fmul] = snopt(x0, xlow, xupp, xmul, xstate,Flow, Fupp, Fmul, Fstate, usrf,ObjAdd, ObjRow,A, iAfun, jAvar, iGfun, jGvar);      
 end
   
 solvertime = toc(solvertime);
