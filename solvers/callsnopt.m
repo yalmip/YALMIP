@@ -61,6 +61,11 @@ else
 end
 snseti('Minimize',1)  
 
+global latest_xevaled
+global latest_x_xevaled
+latest_xevaled = [];
+latest_x_xevaled = [];
+
 solvertime = tic;
 if strcmpi(model.solver.version,'cmex')
     % Some old interface? Keep for safety
