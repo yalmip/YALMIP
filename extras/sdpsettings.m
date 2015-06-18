@@ -717,9 +717,9 @@ gurobi.Threads = 0;
 function intlinprog = setup_intlinprog_options
 try
     intlinprog = optimoptions('intlinprog');
-    if ~isa(intlinprog,'struct');
-        evalc(['intlinprog = struct(intlinprog);']);
-    end
+%     if ~isa(intlinprog,'struct');
+%         evalc(['intlinprog = struct(intlinprog);']);
+%     end
 catch
     intlinprog = [];
 end
