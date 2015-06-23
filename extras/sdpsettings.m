@@ -364,9 +364,9 @@ if ~isempty(options)
     if nargin == 3
         prefix = [solver '.'];
     else
-        prefix = [];
+        prefix = '';
     end
-    for i = 1:length(cNames)
+    for i = 1:length(cNames)   
         Names{end+1} = [prefix  cNames{i}];
     end
 end

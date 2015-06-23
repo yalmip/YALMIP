@@ -85,7 +85,7 @@ end
 % All we change later is the cost vector
 %sol = solvesdp(F,sum(x),opts);
 [model,recoverdata,diagnostic,internalmodel] = export(F,[],opts,[],[],0);
-if isempty(internalmodel) | (~isempty(diagnostic) & diagnostic.problem)
+if isempty(internalmodel) | (~isempty(diagnostic) && diagnostic.problem)
     error('Could not create model. Can you actually solve problems with this model?')
 end
 internalmodel.options.saveduals = 0;
