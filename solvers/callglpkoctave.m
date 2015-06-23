@@ -142,4 +142,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,yalmiperror(problem,interfacedata.solver.tag),solverinput,solveroutput,solvertime);
