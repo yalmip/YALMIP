@@ -200,6 +200,30 @@ if DUDE_ITS_A_GP == 1
     method = 'graph';
 end
 
+% Test for very common special case with only norm expression
+ExtendedMap = yalmip('extendedmap');
+fail = 0;
+if  0%length(ExtendedMap) > 0 &&  all(strcmp('norm',{ExtendedMap.fcn}))
+    for i = 1:length(ExtendedMap)
+        if ~isequal(ExtendedMap(i).arg{2},2)
+            fail = 1;
+            break;
+        end
+        if ~isreal(ExtendedMap(i).arg{1})
+            fail = 1;
+            break;
+        end
+        if any(ismembcYALMIP(getvariables(ExtendedMap(i).arg{1}),extendedvariables))
+             fail = 1;
+            break;
+        end
+    end
+    for i = 1:length(ExtendedMap)
+        F_expand = [F_expand, cone(ExtendedMap(i).arg{1},ExtendedMap(i).var)];
+    end
+    F = F + lifted(F_expand,1);
+    return
+end
 % *************************************************************************
 % OK, looks good. Apply recursive expansion on the objective
 % *************************************************************************
@@ -216,7 +240,7 @@ constraint = 1;
 all_extstruct = yalmip('extstruct');
 while constraint <=length(F) & ~failure
     
-    if ~already_expanded(constraint)
+    if ~already_expanded(constraint)       
         Fconstraint = F(constraint);
         variables = uniquestripped([depends(Fconstraint) getvariables(Fconstraint)]);
         
@@ -232,7 +256,7 @@ while constraint <=length(F) & ~failure
         
         index_in_extended = find(ismembcYALMIP(variables,extendedvariables));
         if ~isempty(index_in_extended)
-            if is(F(constraint),'equality')
+            if is(Fconstraint,'equality')
                 if options.allowmilp | options.allownonconvex
                     [F_expand,failure,cause] = expand(index_in_extended,variables,-sdpvar(Fconstraint),F_expand,extendedvariables,monomtable,variabletype,['constraint #' num2str(constraint)],0,options,'exact',[],allExtStructs,w);
                 else
