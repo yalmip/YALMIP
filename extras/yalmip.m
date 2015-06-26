@@ -1109,6 +1109,9 @@ switch varargin{1}
         internal_sdpvarstate.boundlist(indicies(:),2) = varargin{4};
         varargout{1}=0;
         
+    case 'extendedmap'
+        varargout{1} = internal_sdpvarstate.ExtendedMap;
+        
     case  'logicextvariables'
         logicextvariables = [];
         for i = 1:length(internal_sdpvarstate.ExtendedMap)
