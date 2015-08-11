@@ -10,7 +10,12 @@ if nargin == 2 && isequal(varargin{2},length(X.dim))
     X.dim = X.dim(1:end-1);
 else
     if nargin == 1
-        index = 2;
+        index = find(X.dim~=1);
+        if isempty(index)
+            index = length(X.dim);
+        else
+            index = index(1);
+        end
     else
         index = varargin{2};
     end
@@ -32,12 +37,16 @@ else
     X = sum(X,length(X.dim));
     if isa(X,'sdpvar')
         X = ndsdpvar(X);
-        X.dim = [X.dim 1];
+        X.dim = [X.dim ones(1,length(size(varargin{1}))-length(size(X)))];
+    else
+        X.dim = [X.dim ones(1,length(size(varargin{1}))-length(size(X)))];
     end
     p = circshift((1:length(X.dim))',-(length(Y.dim)-(index)))';
     X = permute(X,p);
-    X.dim = Y.dim;
-    X.dim(index) = 1;
+   % X.dim = Y.dim;
+   % X.dim(index) = 1;
 end
-X.conicinfo = [0 0];
+if isa(X,'ndsdpvar')
+    X.conicinfo = [0 0];
+end
 X = clean(X);
