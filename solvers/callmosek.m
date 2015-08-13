@@ -186,13 +186,11 @@ catch
 end
 
 if model.options.saveduals & ~isempty(x)
-    try
-        D_struc = [res.sol.itr.xx];
+    try       
         D_struc_SDP = zeros(sum(model.K.s.^2),1);
         top = 1;
         dtop = 1;
-        for i = 1:length(model.K.s)
-            X = zeros(model.K.s(i));
+        for i = 1:length(model.K.s)          
             n = model.K.s(i);
             I = find(tril(ones(n)));
             v = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
@@ -200,9 +198,6 @@ if model.options.saveduals & ~isempty(x)
             in = ceil(I/n);
             jn = mod(I-1,n)+1;
             D_struc_SDP(dtop + (jn-1)*n+in - 1) = v;
-            % X(I) = v;
-            % X = X + tril(X,-1)';
-            % D_struc = [D_struc;X(:)];
             top = top + n*(n+1)/2;
             dtop = dtop  + n^2;
         end
