@@ -186,21 +186,30 @@ catch
 end
 
 if model.options.saveduals & ~isempty(x)
-   try
+    try
         D_struc = [res.sol.itr.xx];
+        D_struc_SDP = zeros(sum(model.K.s.^2),1);
         top = 1;
+        dtop = 1;
         for i = 1:length(model.K.s)
             X = zeros(model.K.s(i));
             n = model.K.s(i);
             I = find(tril(ones(n)));
-            X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
-            X = X + tril(X,-1)';
-            D_struc = [D_struc;X(:)];
+            v = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
+            D_struc_SDP(dtop + I - 1) = v;
+            in = ceil(I/n);
+            jn = mod(I-1,n)+1;
+            D_struc_SDP(dtop + (jn-1)*n+in - 1) = v;
+            % X(I) = v;
+            % X = X + tril(X,-1)';
+            % D_struc = [D_struc;X(:)];
             top = top + n*(n+1)/2;
+            dtop = dtop  + n^2;
         end
-   catch
+        D_struc = [res.sol.itr.xx;D_struc_SDP];
+    catch
         D_struc = [];
-   end
+    end
 else
     D_struc = [];
 end
@@ -283,31 +292,23 @@ prob.bara.val = [];
 C = F_struc(:,1);
 A = -F_struc(:,2:end);
 
-tops = 1;
-for j = 1:length(K.s)
-    n = K.s(j);
-    tops = [tops tops(end)+n^2];
-end
+tops = [1 cumsum(K.s.^2)+1];
 top = 1+K.f+K.l+sum(K.q);
 [ii,jj,kk] = find(A(top:top + sum(K.s.^2)-1,:));
-cols = zeros(length(ii),1);
-rows = zeros(length(ii),1);
-allcol = [];
-allrow = [];
-allcon = [];
-allvar = [];
-allval = [];
-for j = 1:length(K.s)    
-    ind = find(ii>=tops(j) & ii<=tops(j+1)-1);
-    iilocal = ii(ind)-tops(j)+1;
-    col = ceil(iilocal/K.s(j));
-    row = iilocal - (col-1)*K.s(j);
-    allcol = [allcol col(:)'];
-    allrow = [allrow row(:)'];
-    allvar = [allvar jj(ind(:))'];
-    allval = [allval kk(ind(:))'];
-    allcon = [allcon repmat(j,1,length(col))];
-end
+allcon = floor(interp1(tops,1:length(tops),ii,'linear'));
+all_iilocal = ii-tops(allcon)'+1;
+allcol = ceil(all_iilocal./K.s(allcon)');
+allrow = all_iilocal - (allcol-1).*K.s(allcon)';
+allvar = jj;
+allval = kk;
+% sort (for backward compatibility?)
+[~,ind_sort] = sort(allcon);
+allcon = allcon(ind_sort)';
+allcol = allcol(ind_sort)';
+allrow = allrow(ind_sort)';
+allvar = allvar(ind_sort)';
+allval = allval(ind_sort)';
+
 keep = find(allrow >= allcol);
 allcol = allcol(keep);
 allrow = allrow(keep);
@@ -366,16 +367,20 @@ catch
 end
 
 if model.options.saveduals & ~isempty(x)
-    D_struc = [res.sol.itr.xx];    
+    D_struc = [res.sol.itr.xx];   
+    D_struc_SDP = sum(model.K.s.^2);
     top = 1;
+    dtop = 1;
     for i = 1:length(model.K.s)
         X = zeros(model.K.s(i));
         n = model.K.s(i);
         I = find(tril(ones(n)));
+        D_struc_SDP(dtop + I - 1) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
         X(I) = res.sol.itr.barx(top:((top+n*(n+1)/2)-1));
         X = X + tril(X,-1)';
         D_struc = [D_struc;X(:)];
         top = top + n*(n+1)/2;
+        dtop = dtop  + n^2;
     end
 else
     D_struc = [];
