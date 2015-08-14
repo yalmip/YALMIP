@@ -448,12 +448,14 @@ for i = 1:length(sdp_con)
     constraints = sdp_con(i);
     
     % Simple data
-    lmi_variables = getvariables(F.clauses{constraints}.data);
-    [n,m] = size(F.clauses{constraints}.data);
+    Fi = F.clauses{constraints};
+    X = Fi.data;
+    lmi_variables = getvariables(X);
+    [n,m] = size(X);
     ntimesm = n*m; %Just as well pre-calc
     
-    if is(F.clauses{constraints}.data,'gkyp')
-        ss = struct(F.clauses{constraints}.data);
+    if is(X,'gkyp')
+        ss = struct(X);
         
         nn = size(F.clauses{1}.data,1);
         bb = getbase(ss.extra.M);
@@ -468,14 +470,14 @@ for i = 1:length(sdp_con)
         schur_funs{i,1} = 'HKM_schur_GKYP';
         schur_variables{i,1} = lmi_variables;
         
-    elseif ~isempty(F.clauses{constraints}.schurfun)
-        schur_data{i,1} = F.clauses{constraints}.schurdata;
-        schur_funs{i,1} = F.clauses{constraints}.schurfun;
+    elseif ~isempty(Fi.schurfun)
+        schur_data{i,1} = Fi.schurdata;
+        schur_funs{i,1} = Fi.schurfun;
         schur_variables{i,1} = lmi_variables;
     end
     
     % get numerics
-    Fibase = getbase(F.clauses{constraints}.data);
+    Fibase = getbase(X);
     % now delete old data to save memory
     % F.clauses{constraints}.data=[];
     
@@ -494,7 +496,7 @@ for i = 1:length(sdp_con)
     end
     F_struc = [F_struc F_structemp];
     
-    if F.clauses{constraints}.cut
+    if Fi.cut
         KCut.s = [KCut.s i+startindex-1];
     end
     K.s(i+startindex-1) = n;
