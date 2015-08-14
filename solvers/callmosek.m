@@ -287,13 +287,16 @@ prob.bara.val = [];
 C = F_struc(:,1);
 A = -F_struc(:,2:end);
 
+% -- Faster fix by Shahar
 tops = [1 cumsum(K.s.^2)+1];
 top = 1+K.f+K.l+sum(K.q);
 [ii,jj,kk] = find(A(top:top + sum(K.s.^2)-1,:));
 allcon = floor(interp1(tops,1:length(tops),ii,'linear'));
 all_iilocal = ii-tops(allcon)'+1;
-allcol = ceil(all_iilocal./K.s(allcon)');
-allrow = all_iilocal - (allcol-1).*K.s(allcon)';
+a = all_iilocal;
+b = K.s(allcon);
+allcol = ceil(a(:)./b(:))';
+allrow = a(:)' - (allcol-1).*b(:)';
 allvar = jj;
 allval = kk;
 % sort (for backward compatibility?)
@@ -303,6 +306,7 @@ allcol = allcol(ind_sort)';
 allrow = allrow(ind_sort)';
 allvar = allvar(ind_sort)';
 allval = allval(ind_sort)';
+% --
 
 keep = find(allrow >= allcol);
 allcol = allcol(keep);
