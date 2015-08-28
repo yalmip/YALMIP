@@ -18,9 +18,13 @@ end
 if model.f > 0
     obj = [obj '+' num2str(model.f)];
 end
+if isempty(obj)
+    obj = [];
+else
 % Append quadratic term
-obj = ['@(x) ' obj];
-obj = eval(obj);
+    obj = ['@(x) ' obj];
+    obj = eval(obj);
+end
 
 % Create string representing nonlinear constraints
 if length(cu)>0
