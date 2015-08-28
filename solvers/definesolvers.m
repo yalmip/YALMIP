@@ -633,8 +633,16 @@ i = i+1;
 
 solver(i) = sdpsolver;
 solver(i).tag     = 'SDPNAL';
+solver(i).version = '0.3';
+solver(i).checkfor= {'sdpnalplus'};
+solver(i).call    = 'callsdpnal';
+solver(i).constraint.equalities.linear = 1;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag     = 'SDPNAL';
 solver(i).version = '0.1';
-solver(i).checkfor= {'sdpnal'};
+solver(i).checkfor= {'sdpNAL'};
 solver(i).call    = 'callsdpnal';
 solver(i).constraint.equalities.linear = 1;
 i = i+1;

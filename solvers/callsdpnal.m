@@ -24,9 +24,15 @@ end
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 solvertime = tic;
 if options.verbose==0
-   evalc('[obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);');
+    evalc('[obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);');
 else
-    [obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);            
+    switch interfacedata.solver.tag
+        case 'SDPNAL-0.3'
+            %[obj,X,y,Z,info,runhist] =  sdpnalplus(blk,A,C,b,[],[],[],[],[],options.sdpnal);   
+            [obj,X,s,y,Z,Z2,y2,v,info,runhist] = sdpnalplus(blk,A,C,b,[],[],[],[],[],options.sdpnal);   
+        otherwise
+            [obj,X,y,Z,info,runhist] =  sdpNAL(blk,A,C,b,options.sdpnal);
+    end
 end
 solvertime = toc(solvertime);
 
