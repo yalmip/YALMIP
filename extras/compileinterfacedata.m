@@ -200,6 +200,7 @@ F_vars = getvariables(F);
 do_not_convert = any(variabletype(F_vars)==4);
 %do_not_convert = do_not_convert | ~solverCapable(solvers,options.solver,'constraint.inequalities.secondordercone');
 do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
+do_not_convert = do_not_convert | strcmpi(options.solver,'scip');
 do_not_convert = do_not_convert | strcmpi(options.solver,'snopt');
 do_not_convert = do_not_convert | strcmpi(options.solver,'knitro');
 do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-geometric'); 
