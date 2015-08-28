@@ -32,4 +32,27 @@ for i = 1:length(extstruct)
         otherwise
     end
 end
+
+% propagate bilinear. This is needed when implies etc are used in a
+% bilinearly parameterized optimzer object
+[monomtable,variabletype] = yalmip('monomtable');
+bilin = find(variabletype == 1);
+if ~isempty(bilin)
+    monomtable = monomtable(bilin,:);
+    [i,j] = find(monomtable');
+    i = reshape(i,2,[]);
+    x = i(1,:)';
+    y = i(2,:)';
+    z = bilin(:);
+    lb = LU(:,1);
+    ub = LU(:,2)
+    corners = [lb(x).*lb(y) ub(x).*lb(y) lb(x).*ub(y) ub(x).*ub(y)];
+    
+    maxz = max(corners,[],2);
+    minz = min(corners,[],2);
+    
+    LU(bilin,1) = max(LU(bilin,1),minz);
+    LU(bilin,2) = min(LU(bilin,2),maxz);
+end
+
 yalmip('setbounds',1:nv,LU(:,1),LU(:,2));
