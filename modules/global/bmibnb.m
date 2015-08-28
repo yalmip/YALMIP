@@ -110,8 +110,10 @@ p.boundpropagation.sepquad = 1;
 % Extract bounds from model using direct information available
 % *************************************************************************
 bounds = yalmip('getbounds',p.used_variables);
-p.lb = max(p.lb,bounds(:,1));
-p.ub = min(p.ub,bounds(:,2));
+if isequal(size(bounds),size(p.lb))
+    p.lb = max(p.lb,bounds(:,1));
+    p.ub = min(p.ub,bounds(:,2));
+end
 p = compile_nonlinear_table(p);
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p);
