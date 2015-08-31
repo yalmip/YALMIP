@@ -45,7 +45,7 @@ if ~isempty(bilin)
     y = i(2,:)';
     z = bilin(:);
     lb = LU(:,1);
-    ub = LU(:,2)
+    ub = LU(:,2);
     corners = [lb(x).*lb(y) ub(x).*lb(y) lb(x).*ub(y) ub(x).*ub(y)];
     
     maxz = max(corners,[],2);
