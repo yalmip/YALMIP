@@ -48,7 +48,7 @@ switch class(varargin{1})
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/LOG called with CHAR argument?');
+        error('SDPVAR/CROSSENTROPY called with CHAR argument?');
 end
 
 function df = derivative(x)
