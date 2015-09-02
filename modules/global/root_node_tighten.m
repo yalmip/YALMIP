@@ -12,7 +12,36 @@ if p.options.bmibnb.roottight & p.feasible
         %         p.F_struc = [f;p.F_struc];
         %     %    p.K.l = 0;
     end
-
+    
+    if ~isempty(p.bilinears) && ~isinf(upper)
+        p_cut = p;
+        for i = 1:size(p.bilinears,1)
+            if p_cut.c(p.bilinears(i,1))
+                p_cut.Q(p.bilinears(i,2),p.bilinears(i,3)) = p_cut.c(p.bilinears(i,1))/2;
+                p_cut.Q(p.bilinears(i,3),p.bilinears(i,2)) = p_cut.Q(p.bilinears(i,3),p.bilinears(i,2))+p_cut.c(p.bilinears(i,1))/2;
+                p_cut.c(p.bilinears(i,1)) = 0;
+            end
+        end
+        if all(eig(p_cut.Q)>=0)
+            [u,s,v] = svd(full(p_cut.Q));
+            % f + c'*x + x'*Q*x <= U
+            % c'*x + x'*R*R*x <= U - f - c'*x
+            % ||Rx||^2 <= upperbound  U - f - c'*x
+            % ||Rx||_inf <= n*sqrt(upperbound  U - f - c'*x)
+            rhs = upper - p.f
+            neg = find(p_cut.c<0);
+            pos = find(p_cut.c>0);
+            rhs = rhs - sum(p.ub(neg).*p_cut.c(neg));
+            rhs = rhs - sum(p.lb(pos).*p_cut.c(pos));
+            if rhs > 0
+                R = diag(diag(s).^.5)*v';
+                R = R(diag(s)>1e-10,:);
+                % -n*sqrt(rhs) <= R*x <= n*sqrt(R)
+                p.F_struc = [p.F_struc;size(v,2)*sqrt(rhs)*ones(size(R,1),1) -R;size(v,2)*sqrt(rhs)*ones(size(R,1),1) R];
+                p.K.l = p.K.l + 2*size(R,1);
+            end
+        end
+    end
     if all(p.K.q == 0) & all(p.K.s == 0) & all(p.K.r == 0)
         lowersolver = eval(['@' p.solver.lpcall]);
     else
