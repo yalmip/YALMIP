@@ -51,8 +51,8 @@ fval = [];
 exitflag = [];
 iter = [];
 lambda = [];
-lbA = [model.beq;-inf(length(model.b),1)];
-ubA = [model.beq;model.b];
+lbA = full([model.beq;-inf(length(model.b),1)]);
+ubA = full([model.beq;model.b]);
 A = [model.Aeq;model.A];
 if nnz(model.Q) == 0
     options.qpoases.enableRegularisation=1;
