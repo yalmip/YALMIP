@@ -3,8 +3,6 @@ function output = callecos(yalmipmodel)
 % Retrieve needed data
 options = yalmipmodel.options;
 
-model = yalmip2ecos(yalmipmodel);
-
 options.ecos.verbose = options.verbose~=0;
 if ~isempty(yalmipmodel.binary_variables)
     options.ecos.bool_vars_idx = yalmipmodel.binary_variables;
@@ -14,9 +12,40 @@ if ~isempty(yalmipmodel.integer_variables)
 end
 model.opts = options.ecos;
 
+
+% first setup an scs model
+K = yalmipmodel.K;
+F_struc = yalmipmodel.F_struc;
+ub      = yalmipmodel.ub;
+lb      = yalmipmodel.lb;
+c = yalmipmodel.c;
+if ~isempty(ub)
+    [F_struc,K] = addbounds(F_struc,K,ub,lb);
+end
+
+data.A = -F_struc(:,2:end);
+data.b = full(F_struc(:,1));
+data.c = full(c);
+cones = [];
+cones.f = K.f;
+cones.l = K.l;
+cones.q = K.q;
+cones.s = K.s;
+[data,cones] = addExponentialCone(data,cones,yalmipmodel);
+
+% Map to ECOS syntax
+model.A = data.A(1:cones.f,:);if isempty(model.A);model.A = [];end
+model.b = data.b(1:cones.f,:);if isempty(model.b);model.b = [];end
+model.G = data.A(1+cones.f:end,:);if isempty(model.G);model.G = [];end
+model.h = data.b(1+cones.f:end,:);if isempty(model.h);model.h = [];end
+model.dims.l = cones.l;if nnz(model.dims.l)==0;model.dims.l = [];end
+model.dims.q = cones.q;if nnz(model.dims.q)==0;model.dims.q = [];end
+model.dims.e = cones.ep;if nnz(model.dims.e)==0;model.dims.e = [];end
+
 if options.savedebug
     save ecosdebug model
 end
+
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 if isempty(model.A)   

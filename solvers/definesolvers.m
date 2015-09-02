@@ -640,6 +640,8 @@ solver(i).objective.quadratic.convex = 0;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.integer = 1;
+solver(i).evaluation = 1;
+
 i = i+1;
 
 solver(i) = sdpsolver;
