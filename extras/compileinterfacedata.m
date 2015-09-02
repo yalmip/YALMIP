@@ -542,17 +542,26 @@ if ~isempty(logdetStruct)
         F = F + detset(t,P{1});
         if isempty(h)
             h = -t;
+            if length(logdetStruct.P) > 1 && options.verbose>0 && options.warning>0
+                disp(' ')
+                disp('Objective -sum logdet(P_i) has been changed to -sum det(P_i)^(1/(2^ceil(log2(length(P_i))))).')
+                disp('This is not an equivalent transformation. You should use SDPT3 which supports MAXDET terms')
+                disp('See the MAXDET section in the manual for details.')
+                disp(' ')
+            end
         else
             h = h-t;
             % Warn about logdet -> det^1/m
             if options.verbose>0 & options.warning>0
                 disp(' ')
-                disp('Objective c''x-logdet(P) has been changed to c''x-det(P)^(1/(2^ceil(log2(length(X))))).')
+                disp('Objective c''x-sum logdet(P_i) has been changed to c''x-sum det(P_i)^(1/(2^ceil(log2(length(P_i))))).')
+                disp('This is not an equivalent transformation. You should use SDPT3 which supports MAXDET terms')
                 disp('See the MAXDET section in the manual for details.')
                 disp(' ')
             end
         end
         P = [];
+        logdetStruct = [];
     end
 end
 
