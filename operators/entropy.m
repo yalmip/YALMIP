@@ -9,7 +9,7 @@ function varargout = entropy(varargin)
 % of this function is exploited to perform convexity analysis and rigorous
 % modelling.
 %
-% See also crossentropy.
+% See also CROSSENTROPY, KULLBACKLEIBLER.
 
 switch class(varargin{1})
 
@@ -27,13 +27,10 @@ switch class(varargin{1})
             varargout{1} = -sum(x.*log(x));
         end
 
-    case 'sdpvar'
-
-        if min(size(varargin{1}))>1
-            error('ENTROPY only defined for vector arguments');
-        else
-            varargout{1} = yalmip('define',mfilename,varargin{1});
-        end
+    case {'sdpvar','ndsdpvar'}
+ 
+        varargin{1} = reshape(varargin{1},[],1);
+        varargout{1} = yalmip('define',mfilename,varargin{1});        
 
     case 'char'
 

@@ -5,7 +5,7 @@ function varargout = crossentropy(varargin)
 %
 % Computes/declares cross entropy -sum(x.*log(y))
 %
-% See also ENTROPY.
+% See also ENTROPY, KULLBACKLEIBLER
 
 switch class(varargin{1})
 
@@ -26,11 +26,22 @@ switch class(varargin{1})
         varargout{1} = -sum(ce);
         
 
-    case 'sdpvar'
+    case {'sdpvar','ndsdpvar'}
         
-            varargin{1} = reshape(varargin{1},[],1);
-            varargin{2} = reshape(varargin{2},[],1);
-            varargout{1} = yalmip('define',mfilename,[varargin{1};varargin{2}]);
+        varargin{1} = reshape(varargin{1},[],1);
+        varargin{2} = reshape(varargin{2},[],1);
+        
+        if length(varargin{1})~=length(varargin{2})
+            if length(varargin{1})==1
+                varargin{1} = repmat(varargin{1},length(varargin{2}),1);
+            elseif  length(varargin{2})==1
+                varargin{2} = repmat(varargin{2},length(varargin{1}),1);
+            else
+                error('Dimension mismatch in crossentropy')
+            end
+        end
+        
+        varargout{1} = yalmip('define',mfilename,[varargin{1};varargin{2}]);
         
 
     case 'char'
