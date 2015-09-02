@@ -26,7 +26,10 @@ cones.q = K.q;
 cones.s = K.s;
 
 % Now add exponential cone information
-[data,cones] = addExponentialCone(data,cones,model);
+[data,cones,output] = addExponentialCone(data,cones,model);
+if output.problem == -4
+    return
+end
 
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
 

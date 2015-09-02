@@ -31,7 +31,10 @@ cones.f = K.f;
 cones.l = K.l;
 cones.q = K.q;
 cones.s = K.s;
-[data,cones] = addExponentialCone(data,cones,yalmipmodel);
+[data,cones,output] = addExponentialCone(data,cones,yalmipmodel);
+if output.problem == -4
+    return
+end
 
 % Map to ECOS syntax
 model.A = data.A(1:cones.f,:);if isempty(model.A);model.A = [];end

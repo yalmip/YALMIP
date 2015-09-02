@@ -1,5 +1,6 @@
-function [data,cones] = adExponentialCone(data,cones,model)
+function [data,cones,output] = adExponentialCone(data,cones,model)
 
+output.problem = 0;
 if ~isempty(model.evalMap)
     % First check that we have only exponentials
     convexFunctions = [];
@@ -50,7 +51,7 @@ if ~isempty(model.evalMap)
         end
     end
     if sum(model.K.q) + sum(model.K.s) > 0
-         if nnz(data.A(1+model.K.f+K.l:end,convexFunctions))>0 || nnz(data.A(1+model.K.f+K.l:end,concaveFunctions))>0
+         if nnz(data.A(1+model.K.f+model.K.l:end,convexFunctions))>0 || nnz(data.A(1+model.K.f+model.K.l:end,concaveFunctions))>0
              output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
              return
         end
