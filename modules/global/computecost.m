@@ -6,7 +6,7 @@ if ~isequal(p.K.m,0)
     for i = 1:length(p.K.m)
         X = p.F_struc(top:top + p.K.m(i)^2-1,:)*[1;x];
         X = reshape(X,p.K.m(i),p.K.m(i));
-        cost = cost - sum(log(real(eig(X))));
+        cost = cost - sum(real(log(real(eig(X)))));
         top = top + p.K.m(i)^2;
     end
 end
