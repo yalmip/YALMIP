@@ -41,6 +41,7 @@ if length(cu)>0
     cu(remove) = [];
     con = [con ']'];
     con = strrep(con,'sqrtm_internal','sqrt');
+    con = strrep(con,'slog(x','log(1+x');
     con = ['@(x) ' con];
     con = eval(con);
 else
@@ -147,14 +148,47 @@ if pos
     % This is a nonlinear operator
     map = model.evalMap{pos};
     % We might hqave vectorized things to compute several expressions at the same time
-    j = find(map.computes == i);
-    j = map.variableIndex(j);
-    % we have f(x(j)), but have to map back to linear indicies
-    jl = find(model.linearindicies == j);
-    if isempty(jl)
-        z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+    if length(map.computes) == 1 && length(map.variableIndex) > 1
+        if isequal(map.fcn,'plog')
+            j1 = find(model.linearindicies == map.variableIndex(1));
+            j2 = find(model.linearindicies == map.variableIndex(2));
+            if isempty(j1)
+                z1 = createmonomstring(model.monomtable(map.variableIndex(1),:),model);
+            else
+                z1 = ['x(' num2str(j1) ')'];
+            end
+            if isempty(j2)
+                z1 =  createmonomstring(model.monomtable(map.variableIndex(2),:),model);
+            else
+                z2 =  ['x(' num2str(j2) ')'];
+            end
+            z = [z1 '*log(' z2 '/' z1 ')'];
+        else
+        z = [map.fcn '('];
+        for j = map.variableIndex
+            jl = find(model.linearindicies == j);
+            if isempty(jl)
+                z =  [z createmonomstring(model.monomtable(j,:),model)];
+            else
+                z =  [z 'x(' num2str(jl) ')'];
+            end
+            if j == length(map.variableIndex)
+                z = [z ')'];
+            else
+                z = [z ','];
+            end
+        end
+        end
     else
-        z =  [map.fcn '(x(' num2str(jl) '))'];
+        j = find(map.computes == i);
+        j = map.variableIndex(j);
+        % we have f(x(j)), but have to map back to linear indicies
+        jl = find(model.linearindicies == j);
+        if isempty(jl)
+            z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+        else
+            z =  [map.fcn '(x(' num2str(jl) '))'];
+        end
     end
 else
     i = find(model.linearindicies == i);
