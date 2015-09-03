@@ -58,7 +58,9 @@ end
 if ~isempty(cones.s) && any(cones.s)
     sdpA = data.A(1+cones.l + cones.f+sum(cones.q):end,:);
     sdpb = data.b(1+cones.l + cones.f+sum(cones.q):end,:);
-    data.A = data.A(1:cones.l + cones.f+sum(cones.q),:);
+    expA = data.A(end-3*cones.ep+1:end,:);
+    expb = data.b(end-3*cones.ep+1:end,:);
+    data.A = data.A(1:cones.l + cones.f+sum(cones.q),:);    
     data.b = data.b(1:cones.l + cones.f+sum(cones.q),:);
     top = 1;
     for i = 1:length(cones.s)
@@ -75,6 +77,8 @@ if ~isempty(cones.s) && any(cones.s)
         data.b = [data.b;b];
         top = top  + cones.s(i)^2;
     end
+    data.A = [data.A;expA];
+    data.b = [data.b;expb];
 end
 
 t = tic;
