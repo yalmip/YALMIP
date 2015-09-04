@@ -64,6 +64,7 @@ emptysolver.complex    = 0;
 emptysolver.interval   = 0;
 emptysolver.parametric = 0;
 emptysolver.evaluation = 0;
+emptysolver.exponentialcone = 0;
 emptysolver.uncertain  = 0;
 
 % **************************************
@@ -640,8 +641,7 @@ solver(i).objective.quadratic.convex = 0;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.integer = 1;
-solver(i).evaluation = 1;
-
+solver(i).exponentialcone = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -1415,7 +1415,7 @@ solver(i).call    = 'callscs';
 solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone = 0;
-solver(i).evaluation = 1;
+solver(i).exponentialcone = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -1426,6 +1426,7 @@ solver(i).call    = 'callscs';
 solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone = 0;
+solver(i).exponentialcone = 1;
 i = i+1;
 
 solver(i) = lpsolver;

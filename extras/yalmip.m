@@ -612,6 +612,15 @@ switch varargin{1}
                 i = i + 1;
             end
         end
+  
+     case 'expvariables'    
+        expvariables     = [];      
+        for i = 1:length(internal_sdpvarstate.ExtendedMap)
+           if any(strcmpi(internal_sdpvarstate.ExtendedMap(i).fcn,{'exp','log','slog','plog'}))
+             expvariables = [ expvariables internal_sdpvarstate.ExtendedMap(i).computes];
+           end
+        end
+        varargout{1} = expvariables;       
         
     case 'rankvariables'
         i = 1;

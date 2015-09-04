@@ -1,4 +1,4 @@
-function [problem,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,P,h,relax,parametric,evaluation,F_vars)
+function [problem,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,P,h,relax,parametric,evaluation,F_vars,exponential_cone)
 %categorizeproblem          Internal function: tries to determine the type of optimization problem
 
 F = flatten(F);
@@ -17,6 +17,7 @@ bilin_constraint = 0;
 sigm_constraint = 0;
 rank_constraint = 0;
 rank_objective = 0;
+exp_cone = 0;
 
 parametric_variables = [];
 kyp_prob  = 0;
@@ -71,6 +72,7 @@ problem.complex = 0;
 problem.parametric = parametric;
 problem.interval = 0;
 problem.evaluation = evaluation;
+problem.exponentialcone = exponential_cone;
 
 % ********************************************************
 % Make a list of all globally available discrete variables
@@ -152,7 +154,7 @@ for i = 1:Counter
     if any_rank_variables
         rank_constraint = rank_constraint | any(ismember(getvariables(Fi.data),rank_variables));
     end
-    
+           
     % Check for equalities violating GP definition    
     if problem.constraint.equalities.multiterm == 0
         if Fi.type==3
@@ -372,6 +374,7 @@ if (relax==1) | (relax==3)
     bilin_constraint = 0;
     sigm_constraint = 0;
     problem.evaluation = 0;
+    problem.exponentialcone = 0;
 end
 
 % Analyse the objective function

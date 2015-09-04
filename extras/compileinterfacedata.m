@@ -124,16 +124,20 @@ if options.expand
         diagnostic.info = yalmiperror(14,cause);
         return
     end
-    evalVariables = unique(determineEvaluationBased(operators));%yalmip('evalVariables');
-    %evalVariables = yalmip('evalVariables');    
+    evalVariables = unique(determineEvaluationBased(operators));
     if isempty(evalVariables)
         evaluation_based = 0;
+        exponential_cone = 0;
     else
-        evaluation_based = ~isempty(intersect([depends(h) depends(F)],evalVariables));
+        used = [depends(h) depends(F)];
+        usedevalvariables = intersect(used,evalVariables);
+        evaluation_based = ~isempty(usedevalvariables);
+        exponential_cone = isempty(setdiff(usedevalvariables,yalmip('expvariables')));
     end
 else
     evalVariables = [];
     evaluation_based = 0;    
+    exponential_cone = 0;
 end
 
 % *************************************************************************
@@ -255,7 +259,7 @@ end
 % *************************************************************************
 %% WHAT KIND OF PROBLEM DO WE HAVE NOW?
 % *************************************************************************
-[ProblemClass,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars);
+[ProblemClass,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars,exponential_cone);
 
 % Ugly fix to short-cut any decision on GP. min -x-y cannot be cast as GP,
 % while min -x can, as we can invert the objective
@@ -524,10 +528,24 @@ end
 if ~isempty(logdetStruct)
     if isequal(solver.tag,'BNB')
         can_solve_maxdet = solver.lower.objective.maxdet.convex;
+        can_solve_expcone = solver.lower.exponentialcone;
     else
         can_solve_maxdet = solver.objective.maxdet.convex;
+        can_solve_expcone = solver.exponentialcone;
     end
     if ~can_solve_maxdet
+        if isempty(h)
+            h = 0;
+        end
+        if can_solve_expcone
+            for i = 1:length(logdetStruct.P)
+                [vi,Modeli] = eigv(logdetStruct.P{i});
+                F = [F, Modeli];
+                log_vi = log(vi);
+                h = h + logdetStruct.gain(i)*sum(log_vi);
+                evalVariables = union(evalVariables,getvariables( log_vi));
+            end
+        else
         t = sdpvar(1,1);
         Ptemp = [];
         for i = 1:length(logdetStruct.P)
@@ -559,6 +577,7 @@ if ~isempty(logdetStruct)
                 disp('See the MAXDET section in the manual for details.')
                 disp(' ')
             end
+        end
         end
         P = [];
         logdetStruct = [];

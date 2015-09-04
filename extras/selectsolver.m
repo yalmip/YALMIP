@@ -411,12 +411,23 @@ if ~forced_choice
 end
 
 % ******************************************************
-% General functions (exp, log,...)
+% Exponential cone representable (exp, log,...)
 % ******************************************************
 keep = ones(length(solvers),1);
 if ~forced_choice
     for i = 1:length(solvers)
-        keep(i) = (ProblemClass.evaluation <= solvers(i).evaluation);
+        keep(i) = (ProblemClass.exponentialcone <= solvers(i).exponentialcone) || (ProblemClass.exponentialcone <= solvers(i).evaluation);
+    end
+    solvers = solvers(find(keep));
+end
+
+% ******************************************************
+% General functions (sin, cos,...)
+% ******************************************************
+keep = ones(length(solvers),1);
+if ~forced_choice
+    for i = 1:length(solvers)
+        keep(i) = (ProblemClass.evaluation <= solvers(i).evaluation) || (ProblemClass.exponentialcone && solvers(i).exponentialcone);
     end
     solvers = solvers(find(keep));
 end
