@@ -27,7 +27,7 @@ cones.s = K.s;
 
 % Now add exponential cone information
 [data,cones,output] = addExponentialCone(data,cones,model);
-if output.problem == -4
+if output.problem
     return
 end
 
