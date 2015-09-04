@@ -35,6 +35,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    16 User terminated
 %    17 Presolve recovery failed
 %    18 Missing non-negativity bounds in GP formulation
+%    19 Convexity requirements not met
 %
 %   See also SOLVESDP
 
@@ -109,8 +110,8 @@ case -3
   error_string = ['Presolve recovery failed ' solver ]; 
  case 18
   error_string = ['Missing non-negativity bounds in GP formulation ' solver ];         
-  
-  
+ case 19
+  error_string = ['Convexity requirements not met ' solver ];           
  otherwise
 end
 
