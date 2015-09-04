@@ -57,17 +57,11 @@ switch class(varargin{1})
             t = varargin{2}; % Second arg is the extended operator variable
             X = varargin{3}; % Third arg and above are the args user used when defining t.
             k = min(varargin{4},length(X));
-            [n,m] = size(X);
-            Z = sdpvar(n,m);
-            s = sdpvar(1,1);
-            if min(n,m)==1
-                varargout{1} = (t-k*s-sum(Z) >= 0) + (Z >= 0) + (Z-X+s >= 0);
-                varargout{2} = struct('convexity','convex','monotonicity','increasing','definiteness','none','model','graph');
-            else
-                varargout{1} = (t-k*s-trace(Z) >= 0) + (Z >= 0) + (Z-X+s*eye(n) >= 0);
-                varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','none','model','graph');
-            end
-            varargout{3} = X;
+            
+            [Model,Properties] = sumk_generator(X,k,t);
+            varargout{1} = Model;
+            varargout{2} = Properties        
+            varargout{3} = X;            
         else
         end
     otherwise

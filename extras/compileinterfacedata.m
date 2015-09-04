@@ -540,7 +540,7 @@ if ~isempty(logdetStruct)
         if can_solve_expcone
             for i = 1:length(logdetStruct.P)
                 [vi,Modeli] = eigv(logdetStruct.P{i});
-                F = [F, Modeli];
+                F = [F, Modeli, logdetStruct.P{i} >= 0];
                 log_vi = log(vi);
                 h = h + logdetStruct.gain(i)*sum(log_vi);
                 evalVariables = union(evalVariables,getvariables( log_vi));
