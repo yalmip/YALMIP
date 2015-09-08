@@ -50,7 +50,7 @@ else
             beq = H(1:p.K.f);
             A = H(p.K.f+1:end,:);
             b = K(p.K.f+1:end);    
-            Pi = polyhedron('A',A,'b',b,'Ae',Aeq,'be',beq);            
+            Pi = Polyhedron('A',A,'b',b,'Ae',Aeq,'be',beq);            
             P = [P Pi];
         end
     end
