@@ -247,6 +247,7 @@ F = [(1-d)*M >= y - z >= m*(1-d), d*m <= z <= d*M, min(0,m) <= z <= max(0,M)];
 
 function Fnew = binmodel_constraint(F);
 
+F = lmi(F);
 old_x = [];
 for i = 1:length(F)
     xi = sdpvar(F(i));
