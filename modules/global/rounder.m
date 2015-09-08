@@ -61,6 +61,23 @@ if ismember('shifted round',p.options.bnb.rounding)
     end
 end
 
+if length(prelaxed.sosgroups)>0
+    xtemp = x;
+    for i = 1:length(prelaxed.sosgroups)
+        xi = x(prelaxed.sosgroups{1});
+        [j,loc] = max(xi);
+        xtemp(prelaxed.sosgroups{i}) = 0;
+        xtemp(prelaxed.sosgroups{i}(loc)) = 1;
+    end
+    xtemp = setnonlinearvariables(p,xtemp);
+    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
+    if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)
+        x_min = xtemp;
+        upper =upperhere;
+        return
+    end
+end
+
 if upper<inf
     return
 end

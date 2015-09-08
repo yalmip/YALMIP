@@ -26,8 +26,7 @@ function sys = sdpvar(varargin)
 %
 %   A scalar is defined as a 1x1 matrix
 %
-%   Higher-dimensional matrices are also supported, although this currently
-%   is an experimental feature with limited use. The type flag applies to
+%   Higher-dimensional matrices are also supported. The type flag applies to
 %   the lowest level slice.
 %
 %     X = SDPVAR(n,n,n,'full')      Full nxnxn matrix

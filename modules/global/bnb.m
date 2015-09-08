@@ -830,12 +830,12 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         node0.pid = pid;pid = pid + 1;
         node0.sosgroups = p0.sosgroups;
         node0.sosvariables = p0.sosvariables;
-            
-        if p1_feasible
-            stack = push(stack,node1);
-        end
+           
         if p0_feasible
             stack = push(stack,node0);
+        end        
+        if p1_feasible
+            stack = push(stack,node1);
         end
 
     end
