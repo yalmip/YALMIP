@@ -37,13 +37,14 @@ if output.problem == -4
 end
 
 % Map to ECOS syntax
+model.c = full(data.c);
 model.A = data.A(1:cones.f,:);if isempty(model.A);model.A = [];end
 model.b = data.b(1:cones.f,:);if isempty(model.b);model.b = [];end
 model.G = data.A(1+cones.f:end,:);if isempty(model.G);model.G = [];end
 model.h = data.b(1+cones.f:end,:);if isempty(model.h);model.h = [];end
 model.dims.l = cones.l;if nnz(model.dims.l)==0;model.dims.l = [];end
 model.dims.q = cones.q;if nnz(model.dims.q)==0;model.dims.q = [];end
-model.dims.e = cones.ep;if nnz(model.dims.e)==0;model.dims.e = [];end
+%model.dims.e = cones.ep;if nnz(model.dims.e)==0;model.dims.e = [];end
 
 if options.savedebug
     save ecosdebug model
