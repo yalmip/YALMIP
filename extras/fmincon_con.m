@@ -121,7 +121,8 @@ if any(model.K.q)
         
         if nargin == 2
             % No inner derivative
-            conederiv = [conederiv;(2*A'*(A*z+b)-2*c*(c'*z+d))'];
+            
+            conederiv = [conederiv;(2*A(:,model.linearindicies)'*(A(:,model.linearindicies)*z(model.linearindicies)+b)-2*c(model.linearindicies)*(c(model.linearindicies)'*z(model.linearindicies)+d))'];
         else
             % inner derivative
             aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
