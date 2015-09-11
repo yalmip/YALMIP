@@ -31,6 +31,7 @@ cones.f = K.f;
 cones.l = K.l;
 cones.q = K.q;
 cones.s = K.s;
+cones.ep = 0;
 [data,cones,output] = addExponentialCone(data,cones,yalmipmodel);
 if output.problem == -4
     return
@@ -42,9 +43,20 @@ model.A = data.A(1:cones.f,:);if isempty(model.A);model.A = [];end
 model.b = data.b(1:cones.f,:);if isempty(model.b);model.b = [];end
 model.G = data.A(1+cones.f:end,:);if isempty(model.G);model.G = [];end
 model.h = data.b(1+cones.f:end,:);if isempty(model.h);model.h = [];end
-model.dims.l = cones.l;if nnz(model.dims.l)==0;model.dims.l = [];end
-model.dims.q = cones.q;if nnz(model.dims.q)==0;model.dims.q = [];end
-%model.dims.e = cones.ep;if nnz(model.dims.e)==0;model.dims.e = [];end
+if nnz(cones.f) > 0
+    model.dims.f = cones.f;
+end
+if nnz(cones.l) > 0
+    model.dims.l = cones.l;
+end
+if nnz(cones.q) > 0
+    model.dims.f = cones.f;
+    model.dims.l = cones.l;
+    model.dims.q = cones.q;
+end
+if nnz(cones.ep) > 0
+    model.dims.e = cones.ep;
+end
 
 if options.savedebug
     save ecosdebug model
