@@ -587,6 +587,10 @@ for blk = 1:length(n)
             basis = [BasisReal BasisImag];
 
         case 'skew'
+            if n==1
+                sys = 0;
+                return
+            end
             basis = spalloc(n^2,1+nvar,2);
             l = 2;
             an_empty = spalloc(n,n,2);
@@ -601,25 +605,30 @@ for blk = 1:length(n)
             end
 
         case 'skew complex'
-            basis = spalloc(n^2,1+nvar,2);
-            l = 2;
-            an_empty = spalloc(n,n,2);
-            for i=1:n
-                for j=i+1:n,
-                    temp = an_empty;
-                    temp(i,j)=1;
-                    temp(j,i)=-1;
-                    basis(:,l)=temp(:);
-                    l = l+1;
+            if n==1
+                sys = sdpvar(1,1)*sqrt(-1);
+                return
+            else
+                basis = spalloc(n^2,1+nvar,2);
+                l = 2;
+                an_empty = spalloc(n,n,2);
+                for i=1:n
+                    for j=i+1:n,
+                        temp = an_empty;
+                        temp(i,j)=1;
+                        temp(j,i)=-1;
+                        basis(:,l)=temp(:);
+                        l = l+1;
+                    end
                 end
-            end
-            for i=1:n
-                for j=i+1:n,
-                    temp = an_empty;
-                    temp(i,j)=sqrt(-1);
-                    temp(j,i)=-sqrt(-1);
-                    basis(:,l)=temp(:);
-                    l = l+1;
+                for i=1:n
+                    for j=i+1:n,
+                        temp = an_empty;
+                        temp(i,j)=sqrt(-1);
+                        temp(j,i)=-sqrt(-1);
+                        basis(:,l)=temp(:);
+                        l = l+1;
+                    end
                 end
             end
 
