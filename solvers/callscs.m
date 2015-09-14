@@ -116,6 +116,10 @@ else
     end
 end
 
+if nnz(data.c)==0 && isequal(info.status,'Unbounded/Inaccurate')
+    info.status = 'Infeasible';
+end
+
 switch info.status
     case 'Solved'
         problem = 0;

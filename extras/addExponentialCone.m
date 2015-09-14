@@ -208,4 +208,6 @@ if ~isempty(model.evalMap)
         data.A = [data.A;sparse(dataAi,dataAj,dataAk,3*length(dataAi)/3,size(data.A,2))];
         data.b = [data.b;datab];
     end            
+else
+    cones.ep = 0;
 end

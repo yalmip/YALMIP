@@ -21,6 +21,9 @@ end
 if isempty(obj)
     obj = [];
 else
+    if obj(1)=='+'
+        obj = obj(2:end);
+    end
 % Append quadratic term
     obj = ['@(x) ' obj];
     obj = eval(obj);
