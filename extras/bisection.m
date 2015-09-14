@@ -29,7 +29,8 @@ end
 
 % Create an optimizer object which solves feasibility problem for a
 % particular value of the sought variable 
-P = optimizer(Constraints, [] ,options,Objective,recover(depends(Constraints)));
+x = recover(setdiff(depends(Constraints),depends(Objective)));
+P = optimizer(Constraints,[],options,Objective,x);
 
 if nargin < 4 || isempty(tolerance)
     tolerance = 1e-4;
@@ -106,5 +107,5 @@ while upper - lower > tolerance
 end
 
 % Assign computed solution
-assign(recover(depends(Constraints)),working_sol);
-assign(Objective, optimal);
+assign(x,working_sol);
+assign(Objective, -optimal);
