@@ -470,7 +470,7 @@ end
 % (UNLESS ALREADY SPECIFIED IN OPTIONS)
 % *************************************************************************
 if strcmpi(solver.tag,'bmibnb')
-    [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
+    [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars,exponential_cone);
     if ~isempty(diagnostic)
         return
     end   

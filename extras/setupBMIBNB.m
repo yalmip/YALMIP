@@ -1,4 +1,4 @@
-function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars)
+function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars,exponential_cone)
 
 diagnostic = [];
 
@@ -76,7 +76,7 @@ if any(getcutflag(F))
     % shouldn't be sent to the upper bound solver
     Ftemp = F;
     Ftemp(find(getcutflag(F)))=[];
-    [temp_ProblemClass,aux1,aux2,aux3,aux4,aux5,aux6] = categorizeproblem(Ftemp,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars);
+    [temp_ProblemClass,aux1,aux2,aux3,aux4,aux5,aux6] = categorizeproblem(Ftemp,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars,exponential_cone);
     temp_ProblemClass.gppossible = ProblemClass.gppossible;
 else
     temp_ProblemClass = ProblemClass;
