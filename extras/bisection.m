@@ -11,8 +11,8 @@ function optimal = bisection(Constraints,Objective,options,tolerance,lower,upper
 %    It is assumed that the problem is quasi-convex in the scalar simple
 %    variable h. 
 %
-%    By default, the lower bound is 0. Upper bound is initialized 
-%    automatically if required. Default tolerance 1e-5.
+%    Lower and upper bounds are automatically detected if not assigned.
+%    Default tolerance 1e-5.
 %
 %    A suitable solver has to be specified in the solver options.
 
@@ -38,12 +38,24 @@ end
 % Initialize the lower bound
 if nargin < 5 || isempty(lower)
     lower = 0;
+    userGaveLower = 0;
+else
+    userGaveLower = 1;
 end
 
 % Make sure we actually can solve the lower problem
 [sol, flag] = P{lower};
-if flag ~=0
-    error('Cannot initialize the bisection at lower bound')
+if flag ~=0 && userGaveLower
+    error('Cannot initialize the bisection at supplied lower bound.')
+elseif flag ~=0
+    i = 1;
+    while flag
+        lower = lower - 2^i;i = i+1;
+        [sol, flag] = P{lower};
+        if lower < -1e6
+            error('I suspect there is no lower bound. I cannot find any feasible solution while decreasing lower bound')
+        end
+    end
 end
 v = sol;
 optimal = lower;
@@ -52,6 +64,7 @@ optimal = lower;
 if nargin < 6 || isempty(upper) || isinf(upper)
     upper = lower + 1;
     [sol, flag] = P{upper};
+    i = 1;
     while flag ~= 1
         if flag == 0
             % lower can be improved
@@ -59,10 +72,10 @@ if nargin < 6 || isempty(upper) || isinf(upper)
             working_sol = sol;
             optimal = lower;
         end
-        upper = upper*2;
+        upper = upper + 2^i;i = i+1;
         [sol, flag] = P{upper};
         if upper > 1e6
-            error('I suspect there is no upper bound. Tested 1e6 and still feasible...')
+            error('I suspect there is no upper bound. Kept increasing it but problem remained feasible.')
         end
     end
 end
