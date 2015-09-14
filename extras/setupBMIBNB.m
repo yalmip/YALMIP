@@ -30,6 +30,7 @@ tempProblemClass.objective.sigmonial = 0;
 
 tempProblemClass.constraint.inequalities.rank  = 0;
 tempProblemClass.evaluation  = 0;
+tempProblemClass.exponentialcone  = 0;
 
 temp_options = options;
 temp_options.solver = options.bmibnb.lowersolver;
