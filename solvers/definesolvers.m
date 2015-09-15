@@ -405,7 +405,7 @@ i = i+1;
 
 solver(i) = qpsolver;
 solver(i).tag     = 'SCIP';
-solver(i).version = '';
+solver(i).version = 'linear';
 solver(i).checkfor= {'scip'};
 solver(i).call    = 'callscipmex';
 solver(i).objective.quadratic.nonconvex=1;
