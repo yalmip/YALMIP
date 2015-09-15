@@ -13,7 +13,11 @@ end
 
 showprogress('Calling CBC',options.showprogress);
 solvertime = tic;
-[x,fval,exitflag,nodes,xc] = cbc(model.H,model.f, model.A, model.rl, model.ru, model.lb, model.ub, model.xtype,model.sos,model.x0,model.opts);
+if nnz(model.H)==0
+    [x,fval,exitflag,nodes,xc] = cbc([],model.f, model.A, model.rl, model.ru, model.lb, model.ub, model.xtype,model.sos,model.x0,model.opts);
+else
+    [x,fval,exitflag,nodes,xc] = cbc(model.H,model.f, model.A, model.rl, model.ru, model.lb, model.ub, model.xtype,model.sos,model.x0,model.opts);
+end
 solvertime = toc(solvertime);
 
 % No duals
@@ -27,7 +31,7 @@ problem = 0;
 switch exitflag
     case {0,2,6}
         problem = 0;
-    case 1
+    case {1,8}
         problem = 1;
     case {3,4}
         problem = 3;
