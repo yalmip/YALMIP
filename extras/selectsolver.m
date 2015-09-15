@@ -44,8 +44,8 @@ if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
     index1 = [];
     index2 = [];
     for i = 1:length(names)
-        index1 = [index1 find(strcmp(lower({solvers.tag}),names{i}))];
-        index2 = [index1 find(strcmp(lower({temp.tag}),names{i}))];
+        index1 = [index1 find(strcmpi({solvers.tag},names{i}))];
+        index2 = [index1 find(strcmpi({temp.tag},names{i}))];
     end
     if isempty(index1) & isempty(index2)
         % Specified solver not found among available solvers
