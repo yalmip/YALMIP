@@ -16,7 +16,7 @@ elseif isa(P,'double')
     if isessentiallyhermitian(P)
         sys = sum(log(abs(real(eig(P)))));
     else
-        error('logdet can only be applied to Hermitian SDPVAR objects')
+        error('logdet can only be applied to Hermitian objects')
     end
 end
 
