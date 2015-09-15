@@ -194,7 +194,9 @@ saveduals = 1;
 
 
 % Rhs of SOCP has to be non-negative
-p_lp = addSOCPCut(p,p_lp);
+if ~p.solver.lower.constraint.inequalities.secondordercone.linear
+    p_lp = addSOCPCut(p,p_lp);
+end
 
 % SDP diagonal has to be non-negative
 p_lp = addDiagonalCuts(p,p_lp);
