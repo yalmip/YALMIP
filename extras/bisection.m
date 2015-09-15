@@ -108,4 +108,4 @@ end
 
 % Assign computed solution
 assign(x,working_sol);
-assign(Objective, -optimal);
+assign(Objective,optimal);
