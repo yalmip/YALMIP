@@ -44,13 +44,17 @@ else
     userGaveLower = 1;
 end
 
+bestUpper = inf;
+
 % Make sure we actually can solve the lower problem
 [sol, flag] = P{lower};
 if flag ~=0 && userGaveLower
     error('Cannot initialize the bisection at supplied lower bound.')
 elseif flag ~=0
+    % This was infeasible, hernce we can use it as an upper bound    
     i = 1;
     while flag
+        bestUpper = lower;
         lower = lower - 2^i;i = i+1;
         [sol, flag] = P{lower};
         if lower < -1e6
@@ -61,22 +65,30 @@ end
 v = sol;
 optimal = lower;
 
-% Now find an upper bound by simply increasing a bound until infeasible
-if nargin < 6 || isempty(upper) || isinf(upper)
-    upper = lower + 1;
+if nargin == 6 && ~isempty(upper)
+    if upper < bestUpper
+        % User has supplied an upper bound. Is it really infeasible
+        [sol, flag] = P{lower};
+        if ~flag
+            % No, the supppplied upper bound isn't valid
+            upper = bestUpper;
+        end
+    else
+        upper = bestUpper;
+    end
+else
+    upper = bestUpper;
+end
+
+if isinf(upper)
+    upper = lower+1;
     [sol, flag] = P{upper};
     i = 1;
-    while flag ~= 1
-        if flag == 0
-            % lower can be improved
-            lower = upper;
-            working_sol = sol;
-            optimal = lower;
-        end
+    while ~flag
         upper = upper + 2^i;i = i+1;
         [sol, flag] = P{upper};
         if upper > 1e6
-            error('I suspect there is no upper bound. Kept increasing it but problem remained feasible.')
+            error('I suspect there is no upper bound. I cannot find any infeasible solution while increasing upper bound')
         end
     end
 end
