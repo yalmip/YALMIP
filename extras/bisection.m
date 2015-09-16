@@ -96,16 +96,27 @@ end
 % Perform bisection
 iter = 1;
 if options.verbose;
-    disp('Iteration  Lower bound   Test          Upper bound  Status at test');
+    disp('Iteration  Lower bound    Test           Upper bound    Status at test');
 end
 while upper - lower > tolerance    
     test = (upper + lower)/2;
     [sol, flag] = P{test};
     if options.verbose;
         if flag
-            fprintf(' %4.0f : %12.3E  %12.3E  %12.3E    %s\n',iter,lower,test, upper,'Infeasible');
+           % fprintf(' %4.0f : %12.3E  %12.3E  %12.3E    %s\n',iter,lower,test, upper,'Infeasible');
+           if flag~=1 && ~any(isnan(sol))
+                assign(x,sol);assign(Objective,test);res = check(Constraints);
+                if min(res) >= -1e-5
+                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,[yalmiperror(flag) '(looks ok)'] );   
+                  flag = 0;
+                else
+                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,[yalmiperror(flag) '(looks like failure)']);                     
+                end
+           else               
+            fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,yalmiperror(flag));
+           end
         else
-            fprintf(' %4.0f : %12.3E  %12.3E  %12.3E    %s\n',iter,lower,test, upper,'Feasible');
+            fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,yalmiperror(flag));
         end
     end
     if flag == 0
