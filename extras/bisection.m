@@ -21,16 +21,15 @@ if length(getvariables(Objective)) > 1
     error('The objective should be a simple variable');
 end
 
+if  ~(isequal(getbase(Objective),[0 1]))
+     error('The objective should be a simple  variable');
+end
+
 if nargin < 3 || isempty(options)
     error('An options structure with a specified solver has to be supplied.');
 elseif strcmp(options.solver,'')
     error('An options structure with a specified solver has to be supplied.');
 end
-
-% Create an optimizer object which solves feasibility problem for a
-% particular value of the sought variable 
-x = recover(setdiff(depends(Constraints),depends(Objective)));
-P = optimizer(Constraints,[],options,Objective,x);
 
 if nargin < 4 || isempty(tolerance)
     tolerance = 1e-4;
@@ -45,6 +44,11 @@ else
 end
 
 bestUpper = inf;
+
+% Create an optimizer object which solves feasibility problem for a
+% particular value of the sought variable 
+x = recover(setdiff(depends(Constraints),depends(Objective)));
+P = optimizer(Constraints,[],options,Objective,x);
 
 % Make sure we actually can solve the lower problem
 [sol, flag] = P{lower};
@@ -96,7 +100,7 @@ end
 % Perform bisection
 iter = 1;
 if options.verbose;
-    disp('Iteration  Lower bound    Test           Upper bound    Status at test');
+    disp('Iteration  Lower bound    Test           Upper bound    Gap          Status at test');
 end
 while upper - lower > tolerance    
     test = (upper + lower)/2;
@@ -106,17 +110,17 @@ while upper - lower > tolerance
            % fprintf(' %4.0f : %12.3E  %12.3E  %12.3E    %s\n',iter,lower,test, upper,'Infeasible');
            if flag~=1 && ~any(isnan(sol))
                 assign(x,sol);assign(Objective,test);res = check(Constraints);
-                if min(res) >= -1e-5
-                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,[yalmiperror(flag) '(looks ok)'] );   
+                if min(res) >= -1e-6
+                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,lower,test, upper,upper-lower,[yalmiperror(flag) '(looks ok)'] );   
                   flag = 0;
                 else
-                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,[yalmiperror(flag) '(looks like failure)']);                     
+                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,lower,test, upper,upper-lower,[yalmiperror(flag) '(looks like failure)']);                     
                 end
            else               
-            fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,yalmiperror(flag));
+            fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,lower,test, upper,upper-lower,yalmiperror(flag));
            end
         else
-            fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E    %s\n',iter,lower,test, upper,yalmiperror(flag));
+            fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,lower,test, upper,upper-lower,yalmiperror(flag));
         end
     end
     if flag == 0
