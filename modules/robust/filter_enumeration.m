@@ -144,6 +144,9 @@ if length(F_xw_lp)>0
     for i = 1:size(vertices,2)
         temp = replace(sdpvar(F_xw_lp),w,vertices(:,i),0);
         if ~isempty(uncAux)
+            temp
+            uncAux
+            z{i}
             temp = replace(temp,uncAux,z{i});
         end
         rLP = [rLP;temp];
