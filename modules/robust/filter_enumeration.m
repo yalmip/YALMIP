@@ -138,18 +138,12 @@ w = flush(w);
 
 if length(F_xw_lp)>0
     rLP = [];
-    if ~isempty(uncAux)
-        which sdpvar -all
-        repmat(length(uncAux),1,size(vertices,2))
-        repmat(1,1,size(vertices,2))
+    if ~isempty(uncAux)     
         z = sdpvar(repmat(length(uncAux),1,size(vertices,2)),repmat(1,1,size(vertices,2)),'full');
     end
     for i = 1:size(vertices,2)
         temp = replace(sdpvar(F_xw_lp),w,vertices(:,i),0);
-        if ~isempty(uncAux)
-            temp
-            uncAux
-            z{i}
+        if ~isempty(uncAux)            
             temp = replace(temp,uncAux,z{i});
         end
         rLP = [rLP;temp];
