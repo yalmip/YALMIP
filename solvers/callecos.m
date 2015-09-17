@@ -43,22 +43,17 @@ model.A = data.A(1:cones.f,:);if isempty(model.A);model.A = [];end
 model.b = data.b(1:cones.f,:);if isempty(model.b);model.b = [];end
 model.G = data.A(1+cones.f:end,:);if isempty(model.G);model.G = [];end
 model.h = data.b(1+cones.f:end,:);if isempty(model.h);model.h = [];end
-if nnz(cones.f) > 0
-    model.dims.f = cones.f;
-end
 if nnz(cones.l) > 0
     model.dims.l = cones.l;
 end
 if nnz(cones.q) > 0
-    model.dims.f = cones.f;
-    model.dims.l = cones.l;
     model.dims.q = cones.q;
 end
 if nnz(cones.ep) > 0
     model.dims.e = cones.ep;
-    tempG = model.G(1:model.dims.l,:);
-    temph = model.h(1:model.dims.l);
-    top = 1+model.dims.l;
+    tempG = model.G(1:model.dims.l+sum(cones.q),:);
+    temph = model.h(1:model.dims.l+sum(cones.q));
+    top = 1+model.dims.l+sum(cones.q);
     for i = 1:model.dims.e
         tempG = [tempG;model.G(top + [0;2;1],:)];
         temph = [temph;model.h(top + [0;2;1],:)];
