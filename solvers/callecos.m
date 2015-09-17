@@ -56,6 +56,16 @@ if nnz(cones.q) > 0
 end
 if nnz(cones.ep) > 0
     model.dims.e = cones.ep;
+    tempG = model.G(1:model.dims.l,:);
+    temph = model.h(1:model.dims.l);
+    top = 1+model.dims.l;
+    for i = 1:model.dims.e
+        tempG = [tempG;model.G(top + [0;2;1],:)];
+        temph = [temph;model.h(top + [0;2;1],:)];
+        top = top  + 3;
+    end
+    model.G = tempG;
+    model.h = temph;
 end
 
 if options.savedebug
@@ -74,9 +84,18 @@ else
     solvertime = toc(solvertime);
 end
 
-% Internal format
-Primal = x;
-Dual   = [y;z];
+% Internal format, only keep original variablesop
+if ~isempty(x)
+    Primal = x(1:length(yalmipmodel.c));
+else
+    Primal = nan(length(yalmipmodel.c),1);
+end
+if ~isempty(yalmipmodel.evalMap)
+    % No support for duals when exponential cones yet
+    Dual = [];
+else
+    Dual   = [y;z];
+end
 
 switch info.exitflag
     case 0
