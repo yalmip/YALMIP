@@ -616,7 +616,7 @@ switch varargin{1}
      case 'expvariables'    
         expvariables     = [];      
         for i = 1:length(internal_sdpvarstate.ExtendedMap)
-           if any(strcmpi(internal_sdpvarstate.ExtendedMap(i).fcn,{'exp','log','slog','plog'}))
+           if any(strcmpi(internal_sdpvarstate.ExtendedMap(i).fcn,{'exp','pexp','log','slog','plog','logsumexp','kullbackleibler','entropy'}))
              expvariables = [ expvariables internal_sdpvarstate.ExtendedMap(i).computes];
            end
         end
