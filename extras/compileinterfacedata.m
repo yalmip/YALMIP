@@ -312,7 +312,7 @@ if ProblemClass.constraint.complementarity.variable | ProblemClass.constraint.co
         [F] = modelComplementarityConstraints(F,solver,ProblemClass);  
         % FIXME Reclassify should be possible to do manually!
         oldProblemClass = ProblemClass;
-        [ProblemClass,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars);
+        [ProblemClass,integer_variables,binary_variables,parametric_variables,uncertain_variables,semicont_variables,quad_info] = categorizeproblem(F,logdetStruct,h,options.relax,parametric,evaluation_based,F_vars,exponential_cone);
         ProblemClass.gppossible = oldProblemClass.gppossible;
     elseif solver.constraint.complementarity.variable
         % Solver supports x(i)*x(j)==0
