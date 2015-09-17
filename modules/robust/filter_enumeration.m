@@ -139,6 +139,9 @@ w = flush(w);
 if length(F_xw_lp)>0
     rLP = [];
     if ~isempty(uncAux)
+        which sdpvar -all
+        repmat(length(uncAux),1,size(vertices,2))
+        repmat(1,1,size(vertices,2))
         z = sdpvar(repmat(length(uncAux),1,size(vertices,2)),repmat(1,1,size(vertices,2)),'full');
     end
     for i = 1:size(vertices,2)
