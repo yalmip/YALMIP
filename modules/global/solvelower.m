@@ -40,13 +40,7 @@ else
     
     if p.solver.lowersolver.objective.quadratic.convex
         % Setup quadratic
-        for i = 1:size(p.bilinears,1)
-            if p_cut.c(p.bilinears(i,1))
-                p_cut.Q(p.bilinears(i,2),p.bilinears(i,3)) = p_cut.c(p.bilinears(i,1))/2;
-                p_cut.Q(p.bilinears(i,3),p.bilinears(i,2)) = p_cut.Q(p.bilinears(i,3),p.bilinears(i,2))+p_cut.c(p.bilinears(i,1))/2;
-                p_cut.c(p.bilinears(i,1)) = 0;
-            end
-        end
+        [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p);
         
         if nonconvexQuadratic(p_cut.Q);
             p_cut.Q = p.Q;
