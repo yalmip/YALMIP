@@ -976,7 +976,7 @@ switch varargin{1}
         
         
     case {'version','ver'}
-        varargout{1} = '20150204';
+        varargout{1} = '20150918';
         
     case 'setintvariables'
         internal_sdpvarstate.intVariables = varargin{2};
