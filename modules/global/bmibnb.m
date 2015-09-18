@@ -138,6 +138,7 @@ p = update_monomial_bounds(p);
 p = presolve_bounds_from_inequalities(p);
 p = update_eval_bounds(p);
 p = update_monomial_bounds(p);
+p = presolve_quadratic_psdbound(p);
 % *************************************************************************
 % For quadratic nonconvex programming over linear constraints, we
 % diagonalize the problem to obtain less number of bilinear terms. Not
