@@ -1,4 +1,4 @@
-function [solver,diagnostic] = setupBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars)
+function [solver,diagnostic] = setupBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars,exponential_cone,allsolvers)
 
 diagnostic = [];
 
@@ -8,7 +8,7 @@ tempProblemClass = ProblemClass;
 tempProblemClass.constraint.binary  = 0;
 tempProblemClass.constraint.integer = 0;
 tempProblemClass.constraint.semicont = 0;
-localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc);
+localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
 if isempty(localsolver) | strcmpi(localsolver.tag,'bnb')
     if isempty(temp_options.bnb.solver)
         diagnostic.solvertime = 0;
@@ -36,6 +36,6 @@ if isempty(localsolver) | strcmpi(localsolver.tag,'bnb')
     end
     return
 elseif strcmpi(localsolver.tag,'bmibnb')
-    [localsolver,diagnostics] = setupBMIBNB(localsolver,tempProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars);
+    [localsolver,diagnostics] = setupBMIBNB(localsolver,tempProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars,[],allsolvers);
 end
 solver.lower = localsolver;
