@@ -20,4 +20,4 @@ F = F + (-1 <= [x1 x2 ] <= 1);
 
 sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1));
 mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objvar), 0, 1e-3);
+mbg_asserttolequal(double(objvar), 0, 2e-2);
