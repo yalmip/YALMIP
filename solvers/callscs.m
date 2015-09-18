@@ -51,7 +51,7 @@ else
 end
 
 if options.savedebug
-    save scsdebug data cones
+    save scsdebug data cones params
 end
 
 % Extract lower diagonal form for new SCS format
