@@ -50,10 +50,6 @@ else
     xsol = 0;
 end
 
-if options.savedebug
-    save scsdebug data cones params
-end
-
 % Extract lower diagonal form for new SCS format
 if ~isempty(cones.s) && any(cones.s)
     sdpA = data.A(1+cones.l + cones.f+sum(cones.q):end,:);
@@ -79,6 +75,10 @@ if ~isempty(cones.s) && any(cones.s)
     end
     data.A = [data.A;expA];
     data.b = [data.b;expb];
+end
+
+if options.savedebug
+    save scsdebug data cones params
 end
 
 t = tic;
