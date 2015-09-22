@@ -102,6 +102,12 @@ end
 
 function F = binary_iff_equality(X,Y,zero_tolerance)
 
+% Things like iff(x,y==1) or iff(x,y==0)
+if isLogicalVector(X) && isLogicalVector(Y)
+    X = X(:);Y = sdpvar(Y);Y = Y(:);  
+    F = [X == Y];
+    return
+end
 Y = Y(:);
 d = binvar(length(Y),3);
 % We have to model every single line of equality.
@@ -129,3 +135,21 @@ for i = 1:length(Y)
 end
 % X is true if all di2 are true and v.v
 F = [C,X <= d(:,2), X >= sum(d(:,2))-length(Y)+1];
+
+function yes = isLogicalVector(X)
+yes = 0;
+X = sdpvar(X);
+B = getbase(X);
+if all(ismember(depends(X),yalmip('binvariables')))
+    b = B(:,1);
+    if all(b==0 | b==1)
+        A = B(:,2:end);
+        if all(A == 0 | A == 1 | A == -1)
+            if all(sum(A | A,2)==1)
+                if all(sum(B,2)<= 1)
+                    yes = 1;
+                end
+            end
+        end
+    end        
+end
