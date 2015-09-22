@@ -102,12 +102,14 @@ end
 
 function F = binary_iff_equality(X,Y,zero_tolerance)
 
-% Things like iff(x,y==1) or iff(x,y==0)
+% Things like iff(x,y==1) is sent as X, 1-Y
 if isLogicalVector(X) && isLogicalVector(Y)
-    X = X(:);Y = sdpvar(Y);Y = Y(:);  
-    F = [X == Y];
-    return
-end
+    if isequal(getbase(Y),[0 -1]) | isequal(getbase(Y),[-1 1])
+        Y = -Y;
+    end
+     F = [1-X == Y];
+     return
+ end
 Y = Y(:);
 d = binvar(length(Y),3);
 % We have to model every single line of equality.
