@@ -68,7 +68,7 @@ if options.savedebug
 end
 
 
-if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
+if options.showprogress;showprogress(['Calling ' yalmipmodel.solver.tag],options.showprogress);end
 if isempty(model.A)   
     solvertime = tic;
     [x,y,info,s,z] = ecos(model.c,model.G,model.h,model.dims,model.opts);  
