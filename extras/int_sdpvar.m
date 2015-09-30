@@ -12,6 +12,9 @@ if length(f)>1
 end
 
 for i = 1:length(x)
+    if ~isa(x(i),'sdpvar')
+        error('An element in the integration variable is not an sdpvar. Third argument must be an sdpvar');
+    end
     [c,v] = coefficients(f,x(i));
     vnew = [];
     for j = 1:length(v)
