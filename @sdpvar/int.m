@@ -43,3 +43,6 @@ elseif length(to) ~= length(x)
 end
 
 F = int_sdpvar(f,x,from,to);
+if isa(F,'double')
+    F = full(F);
+end
