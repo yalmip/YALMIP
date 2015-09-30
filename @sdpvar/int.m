@@ -30,4 +30,16 @@ if nargin < 4
     to = x;
 end
 
+if length(from)==1 && length(x) > 1
+    from = repmat(from,length(x),1);
+elseif length(from) ~= length(x)
+    error('The lower integration bound is inconsistent with the integrand dimension');
+end
+
+if length(to)==1 && length(x) > 1
+    to = repmat(to,length(x),1);
+elseif length(to) ~= length(x)
+    error('The upper integration bound is inconsistent with the integrand dimension');
+end
+
 F = int_sdpvar(f,x,from,to);
