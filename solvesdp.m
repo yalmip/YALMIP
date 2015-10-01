@@ -290,7 +290,7 @@ if isfield(options,'pureexport')
     return
 end
 
-if strcmpi(solver.version,'geometric')
+if strcmpi(solver.version,'geometric') || (strcmpi(solver.tag,'bnb') && strcmpi(solver.lower.version,'geometric'))
     % Actual linear user variables
     if options.assertgpnonnegativity
         check = find(interfacedata.variabletype==0);
