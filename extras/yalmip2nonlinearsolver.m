@@ -115,6 +115,15 @@ else
     x0 = x0(linearindicies);
 end
 
+if any(model.variabletype == 4)
+    problematic = find(any(model.monomtable(:,linearindicies) < 0 ,1));
+    if ~isempty(problematic)
+        problematic = problematic(find(x0(problematic)==0));
+        Oneisfeas = problematic(find(ub(problematic) > 1));
+        x0(Oneisfeas) = 1;
+    end
+end
+
 if ~isempty(lb)
     lb = lb(linearindicies);
 end
