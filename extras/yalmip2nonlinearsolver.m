@@ -134,6 +134,9 @@ if any(model.variabletype == 4)
         Oneisfeas = problematic(find(ub(problematic) > 1));
         x0(Oneisfeas) = 1;
     end
+    
+    problematic = find(any(model.monomtable(:,linearindicies)~=fix(model.monomtable(:,linearindicies)) ,1));
+    lb(problematic) = max(lb(problematic),0);
 end
 x0(find(lb==ub)) = lb(find(lb==ub));
     
