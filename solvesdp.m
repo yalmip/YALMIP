@@ -300,7 +300,9 @@ if strcmpi(solver.version,'geometric') || (strcmpi(solver.tag,'bnb') && strcmpi(
         [lb,ub] = findulb(interfacedata.F_struc,interfacedata.K);
         if ~all(lb(check)>=0)
             % User appears to have explictly selected a GP solver
-            if ~isempty(strfind(options.solver,'geometric')) || ~isempty(strfind(options.solver,'mosek')) || ~isempty(strfind(options.solver,'gpposy'))
+            userdirect = ~isempty(strfind(options.solver,'geometric')) || ~isempty(strfind(options.solver,'mosek')) || ~isempty(strfind(options.solver,'gpposy'));
+            userindirect = strcmpi(solver.tag,'bnb') && strcmpi(solver.lower.version,'geometric');
+            if userdirect || userindirect
                 % There are missing non-negativity bounds
                 output = createOutputStructure(zeros(length(interfacedata.c),1)+NaN,[],[],18,yalmiperror(18,''),[],[],nan);
                 diagnostic.yalmiptime = etime(clock,yalmiptime);
