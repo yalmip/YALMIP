@@ -33,7 +33,7 @@ else
         delta = diag(D);
         F = ([P D;D' diag(delta)] >= 0);
         p = 2^ceil(log2(n));
-        x = [delta;ones(p-n,1)];
+        x = [delta;t*ones(p-n,1)];
     end
     
     if 0

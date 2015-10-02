@@ -533,6 +533,7 @@ p.fixedvariable = [];
 p.fixdir = '';
 p.sosgroups = sosgroups;
 p.sosvariables = sosvariables;
+oldp = p;
 while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
     
     % ********************************************
@@ -545,7 +546,14 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,sdpmonotinicity);
         stack = prunecardinality(p,poriginal,stack,lower,upper);
     end
-    
+%     
+%     j = find(p.lb(1:21)>0);
+%     if ~isempty(j)
+%         s = sum(p.lb(j));
+%         i = setdiff(1:21,j);
+%         p.ub(i)=min(p.ub(i),12-s);
+%     end
+   
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
@@ -705,6 +713,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
                     [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,sdpmonotinicity);
                     
                 end
+            elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
         end
     end
