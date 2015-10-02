@@ -87,6 +87,15 @@ if ~model.options.usex0
     model.x0(isinf(options.ub)) = options.lb(isinf(options.ub))+1;
     model.x0(isinf(options.lb)) = options.ub(isinf(options.lb))-1;
     model.x0(isinf(model.x0)) = 0;
+    if any(model.variabletype == 4)
+        problematic = find(any(model.monomtable(:,model.linearindicies) < 0 ,1));
+        if ~isempty(problematic)
+            problematic = problematic(find(model.x0(problematic)==0));
+            Oneisfeas = problematic(find(model.ub(problematic) > 1));
+            model.x0(Oneisfeas) = 1;
+        end
+    end
+    model.x0(find(model.lb==model.ub)) = model.lb(find(model.lb==model.ub));
 end
 
 % If quadratic objective and no nonlinear constraints, we can supply an
