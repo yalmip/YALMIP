@@ -115,15 +115,6 @@ else
     x0 = x0(linearindicies);
 end
 
-if any(model.variabletype == 4)
-    problematic = find(any(model.monomtable(:,linearindicies) < 0 ,1));
-    if ~isempty(problematic)
-        problematic = problematic(find(x0(problematic)==0));
-        Oneisfeas = problematic(find(ub(problematic) > 1));
-        x0(Oneisfeas) = 1;
-    end
-end
-
 if ~isempty(lb)
     lb = lb(linearindicies);
 end
@@ -136,6 +127,15 @@ ub_old = ub;
 [lb,ub,A,b] = remove_bounds_from_Ab(A,b,lb,ub);
 [lb,ub,Aeq,beq] = remove_bounds_from_Aeqbeq(Aeq,beq,lb,ub);
 
+if any(model.variabletype == 4)
+    problematic = find(any(model.monomtable(:,linearindicies) < 0 ,1));
+    if ~isempty(problematic)
+        problematic = problematic(find(x0(problematic)==0));
+        Oneisfeas = problematic(find(ub(problematic) > 1));
+        x0(Oneisfeas) = 1;
+    end
+end
+x0(find(lb==ub)) = lb(find(lb==ub));
     
 if size(A,1) == 0
     A = [];
