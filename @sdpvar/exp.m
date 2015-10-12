@@ -10,10 +10,14 @@ switch class(varargin{1})
         y = [];
         for i = 1:prod(d)
             xi = extsubsref(x,i);
-            if isreal(xi)
-                y = [y;InstantiateElementWise(mfilename,xi)];
+            if isa(xi,'double')
+                y = [y;exp(xi)];
             else
-                y = [y;cos(xi) + sqrt(-1)*sin(xi)];
+                if isreal(xi)
+                    y = [y;InstantiateElementWise(mfilename,xi)];
+                else
+                    y = [y;cos(xi) + sqrt(-1)*sin(xi)];
+                end
             end
         end
         varargout{1} = reshape(y,d);

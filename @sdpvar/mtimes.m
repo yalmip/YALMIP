@@ -238,6 +238,14 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 if size(possibleOld,1)==0
                     possibleOld = [];
                 end
+                
+%                 x_degrees = sum(mt(X.lmi_variables,:),2);
+%                 y_degrees = sum(mt(Y.lmi_variables,:),2);
+%                 if ~any(diff(x_degrees)) && ~any(diff(y_degrees)) && x_degrees(1)==y_degrees(1)
+%                     % x and y are monomials of same order d. Hence, we only
+%                     % have to took for old monomials of order 2d
+%                     possibleOld = possibleOld(find(sum(mt(possibleOld,:),2) == 2*x_degrees(1)));                    
+%                 end
             end
 
             if bilinearproduct && ~isempty(possibleOld)
