@@ -16,7 +16,9 @@ switch class(varargin{1})
                 if isreal(xi)
                     y = [y;InstantiateElementWise(mfilename,xi)];
                 else
-                    y = [y;cos(xi) + sqrt(-1)*sin(xi)];
+                    re = real(xi);
+                    im = imag(xi);
+                    y = [y;exp(re)*(cos(im) + sqrt(-1)*sin(im))];
                 end
             end
         end
