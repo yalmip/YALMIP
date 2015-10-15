@@ -69,6 +69,9 @@ else
         [x,fmin,flag,output,lambda] = quadprog(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, [],model.ops);
     end
 end
+if isempty(x)
+    x = nan(length(model.c),1);    
+end    
 solveroutput.x = x;
 solveroutput.fmin = fmin;
 solveroutput.flag = flag;
