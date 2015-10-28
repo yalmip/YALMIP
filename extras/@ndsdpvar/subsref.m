@@ -4,7 +4,7 @@ function X = subsref(Y,refs)
 if isequal(refs.type,'()')
     if length(refs.subs)==3
         if length(Y.dim)==3 && isequal(Y.conicinfo,[-1 0])
-            if length(refs.subs{1})==1 && length(refs.subs{2})==1
+            if length(refs.subs{1})==1 && length(refs.subs{2})==1 && ~isa(refs.subs{1},'char') && ~isa(refs.subs{2},'char') 
                 if strcmp(refs.subs{3},':')
                     if refs.subs{1} >= 1 && refs.subs{1} <= Y.dim(1)
                         if refs.subs{2} >= 1 && refs.subs{2} <= Y.dim(2)
