@@ -113,9 +113,11 @@ else
     ops = prefered_solver;
 end
 
-if ~((nargin==2) & (ops.verbose==0))    
-yalmiptable({'Searching for installed solvers'},header,data);
-disp(' ')
+if ~((nargin==2) & (ops.verbose==0))
+    [sortedName,loc] = sort({data{:,1}});
+    dataSorted = reshape({data{loc,:}},[],3);
+    yalmiptable({'Searching for installed solvers'},header,dataSorted);
+    disp(' ')
 end
 if nargin<2
     disp('Press any key to continue test')

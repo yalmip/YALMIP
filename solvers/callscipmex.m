@@ -97,18 +97,22 @@ D_struc = [];
 % Check, currently not exhaustive...
 problem = 0;
 switch STATUS
+    case 0
+        problem = 9;
+    case 1
+        problem = 16;
     case {2,3,4,5}
         problem = 3;
-    case {10}
-        problem = 0;   
+    case {7,8,9,10}
+        problem = 4;
     case 11
-        problem = 1;
+        problem = 0;
     case 12
-        problem = 2;
+        problem = 1;
     case 13
+        problem = 2;
+    case 14
         problem = 15;
-    case {1,6,7,8,9}
-        problem = 11;
     otherwise
         problem = -1;
 end
