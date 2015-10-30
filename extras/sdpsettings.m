@@ -706,7 +706,6 @@ gurobi.NumericFocus = 0;
 gurobi.PreCrush = 0;
 gurobi.PreDepRow = -1;
 gurobi.PreDual = -1;
-gurobi.PreMIQPMethod = -1;
 gurobi.PreQLinearize = -1;
 gurobi.PrePasses = -1;
 gurobi.Presolve = -1;
