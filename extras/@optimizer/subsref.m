@@ -135,6 +135,7 @@ elseif isequal(subs.type,'{}')
                      self.lastsolution = output.Primal;
                 end
                 x = originalModel.c*0;
+                x(self.parameters) = thisData(:);
                 x(keptvariables) = output.Primal;
                 output.Primal = x;
             else
