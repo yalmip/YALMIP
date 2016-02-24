@@ -76,7 +76,7 @@ if isfield(p.evalMap{1},'prearg')
     for i = indicies
         arguments = p.evalMap{i}.prearg;
         arguments{1+p.evalMap{i}.argumentIndex} = x(p.evalMap{i}.variableIndex);
-        if isequal(arguments{1},'log') && (arguments{1+p.evalMap{i}.argumentIndex}<=0)
+        if isequal(arguments{1},'log') & (arguments{1+p.evalMap{i}.argumentIndex}<=0) %#ok<AND2>
             x(p.evalVariables(i)) = -1e4;
         else
             x(p.evalMap{i}.computes(:)) = feval(arguments{:});
@@ -90,7 +90,7 @@ else
         % artificial argument
         arguments =  {p.evalMap{i}.fcn,p.evalMap{i}.arg{1:end-1}};
         arguments{1+p.evalMap{i}.argumentIndex} = x(p.evalMap{i}.variableIndex);
-        if isequal(arguments{1},'log') && (arguments{1+p.evalMap{i}.argumentIndex}<=0)
+        if isequal(arguments{1},'log') & (arguments{1+p.evalMap{i}.argumentIndex}<=0) %#ok<AND2>
             x(p.evalVariables(i)) = -1e4;  %FIXME DOES NOT WORK
             if length(arguments{2})>1
                 disp('Report bug in apply_recursive_evaluation')
