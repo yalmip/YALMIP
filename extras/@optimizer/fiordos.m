@@ -25,11 +25,11 @@ elseif  ~isempty(bounded_ub) || ~isempty(bounded_lb)
         if isinf(temp.lb(i)) && isinf(temp.ub(i))
             X{end+1} = EssRn(1);
         elseif  ~isinf(temp.lb(i)) && ~isinf(temp.ub(i))
-            X{end+1} =  EssBox(n, 'l',temp.lb(i), 'u',temp.ub(i));
+            X{end+1} =  EssBox(1, 'l',temp.lb(i), 'u',temp.ub(i));
         elseif isinf(temp.ub(i))            
-            X{end+1} =  EssRnplus(1, 'shift', temp.lb(i))
+            X{end+1} =  EssRnplus(1, 'shift', temp.lb(i));
         else
-            X{end+1} =  EssRnplus(1, 'shift', temp.ub(i),'rot',-1)  
+            X{end+1} =  EssRnplus(1, 'shift', temp.ub(i),'rot',-1);
         end
     end
     X = SimpleSet(X{:});
