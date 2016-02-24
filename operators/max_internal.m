@@ -41,17 +41,17 @@ switch method
         X = reshape(X,length(X),1);
         if prod(size(X)) == 1
             F = F + (X == t);
-        elseif (prod(size(X)) == 2) & ((nnz(basis(1,:))==0) | (nnz(basis(2,:))==0))
-            % Special case to test a particular problem max(0,y), so we
-            % keep it since it is optimized
-            if (nnz(basis(2,:))==0)
-                X = [0 1;1 0]*X;
-            end
-            [M,m] = derivebounds(X);
-            d = binvar(1,1);
-            F = F + (m(1) <= t      <= m(1) + (M(2)-m(1))*d);
-            F = F + (0    <= t-X(2) <= (m(1)-m(2))*(1-d));
-        elseif all(ismember(getvariables(X),yalmip('binvariables'))) & (is(X,'lpcone') | is(X,'sdpcone'))
+%         elseif (prod(size(X)) == 2) & ((nnz(basis(1,:))==0) | (nnz(basis(2,:))==0))
+%             % Special case to test a particular problem max(0,y), so we
+%             % keep it since it is optimized
+%             if (nnz(basis(2,:))==0)
+%                 X = [0 1;1 0]*X;
+%             end
+%             [M,m] = derivebounds(X);
+%             d = binvar(1,1);
+%             F = F + (m(1) <= t      <= m(1) + (M(2)-m(1))*d);
+%             F = F + (0    <= t-X(2) <= (m(1)-m(2))*(1-d));
+         elseif all(ismember(getvariables(X),yalmip('binvariables'))) & (is(X,'lpcone') | is(X,'sdpcone'))
             % Special case max(x) where x is simple binary
             F = [F, X <= t, sum(X) >= t];
         else
