@@ -12,13 +12,13 @@ n = length(X);
 if isequal(getbase(X),[spalloc(n,1,0) speye(n)])
     F = lmi([]);
 else
-    dX = double(X);
+    dX = value(X);
     if ~all(isnan(dX))
-        assign(z_normalizing,double(X));
+        assign(z_normalizing,dX);
     end
     try
         %[M,m] = derivebounds(X);
-        F = [X == z_normalizing];
+        F = X == z_normalizing;
     catch
         disp('Report bug in NORMALIZECALLBACK');
         error('Report bug in NORMALIZECALLBACK')
