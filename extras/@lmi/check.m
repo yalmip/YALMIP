@@ -247,23 +247,32 @@ elseif isa(a,'lmi') | isa(a,'constraint')
 end
 if isa(b,'sdpvar')
     bval = double(b);
+    if is(b,'binary')
+        btruth = bval == 1;
+    else
+        btruth = bval>=0;
+    end
 elseif isa(b,'lmi') | isa(b,'constraint')
     bval = check(lmi(b));
     btruth = bval >= 0;
 end
-switch clause{1}
-    case 'implies'
-        if all(btruth >= atruth)
-            res = 1;
-        else
-            res = -1;
-        end
-    case 'iff'
-        if all(btruth == atruth);
-            res = 1;
-        else
-            res = -1;
-        end
-    otherwise
-        res = nan;
+if isnan(aval) | isnan(bval)
+    res = nan;
+else
+    switch clause{1}
+        case 'implies'
+            if all(btruth >= atruth)
+                res = 1;
+            else
+                res = -1;
+            end
+        case 'iff'
+            if all(btruth == atruth);
+                res = 1;
+            else
+                res = -1;
+            end
+        otherwise
+            res = nan;
+    end
 end
