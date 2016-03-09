@@ -51,7 +51,10 @@ p = propagatequadratics(p);
 p.high_monom_model=[];
 p.originalModel = p;
 p = presolveOneMagicRound(p);   
-p = convert_sigmonial_to_sdpfun(p);
+[p,changed] = convert_sigmonial_to_sdpfun(p);
+if changed
+    p = compile_nonlinear_table(p);
+end
 [p,changed] = convert_polynomial_to_quadratic(p);
 if changed
     p = compile_nonlinear_table(p);

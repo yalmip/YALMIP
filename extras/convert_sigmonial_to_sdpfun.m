@@ -79,6 +79,7 @@ if any(model.variabletype > 3)
                     model.evalMap{end+1} = power_internal2_operator(model,sigs(j),powers(j));    
                 end    
                 model.evalMap{end}.properties.domain = [-inf inf];
+                model.evalMap{end}.properties.range = [-inf inf];
                 model.evalMap{end}.variableIndex = sigs(j);
                 model.evalMap{end}.argumentIndex = 1;                
                 model.evalMap{end}.computes = n_old_monoms+j;                
