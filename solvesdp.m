@@ -265,6 +265,7 @@ if strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.ta
         if (nargin < 4 | ~isa(varargin{4},'sdpvar'))
             error('You must specify parametric variables.')
         else
+            varargin{4} = reshape(varargin{4},[],1);
             interfacedata.parametric_variables = [];
             for i = 1:length(varargin{4})
                   interfacedata.parametric_variables = [interfacedata.parametric_variables;find(ismember(recoverdata.used_variables,getvariables(varargin{4}(i))))];
