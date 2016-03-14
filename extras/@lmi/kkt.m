@@ -149,6 +149,8 @@ if isempty(E)
     f = [];
 end
 
+any_inequalities = size(A,1)>0;
+any_equalities = size(E,1)>0;
 Lambda = sdpvar(size(A,1),1); % Ax  <=b
 mu     = sdpvar(size(E,1),1); % Ex+f==0
 
@@ -163,12 +165,12 @@ else
 end
 KKTConstraints = [];
 s = 2*Q*x + c;
-if ~isempty(A)
+if any_inequalities
     %KKTConstraints = [KKTConstraints, complements(b-A*x, Lambda >= 0):'Compl. slackness and primal-dual inequalities'];
     KKTConstraints = [KKTConstraints, complements(Lambda >= 0,b-A*x):'Compl. slackness and primal-dual inequalities'];
     s = s + A'*Lambda;
 end
-if ~isempty(E)
+if any_equalities
     KKTConstraints = [KKTConstraints, (E*x == f):'Primal feasible'];
     s = s + E'*mu;
 end
@@ -180,24 +182,27 @@ if ~isempty(U)
 end
 KKTConstraints = [KKTConstraints, (s == 0):'Stationarity'];
 
-s_ = indicators(KKTConstraints(1));
-if ops.kkt.licqcut
-    if ops.verbose
-        disp('Generating LICQ cuts');
-    end  
-    [Alicq,blicq] = createLICQCut(A);
-    KKTConstraints = [KKTConstraints, Alicq*s_ <= blicq];         
-end
-
-if ops.kkt.minnormdual;
-    MinNorm = [0 <= Lambda <= 10000*s_,s == 0];
-    ops.kkt.minnormdual = ops.kkt.minnormdual-1;
-    parametricInMinNorm = recover(setdiff(depends(MinNorm),depends(Lambda)));
-    [kkt2,info2] = kkt(MinNorm,Lambda'*Lambda,parametricInMinNorm,ops);
-    kkt2 = [kkt2, [indicators(kkt2(1)) <= 1-[s_;s_]]];
-    kkt2 = [kkt2, info2.dual <= 10000];
-    KKTConstraints = [KKTConstraints, kkt2];
-    details.info2 = info2;
+if any_inequalities
+    s_ = indicators(KKTConstraints(1));
+    if ops.kkt.licqcut
+        if ops.verbose
+            disp('Generating LICQ cuts');
+        end
+        [Alicq,blicq] = createLICQCut(A);
+        KKTConstraints = [KKTConstraints, Alicq*s_ <= blicq];
+    end
+    
+    
+    if ops.kkt.minnormdual;
+        MinNorm = [0 <= Lambda <= 10000*s_,s == 0];
+        ops.kkt.minnormdual = ops.kkt.minnormdual-1;
+        parametricInMinNorm = recover(setdiff(depends(MinNorm),depends(Lambda)));
+        [kkt2,info2] = kkt(MinNorm,Lambda'*Lambda,parametricInMinNorm,ops);
+        kkt2 = [kkt2, [indicators(kkt2(1)) <= 1-[s_;s_]]];
+        kkt2 = [kkt2, info2.dual <= 10000];
+        KKTConstraints = [KKTConstraints, kkt2];
+        details.info2 = info2;
+    end
 end
 
 if nnz(Q)>0
