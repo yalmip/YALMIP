@@ -273,14 +273,21 @@ f.arg{2} = [];
 f.properties.bounds = @inverse_bound;
 f.properties.convexhull = @inverse_convexhull;
 f.properties.derivative = @(x) -1./(x.^2);
+f.properties.range = [-inf  inf];
+f.properties.domain = [-inf  inf];
+flb = 1/model.lb(variable);
+fub = 1/model.ub(variable);
 if model.lb(variable)>0 | model.ub(variable) < 0
     f.properties.monotonicity = 'decreasing';
-    f.properties.inverse = @(x)(1./x);
+    f.properties.inverse = @(x)(1./x);   
+    f.properties.range = [min(flb,fub) max(flb,fub)];
 end
 if model.lb(variable) >= 0
     f.properties.convexity = 'convex';
+    f.properties.range = [fub flb];    
 elseif model.ub(variable) <= 0
     f.properties.convexity = 'concave';
+    f.properties.range = [fub  flb];    
 end
 
 function f = power_internal2_operator(model,variable,power);
@@ -296,3 +303,4 @@ if even(power)
 else
     f.properties.range = [-inf inf];
 end
+f.properties.domain = [-inf inf];
