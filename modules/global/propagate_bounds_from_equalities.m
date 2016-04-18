@@ -141,6 +141,10 @@ if ~isequal(LU,[p.lb p.ub])
     p.changedbounds = 1;
 end
 
+if any(p.lb > p.ub)
+    p.feasible = 0;
+end
+
 
 
 function [p_lb,p_ub] = propagatewINFreduced(a,ap,am,p_lb,p_ub,b);
