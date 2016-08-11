@@ -61,6 +61,7 @@ if isempty(internal_sdpvarstate)
     
     internal_sdpvarstate.nonCommutingTable = [];
     internal_sdpvarstate.nonHermitiannonCommutingTable = [];
+	internal_sdpvarstate.containsSemivar = false;
     try
       warning off Octave:possible-matlab-short-circuit-operator   
     catch
@@ -267,6 +268,7 @@ switch varargin{1}
                 new_hash = create_trivial_hash(Xi);
                 internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
                 internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
+				internal_sdpvarstate.containsSemivar = internal_sdpvarstate.containsSemivar | strcmp(varargin{2}, 'semivar');
                 allNewExtendedIndex = [allNewExtendedIndex i];
                 availableHashes = [availableHashes new_hash];
                 correct_operator = [correct_operator length( internal_sdpvarstate.ExtendedMap)];
@@ -445,7 +447,7 @@ switch varargin{1}
                             internal_sdpvarstate.ExtendedMap(end).computes = getvariables(yi);
                             new_hash = create_trivial_hash(Xi);
                             internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
-                            internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];                           
+                            internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
                             allNewExtendedIndex = [allNewExtendedIndex i];
                             % Add this to the list of possible matches.
                             % Required for repeated elements in argument
@@ -501,6 +503,7 @@ switch varargin{1}
                     internal_sdpvarstate.ExtendedMap(end).Hash = this_hash;
                     internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes this_hash];
                     internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(yi)];
+					internal_sdpvarstate.containsSemivar = internal_sdpvarstate.containsSemivar | strcmp(varargin{2}, 'semivar');
                 end
                 y = setoperatorname(y,varargin{2});
         end
@@ -698,6 +701,8 @@ switch varargin{1}
         internal_sdpvarstate.activeSolution = 1;
         
         internal_sdpvarstate.nonCommutingTable = [];
+		
+		internal_sdpvarstate.containsSemivar = false;
         
     case 'cleardual'
         if nargin==1
@@ -931,6 +936,7 @@ switch varargin{1}
         end
         if ~isfield(internal_sdpvarstate,'ExtendedMap')
             internal_sdpvarstate.ExtendedMap = [];
+			internal_sdpvarstate.containsSemivar = false;
         end
         if ~isfield(internal_sdpvarstate,'ExtendedMapHashes')
             internal_sdpvarstate.ExtendedMapHashes = [];
@@ -1160,6 +1166,7 @@ switch varargin{1}
         internal_sdpvarstate.ExtendedMap(end).var = y;
         internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(y)];
         internal_sdpvarstate.logicVariables = [internal_sdpvarstate.logicVariables getvariables(y)];
+		internal_sdpvarstate.containsSemivar = internal_sdpvarstate.containsSemivar | strcmp(varargin{2}, 'semivar');
         varargout{1} = y;
         return
         
@@ -1181,6 +1188,9 @@ switch varargin{1}
                 varargout{1} = prefered_solver;
             end
         end
+		
+	case 'containsSemivar'
+		varargout = {internal_sdpvarstate.containsSemivar};
     otherwise
         if isa(varargin{1},'char')
             disp(['The command ''' varargin{1} ''' is not valid in YALMIP.m']);

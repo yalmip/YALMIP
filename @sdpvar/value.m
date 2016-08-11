@@ -14,7 +14,7 @@ function [sys,values] = value(X,allextended,allevaluators,allStruct,mt,variablet
 
 % Normal users might use the second arguement in order to select solution
 if nargin == 2 
-    if prod(size(allextended))==1
+    if numel(allextended)==1
         try
             selectsolution(allextended);
             sys = value(X);
@@ -35,9 +35,8 @@ if nargin == 1
 end
 
 lmi_variables = X.lmi_variables;
-opt_variables = solution.variables;
 
-nonlinears = lmi_variables(find(variabletype(X.lmi_variables)));
+nonlinears = lmi_variables(find(variabletype(lmi_variables)));
 
 % FIXME: This code does not work
 % if ~isempty(solution.values)
@@ -96,17 +95,14 @@ end
 
 if nargin == 1
     % All double values
-    values(size(mt,1),1)=nan;values(:)=nan;
+    values=nan(size(mt,1),1);
     values(solution.variables) = solution.optvar;
     clear_these = allextended;
-    if ~isempty(allStruct)
-    if ~isempty(strfind([allStruct.fcn],'semivar'))
-        for i = 1:length(allStruct)
-            if strcmp(allStruct(i).fcn,'semivar')%isequal(allStruct(i).fcn,'semivar')
-                clear_these = setdiff(clear_these,allextended(i));
-            end
-        end
-    end
+    if yalmip('containsSemivar') && ~isempty(allStruct)
+      tmp = strcmp({allStruct.fcn},'semivar');
+      for i = find(tmp)
+         clear_these = setdiff(clear_these,allextended(i));
+      end
     end
     values(clear_these) = nan;    
 end
@@ -169,6 +165,7 @@ if ~isempty(allextended)
                         % we cannot determine in pwf if we want the double or
                         % create a pw constant function...
                         n = length(extstruct.arg-1)/2;
+								warning('Loop index ''i'' is changed inside of a FOR loop.')
                         i = 1;
                         val = nan;
                         while i<=n
@@ -226,6 +223,11 @@ if ~isempty(nonlinears)
     mt_t = mt'; %Working columnwise is faster
     use_these = find(ismember(lmi_variables,nonlinears));
     all_extended_variables  = yalmip('extvariables');
+    if ~isempty(allStruct)
+        allStruct_computes = [allStruct.computes];
+    else
+        allStruct_computes = [];
+    end	 
 
     for i = use_these
         monom_i = mt_t(:,lmi_variables(i));
@@ -238,7 +240,7 @@ if ~isempty(nonlinears)
                     extvar = used_in_monom(extended_variables(ii));
                     %extstruct = yalmip('extstruct',extvar);
                     %extstruct = getExtStruct(allStruct,extvar);
-                    extstruct = allStruct(find([allStruct.computes] == extvar));
+                    extstruct = allStruct(allStruct_computes == extvar);
                     for k = 1:length(extstruct.arg)
                         if isa(extstruct.arg{k},'sdpvar')
                             extstruct.arg{k} = value(extstruct.arg{k});

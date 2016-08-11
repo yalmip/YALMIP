@@ -10,7 +10,7 @@ if isequal(subs.type,'()')
     else
         output_length = length(self.map);
     end
-    if ~isequal(subs.subs{1},round(subs.subs{1})) | min(subs.subs{1})<1 |   max(subs.subs{1}) > output_length
+    if ~isequal(subs.subs{1},round(subs.subs{1})) || min(subs.subs{1})<1 ||   max(subs.subs{1}) > output_length
         error('Beware of syntax change in optimizer. {} is now used to obtained solution ??? Subscript indices must either be real positive integers or logicals.')
     end
     
@@ -22,7 +22,7 @@ if isequal(subs.type,'()')
         self.output.expression = self.output.expression(subs.subs{1});
     end
     self.dimoutOrig{1} = size(self.output.expression);
-    self.dimout = [prod(size(self.output.expression)) 1];
+    self.dimout = [numel(self.output.expression) 1];
     varargout{1} = self;
     
 elseif isequal(subs.type,'.')
@@ -73,13 +73,14 @@ elseif isequal(subs.type,'{}')
     
     % If blocked call, check so that there are as many blocks for every
     % argument
+	 dimBlocks = nan(length(subs.subs{1}),1);
     for i = 1:length(subs.subs{1})
-        dimBlocks(i) = prod(size(subs.subs{1}{i})) / prod(self.diminOrig{i});
+        dimBlocks(i) = numel(subs.subs{1}{i}) / prod(self.diminOrig{i});
     end    
-    if ~isnan(dimBlocks) & ~all(dimBlocks == dimBlocks(i))
-        error('Dimension mismatch on the input arguments compared to definition');
-    end
     if ~isnan(dimBlocks)
+        if ~all(dimBlocks == dimBlocks(i))
+            error('Dimension mismatch on the input arguments compared to definition');
+        end
         if any(dimBlocks ~= fix(dimBlocks))
             error('Dimension mismatch on the input arguments compared to definition');
         end
@@ -117,17 +118,17 @@ elseif isequal(subs.type,'{}')
         
     for i = 1:nBlocks
         thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
-        if self.nonlinear & ~self.complicatedEvalMap%isempty(self.model.evalMap)
+        if self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
             % Turn off equality presolving for simple programs. equality
             % presolve has benefits when the are stuff like log
             self.model.presolveequalities = length(self.model.evalMap > 0);
-            if ~infeasible                          
-                if self.model.options.usex0                 
+            if ~infeasible
+                if self.model.options.usex0 && ~isempty(self.lastsolution)
                     self.model.x0 = zeros(length(self.model.c),1);
                     self.model.x0 = self.lastsolution;
-                else
+                elseif ~self.model.options.usex0
                     self.model.x0 = [];
                 end
                 eval(['output = ' self.model.solver.call '(self.model);']);
@@ -135,7 +136,7 @@ elseif isequal(subs.type,'{}')
                      self.lastsolution = output.Primal;
                 end
                 x = originalModel.c*0;
-                x(self.parameters) = thisData(:);
+					 x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)
                 x(keptvariables) = output.Primal;
                 output.Primal = x;
             else
@@ -147,15 +148,15 @@ elseif isequal(subs.type,'{}')
             self.model = originalModel;
         else                     
             if ~isempty(thisData)
-                if ~isempty(self.model.evalMap) &  ~self.model.solver.evaluation
+                if ~isempty(self.model.evalMap) &&  ~self.model.solver.evaluation
                     error('After fixing parameters, there are still nonlinear operators in the model, but the solver does not support this. Note that YALMIP is not guaranteed to remove all operators, even though they only contain parametric expressions. As an example, exp(1+parameter) will not be reduced, while exp(parameter) will. You will have to use another solver, or reparameterize your model (look at exp(1+parameter) as a new parameter instead)');
                 end
                 self.model.F_struc(1:prod(self.dimin),1) = thisData(:);
             end
-            if self.model.options.usex0
+            if self.model.options.usex0 && ~isempty(self.lastsolution)
                 self.model.x0 = self.lastsolution;
-            else
-                self.model.x0 = [];
+				elseif ~self.model.options.usex0
+					self.model.x0 = [];
             end
             output = self.model.solver.callhandle(self.model);
             if output.problem == 0 && self.model.options.usex0
@@ -222,4 +223,5 @@ elseif isequal(subs.type,'{}')
         varargout{1} = u;
     end  
     varargout{5} = self;
+	 varargout{6} = output;
 end
