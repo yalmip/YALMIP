@@ -619,8 +619,8 @@ if convertQuadraticObjective
     if ~isempty(R)
         c = quad_info.c;
         f = quad_info.f;
-        F = F + lmi(cone([2*R*x;1-(t-c'*x-f)],1+t-c'*x-f));
-        h = t;
+        F = F + lmi(cone([2*R*x;1-(t-f)],1+t-f));
+        h = t+c'*x;
     end
     quad_info = [];
 end
