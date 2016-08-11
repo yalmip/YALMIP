@@ -192,10 +192,22 @@ try
                         in_yin_z(case1) = 0;
                     end
                 end
-                for i = 1:length(all_lmi_variables)
-                    switch in_yin_z(i)
-                        case 1
-                            basis(:,i+1) = z.basis(:,z_ind);z_ind = z_ind+1;
+                    % Let's identify the indices at which we need to intervene
+                    case1 = find(in_yin_z==1);
+                    checkI = union(find(in_yin_z >= 2), setdiff(case1,case1+1));
+                    if size(checkI,1) > size(checkI,2)
+                        % Sometimes the in_yin_z vector is vertical (not
+                        % always though), so we make sure that checkI, on
+                        % which we'll iterate, is horizontal.
+                        checkI = checkI';
+                    end
+                    for i = checkI
+                        switch in_yin_z(i)
+                            case 1
+                                % We look for the end of the block of ones
+                                % starting at i
+                                iend = i + find([in_yin_z(i+1:end) 0] ~= 1, 1, 'first')-1;
+                                basis(:,i+1:iend+1) = z.basis(:,z_ind:z_ind+(iend-i));z_ind = z_ind+(iend-i)+1;
                         case 2                          
                             temp = sparse(subsasgn(template,I,full(reshape(Y.basis(:,y_ind),ny,my))));
                             basis(:,i+1) = temp(:);

@@ -177,9 +177,7 @@ end
 % Detect X(scalar)
 if length(ind1) == 1 & ind1 <= n*m
     
-    Z = X.basis.';
-    Z = Z(:,ind1);
-    Z = Z.';
+    Z = X.basis(ind1,:);
     nnew = 1;
     mnew = 1;
     
