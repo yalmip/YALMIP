@@ -18,7 +18,12 @@ switch class(varargin{1})
     case 'sdpvar'
 
         if min(size(varargin{1}))>1
-            error('LOGSUMEXP only defined for vector arguments');
+            x = varargin{1};
+            y = [];
+            for i = 1:size(x,2)
+                y = [y yalmip('define',mfilename,x(:,i))];
+            end
+            varargout{1} = y;   
         elseif max(size(varargin{1}))==1
             varargout{1} = varargin{1};
         else
