@@ -360,13 +360,17 @@ switch varargin{1}
                 else
                     y = sdpvar(1,m);
                     for i = 1:m
-                        internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
-                        internal_sdpvarstate.ExtendedMap(end).arg = {X(:,i),[]};
-                        internal_sdpvarstate.ExtendedMap(end).var = y(i);
-                        internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y(i));
-                        new_hash = create_trivial_hash(X(:,i));
-                        internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
-                        internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
+                        if isa(X(:,i),'double')
+                            y(i) = max(X(:,i));
+                        else
+                            internal_sdpvarstate.ExtendedMap(end+1).fcn = varargin{2};
+                            internal_sdpvarstate.ExtendedMap(end).arg = {X(:,i),[]};
+                            internal_sdpvarstate.ExtendedMap(end).var = y(i);
+                            internal_sdpvarstate.ExtendedMap(end).computes = getvariables(y(i));
+                            new_hash = create_trivial_hash(X(:,i));
+                            internal_sdpvarstate.ExtendedMap(end).Hash = new_hash;
+                            internal_sdpvarstate.ExtendedMapHashes = [internal_sdpvarstate.ExtendedMapHashes new_hash];
+                        end
                     end
                     internal_sdpvarstate.extVariables = [internal_sdpvarstate.extVariables getvariables(y)];
                 end
