@@ -118,7 +118,7 @@ for i = 1:length(model.evaluation_scheme)
 						% length(dXRows)+length(newIndices) but length(unique([dXRows;newIndices']).
 						% But it's more efficient to allocate some more memory than calculate the true length.
 						dx = sparse(dXRows,1,dXVals, size(dX,1),1, length(dXRows)+length(newIndices));
-						for j = newIndices
+						for j = newIndices(:)'
 							if isBilinear(j)
 								 b1 = model.BilinearsList(j,1);
 								 b2 = model.BilinearsList(j,2);
@@ -127,7 +127,7 @@ for i = 1:length(model.evaluation_scheme)
 								 dp = 0;
 								 monomsj = mtT(:,j);
 								 active = find(monomsj & dx);
-								 for k = active
+								 for k = active(:)'
 									monoms = monomsj;
 									[s,~,v] = find(monoms);
 									k2s = s==k;
