@@ -478,7 +478,7 @@ poriginal = p;
 p.cuts = [];
 
 %% MAIN LOOP
-% p.options.rounding = [1 1 1 1];
+% p.options.rounding = [1 1 1];
 
 if p.options.bnb.nodefix & (p.K.s(1)>0)
     top=1+p.K.f+p.K.l+sum(p.K.q);

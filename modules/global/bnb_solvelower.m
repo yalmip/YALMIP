@@ -17,10 +17,10 @@ p.solver.tag = p.solver.lower.tag;
 removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
 
-    if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
-        p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
-        p.K.l=p.K.l+1;
-    end
+%     if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
+%         p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
+%         p.K.l=p.K.l+1;
+%     end
    
     if ~isempty(p.F_struc)
         if ~isequal(p.K.l,0) & p.options.bnb.ineq2eq
