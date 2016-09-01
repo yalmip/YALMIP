@@ -49,7 +49,7 @@ if model.variabletype(k)
     vars = find(model.monomtable(k,:));
     r=[];
     for i = 1:length(vars)
-        r = [r depends_on(model,vars(i))];
+        r = [r vars depends_on(model,vars(i))];
     end
 elseif model.isevalVariable(k)%ismember(k,model.evalVariables)
     j = find(k == model.evalVariables);
