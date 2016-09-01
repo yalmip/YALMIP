@@ -536,9 +536,6 @@ p.sosvariables = sosvariables;
 oldp = p;
 while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
     
-    if solved_nodes == 260
-        1
-    end
     % ********************************************
     % Adjust variable bound based on upper bound
     % ********************************************
