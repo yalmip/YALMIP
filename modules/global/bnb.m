@@ -536,6 +536,9 @@ p.sosvariables = sosvariables;
 oldp = p;
 while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
     
+    if solved_nodes == 260
+        1
+    end
     % ********************************************
     % Adjust variable bound based on upper bound
     % ********************************************
@@ -718,6 +721,12 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     feasible = 1;
     
     switch output.problem
+        case -1;
+            % Solver behaved weird. Make sure we continue digging
+            keep_digging = 1;
+            feasible = 1;
+            cost = lower;
+            x = p.lb + (p.ub-p.lb)*(1/pi);
         case 0
             if can_use_ceil_lower
                 lower = ceil(lower-1e-8);
@@ -738,7 +747,8 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     % **************************************
     % YAHOO! INTEGER SOLUTION FOUND
     % **************************************
-    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar)
+    
+    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1)
         if (cost<upper) & feasible
             x_min = x;
             upper = cost;
