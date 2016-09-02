@@ -43,6 +43,9 @@ switch class(varargin{1})
         operator.bounds = @bounds_power;
         operator.convexhull = @convexhull_power;
         operator.derivative = @(x)derivative(x,Y);
+        if Y >= 0
+            operator.inverse = @(x,Y)inverse(x,Y);
+        end
 
         varargout{1} = F;
         varargout{2} = operator;
@@ -62,6 +65,13 @@ elseif base>= 0
 else
     disp('Not implemented yet. Report bug if you need this')
     error
+end
+
+function x = inverse(y,base)
+if y <=0
+    x = -inf;
+else
+    x = log(y)/log(base);
 end
 
 function df = derivative(x,base)
