@@ -201,11 +201,6 @@ end
 % Add them all
 Fnew = Fnew + Fmoments;
 
-% No objective, minimize trace on moment-matrix instead
-if isempty(obj)
-    obj = trace(M{k+1});
-end
-
 % Get all binary and reduce problem
 binaries = union(binaries,yalmip('binvariables'));
 if ~isempty(binaries)
@@ -216,6 +211,11 @@ if ~isempty(binaries)
     for i = 2:1:k+1;
         M{i} = eliminateBinary(M{i},binaries);
     end
+end
+
+% No objective, minimize trace on moment-matrix instead
+if isempty(obj)
+    obj = trace(M{k+1});
 end
 
 % Solve
