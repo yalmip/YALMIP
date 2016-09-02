@@ -139,27 +139,7 @@ if isempty(deg)
     deg = 0;
 end
 
-% Perform Schur complements if possible to reduce the
-% dimension of the SDP constraints
-% for i = 1:length(sdpConstraints)
-%     Fi = sdpConstraints{i};
-%     j = 1;
-%     while j<=length(Fi) & (length(Fi)>1)
-%         if isa(Fi(j,j),'double')
-%             ks = 1:length(Fi);ks(j)=[];
-%             v = Fi(ks,j);
-%             vv = v*v'/Fi(j,j);
-%             if degree(vv)<=max(deg)
-%                 Fi = Fi(ks,ks) - vv;
-%             end
-%         else
-%             j = j+1;
-%         end
-%     end
-% end
-
 % Create lowest possible relaxation if k=[]
-% k_min = floor((max(degree(obj)+1,max(deg))+1)/2); % why did I use this?
 d = ceil((max(degree(obj),max(deg)))/2);
 k_min = d;
 if isempty(k)
@@ -186,13 +166,6 @@ for i = 1:1:k-1;
     n_i = round(factorial(n+k-i)/(factorial(n)*factorial(k-i)));
     M{k-i+1} = M{k+1}(1:n_i,1:n_i);
 end
-
-% %Moment structure exploition
-% M_original = M{end};
-% setsdpvar(recover(getvariables(M_original)),0*getvariables(M_original)');
-% if 1%options.moment.blockdiag & isempty(F)
-%     Ms = blockdiagmoment(obj,M);
-% end
 
 % Lasserres relaxation (Lasserre, SIAM J. OPTIM, 11(3) 796-817)
 Fmoments = (M{k+1}>=0);
@@ -226,7 +199,7 @@ for i = 1:length(sdpConstraints)
 end
 
 % Add them all
-Fnew = Fnew + Fmoments;%unblkdiag(Fmoments);
+Fnew = Fnew + Fmoments;
 
 % No objective, minimize trace on moment-matrix instead
 if isempty(obj)
