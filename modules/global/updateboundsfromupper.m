@@ -40,4 +40,41 @@ if ~isinf(upper)
     if ~isequal(LU,[p.lb p.ub])
         p.changedbounds = 1;
     end
+    
+    % Some initial code for using inverse objective to derive bounds.
+    if nnz(p.Q)==0 && nnz(p.c)==1
+        [pos,~,val] = find(p.c);
+        if val == -1            
+            fi = find(p.evalVariables == pos);
+            if ~isempty(fi)
+                % We're maximizing f(x)
+                if ~isempty(p.evalMap{fi}.properties.inverse)
+                    if strcmp(p.evalMap{fi}.properties.definiteness,'positive')
+                        if strcmp(p.evalMap{fi}.properties.monotonicity,'increasing')
+                            if length(p.evalMap{fi}.arg)==2                               
+                                lower = -upper;
+                                p.lb(p.evalMap{fi}.variableIndex) = max([p.lb(p.evalMap{fi}.variableIndex) p.evalMap{fi}.properties.inverse(lower)]);
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if val == 1
+            fi = find(p.evalVariables == pos);
+            if ~isempty(fi)
+                % We're minimizing f(x)
+                if ~isempty(p.evalMap{fi}.properties.inverse)
+                    if strcmp(p.evalMap{fi}.properties.definiteness,'positive')
+                        if strcmp(p.evalMap{fi}.properties.monotonicity,'increasing')
+                            if length(p.evalMap{fi}.arg)==2                                                              
+                                p.ub(p.evalMap{fi}.variableIndex) = min([p.ub(p.evalMap{fi}.variableIndex) p.evalMap{fi}.properties.inverse(upper)]);
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
 end
