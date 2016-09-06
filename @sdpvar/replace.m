@@ -94,9 +94,13 @@ if all(variabletype(x_lmi_variables)==0) % is(X,'linear')
     v = v + sparse(i2,ones(length(i2),1),feas_var(v2),length(x_lmi_variables),1);
     Z = Z + X.basis(:,2:end)*v;
 else
-    for i = 1:length(Y)
-        replaced_vars(i) = getvariables(extsubsref(Y,i));
-    end
+    base = getbase(Y);base = base(:,2:end);
+    [i,j,k] = find(base);
+    replaced_vars = getvariables(Y);
+    replaced_vars = replaced_vars(i);
+    %for i = 1:length(Y)
+    %    replaced_vars(i) = getvariables(extsubsref(Y,i));
+    %end
     % used_variables = getvariables(X);
     used_variables = x_lmi_variables;
     %  monomtable = yalmip('monomtable');
