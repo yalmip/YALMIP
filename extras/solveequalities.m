@@ -56,7 +56,7 @@ if ~unitary
         x_equ = A_equ\b_equ;
     end
     % FIX : use L and U stupid!
-    H = P'*[-H1\H2;eye(size(H2,2))];
+    H = P'*[-H1\H2;speye(size(H2,2))];
 else
     %Improve numerics by removing obviously redundant constraints. This
     %speeds up some cases too
