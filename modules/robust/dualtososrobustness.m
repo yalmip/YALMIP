@@ -29,31 +29,58 @@ elseif is(UncertainConstraint,'socp')
     c = [];for i = 1:length(Fz);c = [c;[1 v']*Fz{i}];end
     A = zeros(length(Fx),length(Fz));
 end
-[Z,coeffs] = createDualParameterization(UncertaintySet,v,Z_degree);
 
-coeffs = [DecisionVariables;coeffs(:)]
+[Z,coeffsZ] = createDualParameterization(UncertaintySet,v,Z_degree);
+
+coeffs = [DecisionVariables;coeffsZ(:)];
 Zblock = blkdiag(Z{:});
 
 D = [];
 for i = 1:length(F)
     D = [D, coefficients(trace(Zblock'*F{i})-(A(:,i)'*DecisionVariables + c(i)),v)==0];
 end
-
+D = sdpvar(D);
+if 0
 [trivialFixed,thevalue] = fixedvariables(D);
-while ~isempty(trivialFixed) && length(D)>0
-    D = replace(D,trivialFixed,thevalue);
-  %  if ~isempty(D)
-  %      D = 
-  %  D = sdpvar(replace(D,trivialFixed,thevalue))==0;
-    for i = 1:length(Z)
-        Z{i} = replace(Z{i},trivialFixed,thevalue);
+
+DecisionFixed = [];
+if length(trivialFixed)>0
+    skip = zeros(length(trivialFixed),1);
+    for i = 1:length(trivialFixed)
+        if ismember(getvariables(trivialFixed(i)),getvariables(DecisionVariables))
+            skip(i) = 1;
+        end
     end
-    Zblock = replace(Zblock, trivialFixed,thevalue);
-    if length(D)>0
-        [trivialFixed,thevalue] = fixedvariables(D);
+    DecisionFixed = trivialFixed(find(skip))==thevalue(find(skip));
+    D(find(skip))=[];
+    
+    while ~isempty(trivialFixed) && length(D)>0
+        D = replace(D,trivialFixed,thevalue);
+        for i = 1:length(Z)
+            Z{i} = replace(Z{i},trivialFixed,thevalue);
+        end
+        Zblock = replace(Zblock, trivialFixed,thevalue);
+        if length(D)>0
+            [trivialFixed,thevalue] = fixedvariables(D);
+        end
+        skip = zeros(length(trivialFixed),1);
+        for i = 1:length(trivialFixed)
+            if ismember(getvariables(trivialFixed(i)),getvariables(DecisionVariables))
+                skip(i) = 1;
+            end
+        end
+        DecisionFixed = trivialFixed(find(skip))==thevalue(find(skip));
+        D(find(skip))=[];                
     end
 end
-
+else
+    DecisionFixed=[];
+end
+if isempty(D)
+    D = [DecisionFixed];
+else
+    D = [D == 0, DecisionFixed];
+end
 
 % At this point Z is a function of v where v was used to scalarize the
 % uncertain constraint. Now we must ensure Z{i}(v) in cone
@@ -61,9 +88,9 @@ gv = (1-v'*v);
 for i = 1:length(Z)       
     if is(UncertaintySet(i),'sdp')
         % We use the matrix sos approach
-        [tau,coefftau] = polynomial(v,localizer_tau_degree);
+        [tau,coefftau] = polynomial(v,localizer_tau_degree);    
         coeffs = [coeffs;coefftau];
-        D=[D,sos(Z{i}-eye(length(Z{i}))*tau*gv)];
+        D=[D,sos(Z{i}-eye(length(Z{i}))*tau*gv)];   
     elseif is(UncertaintySet(i),'socp')
         % To get a SOS condition on dual Z{i}(v) in socp, we have to
         % introduce a new variable to scalarize the socp
@@ -71,10 +98,14 @@ for i = 1:length(Z)
         [tau,coefftau] = polynomial(v,localizer_tau_degree);
         coeffs = [coeffs;coefftau];
         D = [D, sos([1 u']*Z{i}-tau*(1-u'*u))];        
-    elseif is(UncertaintySet(i),'elementwise')
-         [tau,coefftau] = polynomial(v,localizer_tau_degree);
-         coeffs = [coeffs;coefftau];
-        D = [D, sos(Z{i}-tau*gv)];
+    elseif is(UncertaintySet(i),'elementwise')   
+        tau = [];
+        for j = 1:length(Z{i})
+            [taui,coefftau] = polynomial(v,localizer_tau_degree);
+            coeffs = [coeffs;coefftau];
+            tau = [tau;taui];
+        end        
+        D = [D, sos(Z{i}-tau*gv)];       
    elseif is(UncertaintySet(i),'equality')
        % No constraints on dual         
     end
@@ -97,7 +128,7 @@ for i = 1:size(A,1)
     j = find(A(i,:));
     if length(j)==1
         z = [z v(j)];
-        val = [val b(i)/A(i,j)];
+        val = [val;b(i)/A(i,j)];
     end
 end
 z = recover(z);

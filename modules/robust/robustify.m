@@ -75,11 +75,11 @@ if isempty(UncertainModel.F_xw)
 end
 
 % Experimental code for conic-conic case
-if (any(is(UncertainModel.F_xw,'sdp')) ||  any(is(UncertainModel.F_xw,'socp'))) && (any(is(Uncertainty.F_w,'sdp')) ||  any(is(Uncertainty.F_w,'socp')))
+if ops.robust.coniclp.useconicconic || ((any(is(UncertainModel.F_xw,'sdp')) ||  any(is(UncertainModel.F_xw,'socp'))) && (any(is(Uncertainty.F_w,'sdp')) ||  any(is(Uncertainty.F_w,'socp'))))
     SOSModel = [];
     for i = 1:length(UncertainModel.F_xw)
         if any(ismember(depends(UncertainModel.F_xw(i)),getvariables(VariableType.w)))
-            SOSModel = [SOSModel, dualtososrobustness(UncertainModel.F_xw(i),Uncertainty.F_w,VariableType.w,VariableType.x,ops.robust.coniconic.tau_degree,ops.robust.coniconic.gamma_degree,ops.robust.coniconic.Z_degree)];
+            SOSModel = [SOSModel, dualtososrobustness(UncertainModel.F_xw(i),Uncertainty.F_w,VariableType.w,VariableType.x,ops.robust.conicconic.tau_degree,ops.robust.conicconic.gamma_degree,ops.robust.conicconic.Z_degree)];
         else
             % Misplaced?
             SOSModel = [SOSModel, UncertainModel.F_xw(i)];
