@@ -1,19 +1,24 @@
 function x = uncertain(x,varargin)
 %UNCERTAIN Declares a variable as uncertain
 %
-%   F = UNCERTAIN(w) is used to describe the set of uncertain variables
+%   F = UNCERTAIN(W) is used to describe the set of uncertain variables
 %   in an uncertain program
 %
 %   INPUT
-%    w : SDPVAR object
+%    W : SDPVAR object or list of constraints
 %
 %   OUTPUT
 %    F : Constraint object
 %
 %   EXAMPLE
 %    sdpvar x w
-%    F = [x + w <= 1, -0.5 <= w <= 0.5, uncertain(w)];
-%    solvesdp(F,-x) 
+%    F = [x + w <= 1], W = [-0.5 <= w <= 0.5];
+%    optimize([F,W,uncertain(w)],-x) 
+%
+%    sdpvar x w
+%    F = [x + w <= 1], W = [-0.5 <= w <= 0.5];
+%    optimize([F,W,uncertain(W)],-x) 
+%
 %
 %   See also SOLVESDP, ROBUSTIFY
 
