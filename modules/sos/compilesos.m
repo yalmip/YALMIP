@@ -1,5 +1,5 @@
 function [F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomials)
-%COMPILESOS Sum of squares decomposition
+%COMPILESOS Derive sum-of-squares model without solving
 %
 %    [F,obj,m] = compilesos(F,h,options,params,monomials) compiles the SOS
 %    problem (i.e., derives the SDP model) without actually solving it
