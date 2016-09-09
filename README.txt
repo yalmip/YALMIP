@@ -47,6 +47,8 @@ necessary solvers).
 Learn more at
 http://users.isy.liu.se/johanl/yalmip
 
+Forum
+https://groups.google.com/forum/?fromgroups#!forum/yalmip
 
 *****************************************
 
