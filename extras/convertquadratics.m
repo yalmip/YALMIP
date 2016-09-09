@@ -64,6 +64,7 @@ for i = 1:1:length(F)
                     % Occurs, e.g, in constraints like y'*Q*y < t
                     used = find(any(Q));Qred=Q(:,used);Qred = Qred(used,:);xred = x(used);
                     [R,p]=chol(Qred);
+                    done = 0;
                     if p
                         % Safety check to account for low rank problems
                         if all(eig(full(Qred))>=-1e-12)
@@ -71,9 +72,41 @@ for i = 1:1:length(F)
                             r=find(diag(s)>1e-12);
                             R=(u(:,r)*sqrt(s(r,r)))';
                             p=0;
+                        else
+                            % Try to detect rotated SOCP (x-d)'*A*(x-d)+k<= C*y*z
+                            yzCandidates = find(~diag(Qred));
+                            if length(yzCandidates) == 2 && nnz(c(yzCandidates))==0
+                                LU = yalmip('getbounds',getvariables(xred(yzCandidates)));
+                                if all(LU(:,1)>=0)
+                                    yzSubQ = Qred(yzCandidates,yzCandidates);
+                                    if yzSubQ(1,2) < 0
+                                        C = -2*yzSubQ(1,2);
+                                        xCandidates = setdiff(1:length(used),yzCandidates);
+                                        A = Qred(xCandidates,xCandidates);
+                                        [R,p]=chol(A);
+                                        if ~p
+                                            y = xred(yzCandidates(1));
+                                            z = xred(yzCandidates(2));
+                                            d = -A\(c(xCandidates)/2);
+                                            k = f-d'*A*d;
+                                            if abs(k)<= 1e-12
+                                                Fconv=Fconv + lmi(rcone(R*(xred(xCandidates)-d),.5*C*y,z));
+                                                no_changed = no_changed + 1;
+                                                i_changed = [i_changed i];
+                                                done = 1;
+                                            elseif k >= -1e-12
+                                                Fconv=Fconv + lmi(rcone([R*(xred(xCandidates)-d);sqrt(abs(k))],.5*C*y,z));
+                                                no_changed = no_changed + 1;
+                                                i_changed = [i_changed i];
+                                                done = 1;
+                                            end                                            
+                                        end
+                                    end
+                                end
+                            end
                         end
                     end
-                    if p==0
+                    if p==0 && ~done
                         % Write as second order cone
                         d = -c'*x-f;
                         if isa(d,'double')
@@ -93,7 +126,7 @@ for i = 1:1:length(F)
                         end
                         no_changed = no_changed + 1;
                         i_changed = [i_changed i];                        
-                    else
+                    elseif ~done
                         Fconv = Fconv + lmi(fi(j));
                     end
                 end
