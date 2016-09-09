@@ -83,23 +83,25 @@ for i = 1:1:length(F)
                                         C = -2*yzSubQ(1,2);
                                         xCandidates = setdiff(1:length(used),yzCandidates);
                                         A = Qred(xCandidates,xCandidates);
-                                        [R,p]=chol(A);
+                                        [B,p]=chol(A);
                                         if ~p
                                             y = xred(yzCandidates(1));
                                             z = xred(yzCandidates(2));
                                             d = -A\(c(xCandidates)/2);
                                             k = f-d'*A*d;
                                             if abs(k)<= 1e-12
-                                                Fconv=Fconv + lmi(rcone(R*(xred(xCandidates)-d),.5*C*y,z));
+                                                Fconv=Fconv + lmi(rcone(B*(xred(xCandidates)-d),.5*C*y,z));
                                                 no_changed = no_changed + 1;
                                                 i_changed = [i_changed i];
                                                 done = 1;
                                             elseif k >= -1e-12
-                                                Fconv=Fconv + lmi(rcone([R*(xred(xCandidates)-d);sqrt(abs(k))],.5*C*y,z));
+                                                Fconv=Fconv + lmi(rcone([B*(xred(xCandidates)-d);sqrt(abs(k))],.5*C*y,z));
                                                 no_changed = no_changed + 1;
                                                 i_changed = [i_changed i];
                                                 done = 1;
-                                            end                                            
+                                            else
+                                                p = 1;
+                                            end
                                         end
                                     end
                                 end
