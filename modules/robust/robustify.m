@@ -117,7 +117,9 @@ end
 % 5. Duality:     Linear uncertainty dependence, conic uncertainty, can
 %                 only be applied on LP constraints
 % 6. S-procedure  Special case, quadratic dependence in elementwise, one
-%                 quadratic constraint in W
+%                 quadratic constraint in W (obsolete)
+% 7. Conic conic  Subsumes S-procedure
+
 
 % Robust model
 F_robust = ([]);

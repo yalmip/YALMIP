@@ -47,6 +47,10 @@ end
 % order to use them if possible in 2-norm explicit maximization
 F_w = convertquadratics(F_w);
 
+% Convert quadratic constraints in uncertain model to SOCPs. This will
+% enable us to use conic/conic robustification
+F_xw = convertquadratics(F_xw);
+
 % Export uncertainty model to numerical format
 ops.solver = '';
 ops.removeequalities = 0;
