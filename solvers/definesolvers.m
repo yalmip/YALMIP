@@ -952,6 +952,20 @@ solver(i).parametric = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
 
+solver(i) = emptysolver;
+solver(i).tag     = 'POP';
+solver(i).version = '';
+solver(i).checkfor= {'updatePOP'};
+solver(i).call    = 'callPOP';
+solver(i).objective.linear = 1;
+solver(i).objective.quadratic.convex = 1;
+solver(i).objective.quadratic.nonconvex = 1;
+solver(i).constraint.inequalities.elementwise.linear = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).parametric = 1;
+solver(i).constraint.binary = 1;
+i = i+1;
+
 solver(i) = qpsolver;
 solver(i).tag     = 'QUADPROGBB';
 solver(i).version = '';
