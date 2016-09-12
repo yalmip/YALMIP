@@ -25,6 +25,11 @@ end
 Fconv = lmi;
 no_changed = 0;
 i_changed = [];
+% Make sure bounds a pre-processed, in case we look for rotated cone which
+% requires us to know lower bounds
+nv = yalmip('nvars');
+LU = yalmip('getbounds',1:nv);
+LUhere = getbounds(F,[],LU);
 for i = 1:1:length(F)
     if max(variabletype(getvariables(F(i)))) <= 1
         % Definitely no quadratic to model as all variables are bilinear at
@@ -76,7 +81,8 @@ for i = 1:1:length(F)
                             % Try to detect rotated SOCP (x-d)'*A*(x-d)+k<= C*y*z
                             yzCandidates = find(~diag(Qred));
                             if length(yzCandidates) == 2 && nnz(c(yzCandidates))==0
-                                LU = yalmip('getbounds',getvariables(xred(yzCandidates)));
+                                %LU = yalmip('getbounds',getvariables(xred(yzCandidates)));
+                                LU = LUhere(getvariables(xred(yzCandidates)),:);
                                 if all(LU(:,1)>=0)
                                     yzSubQ = Qred(yzCandidates,yzCandidates);
                                     if yzSubQ(1,2) < 0
