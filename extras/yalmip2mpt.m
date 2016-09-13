@@ -49,7 +49,7 @@ Matrices.bndb=[];
 Matrices.nu = length(free_var);
 Matrices.nx = length(param_var);
 
-if nnz(Matrices.H)==0 & nnz(Matrices.Y)==0%nnz(Q)==0
+if nnz(Matrices.H)==0 & nnz(Matrices.Y)==0 && ~isequal(interfacedata.solver.tag,'POP')
     % Whoops, it's an LP and MPT uses the name H for linear cost also...
     Matrices.H = c(free_var)';    
     if nnz(Matrices.F) > 0
