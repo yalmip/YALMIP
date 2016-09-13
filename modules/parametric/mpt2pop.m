@@ -1,8 +1,13 @@
 function POP_problem = mpt2pop(Matrices)
 
 n = length(Matrices.free_var);
-varcon = setdiff(1:n,Matrices.binary_var_index);
-varbin = Matrices.binary_var_index;
+if isempty(Matrices.binary_var_index)
+    varcon = 1:length(Matrices.free_var);
+    varbin = [];
+else   
+    varbin = find(ismember(Matrices.free_var,Matrices.free_var(Matrices.binary_var_index)));
+    varcon = setdiff(1:length(Matrices.free_var),varbin);
+end
 
 POP_problem.Ht = full(Matrices.F)';
 POP_problem.Qt = full(Matrices.Y);
