@@ -682,6 +682,10 @@ end
 % *************************************************************************
 function p = remove_redundant(p);
 
+if isempty(p.F_struc)
+    return
+end
+
 b = p.F_struc(1+p.K.f:p.K.l+p.K.f,1);
 A = -p.F_struc(1+p.K.f:p.K.l+p.K.f,2:end);
 
