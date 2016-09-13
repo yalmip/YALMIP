@@ -22,7 +22,9 @@ POP_problem.CRA = full(Matrices.bndA);
 POP_problem.CRb = full(Matrices.bndb);
 
 POP_problem.Xmin = full(Matrices.lb(Matrices.free_var));
+POP_problem.Xmin = POP_problem.Xmin(varcon);
 POP_problem.Xmax = full(Matrices.ub(Matrices.free_var));
+POP_problem.Xmax = POP_problem.Xmax(varcon);
 
 POP_problem.Tmin = full(Matrices.lb(Matrices.param_var));
 POP_problem.Tmax = full(Matrices.ub(Matrices.param_var));
