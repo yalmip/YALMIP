@@ -1,4 +1,4 @@
-function y=min(varargin)
+function [y,loc]=min(varargin)
 %MIN (overloaded)
 %
 % t = MIN(X)
@@ -28,7 +28,17 @@ function y=min(varargin)
 % your own nonlinear operator, check the
 % function sdpvar/norm instead
 
-% To simplify code flow, code for different #inputs
+% To simplify code flow, code for different #output/inputs
+if nargout == 2
+    varargin{1} = -varargin{1};
+    if nargin > 1 && ~isempty(varargin{2})
+        varargin{2} = -varargin{2};
+    end
+    [y,loc] = max_with_loc(varargin{:});
+    y = -y;
+    return
+end
+
 switch nargin
     case 1
         % Three cases:
