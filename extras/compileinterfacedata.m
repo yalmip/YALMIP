@@ -820,6 +820,8 @@ if length(used_variables)<yalmip('nvars')
                         
     if ~isempty(F_struc)
         F_struc = sparse(F_struc(:,[1 1+used_variables]));
+    elseif size(F_struc,1) == 0
+        F_struc = [];
     end
 end
 
