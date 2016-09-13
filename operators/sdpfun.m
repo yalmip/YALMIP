@@ -27,11 +27,12 @@ if ~isa(varargin{1},'char') && any(strcmp(cellfun(@class,varargin,'UniformOutput
         if isa(varargin{i},'sdpvar')
             % Overloaded operator for SDPVAR objects. Pass on args and save them.
             % try to figure out size of expected output (many->1 or many->many          
-            varargin_copy = varargin;
+            varargin_copy = varargin;            
             for j = 1:length(varargin)-1
                 % Create zero arguments
                 if isa(varargin_copy{j},'sdpvar')
                     varargin_copy{j} = zeros(size(varargin_copy{j},1),size(varargin_copy{j},2));
+                    dataExample = varargin_copy{j};
                 end
             end
             output = feval(varargin_copy{end},varargin_copy{1:end-1});
@@ -39,6 +40,12 @@ if ~isa(varargin{1},'char') && any(strcmp(cellfun(@class,varargin,'UniformOutput
                 % MANY -> 1
                 % Append derivative (might be empty)
                 varargin{end+1} = derivative;
+                if numel(dataExample)>1
+                    f = varargin{end-1};
+                    [n,m] = size(dataExample);
+                    g = @(x)f(reshape(x,n,m));
+                    varargin{end-1} = g;
+                end
                 varargout{1} = yalmip('define',mfilename,varargin{:});
             else
                 % MANY -> MANY
@@ -94,7 +101,8 @@ switch class(varargin{1})
 end
 
 function [Ax,Ay,b] = convexhull(xL,xU,varargin)
-if ~(isinf(xL) | isinf(xU))
+
+if length(xL)==1 && ~(isinf(xL) | isinf(xU))
     z = linspace(xL,xU,100);
     fz = feval(varargin{end-1},z,varargin{1:end-2});
     % create 4 bounding planes
@@ -120,7 +128,7 @@ end
 
 function [L,U] = bounds(xL,xU,varargin)
 
-if ~isinf(xL) & ~isinf(xU)
+if length(xL)==1 && ~isinf(xL) & ~isinf(xU) 
     xtest = linspace(xL,xU,100);
     values = feval(varargin{end-1},xtest,varargin{1:end-2});
     [minval,minpos] = min(values);
