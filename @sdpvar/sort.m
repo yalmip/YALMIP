@@ -14,12 +14,29 @@ switch class(varargin{1})
         error('Overloaded SDPVAR/SORT CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
-
-        if nargin > 1 | min(size(varargin{1}))>1
-            error('SDPVAR/SORT only supports simple 1-D sorting'),
+        
+        if min(size(varargin{1})) > 1
+            [y,loc] = matrix_sdpvar_sort(varargin{:});
+            varargout{1} = y;
+            varargout{2} = loc;
+            return
         end
 
         x = varargin{1};
+        if nargin > 1 
+            % trivial case
+            dim = varargin{2};
+            if size(x,2) == 1 && dim == 2
+                varargout{1} = x;
+                varargout{2} = ones(length(x),1);
+                return
+            elseif size(x,1) == 1 && dim == 1
+                varargout{1} = x;
+                varargout{2} = ones(1,length(x));
+                return
+            end
+        end
+      
         data.D = binvar(length(x),length(x),'full');
         data.V = sdpvar(length(x),length(x),'full');
         y = [];
@@ -35,8 +52,9 @@ switch class(varargin{1})
             data.isthisloc = 1;
             loc = [loc;yalmip('define',mfilename,x,data)];
         end
-        varargout{1} = y;
-        varargout{2} = loc;
+        [n,m] = size(x);
+        varargout{1} = reshape(y,n,m);
+        varargout{2} = reshape(loc,n,m);
 
     case 'char' % YALMIP send 'graph' when it wants the epigraph or hypograph
 
