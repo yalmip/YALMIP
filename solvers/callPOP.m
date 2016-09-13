@@ -17,7 +17,12 @@ if interfacedata.options.savedebug
     save popdebug Matrices
 end
 
-solution = mpQP(Matrices);
+if ~isempty(Matrices.E)
+    solution = mpMIQP(Matrices);
+else
+    solution = mpQP(Matrices);
+end
+
 solvertime=0;
 problem = 0;
 infostr = yalmiperror(problem,'POP');
