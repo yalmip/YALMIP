@@ -24,7 +24,7 @@ if isa(X,'sdpvar') & isa(Y,'double')
     return
 end
 
-% FIX : SLOOOOW BUT SOMEWHAT ROBUST
+% normalize scalar./matrix and matrix./scalar
 [nx,mx] = size(X);
 [ny,my] = size(Y);
 if prod(size(X)) == 1 & prod(size(Y))~=1
@@ -32,22 +32,11 @@ if prod(size(X)) == 1 & prod(size(Y))~=1
 end;
 if prod(size(Y)) == 1 & prod(size(X))~=1
     Y = repmat(Y,nx,mx);
-end;
-[nx,mx] = size(X);
-y = [];
-for i = 1:nx   
-    if mx==1
-        dummy = struct('type','()','subs',{{i,1}});
-        y=[y;subsref(X,dummy)*subsref(Y,dummy)^-1];
-    else
-        ytemp = [];
-        for j = 1:mx
-            dummy = struct('type','()','subs',{{i,j}});
-            ytemp = [ytemp subsref(X,dummy)*subsref(Y,dummy)^-1];
-        end
-        y = [y;ytemp];
-    end
 end
+
+% power is optimized already for simple cases
+y = X.*(Y.^(-1));
+
 % Reset info about conic terms
 if isa(y,'sdpvar')
     y.conicinfo = [0 0];
