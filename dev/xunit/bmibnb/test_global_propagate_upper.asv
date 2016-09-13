@@ -1,0 +1,13 @@
+function test_global_propagate_upper
+
+yalmip('clear') 
+x = sdpvar(2,1);
+p = 100*(x(2)-x(1)^2)^2 + (1-x(1))^2;   
+nlcon =  [x(1) + x(2)^2;                   
+          x(1)^2 + x(2);
+          x(1)^2 + x(2)^2 - 1] >= 0;
+sol = optimize([-.5 <= x(1) <= .5,nlcon],p,sdpsettings('solver','bmibnb'))
+
+% Solve problem
+sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'quadprog.Algorithm','interior-point-convex'));
+mbg_asserttolequal(value(objective),2.251945831860312e+002, 1e-2);
