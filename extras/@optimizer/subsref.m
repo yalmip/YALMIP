@@ -48,8 +48,7 @@ elseif isequal(subs.type,'{}')
     else
         NoSolve = 0;
     end
-    
-    end
+        
     if ~isempty(self.ParametricSolution)
         x = subs.subs{1};
         x = x(:);
