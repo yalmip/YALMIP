@@ -42,6 +42,23 @@ elseif isequal(subs.type,'.')
     
 elseif isequal(subs.type,'{}')
 
+    if ~isempty(self.ParametricSolution)
+        x = subs.subs{1};
+        x = x(:);
+        [found,j] = isinside(self.ParametricSolution{1}.Pn,x);
+        if found
+            j = j(1);
+            u = self.ParametricSolution{1}.Fi{j}*x + self.ParametricSolution{1}.Gi{j};
+            u = reshape(u,self.dimoutOrig{1});                            
+            varargout{1} = u;            
+            varargout{2} = 0;
+        else
+            varargout{1} = nan(self.dimoutOrig{1});            
+            varargout{2} = 1;
+        end
+        return
+    end
+    
     if self.model.options.usex0
         if nargout < 5
             warning('If you intend to use initial guesses, you must save fifth output [sol,~,~,~,P] = P{p}');
@@ -158,7 +175,8 @@ elseif isequal(subs.type,'{}')
 				elseif ~self.model.options.usex0
 					self.model.x0 = [];
             end
-            output = self.model.solver.callhandle(self.model);
+
+            output = self.model.solver.callhandle(self.model);            
             if output.problem == 0 && self.model.options.usex0
                 self.lastsolution = output.Primal;
             end
