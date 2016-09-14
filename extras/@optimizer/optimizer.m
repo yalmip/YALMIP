@@ -267,6 +267,8 @@ sys.output.expression = u;
 sys.output.z = z;
 sys.lastsolution = [];
 sys.ParametricSolution = [];
+sys.infeasible = 0;
+sys.keptvariables = [];
 % This is not guaranteed to give the index in the order the variables where
 % given (tested in test_optimizer2
 % [a,b,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end));

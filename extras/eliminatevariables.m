@@ -1,4 +1,10 @@
 function [model,keptvariables,infeasible] = eliminatevariables(model,varindex,value)
+    
+if isempty(varindex)
+    keptvariables = [];
+    infeasible = nan;
+    return
+end
 
 keptvariables = 1:length(model.c);
 

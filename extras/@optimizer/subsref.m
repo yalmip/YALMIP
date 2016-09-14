@@ -42,6 +42,14 @@ elseif isequal(subs.type,'.')
     
 elseif isequal(subs.type,'{}')
 
+    if length(subs.subs)>0 && isequal(subs.subs{end},'nosolve')
+        NoSolve = 1;
+        subs.subs = {subs.subs{1:end-1}};
+    else
+        NoSolve = 0;
+    end
+    
+    end
     if ~isempty(self.ParametricSolution)
         x = subs.subs{1};
         x = x(:);
@@ -71,26 +79,28 @@ elseif isequal(subs.type,'{}')
         return
     end
     
+     if ~isempty(self.diminOrig)
     % Normalize to a cell-format
     if ~isa(subs.subs{1},'cell')
         subs.subs{1} = {subs.subs{1}};
     end
     
     % Check number of cells
-    if length(subs.subs{1})~=length(self.diminOrig)
+    if length(subs.subs{1})~=length(self.diminOrig) && ~isempty(self.diminOrig)
         error('The number of cell elements in input does not match OPTIMIZER declaration');
     end
           
-    % Realify...
-    for i = 1:length(subs.subs{1})
-        if self.complexInput(i)
-            subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
+    % Realify...    
+        for i = 1:length(subs.subs{1})
+            if self.complexInput(i)
+                subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
+            end
         end
-    end
+    
     
     % If blocked call, check so that there are as many blocks for every
     % argument
-	 dimBlocks = nan(length(subs.subs{1}),1);
+	dimBlocks = nan(length(subs.subs{1}),1);
     for i = 1:length(subs.subs{1})
         dimBlocks(i) = numel(subs.subs{1}{i}) / prod(self.diminOrig{i});
     end    
@@ -132,12 +142,27 @@ elseif isequal(subs.type,'{}')
     if isnan(nBlocks)
         nBlocks = 1;
     end
+     else
+         u = [];
+         start = 0;
+         nBlocks = 1;
+     end
         
     for i = 1:nBlocks
-        thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
+        if ~isempty(self.diminOrig)
+            thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
+        else
+            thisData = [];
+        end
         if self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
             [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
+            if isnan(infeasible)
+                % Elimination was not run as there were no variables
+                % Data is inherited from last eliminate
+                infeasible = self.infeasible;
+                keptvariables = self.keptvariables;
+            end
             % Turn off equality presolving for simple programs. equality
             % presolve has benefits when the are stuff like log
             self.model.presolveequalities = length(self.model.evalMap > 0);
@@ -148,12 +173,23 @@ elseif isequal(subs.type,'{}')
                 elseif ~self.model.options.usex0
                     self.model.x0 = [];
                 end
-                eval(['output = ' self.model.solver.call '(self.model);']);
+                if NoSolve
+                    % We just instantiate the model, and return it
+                    self.dimin = [];
+                    self.parameters = [];
+                    self.diminOrig = {};
+                    self.infeasible = infeasible;
+                    self.keptvariables = keptvariables;
+                    varargout{1} = self;
+                    return
+                else
+                    eval(['output = ' self.model.solver.call '(self.model);']);
+                end
                 if output.problem == 0 && self.model.options.usex0                    
                      self.lastsolution = output.Primal;
                 end
                 x = originalModel.c*0;
-					 x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)
+		        x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)
                 x(keptvariables) = output.Primal;
                 output.Primal = x;
             else
@@ -208,7 +244,9 @@ elseif isequal(subs.type,'{}')
         varargout{2}(i) = output.problem;
         varargout{3}{i} = yalmiperror(output.problem);
         varargout{4}{i} = output.Dual;       
-        start = start + self.dimin(2);
+        if ~isempty(self.dimin)
+            start = start + self.dimin(2);
+        end
     end
     if length(self.dimoutOrig)>1                   
        % top = 1;
