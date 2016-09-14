@@ -480,10 +480,22 @@ D(abs(D)<1e-11) = 0;
 lb = p.lb(linear);
 ub = p.ub(linear);
 Z = V';
+newub = inf(length(lb),1);
+newlb = -inf(length(lb),1);
 for i = 1:length(lb)
     z = Z(i,:);
-    newub(i,1) = z(z>0)*ub(z>0) + z(z<0)*lb(z<0);
-    newlb(i,1) = z(z>0)*lb(z>0) + z(z<0)*ub(z<0);
+    neg = find(z<0);
+    pos = find(z>0);
+    if ~isempty(neg)
+        newub(i,1) = z(neg)*lb(neg);
+        newlb(i,1) = z(neg)*ub(neg);
+    end
+%    if ~isempty(pos)
+        newub(i,1) = z(pos)*ub(pos);
+        newlb(i,1) = z(pos)*lb(pos);        
+%    end
+%  newub(i,1) = z(z>0)*ub(z>0) + z(z<0)*lb(z<0);
+%        newlb(i,1) = z(z>0)*lb(z>0) + z(z<0)*ub(z<0);  
 end
 
 
