@@ -1,14 +1,10 @@
-function [Fnew, obj, M,k,x,u,n,deg,linears,nonlinears] = momentmodel(F,k,obj,keepnonlinears)
-% Get all element-wise constraints, and put them in a vector
-% Furthermore, gather the other constraints and place them
-% in a new LMI object.
-% Additionally, we find out the variables on which we perform
-% the relaxation.
+function [Fnew, obj, M,k,x,u,n,deg,linears,nonlinears] = momentmodel(F,obj,k,keepnonlinears)
+
 if nargin < 2
-    k = [];
+    obj = [];
 end
 if nargin < 3
-    obj = [];
+    k = [];
 end
 if nargin < 4
     keepnonlinears = 0;

@@ -90,7 +90,7 @@ if failure
     error('Could not expand model (rational functions, min/max etc). Avoid nonlinear operators in moment problems.');
 end
 
-[Fnew,obj,M,k,x,u,n,deg,linears,nonlinears] = momentmodel(F,k,obj,1);
+[Fnew,obj,M,k,x,u,n,deg,linears,nonlinears] = momentmodel(F,obj,k,1);
 
 % No objective, minimize trace on moment-matrix instead
 if isempty(obj)
