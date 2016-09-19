@@ -1,4 +1,4 @@
-function [F,h,failure] = robustmodel(F,h,ops,w)
+function varargout = robustmodel(varargin)
 %ROBUSTMODEL  Derives robust counterpart.
 %
 % [Frobust,objrobust,failure] = ROBUSTMODEL(F,h,options) is used to derive
