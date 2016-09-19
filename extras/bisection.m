@@ -3,18 +3,23 @@ function diagnostic = bisection(varargin)
 %
 %   DIAGNOSTIC = BISECTION(F,h,options,tolerance)
 %
-%    min   h
+%    min   t
 %    subject to
-%            F(x,h) >=0
+%            F(x,t) >=0
 %
 %   NOTES
 %    It is assumed that the problem is quasi-convex in the scalar simple
-%    variable h. 
+%    variable t. 
 %
 %    Lower and upper bounds are automatically detected.
 %    Default tolerance 1e-5.
 %
-%    A suitable solver has to be specified in the solver options.
+%    The algorithm simply solves a series of feasibility problems where the
+%    parameter t is fixed, and hones in on optimal value using bisection
+%
+%    It is recommended to explicitly set a solver. Otherwise YALMIP will
+%    have to try to figure ou a suitable solver for the feasibility
+%    problems
 
 Constraints = varargin{1};
 Objective = varargin{2};
