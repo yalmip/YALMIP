@@ -18,7 +18,7 @@ function varargout = sosmodel(varargin)
 %
 %
 % NOTE: If you do not specify any options structure or specify sos.model
-% as default -1 an image model representation will be used (sos.model = 2).
+% as default 0 an image model representation will be used (sos.model = 2).
 % With this, the compiled model is expressed in terms of the original
 % variables (with kernel model, a dual problem is derived, and thus no
 % original variables are used)
@@ -34,7 +34,7 @@ if nargin > 3
         varargin{3} = ops;
     else
         try
-            if isequal(ops.sos.model,-1)
+            if isequal(ops.sos.model,0)
                 ops.sos.model = 2;
             end
             varargin{3} = ops;
