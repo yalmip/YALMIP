@@ -21,23 +21,26 @@ function diagnostic = bisection(varargin)
 %    have to try to figure ou a suitable solver for the feasibility
 %    problems
 
+solvertime = tic;
 Constraints = varargin{1};
 Objective = varargin{2};
 if isequal(getbase(Objective),[0 -1])
     % User wants to maximize something, so we can reuse old code format
     varargin{2} = -Objective;
-    varargin{7} =0;
+    options = varargin{3};
+    options.bisection.switchedsign = 0;
+    options.solver = options.bisection.solver;
+    varargin{3} = options;      
     diagnostic = bisection_core(varargin{:});
 elseif isequal(getbase(Objective),[0 1])
     % User wants to minimize something. Rewrite as old max code
-    varargin{7} = 1;    
+    options = varargin{3};
+    options.bisection.switchedsign = 1;
+    options.solver = options.bisection.solver;
+    varargin{3} = options;  
     Constraints = replace(Constraints, Objective, -Objective);
     varargin{1} = Constraints;
     diagnostic = bisection_core(varargin{:});   
-    %assign(Objective,-optimal);   
-    %optimal = -optimal;
 end
-
-    
-    
-    
+diagnostic.yalmiptime = toc(solvertime)-diagnostic.solvertime;
+diagnostic.info = yalmiperror(diagnostic.problem,'bisection');           

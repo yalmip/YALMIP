@@ -19,6 +19,18 @@ if nargin>=2
     end
 end
 
+% Early jump to bisection solver
+if nargin >= 3
+    if isa(varargin{3},'struct')
+        if isfield(varargin{3},'solver')
+            if isequal(varargin{3}.solver,'bisection')                
+                diagnostic = bisection(varargin{:});
+                return
+            end
+        end
+    end
+end
+
 if nargin<1
     help solvesdp
     return

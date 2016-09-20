@@ -77,6 +77,9 @@ else
     Names = appendOptionNames(Names,options);
     
     % Internal solver frameworks
+    options.bisection = setup_bisection_options;
+    Names = appendOptionNames(Names,options.bisection,'bisection');
+    
     options.bilevel = setup_bilevel_options;
     Names = appendOptionNames(Names,options.bilevel,'bilevel');
     
@@ -399,6 +402,11 @@ options.allownonconvex = 1;
 options.shift = 0;
 options.dimacs = 0;
 options.beeponproblem = [-5 -4 -3 -2 -1];
+
+function bisection = setup_bisection_options
+bisection.absgaptol = 1e-5;
+bisection.relgaptol = 1e-1;
+bisection.solver = '';
 
 function bilevel = setup_bilevel_options
 bilevel.algorithm = 'internal';

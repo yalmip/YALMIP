@@ -1518,6 +1518,30 @@ solver(i).complex = 0;
 solver(i).usesother = 1;
 i = i+1;
 
+% % ***************************************
+% % SOMEWHAT MORE COMPLEX DEFINITIONS OF
+% % THE INTERNAL MICP SOLVER
+% % ***************************************
+solver(i) = emptysolver;
+solver(i).tag     = 'CUTSDP';
+solver(i).version = '';
+solver(i).checkfor= {'cutsdp'};
+solver(i).call    = 'cutsdp';
+solver(i).objective.linear = 1;
+solver(i).objective.sigmonial = 0;
+solver(i).objective.polynomial = 0;
+solver(i).objective.quadratic.convex = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.inequalities.elementwise.linear = 1;
+solver(i).constraint.inequalities.semidefinite.linear = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+solver(i).dual = 1;
+solver(i).complex = 0;
+solver(i).usesother = 1;
+i = i+1;
+
 % ***************************************
 % SOMEWHAT MORE COMPLEX DEFINITIONS OF
 % THE INTERNAL GLOBAL BMI SOLVER
@@ -1550,6 +1574,26 @@ solver(i).constraint.semivar = 0;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
 solver(i).supportsinitial = 1;
+i = i+1;
+
+% ***************************************
+% SOMEWHAT MORE COMPLEX DEFINITIONS OF
+% THE INTERNAL BISECTION SOLVER
+% ***************************************
+solver(i) = emptysolver;
+solver(i).tag     = 'BISECTION';
+solver(i).version = '';
+solver(i).checkfor= {'bisection'};
+solver(i).call    = 'bisection';
+solver(i).objective.linear = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.inequalities.elementwise.linear = 1;
+solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
+solver(i).constraint.inequalities.semidefinite.linear = 1;
+solver(i).constraint.inequalities.semidefinite.quadratic = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.inequalities.rotatedsecondordercone = 1;
+solver(i).usesother = 1;
 i = i+1;
 
 solver(i) = qpsolver;

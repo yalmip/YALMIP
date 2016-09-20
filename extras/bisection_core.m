@@ -1,48 +1,35 @@
-function diagnostic = bisection_core(Constraints,Objective,options,tolerance,lower,upper,switchedsign)
+function diagnostic = bisection_core(Constraints,Objective,options)
 %BISECTION Core engine
 
 % Note, outer layer added to enable arbitrary sign on ojective.
 % Code here initially assumed maximization of scalar, so now we tweak the
 % code a bit with swtchedsign to run any case. Fugly.
 
+diagnostic.yalmiptime = 0;
+diagnostic.solvertime = 0;
+diagnostic.info = '';
+diagnostic.problem = 0;
 
 if length(getvariables(Objective)) > 1
-    error('The objective should be a simple variable');
+    diagnostic.problem = -4;
+    return
 end
 
 if  ~(isequal(getbase(Objective),[0 1]))
-     error('The objective should be a simple  variable');
+    diagnostic.problem = -4;
+    return
 end
 
 if nargin < 3 || isempty(options)
     options = sdpsettings;
 end
-% if nargin < 3 || isempty(options)
-%     error('An options structure with a specified solver has to be supplied.');
-% elseif strcmp(options.solver,'')
-%     error('An options structure with a specified solver has to be supplied.');
-% end
-
-diagnostic.problem = 0;
-
-if nargin < 4 || isempty(tolerance)
-    tolerance = 1e-4;
-end
 
 % Initialize the lower bound
-if nargin < 5 || isempty(lower)
+if 1 % nargin < 5 || isempty(lower)
     lower = 0;
     userGaveLower = 0;
 else
     userGaveLower = 1;
-end
-
-% Some temp. coding around the fact that we previously assumed maxmization,
-% but know use the code for minimization default.
-if nargin==7
-    switchedSign = 1;   
-else
-    switchedSign = 1;    
 end
 
 bestUpper = inf;
@@ -58,7 +45,9 @@ end
 P = optimizer(Constraints,[],options,Objective,x);
 
 % Make sure we actually can solve the lower problem
+solvertime = tic;
 [sol, flag] = P{lower};
+diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
 if flag ~=0 && userGaveLower
     error('Cannot initialize the bisection at supplied lower bound.')
 elseif flag ~=0
@@ -68,7 +57,9 @@ elseif flag ~=0
         bestUpper = lower;
         lower = lower - 2^i;i = i+1;
         try
+            solvertime = tic;
             [sol, flag] = P{lower};
+            diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
             if lower < -1e6
                 diagnostic.problem = 1;
                 diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
@@ -83,7 +74,8 @@ end
 v = sol;
 optimal = lower;
 
-if nargin == 6 && ~isempty(upper)
+upper = inf;
+if 0%nargin == 6 && ~isempty(upper)
     if upper < bestUpper
         % User has supplied an upper bound. Is it really infeasible
         [sol, flag] = P{lower};
@@ -104,8 +96,10 @@ if isinf(upper)
     i = 1;
     while ~flag
         upper = upper + 2^i;i = i+1;
-        try             
+        try                         
+            solvertime = tic;
             [sol, flag] = P{upper};
+            diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
         catch
             upper
             diagnostic.problem = -1;
@@ -126,11 +120,13 @@ if options.verbose;
     disp(['Selected solver: ' options.solver]);
     disp('Iteration  Lower bound    Test           Upper bound    Gap          Status at test');
 end
-while upper - lower > tolerance    
+while upper - lower > options.bisection.absgaptol
     test = (upper + lower)/2;
+    solvertime = tic;
     [sol, flag] = P{test};
+    diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
     if options.verbose;
-        if switchedsign
+        if options.bisection.switchedsign
             L = -upper;
             T = -test;
             U = -lower;
@@ -164,7 +160,6 @@ while upper - lower > tolerance
     end
     iter = iter + 1;
 end
-
 % Assign computed solution
 assign(x,working_sol);
 assign(Objective,optimal);
