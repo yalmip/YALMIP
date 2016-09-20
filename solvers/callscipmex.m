@@ -1,5 +1,13 @@
 function output = callscipmex(interfacedata)
 
+% Fix for the case when YALMIP selects scip as a solver for a nonlinearly
+% parameterized problem, and te final problem is actually still nonlonear.
+% If so, we should really have selected scipnl
+if any(interfacedata.variabletype) || ~isempty(interfacedata.evalMap)
+    output = callscipnl(interfacedata);
+    return
+end
+
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
