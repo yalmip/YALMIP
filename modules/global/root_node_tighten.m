@@ -28,7 +28,7 @@ if p.options.bmibnb.roottight & p.feasible
             % c'*x + x'*R*R*x <= U - f - c'*x
             % ||Rx||^2 <= upperbound  U - f - c'*x
             % ||Rx||_inf <= n*sqrt(upperbound  U - f - c'*x)
-            rhs = upper - p.f
+            rhs = upper - p.f;
             neg = find(p_cut.c<0);
             pos = find(p_cut.c>0);
             rhs = rhs - sum(p.ub(neg).*p_cut.c(neg));
