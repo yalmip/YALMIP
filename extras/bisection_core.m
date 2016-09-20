@@ -160,6 +160,9 @@ while upper - lower > options.bisection.absgaptol
     end
     iter = iter + 1;
 end
+if options.bisection.switchedsign
+    optimal = -optimal;
+end
 % Assign computed solution
 assign(x,working_sol);
 assign(Objective,optimal);
