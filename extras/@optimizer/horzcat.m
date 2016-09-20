@@ -65,7 +65,7 @@ top2 = top2 + sum(model2.K.q);
 K.q = [model1.K.q model2.K.q];
 
 Data = [Data;model1.F_struc(top1:top1 + sum(model1.K.s).^2-1,:)];
-Data = [Data;model2.F_struc(top2:top2 + sum(model2.K.q).^2-1,:)];
+Data = [Data;model2.F_struc(top2:top2 + sum(model2.K.s).^2-1,:)];
 top1 = top1 + sum(model1.K.s).^2;
 top2 = top2 + sum(model2.K.s).^2;
 K.s = [model1.K.s model2.K.s];
