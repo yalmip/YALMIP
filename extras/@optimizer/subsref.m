@@ -210,8 +210,19 @@ elseif isequal(subs.type,'{}')
 				elseif ~self.model.options.usex0
 					self.model.x0 = [];
             end
-
-            output = self.model.solver.callhandle(self.model);            
+            
+            if NoSolve
+                % We just instantiate the model, and return it
+                self.dimin = [];
+                self.parameters = [];
+                self.diminOrig = {};
+                self.infeasible = 0;
+                self.keptvariables = 1:length(self.model.c);
+                varargout{1} = self;
+                return
+            else
+                output = self.model.solver.callhandle(self.model);
+            end
             if output.problem == 0 && self.model.options.usex0
                 self.lastsolution = output.Primal;
             end
