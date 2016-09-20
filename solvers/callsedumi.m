@@ -17,7 +17,7 @@ pars.fid = double(options.verbose);
 % N.B. Only happens when caller is BNB
 % *********************************************
 if ~isempty(ub)
-    [F_struc,K] = addbounds(F_struc,K,ub,lb);
+    [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
 end
 
 % Avoid bug (by design?) in SeDuMi on 1D second order cones
@@ -52,7 +52,7 @@ catch
         end
         % Boring issue in sedumi for trivial problem min x+y, s.t x+y>0
         n = length(c);
-        [F_struc,K] = addbounds(F_struc,K,ones(n,1)*1e6,-ones(n,1)*1e6);
+        [F_struc,K] = addStructureBounds(F_struc,K,ones(n,1)*1e6,-ones(n,1)*1e6);
         [x_s,y_s,info] = sedumi(-F_struc(:,2:end),-c,F_struc(:,1),K,pars);
         x_s((1:2*n)+K.f)=[];
         K.l=K.l-2*n;

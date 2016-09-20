@@ -1,4 +1,4 @@
-function [F_struc,K] = addbounds(F_struc,K,ub,lb)
+function [F_struc,K] = addStructureBounds(F_struc,K,ub,lb)
 %ADDBOUNDS Internal function to add variable bounds to an F_struc
 
 % Upper bounds

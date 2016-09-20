@@ -147,7 +147,7 @@ function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdpdual(
 
 % Convert if the caller is bnb or bmibnb which might have appended bounds
 % Sure, we could setup model with bounds, but... 
-[model.F_struc,model.K] = addbounds(model.F_struc,model.K,model.ub,model.lb);
+[model.F_struc,model.K] = addStructureBounds(model.F_struc,model.K,model.ub,model.lb);
 
 param = model.options.mosek;
 
@@ -337,7 +337,7 @@ function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_sdp(model)
 param = model.options.mosek;
 
 % Convert
-[model.F_struc,model.K] = addbounds(model.F_struc,model.K,model.ub,model.lb);
+[model.F_struc,model.K] = addStructureBounds(model.F_struc,model.K,model.ub,model.lb);
 prob = yalmip2SDPmosek(model);
 
 % Debug?

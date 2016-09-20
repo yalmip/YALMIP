@@ -20,7 +20,7 @@ ub      = yalmipmodel.ub;
 lb      = yalmipmodel.lb;
 c = yalmipmodel.c;
 if ~isempty(ub)
-    [F_struc,K] = addbounds(F_struc,K,ub,lb);
+    [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
 end
 
 data.A = -F_struc(:,2:end);

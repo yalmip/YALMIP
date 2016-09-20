@@ -12,7 +12,7 @@ lb      = model.lb;
 % N.B. Only happens when caller is BNB
 % *********************************************
 if ~isempty(ub)
-    [F_struc,K] = addbounds(F_struc,K,ub,lb);
+    [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
 end
 
 if K.f > 0

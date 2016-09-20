@@ -5,7 +5,7 @@ function output = callfrlib(model)
 % N.B. Only happens when caller is BNB
 % *********************************************
 if ~isempty(model.ub)
-    [model.F_struc,model.K] = addbounds(model.F_struc,model.K,model.ub,model.lb);
+    [model.F_struc,model.K] = addStructureBounds(model.F_struc,model.K,model.ub,model.lb);
 end
 
 options = model.options;
