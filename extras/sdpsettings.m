@@ -971,7 +971,7 @@ qpip.method = 1;
 
 function qsopt = setup_qsopt_options
 try
-    qsopt = optiset('solver','qsopt');
+    qsopt = optiset;%('solver','qsopt');
 catch
     qsopt.dual = 0;
     qsopt.primalprice = 1;
