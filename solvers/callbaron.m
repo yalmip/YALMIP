@@ -12,6 +12,7 @@ Anonlinear = [ model.Anonlinineq; model.Anonlineq];
 % Create string representing objective
 obj = createmodelstring(model.c,model);
 obj = strrep(obj,'sqrtm_internal','sqrt');
+obj = strrep(obj,'cabs','abs');
 if nnz(model.Q)>0
     obj = [obj '+' createQstring(model.Q,model)];
 end
