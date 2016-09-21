@@ -24,7 +24,7 @@ p0.F_struc = sparse(p0.F_struc);
 p = p0;
 
 if p1.K.f > 0
-    p.F_struc = [p1.F_struc(1:K.f,:);p.F_struc];
+    p.F_struc = [p1.F_struc(1:p1.K.f,:);p.F_struc];
     p.K.f = p.K.f + p1.K.f;
 end
 
