@@ -701,16 +701,8 @@ i = i+1;
 
 solver(i) = sdpsolver;
 solver(i).tag     = 'SDPNAL';
-solver(i).version = '0.3';
+solver(i).version = '0.5';
 solver(i).checkfor= {'sdpnalplus'};
-solver(i).call    = 'callsdpnal';
-solver(i).constraint.equalities.linear = 1;
-i = i+1;
-
-solver(i) = sdpsolver;
-solver(i).tag     = 'SDPNAL';
-solver(i).version = '0.1';
-solver(i).checkfor= {'sdpNAL'};
 solver(i).call    = 'callsdpnal';
 solver(i).constraint.equalities.linear = 1;
 i = i+1;
@@ -765,6 +757,17 @@ solver(i).version = 'M';
 solver(i).checkfor= {'sdpam.m'};
 solver(i).call    = 'callsdpa';
 solver(i).constraint.equalities.linear = 0;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag     = 'ADMMPDCP';
+solver(i).version = '';
+solver(i).checkfor= {'admmPDCP'};
+solver(i).call    = 'calladmmpdcp';
+%solver(i).constraint.equalities.linear = 1;
+%solver(i).constraint.inequalities.secondordercone.linear = 1;
+%solver(i).constraint.inequalities.rotatedsecondordercone = 0;
+%solver(i).complex = 1;
 i = i+1;
 
 solver(i) = sdpsolver;

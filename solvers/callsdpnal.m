@@ -24,15 +24,9 @@ end
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 solvertime = tic;
 if options.verbose==0
-    evalc('[obj,X,y,Z,info,runhist] =  sdpnal(blk,A,C,b,options.sdpnal);');
+    evalc('[obj,X,s,y,Z,Z2,y2,v,info,runhist] = sdpnalplus(blk,A,C,b,[],[],[],[],[],options.sdpnal);');
 else
-    switch interfacedata.solver.tag
-        case 'SDPNAL-0.3'
-            %[obj,X,y,Z,info,runhist] =  sdpnalplus(blk,A,C,b,[],[],[],[],[],options.sdpnal);   
-            [obj,X,s,y,Z,Z2,y2,v,info,runhist] = sdpnalplus(blk,A,C,b,[],[],[],[],[],options.sdpnal);   
-        otherwise
-            [obj,X,y,Z,info,runhist] =  sdpNAL(blk,A,C,b,options.sdpnal);
-    end
+    [obj,X,s,y,Z,Z2,y2,v,info,runhist] = sdpnalplus(blk,A,C,b,[],[],[],[],[],options.sdpnal);          
 end
 solvertime = toc(solvertime);
 
@@ -82,6 +76,8 @@ if isfield(info,'termcode')
     switch info.termcode
         case -1
             problem = 4;
+        case -2
+            problem = 3;
         case 0
             problem = 0;
         case 1
