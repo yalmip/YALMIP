@@ -1088,16 +1088,16 @@ try
     admmpdcp = admmpdcpset();
 catch
     admmpdcp.rho       = 1;
-    admmpdcp.adaptive  = true;      % adaptive penalty factor (true/false or 0/1)
-    admmpdcp.tau       = 2;         % increase factor for adaptive penalty scheme 
-    admmpdcp.mu        = 10;        % ratio of residuals for adaptive penalty scheme
-    admmpdcp.maxIter   = 1000;      % max number of iterations
-    admmpdcp.verbose   = true;      % print or silent (true/false or 0/1)
-    admmpdcp.dispIter  = 50;        % print every dispIter iterations
-    admmpdcp.relTol    = 1e-4;      % relative tolerance
-    admmpdcp.yPenalty  = true;      % add penalty term for Y-block to cost 
-    admmpdcp.scaleData = true;      % scale data to try to improve convergence 
-    admmpdcp.KKTfact    = 'blk';    % Options to solve the KKT system:
+    admmpdcp.adaptive  = true;      
+    admmpdcp.tau       = 2;         
+    admmpdcp.mu        = 10;        
+    admmpdcp.maxIter   = 1000;      
+    admmpdcp.verbose   = true;      
+    admmpdcp.dispIter  = 50;        
+    admmpdcp.relTol    = 1e-4;      
+    admmpdcp.yPenalty  = true;      
+    admmpdcp.scaleData = true;      
+    admmpdcp.KKTfact    = 'blk';    
 end
 
 function csdp = setup_csdp_options
