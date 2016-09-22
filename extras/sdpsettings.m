@@ -75,7 +75,7 @@ else
     
     options = setup_core_options;
     Names = appendOptionNames(Names,options);
-    
+            
     % Internal solver frameworks
     options.bisection = setup_bisection_options;
     Names = appendOptionNames(Names,options.bisection,'bisection');
@@ -114,6 +114,9 @@ else
     Names = appendOptionNames(Names,options.sos,'sos');
     
     % External solvers
+    options.admmpdcp = setup_admmpdcp_options;
+    Names = appendOptionNames(Names,options.admmpdcp,'admmpdcp');
+    
     options.baron = setup_baron_options;
     Names = appendOptionNames(Names,options.baron,'baron');
     
@@ -1078,6 +1081,23 @@ try
     knitro.optionsfile = '';
 catch
     knitro.optionsfile = '';
+end
+
+function admmpdcp = setup_admmpdcp_options
+try
+    admmpdcp = admmpdcpset();
+catch
+    admmpdcp.rho       = 1;
+    admmpdcp.adaptive  = true;      % adaptive penalty factor (true/false or 0/1)
+    admmpdcp.tau       = 2;         % increase factor for adaptive penalty scheme 
+    admmpdcp.mu        = 10;        % ratio of residuals for adaptive penalty scheme
+    admmpdcp.maxIter   = 1000;      % max number of iterations
+    admmpdcp.verbose   = true;      % print or silent (true/false or 0/1)
+    admmpdcp.dispIter  = 50;        % print every dispIter iterations
+    admmpdcp.relTol    = 1e-4;      % relative tolerance
+    admmpdcp.yPenalty  = true;      % add penalty term for Y-block to cost 
+    admmpdcp.scaleData = true;      % scale data to try to improve convergence 
+    admmpdcp.KKTfact    = 'blk';    % Options to solve the KKT system:
 end
 
 function csdp = setup_csdp_options

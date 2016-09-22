@@ -764,10 +764,8 @@ solver(i).tag     = 'ADMMPDCP';
 solver(i).version = '';
 solver(i).checkfor= {'admmPDCP'};
 solver(i).call    = 'calladmmpdcp';
-%solver(i).constraint.equalities.linear = 1;
-%solver(i).constraint.inequalities.secondordercone.linear = 1;
-%solver(i).constraint.inequalities.rotatedsecondordercone = 0;
-%solver(i).complex = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
