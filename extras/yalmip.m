@@ -1,20 +1,17 @@
 function  varargout = yalmip(varargin)
 %YALMIP Returns various information about YALMIP
 %
-%   YALMIP can be used to check version numbers and
-%   find the SDPVAR and SET objects available in workspace
+%   YALMIP can be used to check version numbers and find the SDPVAR and SET
+%   objects available in workspace 
 %
 %   EXAMPLES
 %    V = YALMIP('version')     % Returns version
 %    YALMIP('nvars')           % Returns total number of declared variables
-%    YALMIP('info')            % Display basic info.
-%    YALMIP('solver','tag')    % Sets the solver 'solvertag' (see sdpsettings) as default solver
 %
+% If you want information on how to use YALMIP
+% http://yalmip.github.io
 %
-% If you want information on how to use YALMIP, you are advised to check out
-% http://users.isy.liu.se/johanl/yalmip/
-%
-%   See also YALMIPTEST, YALMIPDEMO
+%   See also YALMIPTEST
 
 persistent prefered_solver internal_sdpvarstate internal_setstate
 
