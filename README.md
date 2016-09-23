@@ -3,4 +3,4 @@ YALMIP
 
 MATLAB toolbox for optimization modeling
 
-Official homepage http://yalmip.github.io
+Official homepage https://yalmip.github.io
