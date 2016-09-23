@@ -28,10 +28,10 @@ if isequal(subs.type,'()')
 elseif isequal(subs.type,'.')
     
     if length(subs) == 1
-        switch subs.subs            
+        switch subs.subs
             case 'options'
                 varargout{1} = self.model.options;
-            case 'model'  
+            case 'model'
                 varargout{1} = self.model;
             otherwise
                 error('Field not accesible. You can only acsess P.options')
@@ -41,14 +41,14 @@ elseif isequal(subs.type,'.')
     end
     
 elseif isequal(subs.type,'{}')
-
+    
     if length(subs.subs)>0 && isequal(subs.subs{end},'nosolve')
         NoSolve = 1;
         subs.subs = {subs.subs{1:end-1}};
     else
         NoSolve = 0;
     end
-        
+    
     if ~isempty(self.ParametricSolution)
         x = subs.subs{1};
         x = x(:);
@@ -56,11 +56,11 @@ elseif isequal(subs.type,'{}')
         if found
             j = j(1);
             u = self.ParametricSolution{1}.Fi{j}*x + self.ParametricSolution{1}.Gi{j};
-            u = reshape(u,self.dimoutOrig{1});                            
-            varargout{1} = u;            
+            u = reshape(u,self.dimoutOrig{1});
+            varargout{1} = u;
             varargout{2} = 0;
         else
-            varargout{1} = nan(self.dimoutOrig{1});            
+            varargout{1} = nan(self.dimoutOrig{1});
             varargout{2} = 1;
         end
         return
@@ -78,75 +78,75 @@ elseif isequal(subs.type,'{}')
         return
     end
     
-     if ~isempty(self.diminOrig)
-    % Normalize to a cell-format
-    if ~isa(subs.subs{1},'cell')
-        subs.subs{1} = {subs.subs{1}};
-    end
-    
-    % Check number of cells
-    if length(subs.subs{1})~=length(self.diminOrig) && ~isempty(self.diminOrig)
-        error('The number of cell elements in input does not match OPTIMIZER declaration');
-    end
-          
-    % Realify...    
+    if ~isempty(self.diminOrig)
+        % Normalize to a cell-format
+        if ~isa(subs.subs{1},'cell')
+            subs.subs{1} = {subs.subs{1}};
+        end
+        
+        % Check number of cells
+        if length(subs.subs{1})~=length(self.diminOrig) && ~isempty(self.diminOrig)
+            error('The number of cell elements in input does not match OPTIMIZER declaration');
+        end
+        
+        % Realify...
         for i = 1:length(subs.subs{1})
             if self.complexInput(i)
                 subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
             end
         end
-    
-    
-    % If blocked call, check so that there are as many blocks for every
-    % argument
-	dimBlocks = nan(length(subs.subs{1}),1);
-    for i = 1:length(subs.subs{1})
-        dimBlocks(i) = numel(subs.subs{1}{i}) / prod(self.diminOrig{i});
-    end    
-    if ~isnan(dimBlocks)
-        if ~all(dimBlocks == dimBlocks(i))
-            error('Dimension mismatch on the input arguments compared to definition');
+        
+        
+        % If blocked call, check so that there are as many blocks for every
+        % argument
+        dimBlocks = nan(length(subs.subs{1}),1);
+        for i = 1:length(subs.subs{1})
+            dimBlocks(i) = numel(subs.subs{1}{i}) / prod(self.diminOrig{i});
         end
-        if any(dimBlocks ~= fix(dimBlocks))
-            error('Dimension mismatch on the input arguments compared to definition');
+        if ~isnan(dimBlocks)
+            if ~all(dimBlocks == dimBlocks(i))
+                error('Dimension mismatch on the input arguments compared to definition');
+            end
+            if any(dimBlocks ~= fix(dimBlocks))
+                error('Dimension mismatch on the input arguments compared to definition');
+            end
         end
-    end
-    
-    
-    left = ones(1,length(subs.subs{1}));
-    aux = [];
-    aux2 = [];
-    for i = 1:dimBlocks(1)
+        
+        
+        left = ones(1,length(subs.subs{1}));
+        aux = [];
         aux2 = [];
-        try
-        for j = 1:length(subs.subs{1})
-            temp = subs.subs{1}{j}(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
-            temp = temp(:);
-            temp = temp(self.mask{j});
-            aux2 = [aux2;temp];
-             left(j) = left(j) + self.diminOrig{j}(2);
+        for i = 1:dimBlocks(1)
+            aux2 = [];
+            try
+                for j = 1:length(subs.subs{1})
+                    temp = subs.subs{1}{j}(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
+                    temp = temp(:);
+                    temp = temp(self.mask{j});
+                    aux2 = [aux2;temp];
+                    left(j) = left(j) + self.diminOrig{j}(2);
+                end
+            catch
+                error('The dimension on a supplied parameter value does not match the definition.');
+            end
+            %left = left + self.diminOrig{1}(2);
+            aux = [aux aux2];
         end
-        catch
-            error('The dimension on a supplied parameter value does not match the definition.');
+        subs.subs{1} = aux;
+        
+        % Input is now given as [x1 x2 ... xn]
+        u = [];
+        nBlocks = dimBlocks(1);
+        start = 1;
+        if isnan(nBlocks)
+            nBlocks = 1;
         end
-        %left = left + self.diminOrig{1}(2);
-        aux = [aux aux2];
-    end
-    subs.subs{1} = aux;
-    
-    % Input is now given as [x1 x2 ... xn]   
-    u = [];
-    nBlocks = dimBlocks(1);
-    start = 1;
-    if isnan(nBlocks)
+    else
+        u = [];
+        start = 0;
         nBlocks = 1;
     end
-     else
-         u = [];
-         start = 0;
-         nBlocks = 1;
-     end
-        
+    
     for i = 1:nBlocks
         if ~isempty(self.diminOrig)
             thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
@@ -184,11 +184,11 @@ elseif isequal(subs.type,'{}')
                 else
                     eval(['output = ' self.model.solver.call '(self.model);']);
                 end
-                if output.problem == 0 && self.model.options.usex0                    
-                     self.lastsolution = output.Primal;
+                if output.problem == 0 && self.model.options.usex0
+                    self.lastsolution = output.Primal;
                 end
                 x = originalModel.c*0;
-		        x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)
+                x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)
                 x(keptvariables) = output.Primal;
                 output.Primal = x;
             else
@@ -196,9 +196,9 @@ elseif isequal(subs.type,'{}')
                 output.Primal = originalModel.c*0;
                 output.Dual = [];
             end
-            originalModel.precalc = self.model.precalc;           
+            originalModel.precalc = self.model.precalc;
             self.model = originalModel;
-        else                     
+        else
             if ~isempty(thisData)
                 if ~isempty(self.model.evalMap) &&  ~self.model.solver.evaluation
                     error('After fixing parameters, there are still nonlinear operators in the model, but the solver does not support this. Note that YALMIP is not guaranteed to remove all operators, even though they only contain parametric expressions. As an example, exp(1+parameter) will not be reduced, while exp(parameter) will. You will have to use another solver, or reparameterize your model (look at exp(1+parameter) as a new parameter instead)');
@@ -207,8 +207,8 @@ elseif isequal(subs.type,'{}')
             end
             if self.model.options.usex0 && ~isempty(self.lastsolution)
                 self.model.x0 = self.lastsolution;
-				elseif ~self.model.options.usex0
-					self.model.x0 = [];
+            elseif ~self.model.options.usex0
+                self.model.x0 = [];
             end
             
             if NoSolve
@@ -253,13 +253,13 @@ elseif isequal(subs.type,'{}')
         end
         varargout{2}(i) = output.problem;
         varargout{3}{i} = yalmiperror(output.problem);
-        varargout{4}{i} = output.Dual;       
+        varargout{4}{i} = output.Dual;
         if ~isempty(self.dimin)
             start = start + self.dimin(2);
         end
     end
-    if length(self.dimoutOrig)>1                   
-       % top = 1;
+    if length(self.dimoutOrig)>1
+        % top = 1;
         realDimOut = self.dimoutOrig;
         allu = cell(1, length(self.dimoutOrig));
         for k = 1:nBlocks
@@ -267,7 +267,7 @@ elseif isequal(subs.type,'{}')
             for i = 1:length(self.dimoutOrig)
                 n = prod(self.dimoutOrig{i});
                 uvec = reshape(u(top:top+n-1,k),self.dimoutOrig{i});
-                if self.complexOutput(i)   
+                if self.complexOutput(i)
                     uvec = uvec(1:size(uvec,1)/2,:) +  uvec(1+size(uvec,1)/2:end,:)*sqrt(-1);
                 end
                 allu{i} = [allu{i} uvec];
@@ -277,7 +277,7 @@ elseif isequal(subs.type,'{}')
         varargout{1} = allu;
     elseif nBlocks==1
         varargout{1} = reshape(u(:),self.dimoutOrig{1});
-        if self.complexOutput(1)         
+        if self.complexOutput(1)
             if length(self.dimoutOrig{1})==2
                 varargout{1} = varargout{1}(1:self.dimoutOrig{1}(1)/2,:) + sqrt(-1)*varargout{1}(self.dimoutOrig{1}(1)/2+1:end,:);
             else
@@ -287,7 +287,7 @@ elseif isequal(subs.type,'{}')
         end
     else
         varargout{1} = u;
-    end  
+    end
     varargout{5} = self;
-	 varargout{6} = output;
+    varargout{6} = output;
 end
