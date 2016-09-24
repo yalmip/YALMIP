@@ -76,11 +76,11 @@ infostr = yalmiperror(problem,model.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
-    solverinput.A = -F_struc(:,2:end);
+    solverinput.At = -F_struc(:,2:end);
     solverinput.c = F_struc(:,1);
     solverinput.b = -c;
     solverinput.K = K;
-    solverinput.ops = options.cdcs;
+    solverinput.options = options.cdcs;
 else
     solverinput = [];
 end
