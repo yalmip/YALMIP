@@ -113,10 +113,7 @@ else
     options.sos = setup_sos_options;
     Names = appendOptionNames(Names,options.sos,'sos');
     
-    % External solvers
-    options.admmpdcp = setup_admmpdcp_options;
-    Names = appendOptionNames(Names,options.admmpdcp,'admmpdcp');
-    
+    % External solvers  
     options.baron = setup_baron_options;
     Names = appendOptionNames(Names,options.baron,'baron');
     
@@ -125,6 +122,9 @@ else
     
     options.bonmin = setup_bonmin_options;
     Names = appendOptionNames(Names,options.bonmin,'bonmin');
+    
+    options.cdcs = setup_cdcs_options;
+    Names = appendOptionNames(Names,options.cdcs,'cdcs');
     
     options.cdd = setup_cdd_options;
     Names = appendOptionNames(Names,options.cdd,'cdd');
@@ -1087,21 +1087,27 @@ catch
     knitro.optionsfile = '';
 end
 
-function admmpdcp = setup_admmpdcp_options
+function cdcs = setup_cdcs_options
 try
-    admmpdcp = admmpdcpset();
+    cdcs = cdcsOpts();
 catch
-    admmpdcp.rho       = 1;
-    admmpdcp.adaptive  = true;      
-    admmpdcp.tau       = 2;         
-    admmpdcp.mu        = 10;        
-    admmpdcp.maxIter   = 1000;      
-    admmpdcp.verbose   = true;      
-    admmpdcp.dispIter  = 50;        
-    admmpdcp.relTol    = 1e-4;      
-    admmpdcp.yPenalty  = true;      
-    admmpdcp.scaleData = true;      
-    admmpdcp.KKTfact    = 'blk';    
+    cdcs.solver     = 'primal';  
+    cdcs.relTol     = 1e-4;      
+    cdcs.rescale    = true;      
+    cdcs.verbose    = 1;         
+    cdcs.dispIter   = 50;        
+    cdcs.maxIter    = 1000;      
+    cdcs.chordalize = 1;         
+    cdcs.yPenalty   = true;      
+    cdcs.completion = true;      
+    cdcs.rho        = 1;         
+    cdcs.adaptive   = true;      
+    cdcs.tau        = 2;         
+    cdcs.mu         = 10;        
+    cdcs.rhoMax     = 1e6;       
+    cdcs.rhoMin     = 1e-6;      
+    cdcs.rhoIt      = 10;       
+    cdcs.KKTfact    = 'blk';     
 end
 
 function csdp = setup_csdp_options

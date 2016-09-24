@@ -1,4 +1,4 @@
-function output = callsedumi(model)
+function output = callcdcs(model)
 
 % Retrieve needed data
 options = model.options;
@@ -25,7 +25,7 @@ if any(K.q == 2)
     [F_struc,K] = fix1Dqcone(F_struc,K);
 end
 
-options.admmpdcp.verbose = options.verbose;
+options.cdcs.verbose = options.verbose;
 aK.f = K.f;
 aK.l = K.l;
 aK.q = K.q;
@@ -33,28 +33,43 @@ aK.s = K.s;
 K = aK;
 
 if options.savedebug
-    save admmpdcp F_struc c K pars
+    save cdcs F_struc c K pars
 end
 
 % *********************************************
-% Call admmPDCP
+% Call CDCS
 % *********************************************
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
-
+ 
+% GF: this shoud now work. Outputs x_s, y_s are in standard SeDuMi format
 problem = 0;  
 solvertime = tic;
-try       
-    [x_s,y_s,info] = admmPDCP(-F_struc(:,2:end),-c,F_struc(:,1),K,options.admmpdcp);
-    Primal = y_s;
+try
+    [x_s,y_s,z_s,info] = cdcs(-F_struc(:,2:end),-c,F_struc(:,1),K,options.cdcs);
+    % Internal format
+    Primal = y_s; 
     Dual   = x_s;
-catch    
-    [sol,info] = admmPDCP(-F_struc(:,2:end),-c,F_struc(:,1),K,options.admmpdcp);    
-    Primal = [];  
-    Dual = [];      
+catch
+    disp('Unexpected crash in CDCS!')
+    disp('Make sure you have a recent working version of CDCS (test with CDCSTest)')
+    problem = 9;
 end
 solvertime = toc(solvertime);
 
-problem = 0;
+% Set problem code from solver if successful run
+if problem~=9
+    if info.problem==0
+        % All good
+        problem = 0;
+    elseif info.problem==1
+        % Max # of iterations reached
+        problem = 3;
+    elseif info.problem==2
+        % Solution probably good, but error in post-processing routine
+        % Please check if problem code is appropriate
+        problem = 11;
+    end
+end
 
 infostr = yalmiperror(problem,model.solver.tag);
 
@@ -64,7 +79,7 @@ if options.savesolverinput
     solverinput.c = F_struc(:,1);
     solverinput.b = -c;
     solverinput.K = K;
-    solverinput.ops = options.admmpdcp;
+    solverinput.ops = options.cdcs;
 else
     solverinput = [];
 end
@@ -73,6 +88,7 @@ end
 if options.savesolveroutput
     solveroutput.x = x_s;
     solveroutput.y = y_s;
+    solveroutput.z = z_s;
     solveroutput.info = info;
 else
     solveroutput = [];
