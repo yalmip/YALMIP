@@ -24,13 +24,8 @@ if ~isempty(p.evalMap)
                         [Ax,Ay,b,K,p] = convexhullSampled(xL,xU,p,i);
                     end
                 end              
-            else
-                [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);
-                %sdpvar xx yy
-                %clf;
-                %plot(Ax*xx + Ay*yy <= b,[],[],600);hold on;drawnow
-                %xx = linspace(xL,xU,100);
-                %l = plot(xx,logistic(xx));set(l,'Linewidth',2);
+            else               
+               [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);               
             end
             if ~isempty(b)
                 if isempty(K)
@@ -79,10 +74,11 @@ p.evalMap{i}.oldhull.K = K;
 function [Ax,Ay,b,K,p] = convexhullSampled(xL,xU,p,i)
 
 if length(xL)>1
-    disp(['The ' p.evalMap{i}.fcn ' operator does not have a convex hull operator'])
-    disp('This is required for multi-input single output operators');
-    disp('Sampling approximation does not work in this case.');
-    error('Missing convex hull operator');
+    Ax = [];
+    Ay = [];
+    b = [];
+    K = [];
+    return
 end
 % sample function
 z = linspace(xL,xU,100);
