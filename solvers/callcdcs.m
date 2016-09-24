@@ -1,4 +1,4 @@
-function output = callsedumi(model)
+function output = callcdcs(model)
 
 % Retrieve needed data
 options = model.options;
@@ -8,9 +8,6 @@ K       = model.K;
 ub      = model.ub;
 lb      = model.lb;
 
-% Create the parameter structure
-pars = options.sedumi;
-pars.fid = double(options.verbose);
 
 % *********************************************
 % Bounded variables converted to constraints
@@ -25,46 +22,65 @@ if any(K.q == 2)
     [F_struc,K] = fix1Dqcone(F_struc,K);
 end
 
-options.admmpdcp.verbose = options.verbose;
+options.cdcs.verbose = options.verbose;
 aK.f = K.f;
 aK.l = K.l;
 aK.q = K.q;
 aK.s = K.s;
 K = aK;
 
+% Create the options structure for cdcs
+opts = options.cdcs;
+opts.verbose = double(options.verbose);
+
 if options.savedebug
-    save admmpdcp F_struc c K pars
+    save cdcsdebug F_struc c K opts
 end
 
 % *********************************************
-% Call admmPDCP
+% Call CDCS
 % *********************************************
 if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
-
+ 
+% GF: this shoud now work. Outputs x_s, y_s are in standard SeDuMi format
 problem = 0;  
 solvertime = tic;
-try       
-    [x_s,y_s,info] = admmPDCP(-F_struc(:,2:end),-c,F_struc(:,1),K,options.admmpdcp);
-    Primal = y_s;
+try
+    [x_s,y_s,z_s,info] = cdcs(-F_struc(:,2:end),-c,F_struc(:,1),K,options.cdcs);
+    % Internal format
+    Primal = y_s; 
     Dual   = x_s;
-catch    
-    [sol,info] = admmPDCP(-F_struc(:,2:end),-c,F_struc(:,1),K,options.admmpdcp);    
-    Primal = [];  
-    Dual = [];      
+catch
+    disp('Unexpected crash in CDCS!')
+    disp('Make sure you have a recent working version of CDCS (test with CDCSTest)')
+    problem = 9;
 end
 solvertime = toc(solvertime);
 
-problem = 0;
+% Set problem code from solver if successful run
+if problem~=9
+    if info.problem==0
+        % All good
+        problem = 0;
+    elseif info.problem==1
+        % Max # of iterations reached
+        problem = 3;
+    elseif info.problem==2
+        % Solution probably good, but error in post-processing routine
+        % Please check if problem code is appropriate
+        problem = 11;
+    end
+end
 
 infostr = yalmiperror(problem,model.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
-    solverinput.A = -F_struc(:,2:end);
+    solverinput.Atveriny = -F_struc(:,2:end);
     solverinput.c = F_struc(:,1);
     solverinput.b = -c;
     solverinput.K = K;
-    solverinput.ops = options.admmpdcp;
+    solverinput.options = options.cdcs;
 else
     solverinput = [];
 end
@@ -73,6 +89,7 @@ end
 if options.savesolveroutput
     solveroutput.x = x_s;
     solveroutput.y = y_s;
+    solveroutput.z = z_s;
     solveroutput.info = info;
 else
     solveroutput = [];

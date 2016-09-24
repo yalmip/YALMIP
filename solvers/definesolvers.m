@@ -760,10 +760,10 @@ solver(i).constraint.equalities.linear = 0;
 i = i+1;
 
 solver(i) = sdpsolver;
-solver(i).tag     = 'ADMMPDCP';
+solver(i).tag     = 'CDCS';
 solver(i).version = '';
-solver(i).checkfor= {'admmPDCP'};
-solver(i).call    = 'calladmmpdcp';
+solver(i).checkfor= {'cdcs'};
+solver(i).call    = 'callcdcs';
 solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 i = i+1;
