@@ -120,8 +120,7 @@ else
     L = min([x1 x2 x3 x4]);
 end
 
-function [Ax,Ay,b] = plog_convexhull(L,U);
+function [Ax,Ay,b] = plog_convexhull(xL,xU);
 Ax = [];
 Ay = [];
 b = [];
-return
