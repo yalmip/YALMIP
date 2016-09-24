@@ -8,9 +8,6 @@ K       = model.K;
 ub      = model.ub;
 lb      = model.lb;
 
-% Create the parameter structure
-pars = options.sedumi;
-pars.fid = double(options.verbose);
 
 % *********************************************
 % Bounded variables converted to constraints
@@ -32,8 +29,12 @@ aK.q = K.q;
 aK.s = K.s;
 K = aK;
 
+% Create the options structure for cdcs
+opts = options.cdcs;
+opts.verbose = double(options.verbose);
+
 if options.savedebug
-    save cdcs F_struc c K pars
+    save cdcsdebug F_struc c K opts
 end
 
 % *********************************************
