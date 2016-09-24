@@ -41,5 +41,5 @@ F=[F,0.01<=x11];
 
 % Solve problem
 sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==3)
+mbg_asserttrue(sol.problem==0)
 mbg_asserttolequal(double(objective), -4.771E+001 , 10);
