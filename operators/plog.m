@@ -3,7 +3,7 @@ function varargout = plog(varargin)
 %
 % y = PLOG(x)
 %
-% Computes concave perspective log, x(1)*log(x(1)/x(2)) on x>0
+% Computes concave perspective log, x(1)*log(x(2)/x(1)) on x>0
 %
 % Implemented as evalutation based nonlinear operator. Hence, the concavity
 % of this function is exploited to perform convexity analysis and rigorous
@@ -77,6 +77,22 @@ end
 
 function [Ax,Ay,b] = convexhull(xL,xU)
 
-Ax=[];
-Ay=[];
-b=[];
+x1 = [xL(1);xL(2)];
+x2 = [xU(1);xL(2)];
+x3 = [xL(1);xU(2)];
+x4 = [xU(1);xU(2)];
+x5 = (xL+xU)/2;
+
+f1 = plog(x1);
+f2 = plog(x2);
+f3 = plog(x3);
+f4 = plog(x4);
+f5 = plog(x5);
+
+df1 = derivative(x1);
+df2 = derivative(x2);
+df3 = derivative(x3);
+df4 = derivative(x4);
+df5 = derivative(x5);
+
+[Ax,Ay,b] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
