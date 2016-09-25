@@ -78,7 +78,10 @@ end
 % With the new optional cell-based format, the internal format is always a
 % vector with all information stacked, both in and out. Hence, we need to
 % save original sizes before stacking things up
-
+xoriginal = x;
+if ~isa(x,'cell')
+    xoriginal = {x};
+end
 if isa(x,'cell')
     xvec = [];
   for i = 1:length(x)
@@ -262,6 +265,7 @@ sys.complexInput = complexInput;
 sys.complexOutput = complexOutput;
 sys.mask = mask;
 sys.map = map;
+sys.input.xoriginal = xoriginal;
 sys.input.expression = x;
 sys.output.expression = u;
 sys.output.z = z;
@@ -312,10 +316,11 @@ for i = 1:length(sys.model.evalMap)
     end
 end
 
-if sys.nonlinear & ~sys.complicatedEvalMap
+if 1 %sys.nonlinear & ~sys.complicatedEvalMap
     % These artificial equalities are removed if we will use eliminate variables
-    sys.model.F_struc(1:length(sys.parameters),:) = [];
-    sys.model.K.f = sys.model.K.f - length(sys.parameters);
+ 
+    %   sys.model.F_struc(1:length(sys.parameters),:) = [];
+    %   sys.model.K.f = sys.model.K.f - length(sys.parameters);
     
     % Which variables are simple nonlinear operators acting on parameters
     evalParameters = [];
@@ -327,58 +332,14 @@ if sys.nonlinear & ~sys.complicatedEvalMap
     sys.model.evalParameters = evalParameters;
 end
 
-% This data is used in eliminatevariables (nonlinear parameterizations)
-% A lot of performance is gained by precomputing them
-% This will work as long as there a no zeros in the parameters, which might
-% cause variables to dissapear (as in x*parameter >=0, parameter = 0)
-% (or similiar effects happen)
-sys.model.precalc.newmonomtable = sys.model.monomtable;
-sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
-sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
-sys.model.precalc.Qmap = [];
-% R2012b...
-try
-    [ii,jj,kk] = stableunique(sys.model.precalc.newmonomtable*gen_rand_hash(0,size(sys.model.precalc.newmonomtable,2),1));
-    sys.model.precalc.S = sparse(kk,1:length(kk),1);
-    sys.model.precalc.skipped = setdiff(1:length(kk),jj);    
-    sys.model.precalc.blkOneS = blkdiag(1,sys.model.precalc.S');     
-catch  
-end
-    
-if sys.nonlinear & ~sys.complicatedEvalMap
-    
-    % Precompute some structures
-    newmonomtable = sys.model.monomtable;
-    rmvmonoms = newmonomtable(:,[sys.parameters;evalParameters]);
-    % Linear indexation to fixed monomial terms which have to be computed
-    % [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
-    [ii1,jj1] = find( rmvmonoms < 0 | rmvmonoms > 1 | fix(rmvmonoms) ~= rmvmonoms);    
-    sys.model.precalc.index1 = sub2ind(size(rmvmonoms),ii1,jj1);    
-    sys.model.precalc.jj1 = jj1;    
-            
-    % Linear indexation to linear terms
-    linterms = rmvmonoms == 1;
-    if ~isempty(jj1) | any(sum(linterms,2)>1)
-        [ii2,jj2] = find(linterms);
-        sys.model.precalc.index2 = sub2ind(size(rmvmonoms),ii2,jj2);
-        sys.model.precalc.jj2 = jj2;
-        sys.model.precalc.aux = rmvmonoms*0+1;
-    else
-        [ii2,jj2] = find(linterms);
-        sys.model.precalc.index2 = ii2;
-        sys.model.precalc.jj2 = jj2;
-        sys.model.precalc.aux = ones(size(rmvmonoms,1),1);
-    end
-    
-    sys.model.newmonomtable = model.monomtable;
-    sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.parameters;evalParameters]);
-    sys.model.newmonomtable(:,union(sys.parameters,evalParameters)) = 0;
-   
-    sys.model.removethese = find(~any(sys.model.newmonomtable,2));
-    sys.model.keepingthese = find(any(sys.model.newmonomtable,2));    
-end
+% In case we perform partial instantiation, we have to remember where we
+% came from originallty when finally solving problems
+sys.instatiatedvalues = zeros(length(model.used_variables),1);
+sys.orginal_usedvariables = sys.model.used_variables;
+sys.orginal_parameters = sys.parameters;
 
 sys = class(sys,'optimizer');
+sys = optimizer_precalc(sys);
 
 function i = uniqueRows(x);
 B = getbase(x);

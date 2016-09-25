@@ -1,10 +1,16 @@
-function [model,keptvariables,infeasible] = eliminatevariables(model,varindex,value)
+function [model,keptvariables,infeasible] = eliminatevariables(model,removedparameters,value,parameters)
     
-if isempty(varindex)
+if isempty(removedparameters)
     keptvariables = [];
     infeasible = nan;
     return
 end
+
+% Remove the artificial equality constraints that are used in linear models
+% where elimination isn't performed
+[~,loc] = ismember(removedparameters,parameters);
+model.F_struc(loc,:) = [];
+model.K.f = model.K.f - length(removedparameters);
 
 keptvariables = 1:length(model.c);
 
@@ -13,12 +19,12 @@ newmonomtable = model.newmonomtable;
 
 % Assign evaluation-based values
 if length(model.evalParameters > 0)
-    alls = union(varindex,model.evalParameters);
-    [dummy,loc] = ismember(varindex,alls);
+    alls = union(removedparameters,model.evalParameters);
+    [dummy,loc] = ismember(removedparameters,alls);
     remappedvalue = zeros(length(alls),1);
     remappedvalue(loc) = value;
     for i = 1:length(model.evalMap)
-        j = find(model.evalMap{i}.variableIndex == varindex);
+        j = find(model.evalMap{i}.variableIndex == removedparameters);
         if ~isempty(j)
             p = value(j);
              [dummy,loc] = ismember(model.evalMap{i}.computes,alls);

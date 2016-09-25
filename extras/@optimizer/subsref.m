@@ -49,6 +49,28 @@ elseif isequal(subs.type,'{}')
         NoSolve = 0;
     end
     
+    if isa(subs.subs{1},'lmi') || isa(subs.subs{1},'constraint')
+        % User instantiates as P{[x == 1, y == ...]}
+        cells = cell(1,length(self.diminOrig));
+        List = subs.subs{1};
+        for i = 1:length(List)
+            xi = recover(depends(List(i)));
+            for j = 1:length(self.diminOrig)
+                if isequal(getvariables(xi), getvariables(self.input.xoriginal{j}))
+                    if isequal(getbase(xi),getbase(self.input.xoriginal{j}))
+                        B = getbase(List(i));
+                        if any(B(:,2:end)>0)
+                            cells{j} = full(reshape(-B(:,1),self.diminOrig{j}));
+                        else
+                            cells{j} = full(reshape(B(:,1),self.diminOrig{j}));
+                        end
+                    end
+                end
+            end
+        end
+        subs.subs = {cells};
+    end
+    
     if ~isempty(self.ParametricSolution)
         x = subs.subs{1};
         x = x(:);
@@ -98,29 +120,46 @@ elseif isequal(subs.type,'{}')
         
         
         % If blocked call, check so that there are as many blocks for every
-        % argument
+        % argument. Note, we only analyze instantiated blocks
         dimBlocks = nan(length(subs.subs{1}),1);
         for i = 1:length(subs.subs{1})
             dimBlocks(i) = numel(subs.subs{1}{i}) / prod(self.diminOrig{i});
         end
-        if ~isnan(dimBlocks)
-            if ~all(dimBlocks == dimBlocks(i))
-                error('Dimension mismatch on the input arguments compared to definition');
-            end
-            if any(dimBlocks ~= fix(dimBlocks))
-                error('Dimension mismatch on the input arguments compared to definition');
+        if any(dimBlocks)>1 && any(dimBlocks==0)
+            error('Blocked data in partial instantiation is not possible');
+        end
+        if all(dimBlocks)
+            if ~isnan(dimBlocks)
+                if ~all(dimBlocks == dimBlocks(i))
+                    error('Dimension mismatch on the input arguments compared to definition');
+                end
+                if any(dimBlocks ~= fix(dimBlocks))
+                    error('Dimension mismatch on the input arguments compared to definition');
+                end
             end
         end
-        
-        
+  
+        % Just pick out any element, it the number of blocks, as all should
+        % be the same
+        nBlocks = max(dimBlocks(find(dimBlocks)));
+                
         left = ones(1,length(subs.subs{1}));
         aux = [];
         aux2 = [];
-        for i = 1:dimBlocks(1)
+        suppliedData = [];
+        for i = 1:nBlocks
             aux2 = [];
             try
                 for j = 1:length(subs.subs{1})
-                    temp = subs.subs{1}{j}(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
+                    data = subs.subs{1}{j};
+                    if isempty(data)
+                        temp = nan(self.diminOrig{j});
+                        temp = temp(:);
+                        suppliedData(j) = 0;
+                    else
+                        temp = data(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
+                        suppliedData(j) = 1;
+                    end
                     temp = temp(:);
                     temp = temp(self.mask{j});
                     aux2 = [aux2;temp];
@@ -136,7 +175,7 @@ elseif isequal(subs.type,'{}')
         
         % Input is now given as [x1 x2 ... xn]
         u = [];
-        nBlocks = dimBlocks(1);
+      %  nBlocks = dimBlocks(1);
         start = 1;
         if isnan(nBlocks)
             nBlocks = 1;
@@ -153,9 +192,39 @@ elseif isequal(subs.type,'{}')
         else
             thisData = [];
         end
-        if self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
+        if any(isnan(thisData)) || any(self.instatiatedvalues) || self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
-            [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:));
+             
+            if any(isnan(thisData))
+                % Partial elimination)
+                current_parametric = self.parameters(~isnan(thisData));
+                all_parametric = self.parameters;
+                % Crate an object with a reduced set of variables to
+                % eliminate
+                self.parameters = current_parametric;
+                self = optimizer_precalc(self);
+                % Eliminate
+                thisData = thisData(~isnan(thisData));
+                [self.model,keptvariables,infeasible] = eliminatevariables(self.model, current_parametric,thisData(:),all_parametric);
+                % Update as new optimizer in remaining variables, remap to
+                % currently used variables
+                old_global_parametric_index = find(ismember(self.orginal_usedvariables,self.model.used_variables(current_parametric)));
+                self.instatiatedvalues(old_global_parametric_index) = thisData;
+                self.parameters = find(ismember(keptvariables,setdiff(all_parametric,current_parametric)));
+                self.model.used_variables = self.model.used_variables(keptvariables);
+                self.dimin = [length(self.parameters) 1];
+                self.diminOrig = {self.diminOrig{find(~suppliedData)}};
+                self.input.xoriginal = {self.input.xoriginal{find(~suppliedData)}};
+                self.mask = {self.mask{find(~suppliedData)}};
+                self = optimizer_precalc(self);
+                varargout{1} = self;
+                
+                return
+            else
+                % Standard case where we will solve a problem
+                [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:),self.parameters);
+            end
+            
             if isnan(infeasible)
                 % Elimination was not run as there were no variables
                 % Data is inherited from last eliminate
@@ -187,9 +256,12 @@ elseif isequal(subs.type,'{}')
                 if output.problem == 0 && self.model.options.usex0
                     self.lastsolution = output.Primal;
                 end
-                x = originalModel.c*0;
-                x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)
-                x(keptvariables) = output.Primal;
+                x = self.instatiatedvalues;             
+                x(ismember(self.orginal_usedvariables,self.model.used_variables(self.parameters))) = thisData(:);
+                x(find(ismember(self.orginal_usedvariables,self.model.used_variables(keptvariables)))) = output.Primal;
+                %x = zeros(length(self.orginal_usedvariables),1);%originalModel.c*0;                
+                %x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)              
+                %x(keptvariables) = output.Primal;
                 output.Primal = x;
             else
                 output.problem = 1;
