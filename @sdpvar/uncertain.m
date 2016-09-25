@@ -17,10 +17,10 @@ function x = uncertain(x,varargin)
 %
 %    sdpvar x w
 %    F = [x + w <= 1], W = [-0.5 <= w <= 0.5];
-%    optimize([F,W,uncertain(W)],-x) 
+%    optimize([F,uncertain(W)],-x) 
 %
 %
-%   See also SOLVESDP, ROBUSTIFY
+%   See also OPTIMIZE, ROBSUSTMODEL
 
 if nargin == 1 || ((nargin == 2) && strcmpi(varargin{1},'deterministic'))
     x.typeflag = 15;
