@@ -192,7 +192,7 @@ elseif isequal(subs.type,'{}')
         else
             thisData = [];
         end
-        if any(isnan(thisData)) || any(self.instatiatedvalues) || self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
+        if NoSolve || any(isnan(thisData)) || any(self.instatiatedvalues) || self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
              
             if any(isnan(thisData))
