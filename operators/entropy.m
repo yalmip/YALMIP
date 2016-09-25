@@ -48,7 +48,7 @@ switch class(varargin{1})
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/LOG called with CHAR argument?');
+        error('SDPVAR/ENTROPY called with CHAR argument?');
 end
 
 function df = derivative(x)
@@ -71,20 +71,29 @@ U = sum(U);
 
 
 function [Ax, Ay, b] = convexhull(xL,xU)
-Ax = [];
-Ay = [];
-b = [];
-% % Loop thorough all variables, and compute a convex hull each term xlogx
-% Hmm, how do I merge without expensive projection
-% for i = 1:length(xL)
-%     if xL(i) <= 0
-%         fL = inf;
-%         dfL = -inf;
-%     else
-%         fL = -xL(i).*log(xL(i));
-%         dfL = -log(xL(i)) - 1;
-%     end
-%     fU = -xU(i).*log(xU(i));
-%     dfU = -log(xU(i)) - 1;
-%     [Ax,Ay,b] = convexhullConcave(xL(i),xU(i),fL,fU,dfL,dfU);
-% end
+
+if length(xL)==2
+    x1 = [xL(1);xL(2)];
+    x2 = [xU(1);xL(2)];
+    x3 = [xL(1);xU(2)];
+    x4 = [xU(1);xU(2)];
+    x5 = (xL+xU)/2;
+    
+    f1 = entropy(x1);
+    f2 = entropy(x2);
+    f3 = entropy(x3);
+    f4 = entropy(x4);
+    f5 = entropy(x5);
+    
+    df1 = derivative(x1);
+    df2 = derivative(x2);
+    df3 = derivative(x3);
+    df4 = derivative(x4);
+    df5 = derivative(x5);
+    
+    [Ax,Ay,b] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
+else
+    Ax = [];
+    Ay = [];
+    b = [];
+end

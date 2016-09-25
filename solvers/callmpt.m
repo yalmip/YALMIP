@@ -9,7 +9,6 @@ if ~isstruct(mptOptions)
 end
 
 % Convert
-% interfacedata = pwa_linearize(interfacedata);
 Matrices = yalmip2mpt(interfacedata);
 
 % Get some MPT options
@@ -51,11 +50,7 @@ else
     options.mp.presolve = 1;
 
     solvertime = tic;
-    
- %   if Matrices.qp &  options.mp.algorithm == 3
- %        options.mp.algorithm = 1;
- %   end
-     
+         
     switch options.mp.algorithm
         case 1
             showprogress('Calling MPT via enumeration',options.showprogress);
@@ -71,9 +66,7 @@ else
             [Matrices.SOS,Matrices.SOSVariables] =  mpt_detect_sos(Matrices);
             [Matrices.lb,Matrices.ub] = mpt_detect_and_improve_bounds(Matrices,Matrices.lb,Matrices.ub,Matrices.binary_var_index,options);                                
             model = mpt_de_mpmilp(Matrices,options,[]);            
-             
-            
-            
+                                     
         otherwise
     end
     solvertime = toc(solvertime);
