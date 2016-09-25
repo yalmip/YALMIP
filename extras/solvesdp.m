@@ -141,13 +141,13 @@ if ~isempty(logdetStruct)
 end
 
 % Call chance solver?
-if length(F) > 0
-    rand_declarations = is(F,'random');
-    if any(rand_declarations)
-    %    diagnostic = solverandom(F(find(~rand_declarations)),h,options,recover(getvariables(sdpvar(F(find(unc_declarations))))));
-        return
-    end
-end
+% if length(F) > 0
+%     rand_declarations = is(F,'random');
+%     if any(rand_declarations)
+%     %    diagnostic = solverandom(F(find(~rand_declarations)),h,options,recover(getvariables(sdpvar(F(find(unc_declarations))))));
+%         return
+%     end
+% end
 
 
 % Call robust solver?

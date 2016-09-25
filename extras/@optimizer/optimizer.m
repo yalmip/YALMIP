@@ -338,6 +338,26 @@ sys.instatiatedvalues = zeros(length(model.used_variables),1);
 sys.orginal_usedvariables = sys.model.used_variables;
 sys.orginal_parameters = sys.parameters;
 
+if ~isempty(Constraints)
+    randDefinitions = find(is(Constraints,'random'));
+    if ~isempty(randDefinitions)
+        
+        for i = 1:length(randDefinitions)
+            Fi = Constraints(randDefinitions(i));
+            randDef{i}.distribution = struct(struct(Fi).clauses{1}.data).extra.distribution;
+            randDef{i}.variables = sdpvar(Fi);
+            
+            for j = 1:length(sys.diminOrig)
+                if isequal(getbase(sys.input.xoriginal{j}),getbase(randDef{i}.variables)) && isequal(getvariables(sys.input.xoriginal{j}),getvariables(randDef{i}.variables))
+                    sys.input.stochastics{j} = randDef{i}.distribution;
+                else
+                    sys.input.stochastics{j} = [];
+                end
+            end
+        end
+    end
+end
+
 sys = class(sys,'optimizer');
 sys = optimizer_precalc(sys);
 
