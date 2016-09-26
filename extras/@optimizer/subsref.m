@@ -195,7 +195,7 @@ elseif isequal(subs.type,'{}')
         if NoSolve || any(isnan(thisData)) || any(self.instatiatedvalues) || self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
             originalModel = self.model;
              
-            if any(isnan(thisData))
+            if ~isempty(thisData) && (NoSolve || any(isnan(thisData)) || any(self.instatiatedvalues))
                 % Partial elimination)
                 current_parametric = self.parameters(~isnan(thisData));
                 all_parametric = self.parameters;
@@ -256,9 +256,11 @@ elseif isequal(subs.type,'{}')
                 if output.problem == 0 && self.model.options.usex0
                     self.lastsolution = output.Primal;
                 end
-                x = self.instatiatedvalues;             
-                x(ismember(self.orginal_usedvariables,self.model.used_variables(self.parameters))) = thisData(:);
-                x(find(ismember(self.orginal_usedvariables,self.model.used_variables(keptvariables)))) = output.Primal;
+                x = self.instatiatedvalues;       
+                if ~isempty(thisData)
+                    x(ismember(self.orginal_usedvariables,self.model.used_variables(self.parameters))) = thisData(:);
+                end
+                x(find(ismember(self.orginal_usedvariables,self.model.used_variables))) = output.Primal;
                 %x = zeros(length(self.orginal_usedvariables),1);%originalModel.c*0;                
                 %x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)              
                 %x(keptvariables) = output.Primal;
