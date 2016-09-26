@@ -3,9 +3,9 @@ function varargout = interp1_internal(varargin)
 
 switch class(varargin{1})
 
-    case 'double'          
+    case 'double'        
         varargout{1} = interp1(varargin{2},varargin{3},varargin{1},varargin{4});
-            
+      
     case 'char'
 
         operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
@@ -43,6 +43,8 @@ else
     N = ceil((xv(index2)-xv(index1))/(mean(diff(xv))/100));
     z = linspace(xv(index1),xv(index2),N);
     yz = interp1(xv,yv,z,varargin{3});   
-    L = min(yz);
-    U = max(yz);    
+    % To account for finite grid, we add a precision dependent margin
+    dz = (z(2)-z(1));
+    L = min(yz)-dz;
+    U = max(yz)+dz;    
 end
