@@ -15,6 +15,7 @@ switch class(varargin{3})
         
         % Reorder arguments to make sure sdpvar is first argument.
         % Use local version of interp to deal with this
+        % Arguments xi yi x method -> x xi yi method
         varargout{1} = yalmip('define','interp1_internal',varargin{[3 1 2 4]});   
      
     otherwise
