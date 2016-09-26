@@ -2,28 +2,15 @@ function varargout = subsref(self,subs)
 
 if isequal(subs.type,'()')
     
-    if length(self.diminOrig) > 1
-        error('Cannot index in cell-based OPTIMIZER. Perhaps you mean {}');
-    end
-    if isempty(self.output.z)
-        output_length = length(self.output.expression);
-    else
-        output_length = length(self.map);
-    end
-    if ~isequal(subs.subs{1},round(subs.subs{1})) || min(subs.subs{1})<1 ||   max(subs.subs{1}) > output_length
-        error('Beware of syntax change in optimizer. {} is now used to obtained solution ??? Subscript indices must either be real positive integers or logicals.')
-    end
+    % Previously not allowed and user was to use cell format for some now
+    % forgotten reason )ideas about other functionalities for ()
+    % We support it now though, so simply re
     
-    % Create a new function with extracted outputs
-    if isempty(self.output.z)
-        self.map = self.map(subs.subs{1});
-        self.output.expression = self.output.expression(subs.subs{1});
-    else
-        self.output.expression = self.output.expression(subs.subs{1});
+    subs.type ='{}';
+    if length(subs.subs) > 1
+        subs.subs = {subs.subs};
     end
-    self.dimoutOrig{1} = size(self.output.expression);
-    self.dimout = [numel(self.output.expression) 1];
-    varargout{1} = self;
+    [varargout{1:nargout}] = subsref(self,subs);
     
 elseif isequal(subs.type,'.')
     
@@ -42,6 +29,12 @@ elseif isequal(subs.type,'.')
     
 elseif isequal(subs.type,'{}')
     
+    % normalize from various supported format to a cell with all index
+    % arguments    
+    if length(subs.subs) > 1
+        subs.subs = {subs.subs};
+    end
+        
     if length(subs.subs)>0 && isequal(subs.subs{end},'nosolve')
         NoSolve = 1;
         subs.subs = {subs.subs{1:end-1}};
