@@ -30,5 +30,17 @@ else
     x.typeflag = 16;
     x.extra.distribution.name = varargin{1};
     x.extra.distribution.parameters = {varargin{2:end}};
-    x = lmi(x);
+    try
+        if isa(x.extra.distribution.name,'function_handle')
+            temp = {x.extra.distribution.name,x.extra.distribution.parameters{:},x.dim};            
+            temp = feval(temp{:});
+        else
+            temp = {@random,x.extra.distribution.name,x.extra.distribution.parameters{:},x.dim};
+            temp = feval(temp{:});
+        end
+    catch
+        lasterr
+        error('Cannot evaluate the uncertainty description supplied.')
+    end
+    x = lmi(x);                 
 end
