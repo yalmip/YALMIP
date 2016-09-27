@@ -17,12 +17,8 @@ ops = interfacedata.options.pop;
 
 if interfacedata.options.verbose
     if isequal(lower(ops.Progress),'on') || isequal(lower(ops.Progress),'off')
-        % User han't specified fancy progress, so we simply turn on text
-        if isempty(Matrices.E)
-            ops.Progress = 'mpQP_text';
-        else
-            ops.Progress = 'mpMIQP_text';
-        end
+        % User hasn't specified fancy progress, so we simply turn on text
+        ops.Progress = 'text';
     end
 else
     ops.Progress = 'Off';
