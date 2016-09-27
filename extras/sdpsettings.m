@@ -218,6 +218,9 @@ else
     
     options.pensdp = setup_pensdp_options;
     Names = appendOptionNames(Names,options.pensdp,'pensdp');
+
+    options.pop = setup_pop_options;
+    Names = appendOptionNames(Names,options.pop,'pop');
     
     options.qpoases = setup_qpoases_options;
     Names = appendOptionNames(Names,options.qpoases,'qpoases');
@@ -1224,4 +1227,11 @@ try
     lsqlin = trytoset('lsqlin');
 catch
     lsqlin.param = [];
+end
+
+function pop = setup_pop_options
+try
+    pop = OptionSet;
+catch
+    pop.param = [];
 end
