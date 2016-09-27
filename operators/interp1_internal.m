@@ -7,15 +7,26 @@ switch class(varargin{1})
         varargout{1} = interp1(varargin{2},varargin{3},varargin{1},varargin{4});
       
     case 'char'
-
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-        operator.convexhull = [];
-        operator.bounds = @bounds;
-
-        varargout{1} = [min(varargin{4}) <= varargin{3} <= max(varargin{4})];
+        
+        t = varargin{2};
+        x = varargin{3};
+        xi = varargin{4};
+        yi = varargin{5};
+        method = varargin{6};
+        
+        if strcmpi(varargin{end},'milp')                        
+            lambda = sdpvar(length(xi),1)            
+            Model = [sos(lambda), x == lambda'*xi(:), t == lambda'*yi(:),lambda>=0, sum(lambda)==1];
+            operator = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
+        else
+            Model = [min(xi) <= varargin{3} <= max(xi)];
+            operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');          
+            operator.bounds = @bounds;
+        end            
+        varargout{1} = Model;
         varargout{2} = operator;
         varargout{3} = varargin{3};
-         
+        
     otherwise
         error('SDPVAR/INTERP1_INTERNAL called with strange argument');
 end
