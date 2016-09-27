@@ -104,8 +104,24 @@ sol = PB{[c == 5]}
 P = optimizer([0 <= [x y] <= 10, x + y <= c],(x-a)^2+5*(y-b)^2,ops,{a,c,b},[x y]);
 PC = P{[c == 5]};
 sol = PC{[a == 3, -b == -4]}
+mbg_asserttolequal(sol,[1 + 1/3;3 + 2/3]',1e-2);
 
 
+yalmip('clear')
+sdpvar x y a b c
+ops = sdpsettings('solver','cplex');
+P = optimizer([0 <= [x y] <= 10, x + y <= exp(c)],(x-a)^2+5*(y-exp(b))^2,ops,{a,b,c},[x y]);
+PC = P{[a == 3]}
+sol = PC{[c == log(5), b == log(4)]}
+mbg_asserttolequal(sol,[1 + 1/3;3 + 2/3]',1e-2);
+
+yalmip('clear')
+sdpvar x y a b c
+ops = sdpsettings('solver','cplex');
+P = optimizer([0 <= [x y] <= 10, x + y <= exp(c)],(x-a)^2+5*(y-exp(b))^2,ops,{a,b,c},[x y]);
+PC = P{[a == 3,c == log(5)]}
+sol = PC{[b == log(4)]}
+mbg_asserttolequal(sol,[1 + 1/3;3 + 2/3]',1e-2);
 
 
 
