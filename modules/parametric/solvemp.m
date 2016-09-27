@@ -65,10 +65,10 @@ end
 
 if ~isempty(ops)
     if isequal(ops.solver,'')
-        ops.solver = 'mpt';
+        ops.solver = 'mpt,pop';
     end
 else
-    ops = sdpsettings('solver','mpt');
+    ops = sdpsettings('solver','mpt,pop');
 end
 
 if nargin == 4
