@@ -51,7 +51,7 @@ elseif isequal(subs.type,'{}')
         NoSolve = 1;
         subs.subs = {subs.subs{1:end-1}};
     elseif length(subs.subs) == 1 && length(subs.subs{1})>1
-        if isequal(subs.subs{1}{end},'nosolve')
+        if isa(subs.subs{1},'cell') && isequal(subs.subs{1}{end},'nosolve')
              NoSolve = 1;
              subs.subs = {subs.subs{1}{1:end-1}};             
         end
