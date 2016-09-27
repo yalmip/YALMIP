@@ -13,7 +13,7 @@ for k = 1:N
                     sampledData = feval(temp{:});
                     cells{i} = sampledData;
                 else
-                    temp = {@random,self.input.stochastics{i}.name,self.input.stochastics{1}.parameters{:},self.diminOrig{i}};
+                    temp = {@random,self.input.stochastics{i}.name,self.input.stochastics{i}.parameters{:},self.diminOrig{i}};
                     sampledData = feval(temp{:});
                     cells{i} = sampledData;
                 end
