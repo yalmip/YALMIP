@@ -293,7 +293,12 @@ for i = 1:length(sys.model.evalMap)
     end
 end
 
-if 1 %sys.nonlinear & ~sys.complicatedEvalMap
+if sys.complicatedEvalMap
+    error('Parameters are currently only allowed to enter function such as exp, sin etc as exp(a), sin(b) etc.')
+end
+
+sys.model.evalParameters = [];
+if sys.nonlinear
     % These artificial equalities are removed if we will use eliminate variables
  
     %   sys.model.F_struc(1:length(sys.parameters),:) = [];

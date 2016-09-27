@@ -19,23 +19,23 @@ newmonomtable = model.newmonomtable;
 
 % Assign evaluation-based values
 if length(model.evalParameters > 0)
-    alls = union(removedparameters,model.evalParameters);
-    [dummy,loc] = ismember(removedparameters,alls);
-    remappedvalue = zeros(length(alls),1);
-    remappedvalue(loc) = value;
-    for i = 1:length(model.evalMap)
-        j = find(model.evalMap{i}.variableIndex == removedparameters);
-        if ~isempty(j)
-            p = value(j);
-             [dummy,loc] = ismember(model.evalMap{i}.computes,alls);
-            remappedvalue(loc) = feval(model.evalMap{i}.fcn,p);
+    alls = [removedparameters(:)' model.evalParameters(:)'];  
+    removedP = [];
+    removedE = [];
+    for j = 1:length(removedparameters)
+        for i = 1:length(model.evalMap)
+            if isequal(model.evalMap{i}.variableIndex,removedparameters(j))
+                p = value(j);
+                index = find(model.evalMap{i}.computes == alls);
+                value(index) = feval(model.evalMap{i}.fcn,p);
+                removedP = [removedP model.evalMap{i}.computes];
+                removedE = [removedE i];            
+            end
         end
     end
-    value = remappedvalue;
-    % We only eliminate in models where the operators dissapear after
-    % parameters are fixed 
-    model.evalMap = [];
-    model.evalVariables = [];
+    model.evalVariables(removedE)=[];
+    model.evalMap = {model.evalMap{setdiff(1:length(model.evalMap),removedE)}};
+    model.evalParameters = setdiff(model.evalParameters,removedP);
 end
 
 % Evaluate fixed monomial terms

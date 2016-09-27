@@ -220,10 +220,21 @@ elseif isequal(subs.type,'{}')
             % Partial elimination)
             currentParametricIndex = self.model.parameterIndex(~isnan(thisData));
             thisData = thisData(~isnan(thisData));
-            
+                        
             allParametricIndex = self.model.parameterIndex;
             globalParametricIndex = find(ismember(self.orginal_usedvariables,self.model.used_variables(currentParametricIndex)));
             self.instatiatedvalues(globalParametricIndex) = thisData;
+            
+            evalParameters = [];
+            for k = 1:length(self.model.evalMap)
+                for j = 1:length(currentParametricIndex)
+                    if isequal(self.model.evalMap{k}.variableIndex,currentParametricIndex(j))
+                        evalParameters = [evalParameters self.model.evalMap{k}.computes];
+                    end
+                end
+            end
+            self.model.evalParameters = evalParameters;
+            
             
             % Crate an object with a reduced set of variables to
             % eliminate
@@ -231,11 +242,28 @@ elseif isequal(subs.type,'{}')
             self = optimizer_precalc(self);                 
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,currentParametricIndex,thisData(:),allParametricIndex);
             
-            % Update as new optimizer in remaining variables, remap to
-            % currently used variables                                  
-            remainingParametersIndex = setdiff(allParametricIndex,currentParametricIndex,'stable');
+            % Update as new optimizer in remaining variables, remap
+            % parameters to currently used variables                                   
+            remainingParametersIndex = setdiff(allParametricIndex,currentParametricIndex,'stable');            
             [~,loc] = ismember(remainingParametersIndex,keptvariablesIndex);
             self.model.parameterIndex = loc;
+            
+            % Remap all evaluation operators
+            for k = 1:length(self.model.evalMap)
+                self.model.evalMap{k}.computes = find(self.model.evalMap{k}.computes == keptvariablesIndex);
+                self.model.evalMap{k}.variableIndex = find(self.model.evalMap{k}.variableIndex == keptvariablesIndex);
+            end
+            
+            evalParameters = [];
+            for k = 1:length(self.model.evalMap)
+                for j = 1:length(self.model.parameterIndex)
+                    if isequal(self.model.evalMap{k}.variableIndex,self.model.parameterIndex(j))
+                        evalParameters = [evalParameters self.model.evalMap{k}.computes];
+                    end
+                end
+            end
+            self.model.evalParameters = evalParameters;
+                        
             self.dimin = [length(self.model.parameterIndex) 1];
             self.diminOrig = {self.diminOrig{find(~suppliedData)}};
             self.input.xoriginal = {self.input.xoriginal{find(~suppliedData)}};
@@ -244,6 +272,8 @@ elseif isequal(subs.type,'{}')
             varargout{1} = self;
             return
         else
+            
+                       
             % Standard case where we eliminate all variables left
             self.instatiatedvalues(ismember(self.orginal_usedvariables,self.model.used_variables(self.model.parameterIndex))) = thisData(:);
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,self.model.parameterIndex,thisData(:),self.model.parameterIndex);
@@ -251,7 +281,7 @@ elseif isequal(subs.type,'{}')
 
         % Turn off equality presolving for simple programs. equality
         % presolve has benefits when the are stuff like log
-        self.model.presolveequalities = length(self.model.evalMap > 0);
+        self.model.presolveequalities = length(self.model.evalMap) > 0;
         if ~self.model.infeasible
             if self.model.options.usex0 && ~isempty(self.lastsolution)
                 self.model.x0 = zeros(length(self.model.c),1);

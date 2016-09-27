@@ -17,7 +17,7 @@ if 1%sys.nonlinear & ~sys.complicatedEvalMap
     
     % Precompute some structures
     newmonomtable = sys.model.monomtable;
-    rmvmonoms = newmonomtable(:,[sys.model.parameterIndex;sys.model.evalParameters]);
+    rmvmonoms = newmonomtable(:,[sys.model.parameterIndex(:);sys.model.evalParameters(:)]);
     % Linear indexation to fixed monomial terms which have to be computed
     % [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
     [ii1,jj1] = find( rmvmonoms < 0 | rmvmonoms > 1 | fix(rmvmonoms) ~= rmvmonoms);    
@@ -39,7 +39,7 @@ if 1%sys.nonlinear & ~sys.complicatedEvalMap
     end
     
     sys.model.newmonomtable = sys.model.monomtable;
-    sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.model.parameterIndex;sys.model.evalParameters]);
+    sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.model.parameterIndex(:);sys.model.evalParameters(:)]);
     sys.model.newmonomtable(:,union(sys.model.parameterIndex,sys.model.evalParameters)) = 0;
    
     sys.model.removethese = find(~any(sys.model.newmonomtable,2));
