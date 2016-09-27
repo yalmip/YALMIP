@@ -315,6 +315,7 @@ sys.instatiatedvalues = zeros(length(model.used_variables),1);
 sys.orginal_usedvariables = sys.model.used_variables;
 sys.orginal_parameterIndex = sys.model.parameterIndex;
 
+sys.input.stochastics = cell(1,length(sys.diminOrig));
 if ~isempty(Constraints)
     randDefinitions = find(is(Constraints,'random'));
     if ~isempty(randDefinitions)
@@ -326,9 +327,7 @@ if ~isempty(Constraints)
             
             for j = 1:length(sys.diminOrig)
                 if isequal(getbase(sys.input.xoriginal{j}),getbase(randDef{i}.variables)) && isequal(getvariables(sys.input.xoriginal{j}),getvariables(randDef{i}.variables))
-                    sys.input.stochastics{j} = randDef{i}.distribution;
-                else
-                    sys.input.stochastics{j} = [];
+                    sys.input.stochastics{j} = randDef{i}.distribution;                
                 end
             end
         end
