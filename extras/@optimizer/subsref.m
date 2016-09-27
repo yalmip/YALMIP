@@ -3,9 +3,9 @@ function varargout = subsref(self,subs)
 if isequal(subs.type,'()')
     
     % Previously not allowed and user was to use cell format for some now
-    % forgotten reason )ideas about other functionalities for ()
-    % We support it now though, so simply re
-    
+    % forgotten reason (ideas about other functionalities for () perhaps)
+    % We support it now though, so we throw everying in a cell (previously
+    % required, so now standard internal format) and call {}
     subs.type ='{}';
     if length(subs.subs) > 1
         subs.subs = {subs.subs};
@@ -28,24 +28,44 @@ elseif isequal(subs.type,'.')
     end
     
 elseif isequal(subs.type,'{}')
-    
-    % normalize from various supported format to a cell with all index
-    % arguments    
-    if length(subs.subs) > 1
-        subs.subs = {subs.subs};
+       
+    % User has typed X();
+    if isempty(subs.subs)
+        subs.subs = {[]};
     end
-        
+    
+    if length(self.dimin)==0
+        if length(subs.subs)==1
+            if ~isempty(subs.subs{1})
+                error('No parameters left to assign.');
+            end
+        elseif length(subs.subs)>1
+            error('No parameters left to assign.');
+        end
+    end
+    
+    NoSolve = 0;
+    % Check for nosolve flag, and normalize to a list argument (previously
+    % required format, and that is the assumption used below)
     if length(subs.subs)>0 && isequal(subs.subs{end},'nosolve')
         NoSolve = 1;
         subs.subs = {subs.subs{1:end-1}};
-    else
-        NoSolve = 0;
+    elseif length(subs.subs) == 1 && length(subs.subs{1})>1
+        if isequal(subs.subs{1}{end},'nosolve')
+             NoSolve = 1;
+             subs.subs = {subs.subs{1}{1:end-1}};             
+        end
     end
     
+    %if length(subs.subs) > 1
+    %    subs.subs = {subs.subs};
+    %end
+        
     if isa(subs.subs{1},'lmi') || isa(subs.subs{1},'constraint')
         % User instantiates as P{[x == 1, y == ...]}
         cells = cell(1,length(self.diminOrig));
         List = subs.subs{1};
+        matched = zeros(1,length(List));
         for i = 1:length(List)
             xi = recover(depends(List(i)));
             for j = 1:length(self.diminOrig)
@@ -53,13 +73,20 @@ elseif isequal(subs.type,'{}')
                     if isequal(getbase(xi),getbase(self.input.xoriginal{j}))
                         B = getbase(List(i));
                         if any(B(:,2:end)>0)
+                            matched(i) = 1;
                             cells{j} = full(reshape(-B(:,1),self.diminOrig{j}));
                         else
+                            matched(i) = 1;
                             cells{j} = full(reshape(B(:,1),self.diminOrig{j}));
                         end
+                    else
+                        error('Only simple expressions allowed when declaring variable values')
                     end
                 end
             end
+        end
+        if ~all(matched)
+            error('Only simple expressions allowed. Could not match assignments in optimizer call');
         end
         subs.subs = {cells};
     end
@@ -131,11 +158,11 @@ elseif isequal(subs.type,'{}')
                 end
             end
         end
-  
+        
         % Just pick out any element, it the number of blocks, as all should
         % be the same
         nBlocks = max(dimBlocks(find(dimBlocks)));
-                
+        
         left = ones(1,length(subs.subs{1}));
         aux = [];
         aux2 = [];
@@ -168,7 +195,7 @@ elseif isequal(subs.type,'{}')
         
         % Input is now given as [x1 x2 ... xn]
         u = [];
-      %  nBlocks = dimBlocks(1);
+        %  nBlocks = dimBlocks(1);
         start = 1;
         if isnan(nBlocks)
             nBlocks = 1;
@@ -180,120 +207,84 @@ elseif isequal(subs.type,'{}')
     end
     
     for i = 1:nBlocks
+        
         if ~isempty(self.diminOrig)
             thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
         else
             thisData = [];
         end
-        if NoSolve || any(isnan(thisData)) || any(self.instatiatedvalues) || self.nonlinear && ~self.complicatedEvalMap%isempty(self.model.evalMap)
-            originalModel = self.model;
-             
-            if ~isempty(thisData) && (NoSolve || any(isnan(thisData)) || any(self.instatiatedvalues))
-                % Partial elimination)
-                current_parametric = self.parameters(~isnan(thisData));
-                all_parametric = self.parameters;
-                % Crate an object with a reduced set of variables to
-                % eliminate
-                self.parameters = current_parametric;
-                self = optimizer_precalc(self);
-                % Eliminate
-                thisData = thisData(~isnan(thisData));
-                [self.model,keptvariables,infeasible] = eliminatevariables(self.model, current_parametric,thisData(:),all_parametric);
-                % Update as new optimizer in remaining variables, remap to
-                % currently used variables
-                old_global_parametric_index = find(ismember(self.orginal_usedvariables,self.model.used_variables(current_parametric)));
-                self.instatiatedvalues(old_global_parametric_index) = thisData;
-                self.parameters = find(ismember(keptvariables,setdiff(all_parametric,current_parametric)));
-                self.model.used_variables = self.model.used_variables(keptvariables);
-                self.dimin = [length(self.parameters) 1];
-                self.diminOrig = {self.diminOrig{find(~suppliedData)}};
-                self.input.xoriginal = {self.input.xoriginal{find(~suppliedData)}};
-                self.mask = {self.mask{find(~suppliedData)}};
-                self = optimizer_precalc(self);
-                varargout{1} = self;
-                
-                return
-            else
-                % Standard case where we will solve a problem
-                [self.model,keptvariables,infeasible] = eliminatevariables(self.model,self.parameters,thisData(:),self.parameters);
-            end
+        
+        originalModel = self.model;
+        
+        if any(isnan(thisData))
+            % Partial elimination)
+            currentParametricIndex = self.model.parameterIndex(~isnan(thisData));
+            thisData = thisData(~isnan(thisData));
             
-            if isnan(infeasible)
-                % Elimination was not run as there were no variables
-                % Data is inherited from last eliminate
-                infeasible = self.infeasible;
-                keptvariables = self.keptvariables;
-            end
-            % Turn off equality presolving for simple programs. equality
-            % presolve has benefits when the are stuff like log
-            self.model.presolveequalities = length(self.model.evalMap > 0);
-            if ~infeasible
-                if self.model.options.usex0 && ~isempty(self.lastsolution)
-                    self.model.x0 = zeros(length(self.model.c),1);
-                    self.model.x0 = self.lastsolution;
-                elseif ~self.model.options.usex0
-                    self.model.x0 = [];
-                end
-                if NoSolve
-                    % We just instantiate the model, and return it
-                    self.dimin = [];
-                    self.parameters = [];
-                    self.diminOrig = {};
-                    self.infeasible = infeasible;
-                    self.keptvariables = keptvariables;
-                    varargout{1} = self;
-                    return
-                else
-                    eval(['output = ' self.model.solver.call '(self.model);']);
-                end
-                if output.problem == 0 && self.model.options.usex0
-                    self.lastsolution = output.Primal;
-                end
-                x = self.instatiatedvalues;       
-                if ~isempty(thisData)
-                    x(ismember(self.orginal_usedvariables,self.model.used_variables(self.parameters))) = thisData(:);
-                end
-                x(find(ismember(self.orginal_usedvariables,self.model.used_variables))) = output.Primal;
-                %x = zeros(length(self.orginal_usedvariables),1);%originalModel.c*0;                
-                %x(self.parameters) = thisData(:); % Bugfix aus (https://groups.google.com/forum/#!category-topic/yalmip/S0ukzE_wLGs)              
-                %x(keptvariables) = output.Primal;
-                output.Primal = x;
-            else
-                output.problem = 1;
-                output.Primal = originalModel.c*0;
-                output.Dual = [];
-            end
-            originalModel.precalc = self.model.precalc;
-            self.model = originalModel;
+            allParametricIndex = self.model.parameterIndex;
+            globalParametricIndex = find(ismember(self.orginal_usedvariables,self.model.used_variables(currentParametricIndex)));
+            self.instatiatedvalues(globalParametricIndex) = thisData;
+            
+            % Crate an object with a reduced set of variables to
+            % eliminate
+            self.model.parameterIndex = currentParametricIndex;
+            self = optimizer_precalc(self);                 
+            [self.model,keptvariablesIndex] = eliminatevariables(self.model,currentParametricIndex,thisData(:),allParametricIndex);
+            
+            % Update as new optimizer in remaining variables, remap to
+            % currently used variables                                  
+            remainingParametersIndex = setdiff(allParametricIndex,currentParametricIndex,'stable');
+            [~,loc] = ismember(remainingParametersIndex,keptvariablesIndex);
+            self.model.parameterIndex = loc;
+            self.dimin = [length(self.model.parameterIndex) 1];
+            self.diminOrig = {self.diminOrig{find(~suppliedData)}};
+            self.input.xoriginal = {self.input.xoriginal{find(~suppliedData)}};
+            self.mask = {self.mask{find(~suppliedData)}};
+            self = optimizer_precalc(self);
+            varargout{1} = self;
+            return
         else
-            if ~isempty(thisData)
-                if ~isempty(self.model.evalMap) &&  ~self.model.solver.evaluation
-                    error('After fixing parameters, there are still nonlinear operators in the model, but the solver does not support this. Note that YALMIP is not guaranteed to remove all operators, even though they only contain parametric expressions. As an example, exp(1+parameter) will not be reduced, while exp(parameter) will. You will have to use another solver, or reparameterize your model (look at exp(1+parameter) as a new parameter instead)');
-                end
-                self.model.F_struc(1:prod(self.dimin),1) = thisData(:);
-            end
+            % Standard case where we eliminate all variables left
+            self.instatiatedvalues(ismember(self.orginal_usedvariables,self.model.used_variables(self.model.parameterIndex))) = thisData(:);
+            [self.model,keptvariablesIndex] = eliminatevariables(self.model,self.model.parameterIndex,thisData(:),self.model.parameterIndex);
+        end
+
+        % Turn off equality presolving for simple programs. equality
+        % presolve has benefits when the are stuff like log
+        self.model.presolveequalities = length(self.model.evalMap > 0);
+        if ~self.model.infeasible
             if self.model.options.usex0 && ~isempty(self.lastsolution)
+                self.model.x0 = zeros(length(self.model.c),1);
                 self.model.x0 = self.lastsolution;
             elseif ~self.model.options.usex0
                 self.model.x0 = [];
             end
-            
             if NoSolve
-                % We just instantiate the model, and return it
-                self.dimin = [];
-                self.parameters = [];
-                self.diminOrig = {};
-                self.infeasible = 0;
-                self.keptvariables = 1:length(self.model.c);
+                % We just returns the presolved model
+                self.model.parameterIndex = [];
+                self.dimin = [];                
+                self.diminOrig = {};                         
                 varargout{1} = self;
                 return
             else
-                output = self.model.solver.callhandle(self.model);
+                eval(['output = ' self.model.solver.call '(self.model);']);
             end
+            
             if output.problem == 0 && self.model.options.usex0
                 self.lastsolution = output.Primal;
             end
+            x = self.instatiatedvalues;
+            x(ismember(self.orginal_usedvariables,self.model.used_variables)) = output.Primal;
+            output.Primal = x;
+            
+        else
+            output.problem = 1;
+            output.Primal = originalModel.c*0;
+            output.Dual = [];
         end
+        originalModel.precalc = self.model.precalc;
+        self.model = originalModel;
+        
         if output.problem==1
             output.Primal = output.Primal+nan;
         end

@@ -1,8 +1,8 @@
 function sys = optimizer_precalc(sys)
 
 sys.model.precalc.newmonomtable = sys.model.monomtable;
-sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.parameters);
-sys.model.precalc.newmonomtable(:,sys.parameters) = 0;
+sys.model.precalc.rmvmonoms = sys.model.precalc.newmonomtable(:,sys.model.parameterIndex);
+sys.model.precalc.newmonomtable(:,sys.model.parameterIndex) = 0;
 sys.model.precalc.Qmap = [];
 % R2012b...
 try
@@ -17,7 +17,7 @@ if 1%sys.nonlinear & ~sys.complicatedEvalMap
     
     % Precompute some structures
     newmonomtable = sys.model.monomtable;
-    rmvmonoms = newmonomtable(:,[sys.parameters;sys.model.evalParameters]);
+    rmvmonoms = newmonomtable(:,[sys.model.parameterIndex;sys.model.evalParameters]);
     % Linear indexation to fixed monomial terms which have to be computed
     % [ii1,jj1] = find((rmvmonoms ~= 0) & (rmvmonoms ~= 1));
     [ii1,jj1] = find( rmvmonoms < 0 | rmvmonoms > 1 | fix(rmvmonoms) ~= rmvmonoms);    
@@ -39,8 +39,8 @@ if 1%sys.nonlinear & ~sys.complicatedEvalMap
     end
     
     sys.model.newmonomtable = sys.model.monomtable;
-    sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.parameters;sys.model.evalParameters]);
-    sys.model.newmonomtable(:,union(sys.parameters,sys.model.evalParameters)) = 0;
+    sys.model.rmvmonoms =  sys.model.newmonomtable(:,[sys.model.parameterIndex;sys.model.evalParameters]);
+    sys.model.newmonomtable(:,union(sys.model.parameterIndex,sys.model.evalParameters)) = 0;
    
     sys.model.removethese = find(~any(sys.model.newmonomtable,2));
     sys.model.keepingthese = find(any(sys.model.newmonomtable,2));    

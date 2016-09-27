@@ -249,8 +249,7 @@ sys.output.expression = u;
 sys.output.z = z;
 sys.lastsolution = [];
 sys.ParametricSolution = [];
-sys.infeasible = 0;
-sys.keptvariables = [];
+sys.model.infeasible = 0;
 % This is not guaranteed to give the index in the order the variables where
 % given (tested in test_optimizer2
 % [a,b,c] = find(sys.model.F_struc(1:prod(sys.dimin),2:end));
@@ -261,7 +260,7 @@ sys.keptvariables = [];
 %for i = 1:prod(sys.dimin)
 %    b = [b;find(sys.model.F_struc(i,2:end))];
 %end
-sys.parameters = b;
+sys.model.parameterIndex = b;
 used_in = find(any(sys.model.monomtable(:,b),2));
 Q = sys.model.Q;
 Qa = Q;Qa(:,b)=[];Qa(b,:)=[];
@@ -286,7 +285,7 @@ sys.complicatedEvalMap = 0;
 % Are all nonlinear operators acting on simple parameters? Elimination
 % strategy will only be applied on simple problems such as x<=exp(par)
 for i = 1:length(sys.model.evalMap)
-    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
+    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
        sys.complicatedEvalMap = 1;
     end
     if length(sys.model.evalMap{i}.arg)>2
@@ -303,7 +302,7 @@ if 1 %sys.nonlinear & ~sys.complicatedEvalMap
     % Which variables are simple nonlinear operators acting on parameters
     evalParameters = [];
     for i = 1:length(sys.model.evalMap)
-        if all(ismember(sys.model.evalMap{i}.variableIndex,sys.parameters))
+        if all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
             evalParameters = [evalParameters;sys.model.evalMap{i}.computes(:)];
         end
     end
@@ -314,7 +313,7 @@ end
 % came from originallty when finally solving problems
 sys.instatiatedvalues = zeros(length(model.used_variables),1);
 sys.orginal_usedvariables = sys.model.used_variables;
-sys.orginal_parameters = sys.parameters;
+sys.orginal_parameterIndex = sys.model.parameterIndex;
 
 if ~isempty(Constraints)
     randDefinitions = find(is(Constraints,'random'));
@@ -335,6 +334,10 @@ if ~isempty(Constraints)
         end
     end
 end
+
+% Remove place holder constraints. No longer used
+sys.model.F_struc(1:prod(sys.dimin),:)=[];
+sys.model.K.f = sys.model.K.f-prod(sys.dimin);
 
 sys = class(sys,'optimizer');
 sys = optimizer_precalc(sys);

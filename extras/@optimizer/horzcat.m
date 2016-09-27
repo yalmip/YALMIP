@@ -24,7 +24,7 @@ end
 
 % Remove place-holder equalities
 % FIXME: Get rid of that whole machinery
-m = length(varargin{1}.parameters);
+m = length(varargin{1}.model.parameterIndex);
 tempFakeEqualities = varargin{1}.model.F_struc(1:m,:);
 for i = 1:nargin
     varargin{i}.model.F_struc(1:m,:) = [];
