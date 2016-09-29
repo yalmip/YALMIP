@@ -1,5 +1,5 @@
 function varargout = plot(varargin)
-%PLOT  Plots the feasible region of a set of constraints
+%PLOT  Plots the feasible region of a set of constraints in an optimizer
 %
 % p = plot(C,x,c,n,options)
 %
@@ -8,7 +8,7 @@ function varargout = plot(varargin)
 % introduced by YALMIP when modelling, e.g., mixed integer linear
 % programming representable operators)
 %
-% C:  Constraint object
+% C:  Optimizer object
 % x:  Plot variables [At most three variables]
 % c:  color [double] ([r g b] format) or char from 'rymcgbk'
 % n:  #vertices [double ] (default 100 in 2D and 300 otherwise)
@@ -34,10 +34,6 @@ else
     end
 end
 opts.verbose = max(opts.verbose-1,0);
-
-if any(is(F,'uncertain'))
-    F = robustify(F,[],opts);
-end
 
 if nargin < 3
     color=['rymcgbk']';
@@ -70,24 +66,11 @@ if isempty(F)
     return
 end
 
-if any(is(F,'sos'))
-    % Use image representation, feels safer (I'm not sure about the logic
-    % in the code at the moment. Can the dualization mess up something
-    % otherwise...)
-    if ~(opts.sos.model == 1)
-        opts.sos.model = 2;
-    end
-    % Assume the variables we are plotting are the parametric
-    F = compilesos(F,[],opts,x);
-end
-
 % Create a model in YALMIPs low level format
 % All we change later is the cost vector
 %sol = solvesdp(F,sum(x),opts);
-[model,recoverdata,diagnostic,internalmodel] = export(F,[],opts,[],[],0);
-if isempty(internalmodel) | (~isempty(diagnostic) && diagnostic.problem)
-    error('Could not create model. Can you actually solve problems with this model?')
-end
+internalmodel = F.model;
+
 internalmodel.options.saveduals = 0;
 internalmodel.getsolvertime = 0;
 internalmodel.options.dimacs = 0;
@@ -95,10 +78,9 @@ internalmodel.options.dimacs = 0;
 % Try to find a suitable set to plot
 if isempty(x)
     if isempty(internalmodel.extended_variables) & isempty(internalmodel.aux_variables)
-        x = depends(F);
-        x = x(1:min(3,length(x)));
-        localindex = 1;
-        localindex = find(ismember(recoverdata.used_variables,x));
+        x = internalmodel.used_variables;
+        x = x(1:min(3,length(x)));       
+        localindex = find(ismember(internalmodel.used_variables,x));
     else
         % not extended variables
         candidates = setdiff(1:length(internalmodel.c),[ internalmodel.aux_variables(:)' internalmodel.extended_variables(:)']);
@@ -111,7 +93,7 @@ if isempty(x)
 else
     localindex = [];
     for i = 1:length(x)
-        localindex = [localindex find(ismember(recoverdata.used_variables,getvariables(x(i))))];
+        localindex = [localindex find(ismember(internalmodel.used_variables,getvariables(x(i))))];
     end
 end
 

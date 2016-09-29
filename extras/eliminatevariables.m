@@ -1,35 +1,34 @@
-function [model,keptvariables,infeasible] = eliminatevariables(model,varindex,value)
+function [model,keptvariablesIndex] = eliminatevariables(model,removedparameters,value,parameters)
     
-if isempty(varindex)
-    keptvariables = [];
-    infeasible = nan;
+if isempty(removedparameters) 
+    keptvariablesIndex = 1:length(model.c);
     return
 end
 
-keptvariables = 1:length(model.c);
+keptvariablesIndex = 1:length(model.c);
 
 rmvmonoms = model.rmvmonoms;
 newmonomtable = model.newmonomtable;
 
 % Assign evaluation-based values
 if length(model.evalParameters > 0)
-    alls = union(varindex,model.evalParameters);
-    [dummy,loc] = ismember(varindex,alls);
-    remappedvalue = zeros(length(alls),1);
-    remappedvalue(loc) = value;
-    for i = 1:length(model.evalMap)
-        j = find(model.evalMap{i}.variableIndex == varindex);
-        if ~isempty(j)
-            p = value(j);
-             [dummy,loc] = ismember(model.evalMap{i}.computes,alls);
-            remappedvalue(loc) = feval(model.evalMap{i}.fcn,p);
+    alls = [removedparameters(:)' model.evalParameters(:)'];  
+    removedP = [];
+    removedE = [];
+    for j = 1:length(removedparameters)
+        for i = 1:length(model.evalMap)
+            if isequal(model.evalMap{i}.variableIndex,removedparameters(j))
+                p = value(j);
+                index = find(model.evalMap{i}.computes == alls);
+                value(index) = feval(model.evalMap{i}.fcn,p);
+                removedP = [removedP model.evalMap{i}.computes];
+                removedE = [removedE i];            
+            end
         end
     end
-    value = remappedvalue;
-    % We only eliminate in models where the operators dissapear after
-    % parameters are fixed 
-    model.evalMap = [];
-    model.evalVariables = [];
+    model.evalVariables(removedE)=[];
+    model.evalMap = {model.evalMap{setdiff(1:length(model.evalMap),removedE)}};
+    model.evalParameters = setdiff(model.evalParameters,removedP);
 end
 
 % Evaluate fixed monomial terms
@@ -63,7 +62,7 @@ if model.K.f > 0
     if ~isempty(candidates)
         % infeasibles = find(model.F_struc(candidates,1)~=0);
         if find(model.F_struc(candidates,1)~=0,1)%;~isempty(infeasibles)
-            infeasible = 1;
+            model.infeasible = 1;
             return
         else
             model.F_struc(candidates,:) = [];
@@ -78,7 +77,7 @@ if model.K.l > 0
         
         %if find(model.F_struc(model.K.f + candidates,1)<0,1)
         if any(model.F_struc(model.K.f + candidates,1)<-1e-14)
-            infeasible = 1;
+            model.infeasible  = 1;
             return
         else
             model.F_struc(model.K.f + candidates,:) = [];
@@ -101,7 +100,7 @@ if model.K.q(1) > 0
             v = F_struc(rows,:);
             if nnz(v(:,2:end))==0
                 if norm(v(2:end,1)) > v(1,1)
-                    infeasible = 1;
+                    model.infeasible = 1;
                     return
                 else
                     removeqs = [removeqs;i];
@@ -134,7 +133,7 @@ if model.K.s(1) > 0
             used = find(any(Q));Qred=Q(:,used);Qred = Qred(used,:);
             [~,p] = chol(Qred);
             if p
-                infeasible = 1;
+                model.infeasible = 1;
                 return
             else
                 removeqs = [removeqs;i];
@@ -164,7 +163,7 @@ else
     model.Q(:,removethese) = [];
 end
 model.c = model.c.*monomgain;
-keptvariables(removethese) = [];
+keptvariablesIndex(removethese) = [];
 
 model.lb(removethese)=[];
 model.ub(removethese)=[];
@@ -207,7 +206,7 @@ else
     model.Q(skipped,:)=[];
 end
 
-keptvariables(skipped) = [];
+keptvariablesIndex(skipped) = [];
 
 model.monomtable = newmonomtable;
 model = compressModel(model);
@@ -216,7 +215,7 @@ x0wasempty = isempty(model.x0);
 model.x0 = zeros(length(model.c),1);
 
 % Try to reduce to QP
-[model,keptvariables,newmonomtable] = setupQuadratics(model,keptvariables,newmonomtable);
+[model,keptvariablesIndex,newmonomtable] = setupQuadratics(model,keptvariablesIndex,newmonomtable);
 
 if nnz(model.Q) > 0
     if  model.solver.objective.quadratic.convex == 0 &  model.solver.objective.quadratic.nonconvex == 0
@@ -230,17 +229,19 @@ end
 
 % Remap indicies
 if ~isempty(model.integer_variables)
-    temp=ismember(keptvariables,model.integer_variables);
+    temp=ismember(keptvariablesIndex,model.integer_variables);
     model.integer_variables = find(temp);  
 end
 if ~isempty(model.binary_variables)
-    temp=ismember(keptvariables,model.binary_variables);
+    temp=ismember(keptvariablesIndex,model.binary_variables);
     model.binary_variables = find(temp);    
 end
 if ~isempty(model.semicont_variables)
-   temp=ismember(keptvariables,model.semicont_variables);
-    model.semicont_variables = find(temp);  
+   temp=ismember(keptvariablesIndex,model.semicont_variables);
+   model.semicont_variables = find(temp);  
 end
+
+model.used_variables = model.used_variables(keptvariablesIndex);
 
 % Check if there are remaining strange terms. This occurs in #152
 % FIXME: Use code above recursively instead...

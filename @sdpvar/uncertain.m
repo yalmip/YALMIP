@@ -27,8 +27,19 @@ if nargin == 1 || ((nargin == 2) && strcmpi(varargin{1},'deterministic'))
     x.extra.distribution.name = 'deterministic';
     x = lmi(x);
 else
-    x.typeflag = 16;
-    x.extra.distribution.name = varargin{1};
-    x.extra.distribution.parameters = {varargin{2:end}};
-    x = lmi(x);
+    x.typeflag = 16;    
+    if isa(varargin{1},'function_handle')
+         temp = {varargin{:},x.dim};
+    else
+        temp = {@random,varargin{:},x.dim};
+    end
+    x.extra.distribution.name = temp{1};
+    x.extra.distribution.parameters = {temp{2:end-1}};
+    try
+        temp = feval(temp{:});        
+    catch
+        disp(lasterr);
+        error('Trial evaluation of attached sample generator failed.')
+    end
+    x = lmi(x);                 
 end
