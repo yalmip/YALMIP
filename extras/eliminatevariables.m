@@ -5,13 +5,6 @@ if isempty(removedparameters)
     return
 end
 
-% Remove the artificial equality constraints that are used in linear models
-% where elimination isn't performed
-
-%[~,loc] = ismember(removedparameters,parameters);
-%model.F_struc(loc,:) = [];
-%model.K.f = model.K.f - length(removedparameters);
-
 keptvariablesIndex = 1:length(model.c);
 
 rmvmonoms = model.rmvmonoms;

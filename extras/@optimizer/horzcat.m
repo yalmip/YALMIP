@@ -22,15 +22,6 @@ for i = 1:nargin
     end
 end
 
-% Remove place-holder equalities
-% FIXME: Get rid of that whole machinery
-m = length(varargin{1}.model.parameterIndex);
-tempFakeEqualities = varargin{1}.model.F_struc(1:m,:);
-for i = 1:nargin
-    varargin{i}.model.F_struc(1:m,:) = [];
-    varargin{i}.model.K.f =  varargin{i}.model.K.f-m;
-end
-
 % Set up some hash structures to enable pruning of repeated constraints
 hashvar = randn(size(varargin{1}.model.F_struc,2),1);
 n = size(varargin{1}.model.F_struc,1);for i = 2:nargin;n = max(n,size(varargin{i}.model.F_struc,1));end
@@ -52,10 +43,6 @@ end
 model.f = model.f/nargin;
 model.c = model.c/nargin;
 model.Q = model.Q/nargin;
-
-% Append place-holder equalities again
-model.F_struc = [tempFakeEqualities;model.F_struc];
-model.K.f = model.K.f + m;
 
 P = varargin{1};
 P.model = model;
