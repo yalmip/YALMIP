@@ -4,12 +4,8 @@ if isequal(subs.type,'()')
     
     % Previously not allowed and user was to use cell format for some now
     % forgotten reason (ideas about other functionalities for () perhaps)
-    % We support it now though, so we throw everying in a cell (previously
-    % required, so now standard internal format) and call {}
+    % We support it now though, so throw to the previously required {}
     subs.type ='{}';
-    if length(subs.subs) > 1
-        subs.subs = {subs.subs};
-    end
     [varargout{1:nargout}] = subsref(self,subs);
     
 elseif isequal(subs.type,'.')
@@ -32,6 +28,19 @@ elseif isequal(subs.type,'{}')
     % User has typed X();
     if isempty(subs.subs)
         subs.subs = {[]};
+    else
+        % Flatten the expression to account for various cell calls
+        aux = {};
+        for i = 1:length(subs.subs)
+            if isa(subs.subs{i},'cell')
+                for j = 1:length(subs.subs{i});
+                    aux = {aux{:},subs.subs{i}{j}};
+                end
+            else
+                aux = {aux{:},subs.subs{i}};
+            end
+        end
+        subs.subs = aux;
     end
     
     if length(self.dimin)==0
@@ -45,26 +54,20 @@ elseif isequal(subs.type,'{}')
     end
     
     NoSolve = 0;
-    % Check for nosolve flag, and normalize to a list argument (previously
-    % required format, and that is the assumption used below)
+    % Check for nosolve flag
     if length(subs.subs)>0 && isequal(subs.subs{end},'nosolve')
         NoSolve = 1;
-        subs.subs = {subs.subs{1:end-1}};
-    elseif length(subs.subs) == 1 && length(subs.subs{1})>1
-        if isa(subs.subs{1},'cell') && isequal(subs.subs{1}{end},'nosolve')
-             NoSolve = 1;
-             subs.subs = {subs.subs{1}{1:end-1}};             
-        end
+        subs.subs = {subs.subs{1:end-1}};   
     end
-    
-    %if length(subs.subs) > 1
-    %    subs.subs = {subs.subs};
-    %end
-        
+          
     if isa(subs.subs{1},'lmi') || isa(subs.subs{1},'constraint')
         % User instantiates as P{[x == 1, y == ...]}
         cells = cell(1,length(self.diminOrig));
+        for i = 1:length(cells)
+            cells{i} = []; % Default user has not specified, partial inst.
+        end
         List = subs.subs{1};
+        for i = 2:length(subs.subs);List = [List, subs.subs{i}];end        
         matched = zeros(1,length(List));
         for i = 1:length(List)
             xi = recover(depends(List(i)));
@@ -88,7 +91,7 @@ elseif isequal(subs.type,'{}')
         if ~all(matched)
             error('Only simple expressions allowed. Could not match assignments in optimizer call');
         end
-        subs.subs = {cells};
+        subs.subs = cells;
     end
     
     if ~isempty(self.ParametricSolution)
@@ -121,29 +124,25 @@ elseif isequal(subs.type,'{}')
     end
     
     if ~isempty(self.diminOrig)
-        % Normalize to a cell-format
-        if ~isa(subs.subs{1},'cell')
-            subs.subs{1} = {subs.subs{1}};
-        end
-        
+       
         % Check number of cells
-        if length(subs.subs{1})~=length(self.diminOrig) && ~isempty(self.diminOrig)
+        if length(subs.subs)~=length(self.diminOrig) && ~isempty(self.diminOrig)
             error('The number of cell elements in input does not match OPTIMIZER declaration');
         end
         
         % Realify...
-        for i = 1:length(subs.subs{1})
+        for i = 1:length(subs.subs)
             if self.complexInput(i)
-                subs.subs{1}{i} = [real(subs.subs{1}{i});imag(subs.subs{1}{i})];
+                subs.subs{i} = [real(subs.subs{i});imag(subs.subs{i})];
             end
         end
         
         
         % If blocked call, check so that there are as many blocks for every
         % argument. Note, we only analyze instantiated blocks
-        dimBlocks = nan(length(subs.subs{1}),1);
-        for i = 1:length(subs.subs{1})
-            dimBlocks(i) = numel(subs.subs{1}{i}) / prod(self.diminOrig{i});
+        dimBlocks = nan(length(subs.subs),1);
+        for i = 1:length(subs.subs)
+            dimBlocks(i) = numel(subs.subs{i}) / prod(self.diminOrig{i});
         end
         if any(dimBlocks)>1 && any(dimBlocks==0)
             error('Blocked data in partial instantiation is not possible');
@@ -163,15 +162,15 @@ elseif isequal(subs.type,'{}')
         % be the same
         nBlocks = max(dimBlocks(find(dimBlocks)));
         
-        left = ones(1,length(subs.subs{1}));
+        left = ones(1,length(subs.subs));
         aux = [];
         aux2 = [];
         suppliedData = [];
         for i = 1:nBlocks
             aux2 = [];
             try
-                for j = 1:length(subs.subs{1})
-                    data = subs.subs{1}{j};
+                for j = 1:length(subs.subs)
+                    data = subs.subs{j};
                     if isempty(data)
                         temp = nan(self.diminOrig{j});
                         temp = temp(:);
@@ -191,7 +190,7 @@ elseif isequal(subs.type,'{}')
             %left = left + self.diminOrig{1}(2);
             aux = [aux aux2];
         end
-        subs.subs{1} = aux;
+        subs.subs = aux;
         
         % Input is now given as [x1 x2 ... xn]
         u = [];
@@ -209,7 +208,7 @@ elseif isequal(subs.type,'{}')
     for i = 1:nBlocks
         
         if ~isempty(self.diminOrig)
-            thisData = subs.subs{1}(:,start:start + self.dimin(2)-1);
+            thisData = subs.subs(:,start:start + self.dimin(2)-1);
         else
             thisData = [];
         end
@@ -263,17 +262,15 @@ elseif isequal(subs.type,'{}')
                 end
             end
             self.model.evalParameters = evalParameters;
-                        
-            self.dimin = [length(self.model.parameterIndex) 1];
+                                    
+            self.dimin = [length(self.model.parameterIndex) 1];                     
             self.diminOrig = {self.diminOrig{find(~suppliedData)}};
             self.input.xoriginal = {self.input.xoriginal{find(~suppliedData)}};
             self.mask = {self.mask{find(~suppliedData)}};
             self = optimizer_precalc(self);
             varargout{1} = self;
             return
-        else
-            
-                       
+        else                                   
             % Standard case where we eliminate all variables left
             self.instatiatedvalues(ismember(self.orginal_usedvariables,self.model.used_variables(self.model.parameterIndex))) = thisData(:);
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,self.model.parameterIndex,thisData(:),self.model.parameterIndex);
