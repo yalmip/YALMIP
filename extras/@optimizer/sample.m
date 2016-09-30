@@ -20,7 +20,7 @@ function self = sample(self,N)
 %    plot(Q);
 %    xoptimal = Q([]);
 %
-%   See also OPTIMIZER
+%   See also OPTIMIZER, UNCERTAIN
 
 if nargin < 2
     N = 1;
