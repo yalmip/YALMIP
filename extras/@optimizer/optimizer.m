@@ -53,6 +53,14 @@ if nargin < 5
     error('OPTIMIZER requires 5 inputs');
 end
 
+if ~(isa(x,'cell') || isa(x,'sdpvar') || isempty(x))
+    error('4th argument in OPTIMIZER should be an SDPVAR exprssion or a cell');
+end
+
+if ~(isa(u,'cell') || isa(u,'sdpvar') || isempty(u))
+    error('5th argument in OPTIMIZER should be an SDPVAR exprssion or a cell');
+end
+
 % With the new optional cell-based format, the internal format is always a
 % vector with all information stacked, both in and out. Hence, we need to
 % save original sizes before stacking things up
@@ -289,7 +297,11 @@ for i = 1:length(sys.model.evalMap)
        sys.complicatedEvalMap = 1;
     end
     if length(sys.model.evalMap{i}.arg)>2
-        sys.complicatedEvalMap = 1;
+        % First is the actual argument, then YALMIP appends a trailing
+        % thingy for some internal stuff
+        if nnz(cellfun('isclass',sys.model.evalMap{i}.arg,'sdpvar'))>2 
+            sys.complicatedEvalMap = 1;
+        end
     end
 end
 
