@@ -24,27 +24,22 @@ Model = [probability(a >= t) >= 0.5,
 P=optimizer(derandomize(Model),-t,sdpsettings('solver','mosek'),m,t)
 Q=sample(P,20)
 
+sdpvar w wmean
+optimize(derandomize([uncertain(w,'normal',wmean,1), probability(w >= 0) >= 0.9]),wmean,sdpsettings('solver','cplex','debug',1))
+mbg_asserttolequal(double(wmean), 1.2816, 1e-3);
+
+clear all;yalmip('clear');
+sdpvar w(2,1) wmean(2,1) gamma
+uu = [];
+for gamma = .1:.05:.9
+    Model = derandomize([uncertain(w,'normal',wmean,1), probability(sum(w) >= 0) >= gamma]);
+    optimize(Model,wmean'*wmean-gamma,sdpsettings('solver','','debug',1));
+    uu = [uu value(wmean'*wmean-gamma)];
+end
+end
 
 
-mbg_asserttolequal(double(t), 0, 1e-5);
 
+mbg_asserttolequal(double(wmean), 1.2816, 1e-3);
 
-
-Model = [probability(a >= t) >= 0.5,uncertain(a,'normalf',[0],eye(1))];
-solvesdp(derandomize(Model),-t)
-mbg_asserttolequal(double(t), 0, 1e-5);
-
-Model = [probability(a >= t) >= 0.95,uncertain(a,'normal',[0],4)];
-solvesdp(derandomize(Model),-t)
-mbg_asserttolequal(double(t), -3.2897, 1e-5);
-
-Model = [probability(a >= t) >= 0.95,uncertain(a,'normalf',[0],2)];
-solvesdp(derandomize(Model),-t)
-mbg_asserttolequal(double(t), -3.2897, 1e-5);
-
-% worst case should be R = 1
-sdpvar R
-Model = [probability(a >= t) >= 0.95,uncertain(a,'normalf',[0],1+R)];
-Model = [Model, uncertain(R),0<=R<=1];
-solvesdp(derandomize(Model),-t)
-mbg_asserttolequal(double(t), -3.2897, 1e-4);
+nnz([1 1]*[repmat(value(wmean),1,1000) + randn(2,1000)]>=0)
