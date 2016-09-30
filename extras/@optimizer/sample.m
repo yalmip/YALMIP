@@ -31,7 +31,7 @@ for k = 1:N
     for i = 1:length(self.diminOrig)
         if isfield(self.input,'stochastics')
             if ~isempty(self.input.stochastics{i});
-                temp = {self.input.stochastics{i}.name,self.input.stochastics{1}.parameters{:},self.diminOrig{i}};
+                temp = {self.input.stochastics{i}.name,self.input.stochastics{i}.parameters{:},self.diminOrig{i}};
                 sampledData = feval(temp{:});
                 cells{i} = sampledData;
             else
