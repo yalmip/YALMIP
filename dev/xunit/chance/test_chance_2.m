@@ -1,15 +1,34 @@
-function test_chance_1
-
-% mbg_asserttolequal(0, 0, 1e-4);
-% return
+function test_chance_2
 
 yalmip('clear')
-a=sdpvar(1,1);
+sdpvar a b t
 sdpvar t
 
-Model = [probability(a >= t) >= 0.5,uncertain(a,'normal',[0],eye(1))];
+Model = [probability(a >= t) >= 0.5,
+         probability(b >= t) >= 0.5, 
+         uncertain(a,'normal',[0],eye(1)),
+         uncertain(b,'normal',[0],eye(1))];
 solvesdp(derandomize(Model),-t)
 mbg_asserttolequal(double(t), 0, 1e-5);
+
+
+yalmip('clear')
+sdpvar a b t m
+sdpvar t
+
+Model = [probability(a >= t) >= 0.5,
+         probability(b >= t) >= 0.5, 
+         uncertain(a,'normal',[0],eye(1)),
+         uncertain(b,'normal',m,eye(1)),
+         uncertain(m,'normal',0,eye(1)), ];
+P=optimizer(derandomize(Model),-t,sdpsettings('solver','mosek'),m,t)
+Q=sample(P,20)
+
+
+
+mbg_asserttolequal(double(t), 0, 1e-5);
+
+
 
 Model = [probability(a >= t) >= 0.5,uncertain(a,'normalf',[0],eye(1))];
 solvesdp(derandomize(Model),-t)

@@ -36,10 +36,15 @@ else
     x.extra.distribution.name = temp{1};
     x.extra.distribution.parameters = {temp{2:end-1}};
     try
-        temp = feval(temp{:});        
+        if strcmp(func2str(temp{1}),'random') && strcmp(temp{2},'normalf')
+            % Special case with factorized SDPVAR covariance
+            % Don't try t evaluate 
+        else
+            temp = feval(temp{:});        
+        end
     catch
         disp(lasterr);
-        error('Trial evaluation of attached sample generator failed.')
+       % error('Trial evaluation of attached sample generator failed.')
     end
     x = lmi(x);                 
 end
