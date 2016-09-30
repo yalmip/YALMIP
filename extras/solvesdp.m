@@ -140,7 +140,9 @@ if ~isempty(logdetStruct)
     end
 end
 
-% Call chance solver?
+% Eliminate chance constraints?
+F = derandomize(F);
+%Call chance solver?
 % if length(F) > 0
 %     rand_declarations = is(F,'random');
 %     if any(rand_declarations)

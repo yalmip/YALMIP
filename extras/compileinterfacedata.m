@@ -65,6 +65,8 @@ if isa(options.radius,'sdpvar') | ~isinf(options.radius)
     F = flatten(F);
 end
 
+Constraints = derandomize(F);
+
 % *************************************************************************
 %% CONVERT LOGIC CONSTRAINTS
 % *************************************************************************

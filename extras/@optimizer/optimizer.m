@@ -153,6 +153,8 @@ if ~isempty(Constraints)
     end
 end
 
+Constraints = derandomize(Constraints);
+
 if ~isempty(Constraints)
     if any(is(Constraints,'sos'))
         tempOps = options;
