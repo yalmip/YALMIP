@@ -19,7 +19,7 @@ keep(chanceDeclarations)=0;
 randomVariables = extractRandomDefinitions(F(randomDeclarations));
 groupedChanceConstraints = groupchanceconstraints(F);
 
-[Fderandomized,eliminatedConstraints] = deriveChanceModel(groupedChanceConstraints,randomVariables)
+[Fderandomized,eliminatedConstraints] = deriveChanceModel(groupedChanceConstraints,randomVariables);
 
 Fderandomized = Fderandomized + F(find(keep)) + F(find(keep(~eliminatedConstraints))) + F(randomDeclarations);
 
@@ -96,7 +96,11 @@ for uncertaintyGroup = 1:length(randomVariables)
                         if isa(covariance,'sdpvar')
                             error('Covariance cannot be an SDPVAR in normal distribution. Maybe you meant to use factorized covariance in ''normalf''');
                         end
-                        Fderandomized = [Fderandomized, b + c_wTbase*theMean - (ccc + AAA*theMean)'*x >= gamma*norm(chol(covariance)*(AAA'*x+c_wTbase'))];
+                        if isempty(x)
+                            Fderandomized = [Fderandomized, b + c_wTbase*theMean >= gamma*norm(chol(covariance)*(c_wTbase'))];
+                        else
+                            Fderandomized = [Fderandomized, b + c_wTbase*theMean - (ccc + AAA*theMean)'*x >= gamma*norm(chol(covariance)*(AAA'*x+c_wTbase'))];
+                        end
                         eliminatedConstraints(ic)=1;
                     case 'normalf'
                         theMean    = randomVariables{uncertaintyGroup}.distribution.parameters{2};
