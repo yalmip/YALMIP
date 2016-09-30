@@ -39,11 +39,12 @@ for k = 1:N
             end
         end
     end
-    if ~isempty(cells)
+    if ~isempty(cells) && ~all(cellfun('isempty',cells))
         y.type = '{}';
         y.subs = {cells{:},'nosolve'};      
         allSamples{end + 1} = subsref(self,y);
     else
+        warning('Trying to sample in a model without any random uncertainties');
         return
     end
 end
