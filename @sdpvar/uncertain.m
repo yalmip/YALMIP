@@ -64,15 +64,16 @@ else
     x.extra.distribution.name = temp{1};
     x.extra.distribution.parameters = {temp{2:end-1}};
     try
-        if strcmp(func2str(temp{1}),'random') && strcmp(temp{2},'normalf')
-            % Special case with factorized SDPVAR covariance
-            % Don't try t evaluate 
+        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && strcmp(temp{2},'normalf'))            
+            % Don't try to evaluate special case distributions, such as
+            % distributions with decision variables, or aditional cases
+            % 'normalm' (multivariate normal) or 'normalf' (factor covar)
         else
             temp = feval(temp{:});        
         end
     catch
         disp(lasterr);
-       % error('Trial evaluation of attached sample generator failed.')
+        error('Trial evaluation of attached sample generator failed.')
     end
     x = lmi(x);                 
 end
