@@ -137,14 +137,27 @@ if pos
     % This is a nonlinear operator
     map = model.evalMap{pos};
     % We might hqave vectorized things to compute several expressions at the same time
-    j = find(map.computes == i);
-    j = map.variableIndex(j);
-    % we have f(x(j)), but have to map back to linear indicies
-    jl = find(model.linearindicies == j);
-    if isempty(jl)
-        z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+    if strcmp(model.evalMap{pos}.fcn,'sum_square')
+        z = ['('];                
+        for j = map.variableIndex
+            jl = find(model.linearindicies == j);
+            if isempty(jl)
+                z =  [z '(' createmonomstring(model.monomtable(j,:),model) ')^2+'];
+            else
+                z =  [z 'x(' num2str(jl) ')^2+'];
+            end 
+        end
+        z = [z(1:end-1) ')'];
     else
-        z =  [map.fcn '(x(' num2str(jl) '))'];
+        j = find(map.computes == i);
+        j = map.variableIndex(j);
+        % we have f(x(j)), but have to map back to linear indicies
+        jl = find(model.linearindicies == j);
+        if isempty(jl)
+            z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+        else
+            z =  [map.fcn '(x(' num2str(jl) '))'];
+        end
     end
 else
     i = find(model.linearindicies == i);
