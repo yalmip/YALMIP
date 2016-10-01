@@ -36,6 +36,26 @@ for gamma = .1:.05:.9
     optimize(Model,wmean'*wmean-gamma,sdpsettings('solver','','debug',1));
     uu = [uu value(wmean'*wmean-gamma)];
 end
+
+Model = [uncertain(w,'normal',wmean,1), probability(sum(w) >= 0) >= gamma];
+P = optimizer(Model,wmean'*wmean-gamma.^2,sdpsettings('solver','fmincon'),gamma,wmean'*wmean-gamma^2)
+
+wmean = [3;4];
+a = [1;3];
+sdpvar s
+
+Model = [uncertain(w,'normal',wmean,1), probability(a'*w >= s) >= .5,
+                                        probability(a'*w <= s) >= .5];
+                                    
+                                    
+P = optimizer(Model,wmean'*wmean-gamma.^2,sdpsettings('solver','fmincon'),gamma,wmean'*wmean-gamma^2)
+
+
+P = optimize(Model,wmean'*wmean-gamma.^2,sdpsettings('solver','fmincon'))
+
+
+
+
 end
 
 
