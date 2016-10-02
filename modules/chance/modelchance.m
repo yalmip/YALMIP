@@ -1,35 +1,41 @@
-function Fderandomized = derandomize(F)
+function Fchance = modelchance(F,options)
 
 % Goes through all probability constraints and checks for cases where we
 % can use analytic expressions.
 
 % Find chance constraints
 chanceDeclarations = find(is(F,'chance'));
-% Find variables with attached distributions
-randomDeclarations = find(is(F,'random'));
-
-if isempty(randomDeclarations)
-    Fderandomized = F;
+if isempty(chanceDeclarations)
+    Fchance = F;
     return
 end
 
+% Find variables with attached distributions
+randomDeclarations = find(is(F,'random'));
+if isempty(randomDeclarations)
+    error('Chance constraints without any distributions');
+end
+
+if nargin < 2
+    options = sdpsettings;
+end
+
 keep = ones(length(F),1);
-%keep(randomDeclarations)=0;
 keep(chanceDeclarations)=0;
 randomVariables = extractRandomDefinitions(F(randomDeclarations));
 [randomVariables,map] = mergeDistributions(randomVariables);
 groupedChanceConstraints = groupchanceconstraints(F);
 
-[Fderandomized,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables);
-Fderandomized = Fderandomized + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
+[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
+Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
-    Fderandomized = derandomize(Fderandomized)
+    Fchance = modelchance(Fchance,options);
 end
 
-function [Fderandomized,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables);
+function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
 
 recursive = 0;
-Fderandomized = [];
+Fchance = [];
 eliminatedConstraints = zeros(length(groupedChanceConstraints),1);
 
 allwVars = [];
@@ -82,20 +88,29 @@ for uncertaintyGroup = 1:length(randomVariables)
                 if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.name),'random')
                     switch randomVariables{uncertaintyGroup}.distribution.parameters{1}
                         case 'moment'
-                            newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel);
+                            newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             eliminatedConstraints(ic)=1;
                         case {'normal','normalm'}
-                            newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel);
+                            newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             eliminatedConstraints(ic)=1;
                         case 'normalf'
-                            newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel);
+                            newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             eliminatedConstraints(ic)=1;
                         otherwise
-                            newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w);
+                            switch options.chance.method
+                                case 'moment'
+                                    newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                                case 'markov'
+                                    newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                                case 'chernoff'
+                                    newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);                            
+                                otherwise
+                                    error('Chance model not recognized');
+                            end
                             eliminatedConstraints(ic)=1;
                     end
                 else
-                    newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w);
+                    newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                     eliminatedConstraints(ic)=1;
                 end
             end
@@ -103,42 +118,13 @@ for uncertaintyGroup = 1:length(randomVariables)
                 if ~isempty(intersect(depends(newConstraint),allwVars))
                     % New uncertainties popped up,i.e. parameters in a
                     % distribution, are distributions them selves
-                    Fderandomized = [Fderandomized, probability(newConstraint)>=confidencelevel];
+                    Fchance = [Fchance, probability(newConstraint)>=confidencelevel];
                     recursive = 1;
                 else
-                    Fderandomized = [Fderandomized, newConstraint];
+                    Fchance = [Fchance, newConstraint];
                 end
             end
         end
-    end
-end
-
-function [merged,map] = mergeDistributions(randomVariables);
-
-merged = {};
-map = [];
-used = zeros(1,length(randomVariables));
-mergedindex = 1;
-for i = 1:length(randomVariables)
-    if ~used(i)
-        this = randomVariables{i};
-        used(i) = 1;
-        for j = i+1:length(randomVariables)
-            if ~used(j)
-                that = randomVariables{j};
-                if strcmp(func2str(this.distribution.name),'random') && strcmp(func2str(that.distribution.name),'random')
-                    if mergable(this.distribution.parameters{1},that.distribution.parameters{1})
-                        % Same distribution
-                        this = merge2distributions(this,that);
-                        map(j) = mergedindex;
-                        used(j) = 1;
-                    end
-                end
-            end
-        end
-        merged{mergedindex} = this;
-        map(i) = mergedindex;
-        mergedindex = mergedindex + 1;
     end
 end
 
