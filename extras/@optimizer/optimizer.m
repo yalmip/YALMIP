@@ -294,15 +294,17 @@ sys.ops = options;
 sys.complicatedEvalMap = 0;
 % Are all nonlinear operators acting on simple parameters? Elimination
 % strategy will only be applied on simple problems such as x<=exp(par)
-for i = 1:length(sys.model.evalMap)
-    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
-       sys.complicatedEvalMap = 1;
-    end
-    if length(sys.model.evalMap{i}.arg)>2
-        % First is the actual argument, then YALMIP appends a trailing
-        % thingy for some internal stuff
-        if nnz(cellfun('isclass',sys.model.evalMap{i}.arg,'sdpvar'))>2 
+if ~isempty(sys.model.parameterIndex)
+    for i = 1:length(sys.model.evalMap)
+        if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
             sys.complicatedEvalMap = 1;
+        end
+        if length(sys.model.evalMap{i}.arg)>2
+            % First is the actual argument, then YALMIP appends a trailing
+            % thingy for some internal stuff
+            if nnz(cellfun('isclass',sys.model.evalMap{i}.arg,'sdpvar'))>2
+                sys.complicatedEvalMap = 1;
+            end
         end
     end
 end
