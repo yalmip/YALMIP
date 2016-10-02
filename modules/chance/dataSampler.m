@@ -21,6 +21,9 @@ if strcmp(func2str(temp{1}),'random')
         sampledData = feval(temp{1:2},0,1,temp{5});
         sampledData = chol(temp{4})*sampledData;
         sampledData = sampledData + temp{3};
+    elseif strcmp(temp{2},'data')
+        i = randi(size(temp{3},2));
+        sampledData = temp{3}(:,i);
     elseif ~any(cellfun('isclass',temp,'sdpvar'))
         % simple numerical sample of standard distriution
         sampledData = feval(temp{:});

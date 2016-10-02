@@ -1,4 +1,4 @@
-function newConstraint = normalfactorizedChanceFilter(b,c,distribution,confidencelevel);
+function newConstraint = normalfactorizedChanceFilter(b,c,distribution,confidencelevel,w,options);
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 gamma = icdf('normal',confidencelevel,0,1);

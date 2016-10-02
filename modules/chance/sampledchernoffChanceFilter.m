@@ -1,5 +1,5 @@
-function newConstraint =  sampledchernoffChanceFilter(b,c,distribution,confidencelevel,w);
-N = 250;
+function newConstraint =  sampledchernoffChanceFilter(b,c,distribution,confidencelevel,w,options);
+N = options.chance.N;
 W = [];for i = 1:N;W = [W dataSampler(distribution,size(w))];end
 alpha = sdpvar(1);
 e = pexpsum([repmat(alpha,1,N);-b-c'*W])/N;
