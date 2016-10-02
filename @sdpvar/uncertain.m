@@ -64,7 +64,7 @@ else
     x.extra.distribution.name = temp{1};
     x.extra.distribution.parameters = {temp{2:end-1}};
     try
-        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (strcmp(temp{2},'normalm') || strcmp(temp{2},'normalf')))            
+        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'moment','normalm','normalf'}))))           
             % Don't try to evaluate special case distributions, such as
             % distributions with decision variables, or aditional cases
             % 'normalm' (multivariate normal) or 'normalf' (factor covar)

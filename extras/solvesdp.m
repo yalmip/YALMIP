@@ -142,6 +142,9 @@ end
 
 % Eliminate chance constraints?
 F = derandomize(F);
+F = derandomize(F);
+F(find(is(F,'random'))) = [];
+
 %Call chance solver?
 % if length(F) > 0
 %     rand_declarations = is(F,'random');
