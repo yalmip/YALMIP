@@ -15,11 +15,17 @@ if any(strcmp(A.distribution.parameters{1},{'normal','normalf','normalm'})) || a
         varA = diag(A.distribution.parameters{3});
     else
         varA = A.distribution.parameters{3};
+        if numel(varA)==1 && numel(A.variables)>1
+            varA = diag(repmat(varA,numel(A.variables),1));
+        end
     end
     if dimBvar(1) ~= dimBvar(2)
         varB = diag(B.distribution.parameters{3});
     else
         varB = B.distribution.parameters{3};
+        if numel(varB)==1 && numel(B.variables)
+            varB = diag(repmat(varB,numel(A.variables),1));
+        end
     end
     % Is A in factor form, but not B, and vice versa. If so, put the other
     % one in factor form too
