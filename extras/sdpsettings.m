@@ -88,6 +88,9 @@ else
     
     options.bnb = setup_bnb_options;
     Names = appendOptionNames(Names,options.bnb,'bnb');
+   
+    options.chance = setup_chance_options;
+    Names = appendOptionNames(Names,options.chance,'chance');
     
     options.cutsdp = setup_cutsdp_options;
     Names = appendOptionNames(Names,options.cutsdp,'cutsdp');
@@ -454,6 +457,7 @@ bmibnb.numglobal = inf;
 bmibnb.localstart = 'relaxed';
 bmibnb.presolvescheme = [];
 bmibnb.strengthscheme = [1 2 1 3 1 4 1 6 1 5 1 4 1 6 1 4 1];
+
 function bnb = setup_bnb_options
 bnb.branchrule = 'max';
 bnb.method = 'depthbest';
@@ -475,6 +479,11 @@ bnb.maxiter = 300;
 bnb.prunetol = 1e-4;
 bnb.multiple = 0;
 bnb.profile = 0;
+
+function chance = setup_chance_options
+chance.method = 'markov';
+chance.N = 100;
+
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
 cutsdp.maxiter = 100;

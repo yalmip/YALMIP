@@ -141,8 +141,7 @@ if ~isempty(logdetStruct)
 end
 
 % Eliminate chance constraints?
-F = derandomize(F);
-F = derandomize(F);
+F = modelchance(F,options);
 F(find(is(F,'random'))) = [];
 
 %Call chance solver?

@@ -153,7 +153,7 @@ if ~isempty(Constraints)
     end
 end
 
-Constraints = derandomize(Constraints);
+Constraints = modelchance(Constraints,options);
 
 if ~isempty(Constraints)
     if any(is(Constraints,'sos'))
