@@ -24,7 +24,7 @@ if any(strcmp(A.distribution.parameters{1},{'normal','normalf','normalm'})) || a
     else
         varB = B.distribution.parameters{3};
         if numel(varB)==1 && numel(B.variables)
-            varB = diag(repmat(varB,numel(A.variables),1));
+            varB = diag(repmat(varB,numel(B.variables),1));
         end
     end
     % Is A in factor form, but not B, and vice versa. If so, put the other
@@ -41,7 +41,7 @@ if any(strcmp(A.distribution.parameters{1},{'normal','normalf','normalm'})) || a
         varC = diag(varC);
         C.distribution.parameters{1} = 'normal';
         C.distribution.parameters{2} = [A.distribution.parameters{2};B.distribution.parameters{2}];
-        C.distribution.parameters{3} = diag(varC);
+        C.distribution.parameters{3} = varC;
     elseif strcmp(A.distribution.parameters{1},'normalf') ||  any(strcmp(B.distribution.parameters{1},'normalf'))
         C.distribution.parameters{1} = 'normalf';
         C.distribution.parameters{2} = [A.distribution.parameters{2};B.distribution.parameters{2}];
