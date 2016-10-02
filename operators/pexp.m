@@ -23,10 +23,15 @@ switch class(varargin{1})
 
     case 'sdpvar'
 
-        if ~isequal(prod(size(varargin{1})),2)
-            error('PEXP only defined for 2x1 arguments');
+        if ~(isequal(prod(size(varargin{1})),2) || size(varargin{1},1)==2)
+            error('PEXP only defined for 2xN arguments');
         else
-            varargout{1} = yalmip('define',mfilename,varargin{1});
+            varargin{1} = reshape(varargin{1},2,[]);
+            y = [];
+            for i = 1:size(varargin{1},2)
+                y = [y yalmip('define',mfilename,varargin{1}(:,i))];
+            end
+            varargout{1} = y;                    
         end
 
     case 'char'
