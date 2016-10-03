@@ -1,4 +1,4 @@
-function [f,df,xevaledout] = fmincon_fun(x,model)
+function [f,df,xevaledout,dx] = fmincon_fun(x,model)
 
 global latest_xevaled
 global latest_x_xevaled
@@ -28,6 +28,7 @@ else
 end
 f=full(f);
 df = [];
+dx = [];
 if nargout==1 || ~model.derivative_available
     return
 elseif model.SimpleLinearObjective
