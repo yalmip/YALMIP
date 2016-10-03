@@ -1090,6 +1090,7 @@ interfacedata.Fremoved = Fremoved;
 interfacedata.evalMap = evalMap;
 interfacedata.evalVariables = evalVariables;
 interfacedata.evaluation_scheme = [];
+interfacedata.lift = [];
 if strcmpi(solver.tag,'bmibnb')
     interfacedata.equalitypresolved = 0;
     interfacedata.presolveequalities = 1;

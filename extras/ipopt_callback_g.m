@@ -6,7 +6,7 @@ global latest_g
 x = x(:);
 
 % Compute the nonlinear terms in the constraints and Jacobians for later   
-[g,geq,dg,dgeq] = fmincon_con(x,model);    
+[g,geq,dg,dgeq] = fmincon_con_liftlayer(x,model);    
 
 % Append with linear constraints
 g = [g;geq];
