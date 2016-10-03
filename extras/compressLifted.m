@@ -10,10 +10,18 @@ lift.d = [];
 lift.T = [];
 lift.S = [];
 if ~isempty(model.Aeq)
-    definingLift = find(any(model.Aeq(:,liftedIndex),2));    
+    definingLift = find(any(model.Aeq(:,liftedIndex),2));
     lift.d = [lift.d;-model.beq(definingLift)];
     lift.T = [lift.T;model.Aeq(definingLift,linearIndex)];
     lift.S = [lift.S;-model.Aeq(definingLift,liftedIndex)];
+    keep = ~any(lift.S,1);
+    if ~all(keep)
+        return
+    end    
+    lift.T = lift.T(i,:);
+    lift.d = lift.d(i);
+    % lift.d = lift.S\d;
+    %  lift.T = lift.S\lift.T;
     model.Aeq(definingLift,:) = [];
     model.beq(definingLift,:) = [];
     model.Aeq(:,liftedIndex)=[];
