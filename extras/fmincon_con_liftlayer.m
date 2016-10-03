@@ -1,7 +1,7 @@
 function [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model,xevaled)
 
 if isempty(model.lift)    
-    [g,geq,dg,dgeq,xevaled] = fmincon_fun(x,model);
+    [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model);
 elseif strcmp(model.lift.type,'linear')
     xlift = zeros(length(model.linearindicies),1);
     xlift(model.lift.linearIndex) = x;
