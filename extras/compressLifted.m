@@ -19,13 +19,17 @@ if ~isempty(model.Aeq)
     model.Aeq(:,liftedIndex)=[];
 end
 if size(lift.S,1) == size(lift.S,2) & length(lift.S) == length(liftedIndex)
+  
     % Equalities defining the lifted variables d + Tx = y   
-    Ax = model.A(:,linearIndex);
-    Ay = model.A(:,liftedIndex);
-    Ax = Ax + Ay*lift.T;
-    b = model.b - Ay*lift.d;
-    model.A = Ax;
-    model.b = b;
+    if ~isempty(model.A)
+        Ax = model.A(:,linearIndex);
+        Ay = model.A(:,liftedIndex);
+        Ax = Ax + Ay*lift.T;
+        b = model.b - Ay*lift.d;
+        model.A = Ax;
+        model.b = b;
+    end
+    
     lb = model.lb(liftedIndex);model.lb(liftedIndex)=[];
     ub = model.ub(liftedIndex);model.ub(liftedIndex)=[];
     uselb = find(~isinf(lb));
