@@ -79,8 +79,17 @@ for uncertaintyGroup = 1:length(randomVariables)
             %  A = A*Base;
             
             % b(x) + c(x)'*w >= 0
-            b = b + fX + cx'*x;
-            c = A'*x + cw';
+            if isempty(b)
+                b = 0;
+            end
+            b = b + fX;
+            if ~isempty(cx)
+                b = b + cx'*x;
+            end
+            c = cw';
+            if ~isempty(A)
+                c = c + A'*x;
+            end
             
             newConstraint = [];            
             if ~fail
@@ -98,6 +107,8 @@ for uncertaintyGroup = 1:length(randomVariables)
                             eliminatedConstraints(ic)=1;
                         otherwise
                             switch options.chance.method
+                                case 'chebyshev'
+                                    newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);                                    
                                 case 'moment'
                                     newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'markov'
