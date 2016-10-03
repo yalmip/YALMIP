@@ -1,4 +1,4 @@
-function Fchance = modelchance(F,options)
+function Fchance = modelchance(F,options,rec)
 
 % Goes through all probability constraints and checks for cases where we
 % can use analytic expressions.
@@ -19,20 +19,47 @@ end
 if nargin < 2
     options = sdpsettings;
 end
+if nargin < 3
+    % Keep track of recursive calls for print-outs
+    rec = 0;
+end
 
 keep = ones(length(F),1);
 keep(chanceDeclarations)=0;
 randomVariables = extractRandomDefinitions(F(randomDeclarations));
+if options.verbose
+    if ~rec
+        disp('***** Starting YALMIP chance constraint module. *******************')
+    else
+        disp(' - (recursive application of chance constraints)')
+    end
+    disp([' - Detected ' num2str(length(randomVariables)) ' distribution models.'])
+end
+
 [randomVariables,map] = mergeDistributions(randomVariables);
+if options.verbose && length(map)>max(map)
+    disp([' - Merged to ' num2str(length(randomVariables)) ' distribution models.'])
+end
+
 groupedChanceConstraints = groupchanceconstraints(F);
+
+if options.verbose
+    disp([' - Detected ' num2str(length(groupedChanceConstraints)) ' chance constraints.'])
+end
 
 [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
 Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
-    Fchance = modelchance(Fchance,options);
+    Fchance = modelchance(Fchance,options,1);
+end
+if ~rec
+    disp('***** Modeling of chance constraints done. ************************')
 end
 
+
 function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
+
+
 
 recursive = 0;
 Fchance = [];
@@ -91,37 +118,53 @@ for uncertaintyGroup = 1:length(randomVariables)
                 c = c + A'*x;
             end
             
-            newConstraint = [];            
+            newConstraint = [];
             if ~fail
                 confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
                 if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.name),'random')
                     switch randomVariables{uncertaintyGroup}.distribution.parameters{1}
-                        case 'moment'                            
+                        case 'moment'
                             newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
-                            eliminatedConstraints(ic)=1;                            
+                            printout(options.verbose,'moment',randomVariables{uncertaintyGroup}.distribution);
+                            eliminatedConstraints(ic)=1;
                         case {'normal','normalm'}
                             newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                            printout(options.verbose,'exact',randomVariables{uncertaintyGroup}.distribution);
                             eliminatedConstraints(ic)=1;
                         case 'normalf'
                             newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                            printout(options.verbose,'exact',randomVariables{uncertaintyGroup}.distribution);
                             eliminatedConstraints(ic)=1;
                         otherwise
                             switch options.chance.method
                                 case 'chebyshev'
-                                    newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);                                    
+                                    newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'moment'
                                     newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'markov'
                                     newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'chernoff'
-                                    newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);                            
+                                    newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 otherwise
-                                    error('Chance model not recognized');
+                                    error('Chance modeling approach not recognized');
                             end
+                            printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution);
                             eliminatedConstraints(ic)=1;
                     end
                 else
-                    newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                    switch options.chance.method
+                        case 'chebyshev'
+                            newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                        case 'moment'
+                            newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                        case 'markov'
+                            newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                        case 'chernoff'
+                            newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                        otherwise
+                            error('Chance modeling approach not recognized');
+                    end
+                    printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution);
                     eliminatedConstraints(ic)=1;
                 end
             end
@@ -180,3 +223,12 @@ end
 
 
 
+function printout(verbose,method,distribution)
+
+if verbose
+    if strcmpi(func2str(distribution.name),'random')
+        disp([' - Using ''' method '''-filter on constraint with ''' distribution.parameters{1} ''' distribution']);
+    else
+        disp([' - Using ''' method '''-filter on constraint with data created by @' distribution.name']);
+    end
+end
