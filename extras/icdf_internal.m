@@ -9,14 +9,21 @@ switch class(varargin{1})
         
         operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
+        operator.derivative = @(x)derivative(x,varargin{4:end});
         
         varargout{1} = [1-1e-8 >= varargin{3} >= 1e-8];
         varargout{2} = operator;
         varargout{3} = varargin{3};
         
     otherwise
-        error('SDPVAR/ERF called with CHAR argument?');
+        error('SDPVAR/ICDF called with CHAR argument?');
 end
+
+function df = derivative(x,varargin)
+
+PsiInv = icdf(varargin{1},x,varargin{2:end});
+Phi = pdf(varargin{1},PsiInv,varargin{2:end});
+df = 1/Phi;
 
 function [L,U] = bounds(xL,xU,varargin)
 L = icdf(varargin{1},xL,varargin{2:end});
