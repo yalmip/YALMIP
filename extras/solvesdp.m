@@ -142,17 +142,6 @@ end
 
 % Eliminate chance constraints?
 F = modelchance(F,options);
-F(find(is(F,'random'))) = [];
-
-%Call chance solver?
-% if length(F) > 0
-%     rand_declarations = is(F,'random');
-%     if any(rand_declarations)
-%     %    diagnostic = solverandom(F(find(~rand_declarations)),h,options,recover(getvariables(sdpvar(F(find(unc_declarations))))));
-%         return
-%     end
-% end
-
 
 % Call robust solver?
 if length(F) > 0
