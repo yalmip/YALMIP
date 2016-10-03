@@ -6,4 +6,8 @@ X = covariance + theMean*theMean';
 S = chol(X);
 gamma = sqrtm(confidencelevel);
 e = [S*c+b*(inv(S')*theMean);b*sqrtm(1-theMean'*inv(X)*theMean)];
-model =  b + c'*theMean >= gamma*norm_callback(e);
+if isa(gamma,'sdpvar')
+    model =  b + c'*theMean >= gamma*norm_callback(e);
+else
+    model =  b + c'*theMean >= gamma*norm(e);
+end

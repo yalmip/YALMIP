@@ -9,8 +9,8 @@ if isa(covariance,'sdpvar')
     error('Covariance cannot be an SDPVAR in normal distribution. Maybe you meant to use factorized covariance in ''normalf''');
 end
 e = chol(covariance)*c;
-if isa(gamma,'sdpvar')
-    newConstraint = b + c'*theMean >= gamma*norm_callback(e);
+if isa(gamma,'sdpvar')    
+    newConstraint = b + c'*theMean >= gamma*norm_callback(e);    
 else
     newConstraint =  b + c'*theMean >= gamma*norm(e);
 end

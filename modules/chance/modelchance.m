@@ -96,9 +96,9 @@ for uncertaintyGroup = 1:length(randomVariables)
                 confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
                 if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.name),'random')
                     switch randomVariables{uncertaintyGroup}.distribution.parameters{1}
-                        case 'moment'
+                        case 'moment'                            
                             newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
-                            eliminatedConstraints(ic)=1;
+                            eliminatedConstraints(ic)=1;                            
                         case {'normal','normalm'}
                             newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             eliminatedConstraints(ic)=1;
