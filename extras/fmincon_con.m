@@ -32,7 +32,12 @@ if nnz(model.K.q) > 0
     top = 1;
     for i = 1:length(model.K.q)
         z = model.F_struc(top:top+model.K.q(i)-1,:)*[1;xevaled];
-        g = [g;-(z(1)^2 - z(2:end)'*z(2:end))];
+        if ~model.derivative_available
+            % fmincon appears to behave better on this
+            g = [g;-(z(1) - sqrt(z(2:end)'*z(2:end)))];
+        else
+            g = [g;-(z(1)^2 - (z(2:end)'*z(2:end)))];
+        end        
         top = top + model.K.q(i);
     end
 end
