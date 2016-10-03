@@ -9,4 +9,4 @@ else
     s = sdpvar(1,N);
 end
 alpha = sdpvar(1);
-newConstraint = [0 <= alpha, -b-c'*W+alpha <= s, 0 <= s, sum(s)/N <= alpha*(1-confidencelevel)]
+newConstraint = [0 <= alpha, -b-c'*W+alpha <= s, 0 <= s, sum(s)/N <= alpha*(1-confidencelevel)];
