@@ -35,6 +35,8 @@ else
 end
 opts.verbose = max(opts.verbose-1,0);
 
+F = modelchance(F,opts);
+
 if any(is(F,'uncertain'))
     F = robustify(F,[],opts);
 end
