@@ -5,6 +5,10 @@ if isempty(model.aux_variables) || isempty(model.Aeq)
 end
     
 [used,liftedIndex] = ismember(setdiff(model.aux_variables,model.evalVariables),model.linearindicies);
+if isempty(liftedIndex)
+    return
+end
+
 linearIndex = setdiff(1:length(model.linearindicies),liftedIndex);
 lift.d = [];
 lift.T = [];

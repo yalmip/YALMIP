@@ -11,5 +11,7 @@ else
     [f,df,xevaledout,dx] = fmincon_fun(xlift,model);
     %Now map gradient to exposed variables to fmincon
     df = df(:)';
-    df = df(model.lift.linearIndex) + df(model.lift.liftedIndex)*model.lift.T;
+    if ~isempty(df)
+        df = df(model.lift.linearIndex) + df(model.lift.liftedIndex)*model.lift.T;
+    end
 end

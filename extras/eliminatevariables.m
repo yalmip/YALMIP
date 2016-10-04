@@ -240,6 +240,10 @@ if ~isempty(model.semicont_variables)
    temp=ismember(keptvariablesIndex,model.semicont_variables);
    model.semicont_variables = find(temp);  
 end
+if ~isempty(model.aux_variables)
+   temp=ismember(keptvariablesIndex,model.aux_variables);
+   model.aux_variables = find(temp);  
+end
 
 model.used_variables = model.used_variables(keptvariablesIndex);
 
