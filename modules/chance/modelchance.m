@@ -52,7 +52,7 @@ Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
     Fchance = modelchance(Fchance,options,1);
 end
-if ~rec
+if ~rec && options.verbose
     disp('***** Modeling of chance constraints done. ************************')
 end
 
@@ -88,6 +88,10 @@ for uncertaintyGroup = 1:length(randomVariables)
         
         % Extract quadratic part, X = fX + X, where fx is other stuff
         [fX,X] = functionSeparation(X);
+        
+        if isa(fX,'sdpvar') && ~isempty(intersect(deepdepends(fX),wVars))
+            error('Stochastic uncertainty in nonlinear operator not supported yet.');
+        end
         
         allVars = depends(X);
         if ~isempty(intersect(wVars,allVars))
