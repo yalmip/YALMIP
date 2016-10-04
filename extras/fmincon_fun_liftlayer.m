@@ -2,7 +2,7 @@ function [f,df,xevaledout] = fmincon_fun_liftlayer(x,model)
 
 if isempty(model.lift)    
     [f,df,xevaledout,dx] = fmincon_fun(x,model);
-elseif strcmp(model.lift.type,'linear')
+else
     xlift = zeros(length(model.linearindicies),1);
     xlift(model.lift.linearIndex) = x;
     xlift(model.lift.liftedIndex) = model.lift.d + model.lift.T*x;

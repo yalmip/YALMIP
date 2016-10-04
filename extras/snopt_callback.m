@@ -7,11 +7,11 @@ if nargin > 1
 end
 
 if model.SimpleLinearObjective | model.SimpleQuadraticObjective
-    [f,df] = fmincon_fun(x,model);
-    [g,geq,dg,dgeq] = fmincon_con(x,model);
+    [f,df] = fmincon_fun_liftlayer(x,model);
+    [g,geq,dg,dgeq] = fmincon_con_liftlayer(x,model);
 else
-    [f,df,xevaled] = fmincon_fun(x,model);
-    [g,geq,dg,dgeq] = fmincon_con(x,model,xevaled);
+    [f,df,xevaled] = fmincon_fun_liftlayer(x,model);
+    [g,geq,dg,dgeq] = fmincon_con_liftlayer(x,model,xevaled);
 end
 
 F = [f;g;geq];

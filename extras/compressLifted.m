@@ -14,20 +14,24 @@ if ~isempty(model.Aeq)
     lift.d = [lift.d;-model.beq(definingLift)];
     lift.T = [lift.T;model.Aeq(definingLift,linearIndex)];
     lift.S = [lift.S;-model.Aeq(definingLift,liftedIndex)];
-    keep = ~any(lift.S,1);
+    keep = any(lift.S,1);
     if ~all(keep)
+        % FIXME: Sort out this case
         return
-    end    
+    end   
+    [i,j,k] = find(lift.S);
     lift.T = lift.T(i,:);
-    lift.d = lift.d(i);
-    % lift.d = lift.S\d;
-    %  lift.T = lift.S\lift.T;
+    lift.d = lift.d(i);   
     model.Aeq(definingLift,:) = [];
     model.beq(definingLift,:) = [];
     model.Aeq(:,liftedIndex)=[];
+    if isempty(model.Aeq)
+        model.Aeq = [];
+        model.beq = [];
+    end
 end
 if size(lift.S,1) == size(lift.S,2) & length(lift.S) == length(liftedIndex)
-  
+    
     % Equalities defining the lifted variables d + Tx = y   
     if ~isempty(model.A)
         Ax = model.A(:,linearIndex);
@@ -53,8 +57,7 @@ if size(lift.S,1) == size(lift.S,2) & length(lift.S) == length(liftedIndex)
     model.x0 = model.x0(linearIndex);
     lift.linearIndex = linearIndex;
     lift.liftedIndex = liftedIndex;
-    model.lift = lift;
-    model.lift.type = 'linear';
+    model.lift = lift;   
 else
     model.lift = [];
 end
