@@ -127,6 +127,10 @@ for uncertaintyGroup = 1:length(randomVariables)
                             newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             printout(options.verbose,'moment',randomVariables{uncertaintyGroup}.distribution);
                             eliminatedConstraints(ic)=1;
+                        case 'momentf'
+                            newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                            printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
+                            eliminatedConstraints(ic)=1;                            
                         case {'normal','normalm'}
                             newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             printout(options.verbose,'exact',randomVariables{uncertaintyGroup}.distribution);
