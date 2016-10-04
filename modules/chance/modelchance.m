@@ -137,11 +137,11 @@ for uncertaintyGroup = 1:length(randomVariables)
                             eliminatedConstraints(ic)=1;                            
                         case {'normal','normalm'}
                             newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
-                            printout(options.verbose,'exact',randomVariables{uncertaintyGroup}.distribution);
+                            printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
                             eliminatedConstraints(ic)=1;
                         case 'normalf'
                             newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
-                            printout(options.verbose,'exact',randomVariables{uncertaintyGroup}.distribution);
+                            printout(options.verbose,'exact normalf',randomVariables{uncertaintyGroup}.distribution);
                             eliminatedConstraints(ic)=1;
                         otherwise
                             switch options.chance.method
