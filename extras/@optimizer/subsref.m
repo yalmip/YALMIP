@@ -274,6 +274,15 @@ elseif isequal(subs.type,'{}')
             % Standard case where we eliminate all variables left
             self.instatiatedvalues(ismember(self.orginal_usedvariables,self.model.used_variables(self.model.parameterIndex))) = thisData(:);
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,self.model.parameterIndex,thisData(:),self.model.parameterIndex);
+            
+            % Remap all evaluation operators
+            self.model.evalVariables = [];
+            for k = 1:length(self.model.evalMap)
+                self.model.evalMap{k}.computes = find(self.model.evalMap{k}.computes == keptvariablesIndex);
+                self.model.evalMap{k}.variableIndex = find(self.model.evalMap{k}.variableIndex == keptvariablesIndex);
+                self.model.evalVariables = [self.model.evalVariables self.model.evalMap{k}.computes];
+            end                                         
+            self.model.evalVariables = sort(self.model.evalVariables);            
         end
 
         % Turn off equality presolving for simple programs. equality
