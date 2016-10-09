@@ -284,17 +284,18 @@ sys.ops = options;
 sys.complicatedEvalMap = 0;
 % Are all nonlinear operators acting on simple parameters? Elimination
 % strategy will only be applied on simple problems such as x<=exp(par)
-for i = 1:length(sys.model.evalMap)
-    if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
-       sys.complicatedEvalMap = 1;
+if ~model.solver.evaluation
+    for i = 1:length(sys.model.evalMap)
+        if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
+            sys.complicatedEvalMap = 1;
+        end
+        if length(sys.model.evalMap{i}.arg)>2
+            sys.complicatedEvalMap = 1;
+        end
     end
-    if length(sys.model.evalMap{i}.arg)>2
-        sys.complicatedEvalMap = 1;
+    if sys.complicatedEvalMap
+        error('Parameters are currently only allowed to enter function such as exp, sin etc as exp(a), sin(b) etc.')
     end
-end
-
-if sys.complicatedEvalMap
-    error('Parameters are currently only allowed to enter function such as exp, sin etc as exp(a), sin(b) etc.')
 end
 
 sys.model.evalParameters = [];
