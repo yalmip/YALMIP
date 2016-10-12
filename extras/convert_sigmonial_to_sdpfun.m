@@ -215,15 +215,18 @@ dfL = -1*xL^(-2);
 dfU = -1*xU^(-2);
 if xL<0 & xU>0
     % Nasty crossing
-    Ax = [];
-    Ay = [];
-    b = [];
+    Ax = [1;-1];
+    Ay = [0;0];
+    b = [xU;-xL];
     return
 end
 average_derivative = (fU-fL)/(xU-xL);
 xM = (average_derivative/(-1)).^(1/(-1-1));
 if xU < 0
     xM = -xM;
+end
+if ~(xM > xL)
+    xM = (xL + xU)/2;
 end
 fM = xM^(-1);
 dfM = (-1)*xM^(-2);
@@ -232,13 +235,6 @@ if xL >= 0
     [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
     [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-end
-if ~isempty(Ax)
-    if isinf(Ax(1))
-        Ay(1) = 0;
-        Ax(1) = -1;
-        B(1)  = 0;
-    end
 end
 
 function df = power_derivative(x,power)
