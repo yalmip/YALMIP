@@ -33,7 +33,6 @@ cones.q = K.q;
 cones.s = K.s;
 cones.ep = 0;
 [data,cones,output] = addExponentialCone(data,cones,yalmipmodel);
-[data,cones,lift] = compressModel(data,cones,yalmipmodel);
 if output.problem == -4
     return
 end
@@ -82,12 +81,7 @@ end
 
 % Internal format, only keep original variablesop
 if ~isempty(x)
-    Primal(lift.linearIndex) = x;
-    if ~isempty(lift.liftedIndex)
-        Primal(lift.liftedIndex) = lift.d + lift.T*x;
-    end
-    Primal = Primal(1:length(yalmipmodel.c));
-    Primal = Primal(:);
+    Primal = x(1:length(yalmipmodel.c));
 else
     Primal = nan(length(yalmipmodel.c),1);
 end
@@ -139,53 +133,3 @@ end
 
 % Standard interface 
 output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
-
-
-% Compress model and remove YALMIPs intermediate auxilliary variables
-function [data,cones,lift] = compressModel(data,cones,model)
-
-lift.liftedIndex = [];
-lift.linearIndex = 1:length(size(data.A,2));
-
-if isempty(model.aux_variables) || isempty(cones.f) || (cones.f == 0)
-    return
-end
-    
-liftedIndex = setdiff(model.aux_variables,model.evalVariables);
-if isempty(liftedIndex)
-    return
-end
-
-linearIndex = setdiff(1:size(data.A,2),liftedIndex);
-
-lift.liftedIndex = liftedIndex;
-lift.linearIndex = linearIndex;
-
-lift.d = [];
-lift.T = [];
-lift.S = [];
-if cones.f > 0
-    definingLift = find(any(data.A(1:cones.f,liftedIndex),2));
-    lift.d = [lift.d;-data.b(definingLift)];
-    lift.T = [lift.T;data.A(definingLift,linearIndex)];
-    lift.S = [lift.S;-data.A(definingLift,liftedIndex)];
-    keep = any(lift.S,1);
-    if ~all(keep)
-        % FIXME: Sort out this case
-        return
-    end   
-    [i,j,k] = find(lift.S);
-    lift.T = lift.T(i,:);
-    lift.d = lift.d(i);   
-    data.A(definingLift,:) = [];
-    data.b(definingLift,:) = [];
-    cones.f = cones.f - length(definingLift);
-     
-    Ax = data.A(:,linearIndex);
-    Ay = data.A(:,liftedIndex);
-    Ax = Ax + Ay*lift.T;
-	b = data.b - Ay*lift.d;
-	data.A = Ax;
-	data.b = b;
-    data.c = data.c(linearIndex) + ((data.c(liftedIndex))'*lift.T)';
-end
