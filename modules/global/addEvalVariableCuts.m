@@ -59,6 +59,12 @@ try
     [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
 catch
     [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+    if ~isempty(Ax)
+        problem = find(any(isinf([Ax Ay b]),2) | any(isnan([Ax Ay b]),2));
+        Ax(problem,:) = [];
+        Ay(problem,:) = [];
+        b(problem) = [];
+    end
     K = [];
 end
 p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
