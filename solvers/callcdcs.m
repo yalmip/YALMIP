@@ -59,13 +59,14 @@ solvertime = toc(solvertime);
 
 % Set problem code from solver if successful run
 if problem~=9
-    if info.problem==0
-        % All good
-        problem = 0;
-    elseif info.problem==1
-        % Max # of iterations reached
-        problem = 3;
-    elseif info.problem==2
+    if info.problem<4
+        % CDCS problem code matches YALMIP
+        % 0: successfully solved
+        % 1: primal infeasible
+        % 2: dual infeasible (unbounded objective)
+        % 3: max number of iterations reached
+        problem = info.problem;
+    else
         % Solution probably good, but error in post-processing routine
         % Please check if problem code is appropriate
         problem = 11;
