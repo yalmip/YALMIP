@@ -460,7 +460,7 @@ param = model.options.mosek;
 if ~isempty(model.x0)
     if model.options.usex0
         prob.sol.int.xx = zeros(max([length(model.Q) size(prob.a,2)]),1);
-        prob.sol.int.xx(model.integer_variables) = x0(model.integer_variables);
+        prob.sol.int.xx(model.integer_variables) = model.x0(model.integer_variables);
         evalc('[r,res] = mosekopt (''symbcon'')');
         sc = res.symbcon ;
         param.MSK_IPAR_MIO_CONSTRUCT_SOL = sc.MSK_ON;
