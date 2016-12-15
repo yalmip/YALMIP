@@ -6,7 +6,7 @@ switch class(varargin{1})
         X = varargin{1}(:);
         n = sqrt(length(X));
         X = reshape(X,n,n);
-        varargout{1} = eig(X);
+        varargout{1} = eig((X+X')/2);
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
 
