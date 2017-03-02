@@ -1695,15 +1695,3 @@ solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone = 0;
 i = i+1;
-
-% % ***************************************
-% % DEFINE SDPA-GMP AS A SOLVER - ADDED BY 
-% % install_sdpa_gmp                       
-% % ***************************************
-solver(i) = sdpsolver;                       
-solver(i).tag     = 'SDPA-GMP';            
-solver(i).version = '';                   
-solver(i).checkfor= {'sdpam.m'};           
-solver(i).call    = 'callsdpagmp';         
-solver(i).constraint.equalities.linear = 0;  
-i = i+1;                                     
