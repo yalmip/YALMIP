@@ -27,6 +27,7 @@ switch class(varargin{1})
         operator.convexhull = @convexhull;
         operator.bounds     = @bounds;
         operator.derivative = @(x)logistic(x).*(1-logistic(x));
+        operator.inverse    = @(x)(log(x)-log(1-x));
         operator.range = [0 1];
 
         varargout{1} = [];
@@ -34,7 +35,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/EXP called with CHAR argument?');
+        error('SDPVAR/LOGISTIC called with CHAR argument?');
 end
 
 % Bounding functions for the branch&bound solver
@@ -49,7 +50,6 @@ if xU <=0
     dfL = fL*(1-fL);
     dfU = fU*(1-fU);
     [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
-    plot(polytope([Ax Ay],b));
 elseif xL>=0
     fL = logistic(xL);
     fU = logistic(xU);
