@@ -13,14 +13,25 @@ Matrices.W = Matrices.W(un,:);
 % Convert from MPT format to POP format
 Matrices = mpt2pop(Matrices);
 
+ops = interfacedata.options.pop;
+
+if interfacedata.options.verbose
+    if isequal(lower(ops.Progress),'on') || isequal(lower(ops.Progress),'off')
+        % User hasn't specified fancy progress, so we simply turn on text
+        ops.Progress = 'text';
+    end
+else
+    ops.Progress = 'Off';
+end
+
 if interfacedata.options.savedebug
-    save popdebug Matrices
+    save popdebug Matrices ops
 end
 
 if ~isempty(Matrices.E)
-    solution = mpMIQP(Matrices);
+    solution = mpMIQP(Matrices,ops);
 else
-    solution = mpQP(Matrices);
+    solution = mpQP(Matrices,ops);
 end
 
 solvertime=0;

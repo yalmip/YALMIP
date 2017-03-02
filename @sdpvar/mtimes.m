@@ -68,7 +68,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Y = flush(Y);
         end
         try
-            % HACK: Return entropy when user types x*log(x)
+            % HACK: Return entropy when user types x*log(x), plog for
+            % x*log(y/x) and -plog for x*log(x/y)
             if isequal(Y.extra.opname,'log')
                 Z = check_for_special_case(Y,X);
                 if ~isempty(Z)
@@ -821,7 +822,11 @@ if isequal(getbase(args),[0 1]) &&  isequal(getbase(X),[0 1])
     v = mt(getvariables(args),:);
     vb = v(find(v));
     if v(getvariables(X))==1 && min(vb)==-1 && max(vb)==1
-        Z = plog([X;recover(find(v==-1))]);
+        % X * log(X / Y) = -plog(X,Y)
+        Z = -plog([X;recover(find(v==-1))]);
+    elseif v(getvariables(X))==-1 && min(vb)==-1 && max(vb)==1
+        % X * log(Y / X) = plot(X,Y)
+        Z = plog([X;recover(find(v==1))]);
     else
         Z = [];
     end

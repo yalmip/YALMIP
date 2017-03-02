@@ -12,8 +12,13 @@ end
 % Standard NONLINEAR setup
 model = yalmip2nonlinearsolver(model);
 
-model.options.knitro.GradObj = 'on';
-model.options.knitro.GradConstr = 'on';
+if model.derivative_available
+    model.options.knitro.GradObj = 'on';
+    model.options.knitro.GradConstr = 'on';
+else
+    model.options.knitro.GradObj = 'off';
+    model.options.knitro.GradConstr = 'off';
+end
 model.options.knitro.JacobPattern = jacobiansparsityfromnonlinear(model,0);
 
 % If quadratic objective and no nonlinear constraints, we can supply an

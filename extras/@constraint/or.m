@@ -46,8 +46,10 @@ switch class(varargin{1})
         else
             varargout{1} = F + (sum(xy) >= z) + (z >= xy) +(binary(z));
         end
-        varargout{2} = struct('convexity','none','monotonicity','exact','definiteness','none','model','integer');
-        varargout{3} = xy;
+        X = sdpvar(X);
+        Y = sdpvar(Y);
+        varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
+        varargout{3} = [xy(:);X(:);Y(:)];
 
     case {'sdpvar','constraint'}             
         varargout{1} = yalmip('define','or',varargin{:});       

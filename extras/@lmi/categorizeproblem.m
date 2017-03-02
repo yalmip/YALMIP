@@ -313,6 +313,8 @@ for i = 1:Counter
                     problem.constraint.integer = 1;
                 case 8
                     problem.constraint.binary = 1;
+                case 16
+                    problem.random = 1;
                 case 50
                     problem.constraint.sos2 = 1;
                 case 51

@@ -44,14 +44,14 @@ for i = 1:length(p.evalMap)
                                 % Hey, x*log(x/y)!
                                 % we change this monomial variable to a
                                 % callback variable
-                                p.evalMap{i}.fcn = 'perspective_log';
+                                p.evalMap{i}.fcn = 'negated_perspective_log';
                                 p.evalMap{i}.arg{1} = recover([x;y]);
                                 p.evalMap{i}.arg{2} = [];
                                 p.evalMap{i}.variableIndex = [x y];
                                 p.evalMap{i}.computes = other;
-                                p.evalMap{i}.properties.bounds = @plog_bounds;
-                                p.evalMap{i}.properties.convexhull = @plog_convexhull;
-                                p.evalMap{i}.properties.derivative = @plog_derivative;
+                                p.evalMap{i}.properties.bounds = @nplog_bounds;
+                                p.evalMap{i}.properties.convexhull = @nplog_convexhull;
+                                p.evalMap{i}.properties.derivative = @nplog_derivative;
                                 p.evalMap{i}.properties.inverse = [];
                                 p.variabletype(other) = 0;
                                 p.monomtable(other,:) = 0;
@@ -104,10 +104,10 @@ if length(removable) > 0
     p.used_variables(removable) = [];
 end
 
-function dp = plog_derivative(x)
+function dp = nplog_derivative(x)
 dp = [log(x(1)/x(2)) + 1;-x(1)/x(2)];
 
-function [L,U] = plog_bounds(xL,xU)
+function [L,U] = nplog_bounds(xL,xU)
 xU(isinf(xU)) = 1e12;
 x1 = xL(1)*log(xL(1)/xL(2));
 x2 = xU(1)*log(xU(1)/xL(2));
@@ -120,8 +120,24 @@ else
     L = min([x1 x2 x3 x4]);
 end
 
-function [Ax,Ay,b] = plog_convexhull(L,U);
-Ax = [];
-Ay = [];
-b = [];
-return
+function [Ax,Ay,b] = nplog_convexhull(xL,xU);
+
+x1 = [xL(1);xL(2)];
+x2 = [xU(1);xL(2)];
+x3 = [xL(1);xU(2)];
+x4 = [xU(1);xU(2)];
+x5 = (xL+xU)/2;
+
+f1 = negated_perspective_log(x1);
+f2 = negated_perspective_log(x2);
+f3 = negated_perspective_log(x3);
+f4 = negated_perspective_log(x4);
+f5 = negated_perspective_log(x5);
+
+df1 = nplog_derivative(x1);
+df2 = nplog_derivative(x2);
+df3 = nplog_derivative(x3);
+df4 = nplog_derivative(x4);
+df5 = nplog_derivative(x5);
+
+[Ax,Ay,b] = convexhullConvex2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
