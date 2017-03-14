@@ -802,7 +802,8 @@ function Z = check_for_special_case(Y,X)
 args = yalmip('getarguments',Y);
 args = args.arg{1};
 if isequal(X,args)
-    Z = -entropy(X);
+    B = getbase(Y);
+    Z = X*B(1)-B(2)*entropy(X);
     return
 end
 if 0%isequal(getvariables(args),getvariables(X)) 
