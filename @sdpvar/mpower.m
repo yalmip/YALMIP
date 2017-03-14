@@ -109,7 +109,7 @@ else %Integer power of scalar
         var = x.lmi_variables;
         newmt = mt(var,:)*d;
         newhash = newmt*hash;
-        previous_var = findhash(hashes , newhash);
+        previous_var = findhash(hashes , newhash,length(hashes));
         if isempty(previous_var)
             mt = [mt;newmt];
             yalmip('setmonomtable',mt,[variabletype newvariabletypegen(newmt)]);
