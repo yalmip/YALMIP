@@ -41,10 +41,7 @@ end
 % Trivial cases
 if isa(d,'double')
     if all(all(d==0))
-        if x.dim(1)~=x.dim(2)
-            error('Matrix must be square.')
-        end
-        y = eye(x.dim(1),x.dim(2)).^0;
+        y = ones(x.dim(1),x.dim(2));
         return
     end
     if all(all(d==1))
