@@ -618,6 +618,12 @@ solver(i).checkfor= {'qpOASES'};
 solver(i).call    = 'callqpoases';
 i = i+1;
 
+solver(i) = qpsolver;
+solver(i).tag     = 'OSQP';
+solver(i).version = '';
+solver(i).checkfor= {'OSQP'};
+solver(i).call    = 'callosqp';
+i = i+1;
 
 solver(i) = qpsolver;
 solver(i).tag     = 'OOQP';
