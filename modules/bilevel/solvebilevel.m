@@ -12,8 +12,8 @@ function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstrai
 %   info       : Bilevel solver specific information
 %
 %   Input
-%      CI       : Outer constraints (linear elementwise)
-%      OI       : Outer objective (convex quadratic)
+%      CO       : Outer constraints (linear elementwise)
+%      OO       : Outer objective (convex quadratic)
 %      CI       : Inner constraints (linear elementwise)
 %      OI       : Inner objective (convex quadratic)
 %      y        : Inner variables
