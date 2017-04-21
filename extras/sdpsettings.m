@@ -591,12 +591,12 @@ end
 
 function cplex = setup_cplex_options
 try
-    if strfind(version,'2016')
-        cplex = cplexoptimset;
-    else
+%    if strfind(version,'2016')
+%        cplex = cplexoptimset;
+%    else
         cplex = cplexoptimset('cplex');
         cplex.output.clonelog = 0;
-    end
+%    end
 catch
     cplex.presol = 1;
     cplex.niter = 1;
