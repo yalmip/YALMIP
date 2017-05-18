@@ -4,7 +4,11 @@ function Fchance = modelchance(F,options,rec)
 % can use analytic expressions.
 
 % Find chance constraints
-chanceDeclarations = find(is(F,'chance'));
+if ~isempty(F)
+    chanceDeclarations = find(is(F,'chance'));
+else
+    chanceDeclarations = [];
+end
 if isempty(chanceDeclarations)
     Fchance = F;
     return
