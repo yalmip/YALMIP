@@ -6,14 +6,6 @@ if nargin<2
     return
 end
 
-keep = ones(1,length(varargin));
-for i = 1:length(varargin)
-    if isempty(varargin{i})
-        keep(i) = 0;
-    end
-end
-varargin = {varargin{find(keep)}};
-
 % Get dimensions
 n = zeros(length(varargin),1);
 m = zeros(length(varargin),1);
