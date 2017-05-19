@@ -33,19 +33,19 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %     optZ = optimizer(Constraints,Objective,[],[LB; UB],z);
 %     
 %     % Compute the optimal z when LB=1, UB = 3;
-%     zopt = optZ{[1; 3]}
+%     zopt = optZ([1; 3])
 %
 %     % Compute two solutions, one for (LB,UB) [1;3] and one for (LB,UB) [2;6]
-%     zopt = optZ{[[1; 3], [2;6]]}
+%     zopt = optZ([[1; 3], [2;6]])
 %
 %     % A second output argument can be used to catch infeasibility
-%     [zopt,infeasible] = optZ{[1; 3]}
+%     [zopt,infeasible] = optZ([1; 3])
 %
 %     % To avoid the need to vectorize in order to handle multiple
 %     parameters, a cell-based definition can be used 
 %
 %     optZ = optimizer(Constraints,Objective,[],{LB,UB},{z,sum(z)})
-%     [zopt,infeasible] = optZ{{1,3}};
+%     [zopt,infeasible] = optZ({1,3});
 %     zopt{1}
 %     zopt{2}
 
