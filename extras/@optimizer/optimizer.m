@@ -93,6 +93,10 @@ end
 nIn = length(x);
 mIn = 1;
 
+if ~isa(x,'lpcone')
+    error('All parameter arguments have to be simple variables (i.e., not expressions such a+b or 1+a)');
+end
+
 if isa(u,'cell')
     uvec = []; 
     for i = 1:length(u)        
