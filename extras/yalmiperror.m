@@ -6,6 +6,7 @@ function error_string = yalmiperror(errorcode,solver)
 %
 %   The complete set of error codes are
 %
+%   -10 NaN in model data
 %    -9 Specified solver name not recognized
 %    -8 Problem does not satisfy geometric programming rules
 %    -7 Solver does not return error codes
@@ -54,6 +55,8 @@ else
 end
 
 switch errorcode
+case -10
+  error_string = ['NaN in model data ' solver];          
 case -9
   error_string = ['Specified solver name not recognized ' solver];          
 case -8

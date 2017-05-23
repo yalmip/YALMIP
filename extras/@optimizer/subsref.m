@@ -137,6 +137,26 @@ elseif isequal(subs.type,'{}')
             end
         end
         
+        % Check for garbage call
+        for i = 1:length(subs.subs)
+            if isnan(subs.subs{i})
+                if length(self.dimoutOrig)>1
+                    for j = 1:length(self.dimoutOrig)
+                        sol{j} = nan(self.dimoutOrig{j});
+                    end
+                else
+                    sol = nan(self.dimoutOrig{1});
+                end
+                varargout{1} = sol;
+                varargout{2} = -10;
+                varargout{3} = yalmiperror(-10);
+                varargout{4} = []; 
+                varargout{5} = self; 
+                varargout{6} = self; 
+                return
+            end
+        end
+        
         
         % If blocked call, check so that there are as many blocks for every
         % argument. Note, we only analyze instantiated blocks
