@@ -24,7 +24,7 @@ showprogress('Calling IPOPT',model.options.showprogress);
 % our function evaluations and gradient computations in our lifted world,
 % but only expose the model in the original variables to the nonlinear
 % solver. 
-model = compressLifted(model);
+% model = compressLifted(model);
 
 Fupp = [ repmat(0,length(model.bnonlinineq),1);
     repmat(0,length(model.bnonlineq),1);

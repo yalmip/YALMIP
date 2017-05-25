@@ -18,7 +18,7 @@ model = yalmip2nonlinearsolver(model);
 % but only expose the model in the original variables to the nonlinear
 % solver. 
 if isempty(C) % Only do this if we don't have complementarity. FIXME
-    model = compressLifted(model);
+%    model = compressLifted(model);
 end
 
 if model.derivative_available

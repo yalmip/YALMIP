@@ -45,7 +45,7 @@ end
 % our function evaluations and gradient computations in our lifted world,
 % but only expose the model in the original variables to the nonlinear
 % solver. 
-model = compressLifted(model);
+% model = compressLifted(model);
 
 global latest_xevaled
 global latest_x_xevaled

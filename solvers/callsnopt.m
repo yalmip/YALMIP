@@ -14,7 +14,7 @@ end
 % our function evaluations and gradient computations in our lifted world,
 % but only expose the model in the original variables to the nonlinear
 % solver. 
-model = compressLifted(model);
+% model = compressLifted(model);
 
 if model.options.savedebug
     save snoptdebug model
