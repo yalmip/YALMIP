@@ -93,8 +93,10 @@ end
 nIn = length(x);
 mIn = 1;
 
-if ~is(x,'lpcone')
+if isa(x,'sdpvar')
+    if ~is(x,'lpcone')
     error('All parameter arguments have to be simple variables (i.e., not expressions such a+b or 1+a)');
+    end
 end
 
 if isa(u,'cell')
