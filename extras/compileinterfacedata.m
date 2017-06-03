@@ -1055,6 +1055,42 @@ if ~isempty(F_struc)
 end
 
 % *************************************************************************
+%% If solver doesn't support high precision input, make sure the input is
+% only double precision.
+% *************************************************************************
+
+if ~isequal(solver.call, 'iterative_refinement')
+    if isa(F_struc, 'gem') || isa(F_struc, 'sgem')
+        F_struc = double(F_struc);
+    end
+    if isa(c, 'gem') || isa(c, 'sgem')
+        c = double(c);
+    end
+    if isa(Q, 'gem') || isa(Q, 'sgem')
+        Q = double(Q);
+    end
+    if isa(f, 'gem') || isa(f, 'sgem')
+        f = double(f);
+    end
+    if isa(lb, 'gem') || isa(lb, 'sgem')
+        lb = double(lb);
+    end
+    if isa(ub, 'gem') || isa(ub, 'sgem')
+        ub = double(ub);
+    end
+    if isa(x0, 'gem') || isa(x0, 'sgem')
+        x0 = double(x0);
+    end
+    if isa(oldF_struc, 'gem') || isa(oldF_struc, 'sgem')
+        oldF_struc = double(oldF_struc);
+    end
+    if isa(oldc, 'gem') || isa(oldc, 'sgem')
+        oldc = double(oldc);
+    end
+end
+
+
+% *************************************************************************
 %% GENERAL DATA EXCHANGE WITH SOLVER
 % *************************************************************************
 interfacedata.F_struc = F_struc;

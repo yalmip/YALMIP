@@ -4,11 +4,13 @@ function [sys,values] = double(varargin)
 % New syntax
 switch nargout
     case 0
-        value(varargin{:})
+        double(value(varargin{:}))
     case 1
-        sys = value(varargin{:});
+        sys = double(value(varargin{:}));
     case 2
         [sys,values] = value(varargin{:});
+        sys = double(sys);
+        values = double(values);
     otherwise
         error('Too many output arguments.');
 end
