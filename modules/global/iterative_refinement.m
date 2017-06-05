@@ -180,7 +180,9 @@ end
 % Arguments analysis
 if nargin < 18
     % first call
-    disp('Refiner 1.0 - Iterative meta-solver');
+    if options.verbose >= 1
+        disp('Refiner 1.0 - Iterative meta-solver');
+    end
     tic;
     
     % We make sure the input is of high precision (if possible)
@@ -275,7 +277,7 @@ else
     if nbIter == 1
         ops = options;
         ops.solver = options.refiner.internalSolver;
-        ops.verbose = ops.verbose - 1;
+        ops.verbose = max(0, ops.verbose - 1);
 %        ops.solver = 'sedumi';
 %        ops.sedumi.eps = 1e-4;
         ops.dimacs = 1; % We ask for dimacs values
