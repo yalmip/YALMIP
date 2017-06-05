@@ -121,18 +121,18 @@ end
 function [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, Ld, xEst, yEst, zEst, beq0, l0, beqd0, Ld0, zoom)
 % [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, Ld, xEst, yEst, zEst, beq0, l0, beqd0, Ld0, zoom)
 %
-% Tries to solve the semi-definite program
+% Tries to solve the linear program
 %     maximize   f'*x
 %   subject to   Aeq*x = beq
 %          and   x belongs to some self-dual homogeneous cones
 %
 % x can be a combination of scalars and matrices of various sizes, as 
-% specified by K.f, K.l and K.s (a la sedumi).
+% specified by K.f, K.l (a la sedumi).
 %
 % For better results, the above parameters should be provided as gem/sgem
 % objects.
 %
-% l does not need to be specified. If specified, it sets a lower bound on
+% l should not be given explicitly. If specified, it sets a lower bound on
 % the bounded variables (as specified by K.l).
 % 
 % fd, ld, beqd, Ld are specifications of the dual (they should NOT be
@@ -151,44 +151,9 @@ function [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, L
 % y and z are the optimal dual variables
 % dimacs reports the standard errors associated with the solution
 
-if false
-    %As an example, doubleLP_gem(Aeq, beq, f, K) with
-    Aeq = [1 0 1
-          -1 0 0
-           0 -1 0
-           0 -1 0
-           0 0 -1]
-    beq = [0 -1 0];
-    f = [-1 0 0 0 0]';
-    %  l = [0]'; % <--- Is this constraint really needed?
-    K.f = 1;     % <--- Take this into account (!!!)
-    K.l = 0;
-    K.s = 2;
-    %solves the following problem:
-    sedumi(Aeq, beq, -f, K)
-    %or similarly :
-    M=sdpvar(2)
-    F = [trace(M) == 1, M >= 0]
-    obj = M(1,2)
-    optimize(F, obj)
-
-    %Another example, which is a linear program:
-    Aeq = [1 0 1
-          -1 0 0
-           0 -1 0
-           0 -1 0
-           0 0 -1]
-    beq = [0 -1 0]';
-    f = [-1 0 0 0 0]';
-    %  l = [0 0 0 0]; % <--- Is this constraint really needed?
-    K.f = 1;     % <--- Take this into account (!!!)
-    K.l = 4;
-    K.s = 0;
-    % solves the following problem:
-    sedumi(Aeq, beq, -f, K)
-end
-
 % Written by Jean-Daniel Bancal on 28 January 2016
+% last modified : according to gihub
+
 
 %% Parameters setting
 
@@ -276,9 +241,9 @@ end
 if (nargin >= 18) && (zoom < 0)
     % This is going to be the last iteration
     zoom = -zoom;
-    onlyOnce = 1;
+    onlyOnce = true;
 else
-    onlyOnce = 0;
+    onlyOnce = false;
 end
 
 
@@ -351,9 +316,13 @@ if ((nbIter > 1) && refinePrimal) || ((nbIter == 1) && solvePrimalFirst)
             % solution...
             nbIter = nbIter - 1;
             fval = [];
-            x = value(x)+[zeros(1,K.f);l];
+            x = value(x)+[zeros(K.f,1);l];
             y = dual(F(1));
-            z = dual(F(2));
+            if K.l > 0
+                z = dual(F(2));
+            else
+                z = [];
+            end
 
             % Invert unbounded and infeasible here
             if (sol.problem == 1) || (sol.problem == 2)
@@ -365,9 +334,13 @@ if ((nbIter > 1) && refinePrimal) || ((nbIter == 1) && solvePrimalFirst)
         end
         
         % We save the result
-        xi = gemify_f(double(x))+[zeros(1,K.f);l];
+        xi = gemify_f(value(x))+[zeros(K.f,1);l];
         yi = gemify_f(dual(F(1)));
-        zi = gemify_f(dual(F(2)));
+        if K.l > 0
+            zi = gemify_f(dual(F(2)));
+        else
+            zi = [];
+        end
         
         dimacsp = sol.dimacs;
     else
@@ -389,8 +362,8 @@ if ((nbIter > 1) && refinePrimal) || ((nbIter == 1) && solvePrimalFirst)
             nbIter = nbIter - 1;
             fval = [];
             x = -dual(Fpd(1));
-            y = double(ypd);
-            z = double(zpd);
+            y = value(ypd);
+            z = value(zpd);
             info = sol;
             return;
         end
@@ -434,7 +407,11 @@ if ((nbIter > 1) && refineDual) || ((nbIter == 1) && ~solvePrimalFirst)
             fval = [];
             x = value(xdd)+[zeros(K.f,1);ld];
             y = dual(Fdd(1));
-            z = dual(Fdd(2))+Ld;
+            if K.l > 0
+                z = dual(Fdd(2))+Ld;
+            else
+                z = Ld;
+            end
 
             % Invert unbounded and infeasible here
             if (sold.problem == 1) || (sold.problem == 2)
@@ -445,9 +422,13 @@ if ((nbIter > 1) && refineDual) || ((nbIter == 1) && ~solvePrimalFirst)
             return;
         end
         
-        xdi = gemify_f(double(xdd))+[zeros(K.f,1);ld];
+        xdi = gemify_f(value(xdd))+[zeros(K.f,1);ld];
         ydi = gemify_f(dual(Fdd(1)));
-        zdi = gemify_f(dual(Fdd(2))+Ld);
+        if K.l > 0
+            zdi = gemify_f(dual(Fdd(2))+Ld);
+        else
+            zdi = Ld;
+        end
         
         dimacsd = sold.dimacs;
     else
@@ -476,8 +457,8 @@ if ((nbIter > 1) && refineDual) || ((nbIter == 1) && ~solvePrimalFirst)
         end
         
         % We save the result
-        ydi = gemify_f(double(yd));
-        zdi = gemify_f(double(zd))+Ld;
+        ydi = gemify_f(value(yd));
+        zdi = gemify_f(value(zd))+Ld;
         xdi = -gemify_f(dual(Fd(1)));
         %tdi = gemify_f(dual(Fd(2))); % This is basically the same as xdi...
 
@@ -525,7 +506,11 @@ else
     % all previous estimations...
     xTot = xEst + xi/zoom;
     yTot = yEst + ydi/zoom; % The dual variables are taken from the solution of the dual program
-    zTot = zEst + zdi/zoom;
+    if ~isempty(zEst)
+        zTot = zEst + zdi/zoom;
+    else
+        zTot = zEst;
+    end
 end
 
 % Now we estimate the error for all rounds until now:
@@ -561,7 +546,7 @@ if (nbIter >= maxNbIter) ...
     || (max(abs(dimacsTot)) < precision) ...
     || ((max(abs(dimacsTot(1:4))) < precision) && (max(abs(dimacsTot(5:6)))/max(abs(dimacsTot(1:4))) > 1e5)) ...
     || (max(abs(dimacs)) > 1e-1) ...
-    || (onlyOnce == 1) ...
+    || (onlyOnce) ...
     || (~refineDual && (max(abs(dimacsTot(1:2))) < precision)) ...
     || (~refinePrimal && (max(abs(dimacsTot(3:4))) < precision)) ...
     || ((nbIter >= 6) && (max(abs(allDimacsTot(end,:))./mean(abs(allDimacsTot(end-5:end-1,:)))) > 1e-1))
@@ -697,13 +682,21 @@ while (nbRescaling < 10) && (zoom2 > 1) && isempty(fval)
     % The new primal :
     f2 = f;
     beq2 = zoom2*(beq-Aeq*xi);
-    l2 = max([-factor*ones(size(l)), zoom2*(l-xi(K.f+[1:K.l]))],[],2);
+    if ~isempty(l)
+        l2 = max([-factor*ones(size(l)), zoom2*(l-xi(K.f+[1:K.l]))],[],2);
+    else
+        l2 = l;
+    end
 
     % The new dual :
     fd2 = fd;
     ld2 = ld;
     beqd2 = zoom2*(beqd-(ydi'*Aeq)'+[zeros(K.f,1);zdi]);
-    Ld2 = max([-factor*ones(size(Ld)), zoom2*(Ld-zdi)],[],2);
+    if ~isempty(Ld)
+        Ld2 = max([-factor*ones(size(Ld)), zoom2*(Ld-zdi)],[],2);
+    else
+        Ld2 = Ld;
+    end
 
     % We solve these new problems
     [fval, x, y, z, info] = refiner(Aeq, beq2, f2, K, options, l2, fd2, ld2, beqd2, Ld2, xTot, yTot, zTot, beq0, l0, beqd0, Ld0, zoom*zoom2);

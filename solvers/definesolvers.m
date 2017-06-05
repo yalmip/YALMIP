@@ -14,6 +14,7 @@ emptysolver.show    = 1;
 emptysolver.usesother = 0;
 emptysolver.supportsinitial = 0;
 emptysolver.supportsinitialNAN = 0;
+emptysolver.supportshighprec = 0;
 
 emptysolver.objective.linear = 0;
 emptysolver.objective.quadratic.convex = 0;
@@ -1772,4 +1773,5 @@ solver(i).tag     = 'REFINER';
 solver(i).version = '1.0';
 solver(i).checkfor= {'iterative_refinement'};
 solver(i).call    = 'iterative_refinement';
+solver(i).supportshighprec = 1;
 i = i+1;

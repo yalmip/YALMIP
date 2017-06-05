@@ -1055,11 +1055,11 @@ if ~isempty(F_struc)
 end
 
 % *************************************************************************
-%% If solver doesn't support high precision input, make sure the input is
-% only double precision.
+%% Does the solver support high precision input? If not, make sure the 
+% input is only double precision.
 % *************************************************************************
 
-if ~isequal(solver.call, 'iterative_refinement')
+if solver.supportshighprec ~= 1
     if isa(F_struc, 'gem') || isa(F_struc, 'sgem')
         F_struc = double(F_struc);
     end
