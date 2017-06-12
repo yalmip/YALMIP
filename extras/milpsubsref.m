@@ -4,7 +4,9 @@ function varargout = milpsubsref(varargin)
 switch class(varargin{1})
     case 'double'
         varargin{1} = double(varargin{1});
-        varargin{2}.subs{1} = double(varargin{2}.subs{1});
+        for i = 1:length(varargin{2}.subs)
+            varargin{2}.subs{i} = round(double(varargin{2}.subs{i}));
+        end
         varargout{1} = subsref(varargin{:});
 
     case 'sdpvar'
