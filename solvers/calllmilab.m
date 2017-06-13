@@ -70,6 +70,20 @@ else
 end
 solvertime = toc(solvertime);
 
+% Nag!
+display('#############################################################');
+display('You are using LMILAB. Please don''t use LMILAB with YALMIP');
+display('https://yalmip.github.io/solver/lmilab/');
+display(' ');
+display('Install a better SDP solver');
+display('https://yalmip.github.io/allsolvers/');
+display(' ');
+display('To get rid of this message, edit calllmilab.m  ');
+display('(but don''t expect support when things do not work,')
+display('YALMIP + LMILAB => No support)')
+display('#############################################################');
+
+
 % No status
 if isempty(x)
     problem = 1;
