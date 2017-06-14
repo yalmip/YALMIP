@@ -24,6 +24,10 @@ function output = iterative_refinement(model)
 % terms of gem or sgem variables.
 %
 % Example:
+%   A = rand(15,5);
+%   x = sdpvar(5,1);
+%   b = rand(15,1);
+%   optimize([A*x>=b], sum(x), sdpsettings('solver','refiner','verbose',1,'refiner.nbDigits',14,'refiner.internalSolver','sedumi','sedumi.eps',1e-5))
 
 % Author Jean-Daniel Bancal
 
@@ -126,8 +130,7 @@ function [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, L
 %   subject to   Aeq*x = beq
 %          and   x belongs to some self-dual homogeneous cones
 %
-% x can be a combination of scalars and matrices of various sizes, as 
-% specified by K.f, K.l (a la sedumi).
+% x can be a combination of scalars as specified by K.f, K.l (a la sedumi).
 %
 % For better results, the above parameters should be provided as gem/sgem
 % objects.
@@ -135,24 +138,24 @@ function [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, L
 % l should not be given explicitly. If specified, it sets a lower bound on
 % the bounded variables (as specified by K.l).
 % 
-% fd, ld, beqd, Ld are specifications of the dual (they should NOT be
+% fd, ld, beqd, Ld are specifications of the dual (they should not be
 % provided by the user; they will be computed automatically).
 %
 % xEst, yEst, zEst are estimations of the primal and dual solutions. They 
-% should NOT be provided by the user.
+% should not be provided by the user.
 %
 % beq0, l0, beqd0, Ld0 are the initial values of beq, l, beqd and Ld. They
-% should NOT be provided manually.
+% should not be provided manually.
 %
 % zoom is also an internal parameter.
 %
 % The output fval is the result of the optimization
 % x is the optimal primal variable
 % y and z are the optimal dual variables
-% dimacs reports the standard errors associated with the solution
+% info provides information about the solving process
 
 % Written by Jean-Daniel Bancal on 28 January 2016
-% last modified : according to gihub
+% last modified according to gihub
 
 
 %% Parameters setting
@@ -168,7 +171,7 @@ if exist('gem','class') == 8
     
     % We setup shortcuts to the following functions
     gemify_f = @(x) gemify(x);
-    toStrings_f = @(x,y) toStrings(x,y);
+    toStrings_f = @(x,y) toStrings(x,y); % num2str could work, but gives strange results for numbers smaller than ~1e-300
 else
     highPrecisionSupported = false;
 
@@ -278,8 +281,6 @@ else
         ops = options;
         ops.solver = options.refiner.internalSolver;
         ops.verbose = max(0, ops.verbose - 1);
-%        ops.solver = 'sedumi';
-%        ops.sedumi.eps = 1e-4;
         ops.dimacs = 1; % We ask for dimacs values
     end
 end
@@ -529,16 +530,6 @@ else
     dimacsTotStr = num2str(dimacsTot);
 end
 
-% norm1 = @(x) max(abs(x));
-% norm2 = @(x) sqrt(sum(x.^2));
-% err1 = norm2(Aeq*xTot - beq0)/(1+norm1(beq0));
-% err2 = max([0,-min(xTot(K.f+[1:K.l])-l0)/(1+norm1(beq0))]);
-% err3 = norm2((yTot'*Aeq)' - [zeros(K.f,1);zTot] - beqd0)/(1+norm1(beqd0));
-% err4 = max([0,-min(zTot-Ld0)/(1+norm1(beqd0))]);
-% err5 = (-f'*xTot - (fd'*yTot - ld'*zTot))/(1 + abs(f'*xTot) + abs(fd'*yTot - ld'*zTot));
-% err6 = (xTot'*[zeros(K.f,1);zTot])/(1 + abs(f'*xTot) + abs(fd'*yTot - ld'*zTot));
-% dimacsTot = [err1 err2 err3 err4 err5 err6];
-
 
 %% Diagnosis
 
@@ -623,7 +614,7 @@ if (nbIter >= maxNbIter) ...
                 if highPrecisionSupported
                     display([fval(2); fval(1)], -log10(precision));
                 else
-                    num2str([fval(2); fval(1)], 15);
+                    display(num2str([fval(2); fval(1)], 15));
                 end
             end
         else
