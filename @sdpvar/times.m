@@ -18,12 +18,12 @@ if isa(Y,'blkvar')
     Y = sdpvar(Y);
 end
 
-if isa(X,'double')
+if isnumeric(X)
     if any(isnan(X))
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
-if isa(Y,'double')
+if isnumeric(Y)
     if any(isnan(Y))
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end

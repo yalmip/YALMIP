@@ -5,19 +5,19 @@ if isempty(Z.midfactors)
 end
 
 for i = 1:length(Z.midfactors)
-    isdouble(i) = isa(Z.midfactors{i},'double');
+    isnumeriq(i) = isnumeric(Z.midfactors{i});
 end
-isdouble = find(isdouble);
-if length(isdouble)>1
-    total = Z.leftfactors{isdouble(1)}*Z.midfactors{isdouble(1)}*Z.rightfactors{isdouble(1)};
-    for i = isdouble(2:end)
+isnumeriq = find(isnumeriq);
+if length(isnumeriq)>1
+    total = Z.leftfactors{isnumeriq(1)}*Z.midfactors{isnumeriq(1)}*Z.rightfactors{isnumeriq(1)};
+    for i = isnumeriq(2:end)
         total = total + Z.leftfactors{i}*Z.midfactors{i}*Z.rightfactors{i};
     end
     allfactors = 1:length(Z.midfactors);
-    keepfactors = setdiff(allfactors,isdouble(2:end));
-    Z.midfactors{isdouble(1)} = total;
-    Z.leftfactors{isdouble(1)} = speye(size(total,1));
-    Z.rightfactors{isdouble(1)} = speye(size(total,2));
+    keepfactors = setdiff(allfactors,isnumeriq(2:end));
+    Z.midfactors{isnumeriq(1)} = total;
+    Z.leftfactors{isnumeriq(1)} = speye(size(total,1));
+    Z.rightfactors{isnumeriq(1)} = speye(size(total,2));
     Z.leftfactors = {Z.leftfactors{keepfactors}};
     Z.rightfactors = {Z.rightfactors{keepfactors}};
     Z.midfactors = {Z.midfactors{keepfactors}};

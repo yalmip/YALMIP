@@ -140,7 +140,7 @@ for i = 1:length(varargin)
             y.midfactors{end+1} = varargin{i}.midfactors{j};
             y.leftfactors{end+1} = varargin{i}.leftfactors{j};
         end
-    elseif isa(varargin{i},'double')
+    elseif isnumeric(varargin{i})
         if ~all(varargin{i}==0)
             %  if ~doublehere
             here = length(y.midfactors)+1;

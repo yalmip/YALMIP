@@ -39,7 +39,7 @@ else
 end
 
 % Trivial cases
-if isa(d,'double')
+if isnumeric(d)
     if all(all(d==0))
         y = ones(x.dim(1),x.dim(2));
         return

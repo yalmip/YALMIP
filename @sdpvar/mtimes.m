@@ -559,7 +559,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     return
                 end
             else
-                if ~isa(Y,'double')
+                if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                     Y = double(Y);
                 end
                 Z.dim(1) = n_Y;
@@ -573,7 +573,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 return
             end
         elseif y_isscalar
-            if ~isa(Y,'double')
+            if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                 Y = double(Y);
             end
             Z.dim(1) = n_X;
@@ -594,7 +594,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % encountered in large-scale QPs
             Z.basis = [X.basis(:,1) Y.'];
         else
-            if ~isa(Y,'double')
+            if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                 Y = double(Y);
             end
             Z.basis = kron(Y.',speye(n_X))*X.basis;
@@ -678,7 +678,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         else
             try
-                if ~isa(X,'double')
+                if isa(X,'uint8') || isa(X,'uint16') || isa(X,'uint32') || isa(X,'uint64')
                     X = double(X);
                 end
                 speyemy = speye(m_Y);
@@ -688,7 +688,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 disp('Multiplication of SDPVAR object caused memory error');
                 disp('Continuing using unvectorized version which is extremely slow');
                 Z.basis = [];
-                if ~isa(X,'double')
+                if isa(X,'uint8') || isa(X,'uint16') || isa(X,'uint32') || isa(X,'uint64')
                     X = double(X);
                 end
                 for i = 1:size(Y.basis,2);

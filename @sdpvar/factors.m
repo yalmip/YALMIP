@@ -9,7 +9,7 @@ end
 % Prune. 
 keep = 1:length(L);
 for i = 1:length(L)
-    if isa(M{i},'double')
+    if isnumeric(M{i})
         if nnz(M{i})==0
             keep(i) = 0;
         end

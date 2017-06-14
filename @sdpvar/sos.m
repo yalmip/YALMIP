@@ -41,7 +41,7 @@ if ~is(X,'symmetric')
         I.type = '()';
         I.subs = {[i]};
         x = subsref(X,I);
-        if isa(x,'double')
+        if isnumeric(x)
             if x < 0
                 error('You are trying to enforce a negative constant to be SOS!');
             end
