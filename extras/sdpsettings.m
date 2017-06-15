@@ -564,14 +564,14 @@ sos.savedecomposition = 1;
 sos.traceobj = 0;
 sos.reuse = 1;
 function refiner = setup_refiner_options
-refiner.nbDigits = 30;
+refiner.precdigits = 30;
 refiner.maxiter = 200;
-refiner.internalSolver = '';
-refiner.refinePrimal = true;
-refiner.refineDual = true;
-refiner.solvePrimalFirst = true;
-refiner.primalInPrimalForm = true;
-refiner.dualInPrimalForm = true;
+refiner.internalsolver = '';
+refiner.refineprimal = true;
+refiner.refinedual = true;
+refiner.solveprimalfirst = true;
+refiner.primalinprimalform = true;
+refiner.dualinprimalform = true;
 
 
 function bpmpd = setup_bpmpd_options

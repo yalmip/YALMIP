@@ -7,15 +7,15 @@ function output = iterative_refinement(model)
 % The behaviour of ITERATIVE_REFINEMENT can be altered using the fields in the field
 % 'refiner' in SDPSETTINGS
 %
-% refiner.nbDigits           - Solver target precision in digits [real (35)]
+% refiner.precdigits         - Solver target precision in digits [real (35)]
 % refiner.maxiter            - Maximum number of iterations [int (20)];
-% refiner.verbose            - Verbosity level [ 0|1|2 (1)];
-% refiner.internalSolver     - Internal solver [solver tag ('')]
-% refiner.refinePrimal       - Whether the primal should be refined [true|false (true)]
-% refiner.refineDual         - Whether the dual should be refined [true|false (true)]
-% refiner.solvePrimalFirst   - Whether the first iteration is done in primal or dual form [true|false (false)]
-% refiner.primalInPrimalForm - Whether the primal refinements should be solved in primal or dual form [true|false (false)]
-% refiner.dualInPrimalForm   - Whether the primal refinements should be solved in primal or dual form [true|false (false)]
+% refiner.verbose            - Verbosity level [ 0|1|2|3 (1)];
+% refiner.internalsolver     - Internal solver [solver tag ('')]
+% refiner.refineprimal       - Whether the primal should be refined [true|false (true)]
+% refiner.refinedual         - Whether the dual should be refined [true|false (true)]
+% refiner.solveprimalfirst   - Whether the first iteration is done in primal or dual form [true|false (false)]
+% refiner.primalinprimalform - Whether the primal refinements should be solved in primal or dual form [true|false (false)]
+% refiner.dualinprimalform   - Whether the primal refinements should be solved in primal or dual form [true|false (false)]
 %
 % Note : In order to take achieve precisions of more than 15 digits, this
 % solver requires the high precision library GEM to be in matlab's path.
@@ -23,11 +23,20 @@ function output = iterative_refinement(model)
 % Best results will be obtained by specifying the problem to be solved in
 % terms of gem or sgem variables.
 %
-% Example:
-%   A = rand(15,5);
-%   x = sdpvar(5,1);
-%   b = rand(15,1);
-%   optimize([A*x>=b], sum(x), sdpsettings('solver','refiner','verbose',1,'refiner.nbDigits',14,'refiner.internalSolver','sedumi','sedumi.eps',1e-5))
+% Examples:
+%   1. Solving a linear program without the high precision library
+%   (provides at best a solution with double precision)
+%     A = rand(15,5);
+%     x = sdpvar(5,1);
+%     b = rand(15,1);
+%     optimize([A*x>=b], sum(x), sdpsettings('solver','refiner','verbose',1,'refiner.precdigits',14,'refiner.internalsolver','sedumi','sedumi.eps',1e-5))
+%
+%   2. Solving the same program with the high precision library
+%   (provides a solution with any desired precision, here 200 digits)
+%     gemWorkingPrecision(220);
+%     A = gemify(A);
+%     b = gemify(b);
+%     optimize([A*x>=b], sum(x), sdpsettings('solver','refiner','verbose',1,'refiner.precdigits',200))
 
 % Author Jean-Daniel Bancal
 
@@ -64,7 +73,7 @@ end
 % Some general checks
 % *********************************************
 
-if (options.verbose >= 2) && (options.refiner.nbDigits > 15) && ((~isa(F_struc, 'gem') && ~isa(F_struc, 'sgem')) || (~isa(c, 'gem') && ~isa(c, 'sgem')))
+if (options.verbose >= 2) && (options.refiner.precdigits > 15) && ((~isa(F_struc, 'gem') && ~isa(F_struc, 'sgem')) || (~isa(c, 'gem') && ~isa(c, 'sgem')))
     disp(' ');
     disp('Warning: Trying to solve a problem in high precision but all coefficients don''t have a high precision.');
     disp('         Additional zeros will be added at the end of these coefficients.');
@@ -90,7 +99,12 @@ solvertime = toc(solvertime);
 Primal = y_s;
 Dual   = x_s;
 
-infostr = yalmiperror(info.problem,model.solver.tag);
+problem = info.problem;
+infostr = yalmiperror(problem,model.solver.tag);
+
+if (problem > 0) && (options.verbose >= 1)
+    disp(infostr(1:find(infostr=='(',1,'first')-1));
+end
 
 % Save ALL data sent to solver
 if options.savesolverinput
@@ -185,6 +199,12 @@ if nargin < 18
     % first call
     if options.verbose >= 1
         disp('Refiner 1.0 - Iterative meta-solver');
+        if options.verbose == 1
+            disp(' ');
+            disp('iter-             iteration    global');
+            disp('ation    time     precision   precision   current value  ');
+            disp('---------------------------------------------------------');
+        end
     end
     tic;
     
@@ -259,15 +279,15 @@ else
     % We recover the parameters from the provided options
     maxNbIter = options.refiner.maxiter;
     verbose = options.verbose;
-    refinePrimal = options.refiner.refinePrimal;
-    refineDual = options.refiner.refineDual;
-    solvePrimalFirst = options.refiner.solvePrimalFirst;
-    primalInPrimalForm = options.refiner.primalInPrimalForm;
-    dualInPrimalForm = options.refiner.dualInPrimalForm;
+    refinePrimal = options.refiner.refineprimal;
+    refineDual = options.refiner.refinedual;
+    solvePrimalFirst = options.refiner.solveprimalfirst;
+    primalInPrimalForm = options.refiner.primalinprimalform;
+    dualInPrimalForm = options.refiner.dualinprimalform;
     if highPrecisionSupported
-        precision = 10^gem(-options.refiner.nbDigits);
+        precision = 10^gem(-options.refiner.precdigits);
     else
-        precision = 10^(-options.refiner.nbDigits);
+        precision = 10^(-options.refiner.precdigits);
         if (precision < 1e-15) 
             precision = 1e-15;
             if (nbIter == 1) && (verbose >= 1)
@@ -279,8 +299,8 @@ else
     % Here are the options for the internal solver
     if nbIter == 1
         ops = options;
-        ops.solver = options.refiner.internalSolver;
-        ops.verbose = max(0, ops.verbose - 1);
+        ops.solver = options.refiner.internalsolver;
+        ops.verbose = (ops.verbose >= 2);
         ops.dimacs = 1; % We ask for dimacs values
     end
 end
@@ -526,8 +546,11 @@ if highPrecisionSupported
         dimacsTotStr{i} = [dimacsTotStr{i} '  '];
     end
     dimacsTotStr = [dimacsTotStr{:}];
+    dimacsTotStrMax = toStrings_f(max(dimacsTot),4);
+    dimacsTotStrMax = [char(32*ones(1,10-length(dimacsTotStrMax))) dimacsTotStrMax];
 else
     dimacsTotStr = num2str(dimacsTot);
+    dimacsTotStrMax = num2strN(max(dimacsTot),10);
 end
 
 
@@ -544,7 +567,19 @@ if (nbIter >= maxNbIter) ...
     || (~refinePrimal && (max(abs(dimacsTot(3:4))) < precision)) ...
     || ((nbIter >= 6) && (max(abs(allDimacsTot(end,:))./mean(abs(allDimacsTot(end-5:end-1,:)))) > 1e-1))
 
-    if verbose >= 1
+    if verbose == 1
+        disp([num2strNint(nbIter,5), ' ', num2strN(toc,10), '  ', num2strN(max(abs([dimacsp, dimacsd])),10), '  ', dimacsTotStrMax, '  ', toStrings_f(-f'*xTot, -log10(max([dimacsTot precision])))])
+        disp('---------------------------------------------------------');
+        disp(' ');
+    elseif verbose == 2
+        disp(' ');
+        disp('iter-             iteration    global');
+        disp('ation    time     precision   precision   current value  ');
+        disp('---------------------------------------------------------');
+        disp([num2strNint(nbIter,5), ' ', num2strN(toc,10), '  ', num2strN(max(abs([dimacsp, dimacsd])),10), '  ', dimacsTotStrMax, '  ', toStrings_f(-f'*xTot, -log10(max([dimacsTot precision])))])
+        disp(' ');
+    elseif verbose >= 3
+        disp(' ');
         disp(['Iteration number ', num2str(nbIter), ', ', num2str(toc), 's. Current errors : ', dimacsTotStr, '  (', num2str(max(abs(dimacsp))), ', ', num2str(max(abs(dimacsd))), ') ']);
         disp(' ');
     end
@@ -569,7 +604,9 @@ if (nbIter >= maxNbIter) ...
     if max(abs(dimacsTot)) <= precision
         info.problem = 0;
         if verbose >= 1
-            disp(['The solver achieved a precision of ', toStrings_f(max(abs(dimacsTot)),5), ' in ', num2str(nbIter), ' iterations.']);
+            disp(['Precision of ', toStrings_f(max(abs(dimacsTot)),5), ' reached in ', num2str(nbIter), ' iterations.']);
+        end
+        if verbose >= 3 
             disp(['Value of the objective function : ', toStrings_f(fval(1), -log10(precision))])
         end
     else
@@ -578,6 +615,8 @@ if (nbIter >= maxNbIter) ...
             if verbose >= 1
                 disp(['Iterative solver stopped after having reached the maximum number of rounds (', num2str(maxNbIter), ' iterations).']);
                 disp(['The precision of the current solution is ', toStrings_f(max(abs(dimacsTot)),5)]);
+            end
+            if verbose >= 3 
                 disp(['Current value of the objective function : ', toStrings_f(fval(1), -log10(precision))])
             end
         elseif (max(abs(dimacs)) > 1e-1)
@@ -585,6 +624,8 @@ if (nbIter >= maxNbIter) ...
             if verbose >= 1
                 disp(['Iterative solver stopped because the precision of the ', num2str(nbIter), 'th iteration is only ', num2str(max(abs(dimacs)))]);
                 disp(['The precision of the current solution is ', toStrings_f(max(abs(dimacsTot)),5)]);
+            end
+            if verbose >= 3 
                 disp(['Current value of the objective function : ', toStrings_f(fval(1) -log10(precision))])
             end
         elseif ((nbIter >= 6) && (max(abs(allDimacsTot(end,:))./mean(abs(allDimacsTot(end-5:end-1,:)))) > 1e-1))
@@ -592,18 +633,24 @@ if (nbIter >= maxNbIter) ...
             if verbose >= 1
                 disp(['Iterative solver stopped because the precision improvement over the last iterations is too small']);
                 disp(['The precision of the current solution is ', toStrings_f(max(abs(dimacsTot)),5)]);
+            end
+            if verbose >= 3 
                 disp(['Current value of the objective function : ', toStrings_f(fval(1), -log10(precision))])
             end
         elseif (refinePrimal && ~refineDual && max(abs(dimacsTot(1:2))) < precision)
             info.problem = 0;
             if verbose >= 1
                 disp(['Primal precision of ', num2str(max(abs(dimacsTot(1:2)))), ' achieved in ', num2str(nbIter), ' iterations.']);
+            end
+            if verbose >= 3 
                 disp(['Value of the objective function : ', toStrings_f(fval(1), -log10(precision))])
             end
         elseif (~refinePrimal && refineDual && max(abs(dimacsTot(3:4))) < precision)
             info.problem = 0;
             if verbose >= 1
                 disp(['Dual precision of ', num2str(max(abs(dimacsTot(3:4)))), ' achieved in ', num2str(nbIter), ' iterations.']);
+            end
+            if verbose >= 3 
                 disp(['Value of the objective function : ', toStrings_f(fval(1), -log10(precision))])
             end
         elseif (refinePrimal && refineDual && max(abs(dimacsTot(1:4))) < precision)
@@ -641,9 +688,20 @@ else
     zoom2 = 10^(floor(log10(1/max([eps abs(dimacs)])))-1);
 end
 
-if verbose >= 1
-    disp(['Iteration number ', num2str(nbIter), ', ', num2str(toc), 's. Current errors : ', dimacsTotStr, '  (', num2str(max(abs(dimacsp))), ', ', num2str(max(abs(dimacsd))), ') ']);
-end
+    if verbose == 1
+        disp([num2strNint(nbIter,5), ' ', num2strN(toc,10), '  ', num2strN(max(abs([dimacsp, dimacsd])),10), '  ', dimacsTotStrMax, '  ', toStrings_f(-f'*xTot, -log10(max([dimacsTot precision])))])
+    elseif verbose == 2
+        disp(' ');
+        disp('iter-             iteration    global');
+        disp('ation    time     precision   precision   current value  ');
+        disp('---------------------------------------------------------');
+        disp([num2strNint(nbIter,5), ' ', num2strN(toc,10), '  ', num2strN(max(abs([dimacsp, dimacsd])),10), '  ', dimacsTotStrMax, '  ', toStrings_f(-f'*xTot, -log10(max([dimacsTot precision])))])
+        disp(' ');
+    elseif verbose >= 3
+        disp(' ');
+        disp(['Iteration number ', num2str(nbIter), ', ', num2str(toc), 's. Current errors : ', dimacsTotStr, '  (', num2str(max(abs(dimacsp))), ', ', num2str(max(abs(dimacsd))), ') ']);
+        disp(' ');
+    end
 
 % If no refinement was requested, we prepare the output variables and exit.
 if (refinePrimal ~= 1) && (refineDual ~= 1)
@@ -713,5 +771,32 @@ if isempty(fval)
 end
 
 return;
+
+end
+
+
+function result = num2strN(vector, len)
+% This function returns a string representation of 'vector' of length
+% exactly len*length(vector).
+
+result = num2str(vector,['%#-',num2str(len),'.',num2str(floor(len/2)),'g']);
+
+targetLength = len*length(vector);
+if length(result) < targetLength;
+    result = [char(32*ones(1,targetLength-length(result))) result];
+end
+
+end
+
+function result = num2strNint(vector, len)
+% This function returns a string representation of 'vector' of length
+% exactly len*length(vector).
+
+result = num2str(vector,['%-',num2str(len),'.',num2str(floor(len/2)),'g']);
+
+targetLength = len*length(vector);
+if length(result) < targetLength;
+    result = [char(32*ones(1,targetLength-length(result))) result];
+end
 
 end
