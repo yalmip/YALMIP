@@ -513,17 +513,19 @@ if p.K.s > 0
 end
 
 function p = addlpcuts(p,z)
-inactiveCuts = find(~p.cutState);
-violation = p.lpcuts(inactiveCuts,:)*[1;z];
-need_to_add = find(violation < -1e-4);
-if ~isempty(need_to_add)
-    p.cutState(inactiveCuts(need_to_add)) = 1;
-end
-inactiveCuts = find(p.InequalityConstraintState == 0 );
-violation = p.F_struc(p.K.f+inactiveCuts,:)*[1;z];
-need_to_add = find(violation < -1e-4);
-if ~isempty(need_to_add)
-    p.InequalityConstraintState(inactiveCuts(need_to_add)) = 1;
+if ~isempty(p.lpcuts)
+    inactiveCuts = find(~p.cutState);
+    violation = p.lpcuts(inactiveCuts,:)*[1;z];
+    need_to_add = find(violation < -1e-4);
+    if ~isempty(need_to_add)
+        p.cutState(inactiveCuts(need_to_add)) = 1;
+    end
+    inactiveCuts = find(p.InequalityConstraintState == 0 );
+    violation = p.F_struc(p.K.f+inactiveCuts,:)*[1;z];
+    need_to_add = find(violation < -1e-4);
+    if ~isempty(need_to_add)
+        p.InequalityConstraintState(inactiveCuts(need_to_add)) = 1;
+    end
 end
 
 % *************************************************************************
