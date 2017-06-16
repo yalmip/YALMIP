@@ -10,9 +10,6 @@ d = binvar(1,n);
 % Binary to model if element is first non-zero
 e = binvar(1,n);
 
-% Variable to model value at first non-zero element
-v = sdpvar(1);
-
 [M,m] = derivebounds(x);
 M = max(max(abs(M),max(abs(m))));
 % Activate d iff value is sufficiently non-zero
@@ -21,11 +18,10 @@ Model = [x <= 0.00001 + M*dp, x >= -0.00001 - M*dn, -M*d <= x <= M*d,
 
 % e(i) should be 1 if d(i) is the first 1
 Model = [Model, d == dn + dp, e(1) == d(1), sum(e)==1];
- for i = 2:n
+for i = 2:n
      % No non-zeros so far so e must be 0
      Model = [Model, e(i) <= sum(d(1:i))];
      % Has to be activated if first 1
      Model = [Model, e(i) >= d(i)-sum(d(1:i-1))];
- end
-Model = [Model, -M*(1-e) <= x - v <= M*(1-e)];
+end
 Model = [Model, integer(pos), pos == sum(e.*(1:n))];
