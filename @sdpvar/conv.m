@@ -1,7 +1,7 @@
 function Z=conv(X,Y)
 %CONV (overloaded)
 
-if isa(X,'double')
+if isnumeric(X)
     temp = X;
     X = Y;
     Y = temp;

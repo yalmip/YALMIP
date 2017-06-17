@@ -65,8 +65,8 @@ try
                 end
                 if mpt_solution
                     assign(nonlinearModel{1}.arg{2},Y(1).subs{:});
-                    XX = double(X);
-                    varargout{1} = double(X);
+                    XX = value(X);
+                    varargout{1} = value(X);
                     return
                 end
             end
@@ -79,14 +79,14 @@ try
                         OldArgument = [OldArgument;  nonlinearModel.arg{i}];
                     end
                 end
-                if isa([Y.subs{:}],'double')
+                if isnumeric([Y.subs{:}])
                     assign(reshape(OldArgument,[],1),reshape([Y(1).subs{:}],[],1));
-                    varargout{1} = double(X);
+                    varargout{1} = value(X);
                     return
                 end
             end
             y = replace(X,OldArgument,[Y(1).subs{:}]);
-            if isa(y,'double')
+            if isnumeric(y)
                 varargout{1} = y;
                 return
             end
@@ -106,7 +106,7 @@ try
                                         constraints = [constraints, Y(2).subs{i}];
                                     case 'struct'
                                         options = Y(2).subs{i};
-                                    case {'double','char'}
+                                    case {'double','char','gem','sgem'}
                                         opsargs{end+1} = Y(2).subs{i};
                                     otherwise
                                         error('Argument to minimize should be constraints or options');

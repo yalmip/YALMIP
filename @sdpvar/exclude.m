@@ -17,7 +17,7 @@ function F = exclude(X,Y)
 %    sol = solvesdp(Model,c'*x);
 % end
 
-if isa(X,'sdpvar') & is(X,'binary') &  isa(Y,'double') &  ismember(Y,[0 1])
+if isa(X,'sdpvar') & is(X,'binary') &  isnumeric(Y) &  ismember(Y,[0 1])
     
     if isequal(size(X),size(Y))
     else

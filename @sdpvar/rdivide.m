@@ -11,7 +11,7 @@ if ~((prod(size(X))==1) | (prod(size(Y))==1))
 end
 
 % Quick exit for simple case X/scalar
-if isa(Y,'double') & prod(size(Y))==1
+if isnumeric(Y) & prod(size(Y))==1
     y = X;
     y.basis = y.basis/Y;
     % Reset info about conic terms
@@ -19,7 +19,7 @@ if isa(Y,'double') & prod(size(Y))==1
     return
 end
 
-if isa(X,'sdpvar') & isa(Y,'double')
+if isa(X,'sdpvar') & isnumeric(Y)
     y = X.*(1./Y);
     return
 end

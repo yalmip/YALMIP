@@ -72,8 +72,8 @@ switch(X.typeflag)
             if any(ismember(depends(X),yalmip('parvariables')))
                 classification = [classification ', parametric'];
             end
-            if ~isnan(double(X))
-                classification = [classification ', current value : ' num2str(double(X))];
+            if ~isnan(value(X))
+                classification = [classification ', current value : ' num2str(value(X))];
             end
             classification = [classification ')'];
 
@@ -152,7 +152,7 @@ switch(X.typeflag)
             
             if (n<100) && (n==m)
                 x = recover(xvars);
-                if ~any(any(isnan(double(x))))
+                if ~any(any(isnan(value(x))))
                     doubleX = double(X);
                     try
                     eigX = eig(doubleX);
@@ -162,8 +162,8 @@ switch(X.typeflag)
                 end
             elseif n~=m
                 x = recover(xvars);
-                if ~any(any(isnan(double(x))))
-                    doubleX = double(X);
+                if ~any(any(isnan(value(x))))
+                    doubleX = value(X);
                     try                       
                         info = [info ', values in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) ']'];
                     catch

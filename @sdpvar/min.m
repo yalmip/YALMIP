@@ -54,7 +54,7 @@ switch nargin
             
             
             X = removeInf(X);
-            if isa(X,'double')
+            if isnumeric(X)
                 y = min(X);
             elseif length(X) == 1
                 y = X;
@@ -137,12 +137,12 @@ switch nargin
             y = [];
             for i = 1:size(X,2)
                 inparg = extsubsref(X,1:size(X,1),i);
-                if isa(inparg,'double')
+                if isnumeric(inparg)
                     y = [y min(inparg)];
                     return
                 end
                 inparg = removeInf(inparg);
-                if  isa(inparg,'double')
+                if  isnumeric(inparg)
                     y = [y min(inparg)];
                 elseif isa(inparg,'sdpvar')
                     z = yalmip('define','min_internal',inparg);

@@ -78,7 +78,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Speeeeeeed
         if x_isscalar && y_isscalar
             y.basis = -y.basis;
-            y.basis(1) = y.basis(1)+X;
+            tmp = y.basis(1)+X;
+            if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                y.basis = gemify(y.basis);
+            end
+            y.basis(1) = tmp;
             % Reset info about conic terms
             y.conicinfo = [0 0];
             y.extra.opname='';
@@ -94,7 +98,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
             y.basis = -y.basis;
             if nnz(X)~=0
-                y.basis(:,1) = y.basis(:,1)+X(:);
+                tmp = y.basis(:,1)+X(:);
+                if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                    y.basis = gemify(y.basis);
+                end
+                y.basis(:,1) = tmp;
             end
         else
             error('Matrix dimensions must agree.');
@@ -130,7 +138,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
 
         % Speeeeeeed
         if x_isscalar && y_isscalar
-            y.basis(1) = y.basis(1)-Y;
+            tmp = y.basis(1)-Y;
+            if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                y.basis = gemify(y.basis);
+            end
+            y.basis(1) = tmp;
             % Reset info about conic terms
             y.conicinfo = [0 0];
             y.extra.opname='';
@@ -144,7 +156,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 y.dim(1) = n_Y;
                 y.dim(2) = m_Y;
             end
-            y.basis(:,1) = y.basis(:,1)-Y(:);
+            tmp = y.basis(:,1)-Y(:);
+            if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                y.basis = gemify(y.basis);
+            end
+            y.basis(:,1) = tmp;
         else
             error('Matrix dimensions must agree.');
         end

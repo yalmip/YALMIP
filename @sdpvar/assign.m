@@ -25,8 +25,8 @@ if isa(value,'logical')
     value = double(value);
 end
 
-if ~isa(value,'double')
-    error('Second argument should be a DOUBLE.');
+if ~isnumeric(value)
+    error('Second argument should be NUMERIC.');
 end
 
 if prod(size(value)) == 1

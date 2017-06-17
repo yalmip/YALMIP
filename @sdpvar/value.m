@@ -95,7 +95,11 @@ end
 
 if nargin == 1
     % All double values
-    values=nan(size(mt,1),1);
+    if isempty(solution.optvar)
+        values=nan(size(mt,1),1);
+    else
+        values=solution.optvar(1)*nan(size(mt,1),1);
+    end
     values(solution.variables) = solution.optvar;
     clear_these = allextended;
     if yalmip('containsSemivar') && ~isempty(allStruct)
