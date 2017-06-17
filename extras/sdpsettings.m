@@ -22,7 +22,7 @@ function options = sdpsettings(varargin)
 %
 %   GENERAL
 %
-%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|none ('')]
+%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|refiner|none ('')]
 %    verbose            - Display-level [0|1|2|...(0)] (0-silent, 1-normal, >1-loud)
 %    usex0              - Use the current values obtained from double as initial iterate if solver supports that [0|1 (0)]
 %
@@ -54,6 +54,10 @@ function options = sdpsettings(varargin)
 %   BRANCH AND BOUND for polynomial programs
 %
 %    options.bmibnb, see help bmibnb
+%
+%   ITERATIVE REFINEMENT for linear programs
+%
+%    options.refiner, see help iterative_refinement
 %
 %   EXTERNAL SOLVERS
 %
@@ -113,7 +117,10 @@ else
     options.sos = setup_sos_options;
     Names = appendOptionNames(Names,options.sos,'sos');
 
-    % External solvers
+    options.refiner = setup_refiner_options;
+    Names = appendOptionNames(Names,options.refiner,'refiner');
+
+    % External solvers  
     options.baron = setup_baron_options;
     Names = appendOptionNames(Names,options.baron,'baron');
 
@@ -556,6 +563,16 @@ sos.clean = eps;
 sos.savedecomposition = 1;
 sos.traceobj = 0;
 sos.reuse = 1;
+function refiner = setup_refiner_options
+refiner.precdigits = 30;
+refiner.maxiter = 200;
+refiner.internalsolver = '';
+refiner.refineprimal = true;
+refiner.refinedual = true;
+refiner.solveprimalfirst = true;
+refiner.primalinprimalform = true;
+refiner.dualinprimalform = true;
+
 
 function bpmpd = setup_bpmpd_options
 try

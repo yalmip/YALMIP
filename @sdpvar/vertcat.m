@@ -111,7 +111,7 @@ for i = 1:length(varargin)
             y.midfactors{end+1} = varargin{i}.midfactors{j};
             y.rightfactors{end+1} = varargin{i}.rightfactors{j};
         end
-    elseif isa(varargin{i},'double')       
+    elseif isnumeric(varargin{i})
         here = length(y.midfactors)+1;
         doublehere = [doublehere here];      
         y.leftfactors{here} = [spalloc(sum(n(1:1:i-1)),size(varargin{i},1),0); speye(size(varargin{i},1)); spalloc(sum(n(i+1:1:end)),size(varargin{i},1),0)];

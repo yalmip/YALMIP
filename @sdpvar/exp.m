@@ -10,7 +10,7 @@ switch class(varargin{1})
         y = [];
         for i = 1:prod(d)
             xi = extsubsref(x,i);
-            if isa(xi,'double')
+            if isnumeric(xi)
                 y = [y;exp(xi)];
             else
                 if isreal(xi)

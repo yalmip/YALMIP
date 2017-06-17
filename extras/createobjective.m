@@ -37,9 +37,9 @@ else
         else
             % A relaxed problem should not calculate quadratic
             % decomposistion, fix!
-            c=zeros(nvars,1);
             lmi_variables = getvariables(h);
             base = getbase(h);base= base(2:end);
+            c=base(1)*zeros(nvars,1);
             c(lmi_variables) = base;
             Q = spalloc(nvars,nvars,0); 
             f = full(getbasematrix(h,0));

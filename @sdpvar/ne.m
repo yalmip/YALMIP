@@ -16,7 +16,7 @@ function F = ne(X,Y)
 
 if isa(X,'sdpvar') & isa(Y,'sdpvar') & is(X,'binary') & is(Y,'binary')
     F = (X + Y == 1);
-elseif isa(X,'sdpvar') & is(X,'binary') & is(X,'lpcone') &  isa(Y,'double') &  ismember(Y,[0 1])
+elseif isa(X,'sdpvar') & is(X,'binary') & is(X,'lpcone') &  isnumeric(Y,'double') &  ismember(Y,[0 1])
     zv = find((Y == 0));
     ov = find((Y == 1));
     lhs = 0;

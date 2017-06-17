@@ -49,8 +49,8 @@ if isa(W,'sdpvar')
     return
 end
 
-if ~isa(W,'double')
-    error('Third arguments must be a double')
+if ~isnumeric(W)
+    error('Third arguments must be numeric')
 end
 
 % Replace with NaN   destroys everything, assume it should be cleared

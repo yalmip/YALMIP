@@ -1,5 +1,5 @@
 function Z = addfactors(Z,X,Y)
-if isa(X,'double') || isa(X,'logical')
+if isnumeric(X) || isa(X,'logical')
     if length(Y.midfactors)==0
         return
     end
@@ -15,7 +15,7 @@ if isa(X,'double') || isa(X,'logical')
         Z.leftfactors{end+1} = 1;
         Z.rightfactors{end+1} = 1;
     end
-elseif isa(Y,'double') || isa(Y,'logical')
+elseif isnumeric(Y) || isa(Y,'logical')
     if length(X.midfactors)==0
         return
     end
