@@ -15,7 +15,7 @@ lb      = model.lb;
 if ~isempty(ub)
     [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
 end
-bmimodel.penstruct = sedumi2penbmi(F_struc,c,2*Q,K,monomtable,options,x0);
+bmimodel.penstruct = sedumi2penbmi(F_struc,full(c),2*Q,K,monomtable,options,x0);
 penlabmodel=yalmip2bmi(bmimodel);
 penlabmodel = bmi_define(penlabmodel);
 prob = penlab(penlabmodel);
