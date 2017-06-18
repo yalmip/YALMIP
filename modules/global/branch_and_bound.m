@@ -470,7 +470,7 @@ if p.K.s > 0
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         X = p.F_struc(top:top+n^2-1,:)*[1;x];
-        X = reshape(X,n,n);
+        X = full(reshape(X,n,n));
         [d,v] = eig(X);
         for m = 1:length(v)
             if v(m,m)<0
