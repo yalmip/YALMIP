@@ -31,10 +31,15 @@ switch class(varargin{1})
         
         varargin{1} = reshape(varargin{1},1,[]);
         
-          
-        x = varargin{1};                   
-        ind = yalmip('define',mfilename,x);
-        varargout{1} = ind;        
+         x = varargin{1};                   
+         x_extended = [x 1];
+         ind = yalmip('define',mfilename,x_extended);                        
+         varargout{1} = ind;      
+            
+        if nargout == 2                      
+            x_0 = [x 0];            
+            varargout{2} = subsref(x_0,struct('type','()','subs',{{ind}}));                    
+        end
 
     case 'char' % YALMIP send 'graph' when it wants the epigraph or hypograph
 
