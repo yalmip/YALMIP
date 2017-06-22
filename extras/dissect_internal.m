@@ -1,5 +1,5 @@
-function varargout = dissect(X);
-% DISSECT Dissect SDP constraint
+function varargout = dissect_internal(X);
+% DISSECT_INTERNAL Dissect SDP constraint
 %
 % G = unblkdiag(F) Converts SDP to several smaller SDPs with more variables
 %
