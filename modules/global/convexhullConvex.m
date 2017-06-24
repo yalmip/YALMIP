@@ -19,6 +19,12 @@ if all(diff(x)>0)
     Ay = [-ones(m,1);1];
     b  = [-f + x.*df; -f(end)*x(1)/(x(end)-x(1)) +  f(1)*x(end)/(x(end)-x(1))];
     Ax  = [df;-f(end)/(x(end)-x(1)) + f(1)/(x(end)-x(1))];
+    
+    v = [Ax Ay b];v = sum(v.^2,2).^.5;
+    Ax = Ax./v;
+    Ay = Ay./v;
+    b = b./v;  
+    
 else
     Ax = [];
     Ay = [];
