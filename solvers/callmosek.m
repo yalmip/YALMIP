@@ -34,6 +34,7 @@ if ~isempty(model.binary_variables)
     ub(model.binary_variables) = min(ub(model.binary_variables),1);
     model.lb = lb;
     model.ub = ub;
+    model.integer_variables = integer_variables;
 end
 
 % Some meta solvers might construct model with empty cones
