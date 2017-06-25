@@ -20,10 +20,17 @@ if all(diff(x)>0)
     b  = [-f + x.*df; -f(end)*x(1)/(x(end)-x(1)) +  f(1)*x(end)/(x(end)-x(1))];
     Ax  = [df;-f(end)/(x(end)-x(1)) + f(1)/(x(end)-x(1))];
     
-    v = [Ax Ay b];v = sum(v.^2,2).^.5;
-    Ax = Ax./v;
-    Ay = Ay./v;
-    b = b./v;  
+     % Don't use ill-conditioned cuts
+    if df(1)<-1000
+        Ax(1)=[];
+        Ay(1) = [];
+        b(1) = [];
+    end
+    if df(end)>1000
+        Ax(end)=[];
+        Ay(end) = [];
+        b(end) = [];
+    end   
     
 else
     Ax = [];
