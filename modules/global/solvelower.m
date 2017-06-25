@@ -231,7 +231,7 @@ else
                     1
                 end
             end
-            x=p.c*0;
+            x=full(p.c*0);
             x(removethese)=p.lb(removethese);
             x(~removethese)=output.Primal;
             output.Primal = x;
