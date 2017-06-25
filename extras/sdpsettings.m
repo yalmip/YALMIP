@@ -609,23 +609,30 @@ end
 function cplex = setup_cplex_options
 try
     v = version;
-    if strfind(v,'2016') || strfind(v,'2017') 
+    if ~isempty(strfind(v,'2016')) && ~isempty(strfind(v,'2017'))
         cplex = cplexoptimset;
     else
         cplex = cplexoptimset('cplex');
         cplex.output.clonelog = 0;
     end
 catch
-    cplex.presol = 1;
-    cplex.niter = 1;
-    cplex.epgap = 1e-4;
-    cplex.epagap = 1e-6;
-    cplex.relobjdif = 0.0;
-    cplex.objdif = 0.0;
-    cplex.tilim = 1e75;
-    cplex.logfile = 0;
-    cplex.param.double = [];
-    cplex.param.int = [];
+    try
+        % cplex has p-compiled somehow in a manner in which
+        % cplexoptimset('cplex') fails to run, but cplexoptimset works
+        cplex = cplexoptimset;
+    catch
+        % old cplexmex?
+        cplex.presol = 1;
+        cplex.niter = 1;
+        cplex.epgap = 1e-4;
+        cplex.epagap = 1e-6;
+        cplex.relobjdif = 0.0;
+        cplex.objdif = 0.0;
+        cplex.tilim = 1e75;
+        cplex.logfile = 0;
+        cplex.param.double = [];
+        cplex.param.int = [];
+    end
 end
 
 function ecos = setup_ecos_options
