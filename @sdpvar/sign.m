@@ -15,10 +15,13 @@ switch class(varargin{1})
 
                 t = varargin{2};
                 X = varargin{3};
-
-                d = binvar(1,1);
+                
+                d1 = binvar(1);
+                d2 = binvar(1);
+                d3 = binvar(1);
                 [M,m] = derivebounds(X);
-                F = [X >= d*m,X <=(1-d)*M, t == 1-2*d];
+                %F = [X >= d*m,X <=(1-d)*M, t == 1-2*d];
+                F = [X <= (1-d1)*M,X >=(1-d3)*m, m*(1-d2) <= X <= M*(1-d2), t == -d1 + d3,d1+d2+d3==1];
 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none');
