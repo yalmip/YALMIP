@@ -20,6 +20,7 @@ options = p.options;
 % DEFINE UPPER BOUND PROBLEM. Basically just remove the cuts
 % *************************************************************************
 p_upper = cleanuppermodel(p);
+p_upper = compile_nonlinear_table(p_upper);
 
 % *************************************************************************
 % Active constraints in main model
@@ -348,6 +349,10 @@ while go_on
     if options.bmibnb.verbose>0
         fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),info_text);
     end
+    
+    if solved_nodes == 149
+        1
+    end
 
     absgap = upper-lower;
     % ************************************************
@@ -365,7 +370,25 @@ while go_on
     upper_hist = [upper_hist upper];
 end
 if options.bmibnb.verbose>0
+    
     fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '\n']);
+    if ~time_ok
+        fprintf(['* Termination due to time limit \n']);
+    elseif ~iter_ok
+        fprintf(['* Termination due to iteration limit \n']);
+    elseif ~any_nodes
+        fprintf(['* Termination with all nodes pruned \n']);
+    elseif ~relgap_too_big
+        fprintf(['* Termination with relative gap satisfied \n']);
+    elseif ~absgap_too_big
+        fprintf(['* Termination with relative gap satisfied \n']);
+    elseif uppertarget_not_met
+        fprintf(['* Termination with upper bound limit reached \n']);
+    elseif uppertarget_not_met
+        fprintf(['* Termination with upper bound target reached \n']);
+    elseif lowertarget_not_met
+        fprintf(['* Termination with lower bound target reached \n']);
+    end
 end
 
 %save dummy x_min
