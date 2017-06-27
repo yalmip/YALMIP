@@ -11,23 +11,34 @@ if ~isempty(p.binary_variables)
     end
 end
 
+if ~isempty(p_original.integer_variables)
+    local_gave_good = find(abs(x(p.integer_variables)-fix(x(p.integer_variables)))< options.bnb.inttol);
+    p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
+    p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
+    for i = 1:3
+        p = update_eval_bounds(p);
+        p = propagate_bounds_from_equalities(p);
+        p = update_monomial_bounds(p);
+    end
+end
+
 % The bounds and relaxed solutions have been computed w.r.t to the relaxed
 % bilinear model. We only need the original bounds and variables.
 p.lb = p.lb(1:length(p_original.c));
 p.ub = p.ub(1:length(p_original.c));
 
-% if ~isempty(p_original.integer_variables)
-%     % disp('Report bug: FIX ME in global_solve_upper at 16')
-%     local_gave_good = find(abs(x(p.integer_variables)-fix(x(p.integer_variables)))< options.bnb.inttol);
-%     p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
-%     p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
-% end
 x = x(1:length(p_original.c));
 %         
 p_upper = p_original;
 
 p_upper.lb = p.lb;
 p_upper.ub = p.ub;
+
+% KNITRO does not like fixed binary/integer variables, so we remove them
+fixed_binary = find(p_upper.lb(p_upper.binary_variables) == p_upper.ub(p_upper.binary_variables));
+fixed_integer = find(p_upper.lb(p_upper.integer_variables) == p_upper.ub(p_upper.integer_variables));
+p_upper.binary_variables(fixed_binary) = [];if length(p_upper.binary_variables)==0;p_upper.binary_variables = [];end
+p_upper.integer_variables(fixed_integer) = [];if length(p_upper.integer_variables)==0;p_upper.integer_variables = [];end
 
 % Pick an initial point (this can be a bit tricky...)
 lbinfbounds = find(isinf(p.lb));
