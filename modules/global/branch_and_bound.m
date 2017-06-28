@@ -264,7 +264,7 @@ while go_on
     % ************************************************
     % CONTINUE SPLITTING?
     % ************************************************
-    if keep_digging & max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol
+    if keep_digging & max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol && upper > lower
         node = [];
       %  already_tested = []
       %  while ~isempty(setdiff(p.branch_variables,already_tested)) & isempty(node)
@@ -328,7 +328,9 @@ while go_on
                 end
             end
         end
-        lower = min([stack.lower]);
+        if ~isempty(stack)
+            lower = min([stack.lower]);
+        end
     end
 
     if ~isempty(p)
