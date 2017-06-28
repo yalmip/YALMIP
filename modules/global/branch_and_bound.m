@@ -1,4 +1,9 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing)
+
+% *************************************************************************
+% Initialize diagnostic code
+% *************************************************************************
+problem = 0;
 
 % *************************************************************************
 % Create handles to solvers
@@ -350,10 +355,6 @@ while go_on
         fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),info_text);
     end
     
-    if solved_nodes == 149
-        1
-    end
-
     absgap = upper-lower;
     % ************************************************
     % Continue?
@@ -369,8 +370,8 @@ while go_on
     lower_hist = [lower_hist lower];
     upper_hist = [upper_hist upper];
 end
-if options.bmibnb.verbose>0
-    
+
+if options.bmibnb.verbose>0   
     fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '\n']);
     if ~time_ok
         fprintf(['* Termination due to time limit \n']);
@@ -391,7 +392,9 @@ if options.bmibnb.verbose>0
     end
 end
 
-%save dummy x_min
+if ~time_ok || ~iter_ok
+    problem = 3;
+end
 
 % *************************************************************************
 % Stack functionality

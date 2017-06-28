@@ -355,24 +355,20 @@ if p.feasible
     % *******************************
     % RUN BILINEAR BRANCH & BOUND
     % *******************************
-    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing);
+    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing);
        
     % ********************************
-    % CREATE SOLUTION AND DIAGNOSTICS
+    % ADJUST DIAGNOSTICS
     % ********************************
-    problem = 0;
-    if isinf(upper)
+    if isinf(upper) && problem == 0
         problem = 1;
     end
-    if isinf(lower) & (lower<0)
+    if isinf(lower) & (lower<0) && problem == 0
         problem = 2;
     end
-    if isinf(lower) & (lower>0)
+    if isinf(lower) & (lower>0) && problem == 0
         problem = 1;
-    end    
-    if solved_nodes == p.options.bmibnb.maxiter
-        problem = 3;
-    end
+    end        
 else
     counter = p.counter;
     problem = 1;
