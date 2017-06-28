@@ -17,6 +17,14 @@ if isfield(model.options.fmincon,'LargeScale')
         model.beq = full(model.beq);
     end
 end
+if isfield(model.options.fmincon,'Algorithm')
+    if isequal(model.options.fmincon.Algorithm,'sqp') || isequal(model.options.fmincon.Algorithm,'active-set')
+        model.A = full(model.A);
+        model.b = full(model.b);
+        model.Aeq = full(model.Aeq);
+        model.beq = full(model.beq);
+    end
+end
 
 if model.derivative_available
     model.options.fmincon.GradObj = 'on';  
