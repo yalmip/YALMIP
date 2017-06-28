@@ -1647,6 +1647,7 @@ solver(i).constraint.semivar = 0;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
 solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 % ***************************************
