@@ -266,14 +266,7 @@ while go_on
     % ************************************************
     if ~isempty(p.branch_variables) && keep_digging && max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol && upper > lower
         node = [];
-      %  already_tested = []
-      %  while ~isempty(setdiff(p.branch_variables,already_tested)) & isempty(node)
-      %  temp = p.branch_variables;
-      %  p.branch_variables=setdiff(p.branch_variables,already_tested);
-        spliton = branchvariable(p,options,x);
-      %  p.branch_variables = union(p.branch_variables,already_tested);
-      %  already_tested = [already_tested spliton];
-      
+        spliton = branchvariable(p,options,x);      
         if ismember(spliton,p.complementary)
             i = find(p.complementary(:,1) == spliton);
             if isempty(i)
