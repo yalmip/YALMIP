@@ -30,37 +30,8 @@ p_test.K.s = 0;
 p_test.K.q = 0;
 if ~isnan(lower) & ~isinf(lower)
     p_test.F_struc = [-(p.lower-abs(p.lower)*0.01)+p.f p_test.c';p_test.F_struc];
-    if p.diagonalized
-        n = length(p.c)/2;
-        f = p.f;
-        c = p.c(1:n);
-        d = p.c(n+1:end);
-        neg = find(d<0);
-        if length(neg)>0
-            f = f + sum(d(neg).*xmin(neg).^2 - 2*d(neg).*xmin(neg).^2);
-            c(neg) = c(neg) + 2*d(neg).*xmin(neg);
-            d(neg) = 0;
-            p_test.F_struc = [-(p.lower-abs(p.lower)*0.01)+f c' d';p_test.F_struc];
-            p_test.K.l = p_test.K.l + 1;
-        end
-    end
 end
 if upper < inf & ~(nnz(p.c)==0 &  nnz(p.Q)==0)
-    if p.diagonalized
-        n = length(p.c)/2;
-        f = p.f;
-        c = p.c(1:n);
-        d = p.c(n+1:end);
-        pos = find(d>0);
-        if length(pos)>0
-            f = f + sum(d(pos).*xmin(pos).^2 - 2*d(pos).*xmin(pos).^2);
-            c(pos) = c(pos) + 2*d(pos).*xmin(pos);
-            d(pos) = 0;
-            p_test.F_struc = [upper+abs(upper)*0.01-f -c' -d';p_test.F_struc];
-            p_test.F_struc = [upper+abs(upper)*0.01-p.f -p_test.c';p_test.F_struc];
-            p_test.K.l = p_test.K.l + 2;
-        end
-    end
     p_test.F_struc = [upper+abs(upper)*0.01-p.f -p_test.c';p_test.F_struc];
     p_test.K.l = p_test.K.l + 1;
 end

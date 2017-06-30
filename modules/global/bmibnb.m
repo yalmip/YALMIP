@@ -414,48 +414,19 @@ pnew = p;
 pnew.V = [];
 pnew.diagonalized = 0;
 
-% No quadratic terms
-if all(p.variabletype == 0)
+% No quadratic terms or we don't want to diagonalize
+if all(p.variabletype == 0) | p.options.bmibnb.diagonalize==0
     return
-end
-
-% Any polynomial terms or simple linear by some reason
-if any(p.variabletype > 2) & ~all(p.variabletype == 0) | p.options.bmibnb.diagonalize==0
-    return
-end
-
-if ~isempty(p.evalVariables)
-    return
-end
-
-if ~isempty(p.binary_variables) | ~isempty(p.integer_variables)
-    return
-end
-
-
-nonlinear = find(p.variabletype > 0);
-linear = find(p.variabletype == 0);
-if ~isempty(p.F_struc)
-    % Nonlinear terms in constraints
-    if nnz(p.F_struc(:,1 + nonlinear))> 0
-        return
-    end
-end
-
-if ~isempty(p.lb)
-    if ~all(isinf(p.lb(nonlinear)))
-        return
-    end
-end
-if ~isempty(p.ub)
-    if ~all(isinf(p.ub(nonlinear)))
-        return
-    end
 end
 
 % Find quadratic and linear terms
 used_in_c = find(p.c);
+nonlinear = find(p.variabletype >= 1 & p.variabletype <= 2);
 quadraticterms = used_in_c(find(ismember(used_in_c,nonlinear)));
+if isempty(quadraticterms)
+    return
+end
+
 Q = zeros(length(p.c),length(p.c));
 if ~isempty(quadraticterms)
     usedinquadratic = zeros(1,length(p.c));
@@ -470,66 +441,40 @@ if ~isempty(quadraticterms)
         end       
     end
 end
-Qlin = Q(linear,linear);
-clin = p.c(linear);
 
-% Decompose Q
-[V,D] = eig(full(Qlin));
-V = real(V);
-D = real(D);
-V(abs(V)<1e-11) = 0;
-D(abs(D)<1e-11) = 0;
-lb = p.lb(linear);
-ub = p.ub(linear);
-Z = V';
-newub = inf(length(lb),1);
-newlb = -inf(length(lb),1);
-for i = 1:length(lb)
-    z = Z(i,:);
-    neg = find(z<0);
-    pos = find(z>0);
-    if ~isempty(neg)
-        newub(i,1) = z(neg)*lb(neg);
-        newlb(i,1) = z(neg)*ub(neg);
-    end
-%    if ~isempty(pos)
-        newub(i,1) = z(pos)*ub(pos);
-        newlb(i,1) = z(pos)*lb(pos);        
-%    end
-%  newub(i,1) = z(z>0)*ub(z>0) + z(z<0)*lb(z<0);
-%        newlb(i,1) = z(z>0)*lb(z>0) + z(z<0)*ub(z<0);  
+% x'*Q*x = x'*V'*D*V*x
+[V,D] = eig(full(Q));
+V = V*abs(D).^.5;
+V = V';
+D = sign(D);
+V(abs(V)<= sqrt(eps))=0;
+D(abs(D)<= sqrt(eps))=0;
+
+% Detect lower-dimensional space we're working in
+used = find(diag(D)~=0 & any(V,2));
+D = D(used,used);
+V = V(used,:);
+
+% Add new variables z = Vx and and add z'Dz to objective
+nnew = size(V,1);
+pnew.F_struc = [zeros(nnew,1) -V speye(nnew);
+                pnew.F_struc spalloc(size(pnew.F_struc,1),nnew,0)];
+pnew.F_struc = [pnew.F_struc spalloc(size(pnew.F_struc,1),nnew,0)];
+pnew.K.f = pnew.K.f + nnew;
+pnew.variabletype = [pnew.variabletype zeros(1,nnew) 2*ones(1,nnew)];
+pnew.monomtable = [blkdiag(pnew.monomtable,spalloc(nnew,nnew,0));
+                   spalloc(nnew,size(pnew.monomtable,2),0) speye(nnew)*2];
+pnew.monomtable(size(pnew.monomtable,1),size(pnew.monomtable,1))=0;
+
+pnew.lb = [pnew.lb;-inf(2*nnew,1)];               
+pnew.ub = [pnew.ub;inf(2*nnew,1)]; 
+if ~isempty(pnew.x0)
+    pnew.x0 = [pnew.x0;V*pnew.x0;zeros(nnew,2)];
 end
+pnew.c(quadraticterms) = 0;
+pnew.c = [pnew.c;zeros(nnew,1);diag(D)];
+pnew.Q = blkdiag(pnew.Q,spalloc(2*nnew,2*nnew,0));
 
-
-% Create new problem
-clin = V'*clin;
-%A = A*V;
-
-n = length(linear);
-pnew.original_linear = linear;
-pnew.original_n = length(p.c);
-pnew.V = V;
-pnew.c = [clin;diag(D)];
-pnew.Q = spalloc(2*n,2*n,0);
-
-% find constraint polytope
-if size(p.F_struc,1)>0
-    A = -p.F_struc(:,1 + linear);
-    b = p.F_struc(:,1);
-    pnew.F_struc = [b -A*V zeros(length(b),n)];
-end
-
-
-pnew.variabletype = [zeros(1,n) ones(1,n)*2];
-pnew.monomtable = [eye(n);2*eye(n)];
-pnew.monomtable(2*n,2*n) = 0;
-pnew.lb =-inf(2*n,1);
-pnew.ub = inf(2*n,1);
-pnew.lb(1:n) = newlb;
-pnew.ub(1:n) = newub;
-if length(pnew.x0)>0
-    pnew.x0 = V*p.x0;
-end
 pnew.diagonalized = 1;
 
 function x = dediagonalize(p,x);

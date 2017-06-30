@@ -7,8 +7,13 @@ switch class(varargin{1})
         varargout{1} = sqrt(varargin{1});
 
     case 'sdpvar'
-          varargout{1} = InstantiateElementWise(mfilename,varargin{:});
-
+        if 0 %isequal(varargin{1}.extra.opname,'abs')
+            args = yalmip('getarguments',varargin{1});
+            args = args.arg{1};
+            varargout{1} = sqrtmabs(args);
+        else
+            varargout{1} = InstantiateElementWise(mfilename,varargin{:});
+        end
     case 'char'
 
         X = varargin{3};
