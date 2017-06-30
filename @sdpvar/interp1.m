@@ -11,22 +11,45 @@ switch class(varargin{3})
         
         if numel(varargin{3}) > 1
             d = size(varargin{3});
+            
+            if min(d) > 1
+                % Matrix case, vectorize
+                varargout{1} = interp1(varargin{1},varargin{2},reshape(varargin{3},[],1),varargin{4});
+                varargout{1} = reshape(varargout{1},d);
+                return
+            end
+                     
+            % If only one data sequence, place in column vector
+            if min(size(varargin{1})) == 1
+                varargin{1} = repmat(varargin{1}(:),1,max(d));
+            end
+            if min(size(varargin{2})) == 1
+                varargin{2} = repmat(varargin{2}(:),1,max(d));
+            end           
+            
             out = [];
-            for i = 1:d(1)
-                s = [];
-                for j = 1:d(2)
+            varargin{3} = reshape(varargin{3},1,max(d));
+            for i = 1:max(d)
                     Y.type = '()';
-                    Y.subs{1} = i;
-                    Y.subs{2} = j;
+                    Y.subs{1} = 1;
+                    Y.subs{2} = i;
                     xij = subsref(varargin{3},Y);                    
-                    s = [s interp1(varargin{1},varargin{2},xij,varargin{4})];
-                end
-                out = [out;s];
+                    out = [out;interp1(varargin{1}(:,i),varargin{2}(:,i),xij,varargin{4})];                                
+            end
+            if d(1)==1
+                out = out';
             end
             varargout{1} = out;
             return
+        else
+            if min(size(varargin{1})) > 1 || min(size(varargin{2})) > 1
+                error('Data should be vectors for scalar interpolant');
+            end            
+            % Column vector assumed format
+            varargin{1} = reshape(varargin{1},[],1);
+            varargin{2} = reshape(varargin{2},[],1);            
         end
-                            
+        
         if ~isa(varargin{1},'double') || ~isa(varargin{2},'double')
             error('First 2 arguments in interp1 should be approximation data');
         end
