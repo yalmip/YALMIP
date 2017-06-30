@@ -101,6 +101,7 @@ y = recover(unique([v1(:);v2(:);v3(:)]));
 
 % Export the outer model, and select solver
 options.solver = options.bilevel.outersolver;
+options.bmibnb.diagonalize = 0;
 [Omodel,Oax1,Oax2,outer_p] = export(OuterConstraints,OuterObjective,options,[],[],0);
 if isstruct(Oax2)
    sol = Oax2;
