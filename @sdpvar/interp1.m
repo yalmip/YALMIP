@@ -4,15 +4,29 @@ function varargout = interp1(varargin)
 switch class(varargin{3})
 
     case 'sdpvar'   
-        
-        if numel(varargin{3})>1
-            error('Only scalar functions supported in SDPVAR/INTERP1');
-        end
-        
+                
         if nargin == 3
             varargin{4} = 'linear';
         end
         
+        if numel(varargin{3}) > 1
+            d = size(varargin{3});
+            out = [];
+            for i = 1:d(1)
+                s = [];
+                for j = 1:d(2)
+                    Y.type = '()';
+                    Y.subs{1} = i;
+                    Y.subs{2} = j;
+                    xij = subsref(varargin{3},Y);                    
+                    s = [s interp1(varargin{1},varargin{2},xij,varargin{4})];
+                end
+                out = [out;s];
+            end
+            varargout{1} = out;
+            return
+        end
+                            
         if ~isa(varargin{1},'double') || ~isa(varargin{2},'double')
             error('First 2 arguments in interp1 should be approximation data');
         end
