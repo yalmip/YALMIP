@@ -19,12 +19,12 @@ switch class(varargin{3})
                 return
             end
                      
-            % If only one data sequence, place in column vector
+            % If only one data sequence, place in row vector
             if min(size(varargin{1})) == 1
-                varargin{1} = repmat(varargin{1}(:),1,max(d));
+                varargin{1} = repmat(varargin{1}(:)',max(d),1);
             end
             if min(size(varargin{2})) == 1
-                varargin{2} = repmat(varargin{2}(:),1,max(d));
+                varargin{2} = repmat(varargin{2}(:)',max(d),1);
             end           
             
             out = [];
@@ -34,7 +34,7 @@ switch class(varargin{3})
                     Y.subs{1} = 1;
                     Y.subs{2} = i;
                     xij = subsref(varargin{3},Y);                    
-                    out = [out;interp1(varargin{1}(:,i),varargin{2}(:,i),xij,varargin{4})];                                
+                    out = [out;interp1(varargin{1}(i,:),varargin{2}(i,:),xij,varargin{4})];                                
             end
             if d(1)==1
                 out = out';
@@ -54,9 +54,9 @@ switch class(varargin{3})
             error('First 2 arguments in interp1 should be approximation data');
         end
         
-        if any(diff(varargin{1})<0)
-            error('First arguments in interp1 should be monotonically increasing');
-        end
+        %if any(diff(varargin{1})<0)
+        %    error('First arguments in interp1 should be monotonically increasing');
+        %end
         
         if isequal(varargin{4},'graph')
             if  ~isconvexdata(varargin{1},varargin{2}) && ~isconvexdata(varargin{1},-varargin{2})

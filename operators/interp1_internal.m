@@ -4,7 +4,11 @@ function varargout = interp1_internal(varargin)
 switch class(varargin{1})
     
     case 'double'
-        varargout{1} = interp1(varargin{2},varargin{3},varargin{1},varargin{4});
+        if isequal(varargin{4},'graph') || isequal(varargin{4},'lp') || isequal(varargin{4},'milp')
+            varargout{1} = interp1(varargin{2},varargin{3},varargin{1},'linear');
+        else
+            varargout{1} = interp1(varargin{2},varargin{3},varargin{1},varargin{4});
+        end
         
     case 'char'
         
@@ -36,7 +40,7 @@ switch class(varargin{1})
         else
             if strcmpi(method,'milp') || strcmpi(method,'lp')
                 lambda = sdpvar(length(xi),1);
-                Model = [sos(lambda), x == lambda'*xi(:), t == lambda'*yi(:),lambda>=0, sum(lambda)==1];
+                Model = [sos2(lambda), x == lambda'*xi(:), t == lambda'*yi(:),lambda>=0, sum(lambda)==1];
                 [mono,def] = classifyData(yi);
                 operator = struct('convexity','none','monotonicity',mono,'definiteness',def,'model','integer');
             elseif strcmpi(method,'graph')
