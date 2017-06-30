@@ -87,7 +87,9 @@ switch exitflag
         problem = 1;
     case 3
         problem = 2;
-    case {4,5}
+    case 4
+        problem = 3;
+    case 5
         problem = 11;
     otherwise
         problem = 9;
