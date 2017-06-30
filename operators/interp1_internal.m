@@ -17,30 +17,28 @@ switch class(varargin{1})
         if strcmpi(varargin{1},'graph')
             % Convexity propagation wants epi-graph models, so is that what
             % we have used for modelling?
-            if strcmpi(method,'graph')
+            if strcmpi(method,'graph') || strcmpi(method,'lp')
                 if isconvexdata(xi,yi)
                     % Convex case, create epi-graph
-                    Model = [min(xi) <= varargin{3} <= max(xi)];
-                    grads = diff(yi)./diff(xi);
-                    Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) <= t];
-                    operator = struct('convexity','convex','monotonicity','none','definiteness','none','model','graph');
+                    [Model,mono,def] = convexGraph(xi,yi,x,t);                                          
+                    operator = struct('convexity','convex','monotonicity',mono,'definiteness',def,'model','graph');
                 elseif isconvexdata(xi,-yi)
-                    Model = [min(xi) <= varargin{3} <= max(xi)];
-                    grads = diff(yi)./diff(xi);
-                    Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) >= t];
-                    operator = struct('convexity','concave','monotonicity','none','definiteness','none','model','graph');
+                    Model = concaveGraph(xi,yi,x,t);                      
+                    operator = struct('convexity','concave','monotonicity',mono,'definiteness',def,'model','graph');
                 else
-                    error('Trying to create graph approximant using non-convex data');
+                    Model = [];
+                    operator = [];
                 end
             else
                 Model = [];
                 operator = [];
             end
         else
-            if strcmpi(method,'milp')
-                lambda = sdpvar(length(xi),1)
+            if strcmpi(method,'milp') || strcmpi(method,'lp')
+                lambda = sdpvar(length(xi),1);
                 Model = [sos(lambda), x == lambda'*xi(:), t == lambda'*yi(:),lambda>=0, sum(lambda)==1];
-                operator = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
+                [mono,def] = classifyData(yi);
+                operator = struct('convexity','none','monotonicity',mono,'definiteness',def,'model','integer');
             elseif strcmpi(method,'graph')
                 Model = [];
                 operator = [];
@@ -94,4 +92,34 @@ if all(finterp >= yi(2:end-1))
     isconvex = 1;
 else
     isconvex = 0;
+end
+
+function [Model,mono,def] = convexGraph(xi,yi,x,t)
+
+Model = [min(xi) <= x <= max(xi)];
+grads = diff(yi)./diff(xi);
+Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) <= t];
+[mono,def] = classifyData(yi);
+
+function Model = concaveGraph(xi,yi,x,t)
+
+Model = [min(xi) <= x <= max(xi)];
+grads = diff(yi)./diff(xi);
+Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) >= t];
+[mono,def] = classifyData(yi);
+
+function [mono,def] = classifyData(yi);
+if all(diff(yi)) >= 0
+    mono = 'increasing';
+elseif all(diff(yi) <= 0)
+    mono = 'decreasing';
+else
+    mono = 'none';
+end
+if all(yi>=0)
+    def = 'positive';
+elseif all(yi <= 0)
+    def = 'negative';
+else
+    def = 0;
 end
