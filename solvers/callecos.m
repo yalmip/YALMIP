@@ -33,7 +33,7 @@ cones.q = K.q;
 cones.s = K.s;
 cones.ep = 0;
 [data,cones,output] = addExponentialCone(data,cones,yalmipmodel);
-if output.problem == -4
+if output.problem
     return
 end
 
