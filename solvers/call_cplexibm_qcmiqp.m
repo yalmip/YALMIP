@@ -37,11 +37,11 @@ if isempty(model.integer_variables) & isempty(model.binary_variables) & isempty(
 else
     if options.verbose
         solvertime = tic;
-        [x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype',model.x0,model.options);
+        [x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype,model.x0,model.options);
         solvertime = toc(solvertime);
     else
         solvertime = tic;
-        evalc('[x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype'',model.x0,model.options);');
+        evalc('[x,fval,exitflag,output] = cplexmiqcp(model.H, model.f, model.Aineq,model.bineq,model.Aeq,model.beq,model.Li,model.Qi,model.ri,model.K.sos.type,model.K.sos.variables,model.K.sos.weight,model.lb,model.ub,model.ctype,model.x0,model.options);');
         solvertime = toc(solvertime);
     end
 end
