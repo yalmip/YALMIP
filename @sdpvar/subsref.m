@@ -153,6 +153,7 @@ if isempty(y.lmi_variables)
 else
     % Reset info about conic terms
     y.conicinfo = [0 0];
+    y.extra.createTime = definecreationtime;
 end
 varargout{1} = y;
 

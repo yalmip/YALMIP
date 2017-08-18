@@ -304,6 +304,12 @@ switch varargin{1}
             varargin = {varargin{1:end-1}};            
         end
         
+        for i = 1:length(varargin)
+            if isa(varargin{i},'sdpvar')
+                varargin{i} = clearcreationtime(varargin{i});
+            end
+        end
+        
         varargin{2} = strrep(varargin{2},'sdpvar/',''); % Clean due to different behaviour of the function mfilename in ML 5,6 and 7
         
         % Is this operator variable already defined

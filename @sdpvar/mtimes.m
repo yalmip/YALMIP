@@ -523,6 +523,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         Z.conicinfo = [0 0];
         Z.extra.opname='';
+        Z.extra.createTime = definecreationtime;
         Z = clean(Z);
     
 
@@ -581,6 +582,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.basis = Z.basis*Y;
             Z.conicinfo = [0 0];
             Z.extra.opname='';
+            Z.extra.createTime = definecreationtime;
             Z = addrightfactor(Z,Y);
             Z = addleftfactor(Z,speye(size(Y,1)));
             Z = clean(Z);
@@ -601,6 +603,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         end
         Z.conicinfo = [0 0];
         Z.extra.opname='';
+        Z.extra.createTime = definecreationtime;
         Z = addrightfactor(Z,Y);
         Z = clean(Z);
 
@@ -646,6 +649,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
                 Z.conicinfo = [0 0];
                 Z.extra.opname='';
+                Z.extra.createTime = definecreationtime;
                 Z = addleftfactor(Z,X);
                 if X==0
                     Z = clean(Z);
@@ -656,6 +660,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.dim(1) = n_X;
             Z.dim(2) = m_X;
             Z.basis = X(:)*Y.basis;
+            Z.extra.createTime = definecreationtime;
             Z = addleftfactor(Z,X);
             Z = addrightfactor(Z,speye(size(X,2)));
             Z = clean(Z);
@@ -701,6 +706,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         Z.dim(2) = m;
         Z.conicinfo = [0 0];
         Z.extra.opname='';
+        Z.extra.createTime = definecreationtime;
         Z = addleftfactor(Z,X);
         Z = clean(Z);
 
