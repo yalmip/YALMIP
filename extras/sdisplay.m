@@ -30,6 +30,28 @@ end
 r1=1:size(pvec,1);
 r2=1:size(pvec,2);
 
+% First, some boooring stuff. we need to
+% figure out the symbolic names and connect
+% these names to YALMIPs variable indicies
+W = evalin('caller','whos');
+
+% First, sort the variables available in the work-space based
+% on the creation. Early creation means it is more likely the
+% relevant variable to display
+createTime = [];
+for i = 1:size(W,1)
+    if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
+        keep(i) = 1;
+        z = evalin('caller',['struct(' W(i).name ').extra.createTime;']);
+        createTime = [createTime z];
+    else
+        keep(i) = 0;
+    end
+end
+W = W(find(keep));
+[sorted,index] = sort(createTime);
+W = W(index);
+
 for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)
 
@@ -43,29 +65,7 @@ for pi = 1:size(pvec,1)
             [exponent_p,ordered_list] = exponents(p,x);
             exponent_p = full(exponent_p);
             names = cell(length(x),1);
-
-            % First, some boooring stuff. we need to
-            % figure out the symbolic names and connect
-            % these names to YALMIPs variable indicies
-            W = evalin('caller','whos');
-
-            % First, sort the variables available in the work-space based
-            % on the creation. Early creation means it is more likely the
-            % relevant ariable to display
-            createTime = [];
-            for i = 1:size(W,1)
-                if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
-                    keep(i) = 1;
-                    z = evalin('caller',['struct(' W(i).name ').extra.createTime;']);
-                    createTime = [createTime z];
-                else
-                    keep(i) = 0;
-                end
-            end
-            W = W(find(keep));           
-            [sorted,index] = sort(createTime);
-            W = W(index);
-              
+                         
             for i = 1:size(W,1)
                 if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
                     % Get the SDPVAR variable
