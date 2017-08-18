@@ -26,6 +26,7 @@ end
 if isa(d,'sdpvar')
     % Call helper which vectorizes the elements
     y = powerinternalhelper(d,x);
+    y.extra.createTime = definecreationtime;
     return
 end
 
@@ -60,6 +61,7 @@ if fractional | negative | different
         if isequal(x.basis,[spalloc(prod(x.dim),1,0) speye(prod(x.dim))]) & all(d==d(1))
             % Simple case x.^d
             y = vectorizedUnitPower(x,d);
+            y.extra.createTime = definecreationtime;
             return
         end
         [n,m] = size(x);        
@@ -75,6 +77,7 @@ if fractional | negative | different
             end
             y = [y;temp];
         end
+        y.extra.createTime = definecreationtime;
         return
     else
         base = getbase(x);
@@ -96,12 +99,14 @@ if fractional | negative | different
             error('Only unit scalars can have negative or non-integer powers.');
         end
     end
+    y.extra.createTime = definecreationtime;
     return
 end
 
 if isequal(x.basis,[spalloc(prod(x.dim),1,0) speye(prod(x.dim))]) & all(d==d(1))
      % Simple case x.^d
      y = vectorizedUnitPower(x,d);
+     y.extra.createTime = definecreationtime;
      return
  end
         

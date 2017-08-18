@@ -386,6 +386,7 @@ switch nargin
         sys.extra = [];
         sys.extra.expanded = [];
         sys.extra.opname = '';
+        sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
         sys.originalbasis = 'unknown';
         if FACTORTRACKING
@@ -422,6 +423,7 @@ switch nargin
         sys.extra = [];
         sys.extra.expanded = [];
         sys.extra.opname = '';
+        sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
         sys.originalbasis = 'unknown';
         if FACTORTRACKING
@@ -458,6 +460,7 @@ switch nargin
         sys.extra = varargin{7};
         sys.extra.expanded = [];
         sys.extra.opname = '';
+        sys.extra.createTime = '';
         sys.conicinfo = varargin{7};
         sys.originalbasis = 'unknown';
         if FACTORTRACKING
@@ -726,6 +729,7 @@ if isa(basis,'cell')
         sys{blk}.extra = [];
         sys{blk}.extra.expanded = [];
         sys{blk}.extra.opname = '';
+        sys{blk}.extra.createTime = definecreationtime;
         sys{blk}.conicinfo = conicinfo;
         sys{blk}.originalbasis = matrix_type;
         if FACTORTRACKING
@@ -754,6 +758,7 @@ else
     sys.extra = [];
     sys.extra.expanded = [];
     sys.extra.opname = '';
+    sys.extra.createTime = definecreationtime;
     sys.conicinfo = conicinfo;
     sys.originalbasis = matrix_type;
     if FACTORTRACKING

@@ -89,6 +89,7 @@ y.lmi_variables = all_lmi_variables;
 % Reset info about conic terms
 y.conicinfo = [0 0];
 y.extra.opname='';
+y.extra.createTime = definecreationtime;
 y = unfactor(y);
 
 % Update the factors

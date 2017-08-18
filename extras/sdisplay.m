@@ -1,17 +1,11 @@
-function symb_pvec = sdisplay(pvec,symbolicname)
+function symb_pvec = sdisplay(pvec,precision)
 %SDISPLAY Symbolic display of SDPVAR expression
 %
-% Note that the symbolic display only work if all
-% involved variables are explicitely defined as
-% scalar variables.
-%
-% Variables that not are defined as scalars
-% will be given the name ryv(i). ryv means
-% recovered YALMIP variables, i indicates the
-% index in YALMIP (i.e. the result from getvariables)
-%
-% If you want to change the generic name ryv, just
-% pass a second string argument
+% As variables in YALMIP do not have any actual names internally, the
+% command is not guaranteed to recover the variable names you use in the
+% work-space correctly. It tries to figure out the names of the variables
+% by searching in the work-space for variables involving the same variable
+% indicies, but this can fails in many instances.
 %
 % EXAMPLES
 %  sdpvar x y
@@ -23,6 +17,15 @@ function symb_pvec = sdisplay(pvec,symbolicname)
 %  sdisplay(x^2+y^2+t'*t)
 %    ans =
 %      'x^2+y^2+ryv(5)^2+ryv(6)^2'
+%
+% Optionally, we can supply an option to round the data to N digits
+%
+%  sdisplay(pi*x1^2,4)
+%    ans = '3.1416*x^2'
+
+if nargin < 2
+    precision = inf;
+end
 
 r1=1:size(pvec,1);
 r2=1:size(pvec,2);
@@ -33,7 +36,7 @@ for pi = 1:size(pvec,1)
         p = pvec(pi,pj);
 
         if isa(p,'double')
-            symb_p = num2str(p,10);
+            symb_p = num2str2(p,precision);
         else
             LinearVariables = depends(p);
             x = recover(LinearVariables);
@@ -45,6 +48,24 @@ for pi = 1:size(pvec,1)
             % figure out the symbolic names and connect
             % these names to YALMIPs variable indicies
             W = evalin('caller','whos');
+
+            % First, sort the variables available in the work-space based
+            % on the creation. Early creation means it is more likely the
+            % relevant ariable to display
+            createTime = [];
+            for i = 1:size(W,1)
+                if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
+                    keep(i) = 1;
+                    z = evalin('caller',['struct(' W(i).name ').extra.createTime;']);
+                    createTime = [createTime z];
+                else
+                    keep(i) = 0;
+                end
+            end
+            W = W(find(keep));           
+            [sorted,index] = sort(createTime);
+            W = W(index);
+              
             for i = 1:size(W,1)
                 if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
                     % Get the SDPVAR variable
@@ -61,10 +82,7 @@ for pi = 1:size(pvec,1)
                         if ~isempty(index_in_p)
                             already = ~isempty(names{index_in_p});
                             if already
-                                already = ~strfind(names{index_in_p},'internal');
-                                if isempty(already)
-                                    already = 0;
-                                end
+                                already = (isempty(strfind(names{index_in_p},'internal')) | isempty(strfind(names{index_in_p},'ans')));                               
                             end
                         else
                             already = 0;
@@ -86,10 +104,7 @@ for pi = 1:size(pvec,1)
                                 if ~isempty(index_in_p)
                                     already = ~isempty(names{index_in_p});
                                     if already
-                                        already = ~strfind(names{index_in_p},'internal');
-                                        if isempty(already)
-                                    already = 0;
-                                end
+                                        already = (isempty(strfind(names{index_in_p},'internal')) | isempty(strfind(names{index_in_p},'ans')));                                      
                                     end
                                 else
                                     already = 0;
@@ -114,10 +129,7 @@ for pi = 1:size(pvec,1)
                                 if ~isempty(index_in_p)
                                     already = ~isempty(names{index_in_p});
                                     if already
-                                        already = ~strfind(names{index_in_p},'internal');
-                                        if isempty(already)
-                                    already = 0;
-                                end
+                                        already = (isempty(strfind(names{index_in_p},'internal')) | isempty(strfind(names{index_in_p},'ans')));                                       
                                     end
                                 else
                                     already = 0;
@@ -180,10 +192,10 @@ for pi = 1:size(pvec,1)
             if size(ordered_list,1)>0
                 nummonoms = size(ordered_list,1);
                 if full(getbasematrix(p,0)) ~= 0
-                     symb_p = num2str(full(getbasematrix(p,0)));
+                     symb_p = num2str2(full(getbasematrix(p,0)),precision);
                 end
             elseif all(exponent_p(1,:)==0)
-                symb_p = num2str(full(getbasematrix(p,0)),10);
+                symb_p = num2str2(full(getbasematrix(p,0)),precision);
                 exponent_p = exponent_p(2:end,:);
                   nummonoms = size(exponent_p,1);
             else
@@ -201,12 +213,12 @@ for pi = 1:size(pvec,1)
                     otherwise
                         if isreal(coeff)
                             if coeff >0
-                                coeff = ['+' num2str2(coeff)];
+                                coeff = ['+' num2str2(coeff,precision)];
                             else
-                                coeff=[num2str2(coeff)];
+                                coeff=[num2str2(coeff,precision)];
                             end
                         else
-                            coeff = ['+' '(' num2str2(coeff) ')' ];
+                            coeff = ['+' '(' num2str2(coeff,precision) ')' ];
                         end
                 end
                 if isempty(ordered_list)
@@ -273,16 +285,13 @@ while j <= length(monom)
     j = j + 1;
 end
 
-function s = num2str2(x)
-s = evalc('disp(x)');
+function s = num2str2(x,precision)
+if isinf(precision) 
+    s = sprintf('%.12g',x);
+else  
+    s = sprintf('%.12g',round(x*10^precision)/10^precision);
+end
 s(s==10)=[];
 s(s==32)=[];
-%disp(full(x))
-%s = num2str(full(x),10);
-if isequal(s,'1')
-    s = '';
-end
-if isequal(s,'-1')
-    s = '-';
-end
+
 

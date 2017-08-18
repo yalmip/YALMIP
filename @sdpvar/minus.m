@@ -110,6 +110,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname='';
+        y.extra.createTime = definecreationtime;
         if FACTORTRACKING, y = addfactors(y,X,-Y);end
     case 2
 
@@ -291,6 +292,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
 
         y.conicinfo = [0 0];
         y.extra.opname='';
+        y.extra.createTime = definecreationtime;
         if FACTORTRACKING, y = addfactors(y,X,-Y);end
         if nnz(in_Y_logical & in_X_logical)>0
             y = clean(y);
