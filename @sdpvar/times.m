@@ -46,8 +46,12 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
         error('Product of norms not allowed');
     end
     
+    if numel(X)==1 && numel(Y) > 1
+        X = repmat(X,size(Y));
+    elseif numel(Y)==1 && numel(X) > 1
+        Y = repmat(Y,size(X));
+    end
   
-
     try
         
         y = check_for_special_case(Y,X);
