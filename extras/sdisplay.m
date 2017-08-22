@@ -174,7 +174,7 @@ for pi = 1:size(pvec,1)
         if isa(p,'double')
             symb_p = num2str2(p,precision);
         else            
-            symb_p = createSymbolicExpression(p,global_LinearVariables,global_names);           
+            symb_p = createSymbolicExpression(p,global_LinearVariables,global_names,precision);           
         end        
         symb_pvec{pi,pj} = symb_p;
     end
@@ -185,7 +185,7 @@ if prod(size(symb_pvec))==1 & nargout==0
     clear symb_pvec
 end
 
-function symb_p =  createSymbolicExpression(p,global_LinearVariables,global_names)
+function symb_p =  createSymbolicExpression(p,global_LinearVariables,global_names,precision)
 LinearVariables = depends(p);
 x = recover(LinearVariables);
 [exponent_p,ordered_list] = exponents(p,x);
