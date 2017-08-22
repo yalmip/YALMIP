@@ -285,6 +285,7 @@ elseif model.ub(variable) <= 0
     f.properties.convexity = 'concave';
     f.properties.range = [fub  flb];    
 end
+f.properties.inverse = [];
 
 function f = power_internal2_operator(model,variable,power);
 f.fcn = 'power_internal2';
@@ -294,6 +295,7 @@ f.arg{3} = [];
 f.properties.bounds = @power_bound;
 f.properties.convexhull = @power_convexhull;
 f.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-1);']);
+f.properties.inverse = [];
 if even(power)
     f.properties.range = [0 inf];
 else
