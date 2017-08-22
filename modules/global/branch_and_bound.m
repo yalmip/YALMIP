@@ -252,7 +252,7 @@ while go_on
         [stack,lower] = prune(stack,upper,options,solved_nodes,p);
     end
     if isempty(stack)
-        if isinf(cost)
+        if isinf(cost) && (cost > 0)
             lower = upper;
         else
             lower = cost;
