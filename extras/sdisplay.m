@@ -114,7 +114,7 @@ for i = 1:size(W,1)
                     index_in_p = find(ismember(global_LinearVariables,vars(ii)));
                     
                     if ~isempty(index_in_p)
-                        already = ~isempty(names{index_in_p});
+                        already = ~isempty(global_names{index_in_p});
                         if already
                             already = (isempty(strfind(global_names{index_in_p},'internal')) | isempty(strfind(global_names{index_in_p},'ans')));
                         end
