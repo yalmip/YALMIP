@@ -70,9 +70,8 @@ if ~isempty(fixed)
     end
 end
 
-%something failed, perhaps a QP
-if problem & isempty(sigmonial_variables) 
-    % This is an LP or QP!
+%something failed
+if problem 
     % Go to standard fmincon
     if options.verbose
         disp('Conversion to geometric program failed. Trying general non-convex model in fmincon');
