@@ -9,6 +9,12 @@ else
     y = varargin{3};
 end
 
+nonemptyindex = find(~cellfun('isempty',{varargin{2:end}}));
+if length(nonemptyindex)==1
+    z = varargin{nonemptyindex+1};
+    return
+end
+    
 dimx = size(x);
 dimy = size(y);
 
