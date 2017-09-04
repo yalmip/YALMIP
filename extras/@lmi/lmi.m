@@ -245,7 +245,10 @@ if all(TypeofConstraint == 2) && all(strict==strict(1))
             end
         end
     else
-        vecF = Fi{1}(:);        
+        vecF = Fi{1};
+        if prod(size(vecF))>1
+            vecF = vecF(:);        
+        end
     end
     if isempty(temp)
         temp.data=vecF;
