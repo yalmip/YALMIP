@@ -298,6 +298,8 @@ y = Y;
 if prod(Y.dim)==1
     y.basis = X(:)*(y.basis);
     y.dim = size(X);
+    % Might be an nd-array
+    y.dim = [numel(X) 1];  
 else 
     y.basis = [(Y.basis.')*diag(sparse(X(:)))].';
 end
@@ -307,6 +309,7 @@ y.conicinfo = [0 0];
 Z.extra.opname='';
 y = flush(y);
 y = clean(y);
+y = reshape(y,size(X));
 
 
 

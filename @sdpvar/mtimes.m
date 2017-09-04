@@ -562,7 +562,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             else
                 if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                     Y = double(Y);
-                end
+                end                
                 Z.dim(1) = n_Y;
                 Z.dim(2) = m_Y;
                 Z.basis = kron(Z.basis,Y(:));
@@ -571,6 +571,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 Z = addrightfactor(Z,Y);
                 Z = addleftfactor(Z,speye(size(Y,1)));
                 Z = clean(Z);
+                if length(size(Y))>2
+                    Z = reshape(reshape(Z,[],1),size(Y));
+                end
                 return
             end
         elseif y_isscalar
@@ -585,7 +588,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.extra.createTime = definecreationtime;
             Z = addrightfactor(Z,Y);
             Z = addleftfactor(Z,speye(size(Y,1)));
-            Z = clean(Z);
+            Z = clean(Z);          
             return
         end
 
@@ -664,6 +667,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z = addleftfactor(Z,X);
             Z = addrightfactor(Z,speye(size(X,2)));
             Z = clean(Z);
+            if length(size(X))>2
+                Z = reshape(reshape(Z,[],1),size(X));
+            end
             return
         end
 
