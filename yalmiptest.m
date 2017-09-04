@@ -357,8 +357,8 @@ try
     z = [x;y];
     sdpvar x y
     diag([x y])*[x^-1;y^-1];
-    assert(isequal([x x;x x]*x,[x x;x x].*x))
-    assert(isequal(trace([x x;x x]*[x y;y x]),x*x+x*y+y*x+x*x))
+    assert(isequal([x x;x x]*x-[x x;x x].*x,zeros(2)))
+    assert(isequal(trace([x x;x x]*[x y;y x])-(x*x+x*y+y*x+x*x),0))
     
     % Regression ??
     yalmip('clear')
