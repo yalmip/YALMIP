@@ -8,17 +8,17 @@ if nargin < 3 || isempty(M)
 end
 
 if all(m==0)
-    lhs = 0;
+    lhs = m;
 elseif all(m==1)
     lhs = 1-X;
 else
     lhs = m.*(1-X);
 end
 if all(M==0)
-    rhs = 0;
+    rhs = M;
 elseif all(M==1)
     rhs = 1-X;
 else
     rhs = M.*(1-X);
 end
-F = [lhs <= f, f <= rhs];
+F = [f -f] <= [rhs -lhs];
