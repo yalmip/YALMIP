@@ -66,8 +66,8 @@ switch settype(Y)
         if infbound
             warning('You have unbounded variables in IMPLIES leading to a lousy big-M relaxation.');
         end
-        F = binary_implies_linearnegativeconstraint(Y,X(:),M,m);
-        F = [F, binary_implies_linearnegativeconstraint(-Y,X(:),-m,-M)];
+        F = binary_implies_linearequality(Y,reshape(X,[],1),M,m);
+        % F = [F, binary_implies_linearnegativeconstraint(-Y,reshape(X,[],1),-m,-M)];
         
     case 'sdp'         % X --> (Y>=0)
         if length(X)>1

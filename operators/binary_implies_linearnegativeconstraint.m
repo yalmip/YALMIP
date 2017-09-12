@@ -12,4 +12,10 @@ if nargin < 5
     eps = 1e-5;
 end
 
-F = [f <= M.*(1-X)];
+if all(M == 0)
+    F = [f <= 0];
+elseif all(M == 1)
+    F = [f <= (1-X)];
+else
+    F = [f <= M.*(1-X)];
+end

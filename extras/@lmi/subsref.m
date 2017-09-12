@@ -1,7 +1,6 @@
 function F = subsref(F,Y)
 %subsref           Overloaded indexing
 
-F = flatten(F);
 switch Y(1).type
     case '()'
         thelmi = Y.subs{1};
@@ -14,8 +13,10 @@ switch Y(1).type
                 error('First argument should be an lmi object and second argument integer or string')
             end
 
-            % If indexed using handle, convert to index
+            % If indexed using handle, flatten the structure (to simplify
+            % code) and convert to index 
             if isa(thelmi,'char')
+                F = flatten(F);
                 thelmitemp = [];
                 for i = 1:size(F.clauses,2)
                     if strcmp(F.clauses{i}.handle,thelmi)
@@ -36,23 +37,63 @@ switch Y(1).type
 
         end
 
-        % Checks so that it exist
-        if any((thelmi<1)) | any((thelmi>size(F.clauses,2)))
-            em = ['LMI #' num2str(thelmi) ' not available.'];
-            error(em)
+        % In complicated indexing, we flatten the storing layers to
+        % simplify code. 
+        % For single index, we search through all buckets 
+        if length(thelmi) > 1
+            F = flatten(F);                   
         end
-
-        % These indicies
-        j = thelmi;
-        ineqs = find(j<=size(F.clauses,2));
-        ineqs_j = j(ineqs);
-
-        if isempty(ineqs_j)
-            F.clauses = {};
+        
+        if isempty(thelmi)
+            F.clauses = [];
             F.LMIid = [];
-        else
-            F.clauses = F.clauses(ineqs_j);
-            F.LMIid   = F.LMIid(ineqs_j);
+            return
+        end
+        
+        if isa(F.clauses{1},'struct') % Flat storage
+            % Checks so that it exist            
+            if any(thelmi<1) | any((thelmi>size(F.clauses,2)))
+                em = ['LMI #' num2str(thelmi) ' not available.'];
+                error(em)
+            end           
+            F.clauses = F.clauses(thelmi);
+            F.LMIid   = F.LMIid(thelmi);           
+        else        
+            % Loop through all buckets
+            n = cellfun(@length,F.clauses);
+            cumsum_n = cumsum(n);
+            bucket = min(find(thelmi <= cumsum_n));
+            if isempty(bucket)                            
+                found = 0;
+            else
+                if bucket > 1
+                    thelmi = thelmi - cumsum_n(bucket-1);
+                end
+                F.LMIid   = F.LMIid(thelmi);
+                F.clauses = F.clauses{bucket}(thelmi);
+                found = 1;
+            end
+%             bucket = 1;
+%             top = 0;
+%             found = 0;
+%             while bucket <= length(F.clauses) & ~found
+%                 if thelmi <= top + length(F.clauses{bucket})
+%                     F.LMIid   = F.LMIid(thelmi);
+%                     thelmi = thelmi - top;
+%                     F.clauses = F.clauses{bucket}(thelmi);
+%                     if ~isa(F.clauses,'cell')
+%                         F.clauses = {F.clauses};
+%                     end
+%                     found = 1;
+%                 else
+%                     top = top  + length(F.clauses{bucket});
+%                     bucket = bucket + 1;
+%                 end
+%             end
+            if ~found
+                em = ['LMI #' num2str(thelmi) ' not available.'];
+                error(em)
+            end                        
         end
     case '{}'
         switch length(Y)
