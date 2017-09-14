@@ -1,10 +1,10 @@
 function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstraints,InnerObjective,InnerVariables,options)
 %SOLVEBILEVEL Simple global bilevel solver
 %
-%   min        CO(x,y)
-%   subject to OO(x,y)>0
+%   min        OO(x,y)
+%   subject to CO(x,y)>=0
 %              y = arg min OI(x,y)
-%              subject to CI(x,y)>0
+%              subject to CI(x,y)>=0
 %
 %   [DIAGNOSTIC,INFO] = SOLVEBILEVEL(CO, OO, CI, OI, y, options)
 %
