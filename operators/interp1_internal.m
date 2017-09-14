@@ -17,6 +17,7 @@ switch class(varargin{1})
         xi = varargin{4};
         yi = varargin{5};
         method = varargin{6};
+        dyi = varargin{7};
         
         if strcmpi(varargin{1},'graph')
             % Convexity propagation wants epi-graph models, so is that what
@@ -24,7 +25,7 @@ switch class(varargin{1})
             if strcmpi(method,'graph') || strcmpi(method,'lp')
                 if isconvexdata(xi,yi)
                     % Convex case, create epi-graph
-                    [Model,mono,def] = convexGraph(xi,yi,x,t);                                          
+                    [Model,mono,def] = convexGraph(xi,yi,x,t,dyi);                                          
                     operator = struct('convexity','convex','monotonicity',mono,'definiteness',def,'model','graph');
                 elseif isconvexdata(xi,-yi)
                     Model = concaveGraph(xi,yi,x,t);                      
@@ -98,18 +99,30 @@ else
     isconvex = 0;
 end
 
-function [Model,mono,def] = convexGraph(xi,yi,x,t)
+function [Model,mono,def] = convexGraph(xi,yi,x,t,dyi)
+
 
 Model = [min(xi) <= x <= max(xi)];
-grads = diff(yi)./diff(xi);
-Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) <= t];
+if isempty(dyi)
+    grads = diff(yi)./diff(xi);
+    Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) <= t];
+else
+    grads = dyi;
+    Model = [Model, yi(:) + grads(:).*(x - xi(:)) <= t];
+end
 [mono,def] = classifyData(yi);
 
-function Model = concaveGraph(xi,yi,x,t)
+function Model = concaveGraph(xi,yi,x,t,dyi)
 
 Model = [min(xi) <= x <= max(xi)];
-grads = diff(yi)./diff(xi);
-Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) >= t];
+if isempty(dyi)
+    grads = diff(yi)./diff(xi);
+    Model = [Model, yi(1:end-1) + grads.*(x - xi(1:end-1)) >= t];
+else
+    grads = dyi;
+    Model = [Model, yi(:) + grads(:).*(x - xi(:)) >= t];
+end
+
 [mono,def] = classifyData(yi);
 
 function [mono,def] = classifyData(yi);

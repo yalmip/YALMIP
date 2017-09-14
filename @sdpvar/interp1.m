@@ -5,16 +5,20 @@ switch class(varargin{3})
 
     case 'sdpvar'   
                 
-        if nargin == 3
+        if nargin < 4
             varargin{4} = 'linear';
         end
+        
+        if nargin < 5
+            varargin{5} = [];
+        end        
         
         if numel(varargin{3}) > 1
             d = size(varargin{3});
             
             if min(d) > 1
                 % Matrix case, vectorize
-                varargout{1} = interp1(varargin{1},varargin{2},reshape(varargin{3},[],1),varargin{4});
+                varargout{1} = interp1(varargin{1},varargin{2},reshape(varargin{3},[],1),varargin{4},varargin{5});
                 varargout{1} = reshape(varargout{1},d);
                 return
             end
@@ -34,7 +38,7 @@ switch class(varargin{3})
                     Y.subs{1} = 1;
                     Y.subs{2} = i;
                     xij = subsref(varargin{3},Y);                    
-                    out = [out;interp1(varargin{1}(i,:),varargin{2}(i,:),xij,varargin{4})];                                
+                    out = [out;interp1(varargin{1}(i,:),varargin{2}(i,:),xij,varargin{4},varargin{5})];                                
             end
             if d(1)==1
                 out = out';
@@ -67,7 +71,7 @@ switch class(varargin{3})
         % Reorder arguments to make sure sdpvar is first argument.
         % Use local version of interp to deal with this
         % Arguments xi yi x method -> x xi yi method
-        varargout{1} = yalmip('define','interp1_internal',varargin{[3 1 2 4]});   
+        varargout{1} = yalmip('define','interp1_internal',varargin{[3 1 2 4 5]});   
      
     otherwise
         error('SDPVAR/INTERP1 called with strange argument!');
