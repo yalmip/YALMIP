@@ -22,7 +22,11 @@ switch class(varargin{1})
         if strcmpi(varargin{1},'graph')
             % Convexity propagation wants epi-graph models, so is that what
             % we have used for modelling?
-            if strcmpi(method,'graph') || strcmpi(method,'lp')
+            if strcmpi(method,'envelope')
+                   [xi,yi] = convhullprune(xi,yi);
+                   [Model,mono,def] = convexGraph(xi,yi,x,t,dyi);  
+                   operator = struct('convexity','convex','monotonicity',mono,'definiteness',def,'model','graph');                    
+            elseif strcmpi(method,'graph') || strcmpi(method,'lp')
                 if isconvexdata(xi,yi)
                     % Convex case, create epi-graph
                     [Model,mono,def] = convexGraph(xi,yi,x,t,dyi);                                          
@@ -124,6 +128,34 @@ else
 end
 
 [mono,def] = classifyData(yi);
+
+function [xout,yout] = convhullprune(xin,yin)
+% Prunes data down to the lower convex envelope
+
+% First prune by convex hull
+cj = convhulln([xin(:) yin(:)]);
+cj = sort(unique(cj));
+x = xin(cj);
+y = yin(cj);
+
+% This can probably be done in linear complexity, I am just lazy here
+keep = ones(length(x),1);
+for i = 1:length(x)-1
+    if keep(i)
+        for j = length(x):-1:3
+            if keep(j)
+                grad = (y(j)-y(i))/(x(j)-x(i));
+                k = i+1:j-1;
+                fail =  y(k) > y(i) + grad*(x(k)-x(i));
+                keep(k(fail)) = 0;
+            end
+        end
+    end
+end
+keep = cj(find(keep));
+xout = xin(keep);
+yout = yin(keep);
+
 
 function [mono,def] = classifyData(yi);
 if all(diff(yi)) >= 0
