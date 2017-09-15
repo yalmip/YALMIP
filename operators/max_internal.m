@@ -26,7 +26,19 @@ switch method
         end
         F = t-X>= 0;
         arguments = X(:);
-        properties = struct('convexity','convex','monotonicity','increasing','definiteness','none');
+        any_constant = find(~any(basis(:,2:end),2));
+        if ~isempty(any_constant)
+            k = basis(any_constant,1);
+            if any(k>=0)
+                % This is something like max(x,0), so it is guaranteed to be
+                % non-negative
+                properties = struct('convexity','convex','monotonicity','increasing','definiteness','positive');
+            else
+                properties = struct('convexity','convex','monotonicity','increasing','definiteness','none');
+            end
+        else
+            properties = struct('convexity','convex','monotonicity','increasing','definiteness','none');
+        end
         
     case 'exact'
         arguments = [];
