@@ -31,6 +31,8 @@ if isempty(internal_sdpvarstate)
     internal_sdpvarstate.variabletype = spalloc(0,0,0); % Pre-calc linear/quadratic/polynomial/sigmonial
     internal_sdpvarstate.intVariables = [];   % ID of integer variables
     internal_sdpvarstate.binVariables = [];   % ID of binary variables
+    internal_sdpvarstate.tempintVariables = [];   % ID of integer variables
+    internal_sdpvarstate.tempbinVariables = [];   % ID of binary variables    
     internal_sdpvarstate.semicontVariables = [];
     internal_sdpvarstate.uncVariables = [];   % ID of uncertain variables (not used)
     internal_sdpvarstate.parVariables = [];   % ID of parametric variables (not used)
@@ -79,6 +81,10 @@ switch varargin{1}
         internal_sdpvarstate.optSolution{1}.optvar  =[];
         internal_sdpvarstate.optSolution{1}.values  =[];
         internal_sdpvarstate.activeSolution = 1;
+        internal_sdpvarstate.tempintVariables = [];   
+        internal_sdpvarstate.tempbinVariables = [];   
+        internal_sdpvarstate.intVariables = [];   
+        internal_sdpvarstate.binVariables = [];   
         
     case 'monomtable'
         varargout{1} = internal_sdpvarstate.monomtable;
@@ -474,6 +480,8 @@ switch varargin{1}
                 % This is the standard operators. INPUTS -> 1 scalar output
                 if isequal(varargin{2},'or') || isequal(varargin{2},'xor') || isequal(varargin{2},'and')
                     y = binvar(1,1);
+                elseif isequal(varargin{2},'sign')
+                    y = intvar(nout(1),nout(2));
                 else
                     y = sdpvar(nout(1),nout(2));
                 end
@@ -688,6 +696,8 @@ switch varargin{1}
         internal_sdpvarstate.variabletype = spalloc(0,0,0);
         internal_sdpvarstate.intVariables = [];
         internal_sdpvarstate.binVariables = [];
+        internal_sdpvarstate.tempintVariables = [];
+        internal_sdpvarstate.tempbinVariables = [];
         internal_sdpvarstate.semicontVariables = [];
         internal_sdpvarstate.uncVariables = [];
         internal_sdpvarstate.parVariables = [];
@@ -1002,6 +1012,19 @@ switch varargin{1}
         
     case 'binvariables'
         varargout{1} = internal_sdpvarstate.binVariables;
+        
+    case 'settempintvariables'
+        internal_sdpvarstate.tempintVariables = varargin{2};
+        
+    case 'tempintvariables'
+        varargout{1} = internal_sdpvarstate.tempintVariables;
+        
+    case 'settempbinvariables'
+        internal_sdpvarstate.tempbinVariables = varargin{2};
+        
+    case 'tempbinvariables'
+        varargout{1} = internal_sdpvarstate.tempbinVariables;
+                
         
     case 'quantvariables'
         varargout{1} = [internal_sdpvarstate.binVariables internal_sdpvarstate.intVariables];

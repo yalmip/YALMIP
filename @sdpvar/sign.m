@@ -20,8 +20,16 @@ switch class(varargin{1})
                 d2 = binvar(1);
                 d3 = binvar(1);
                 [M,m] = derivebounds(X);
-                %F = [X >= d*m,X <=(1-d)*M, t == 1-2*d];
-                F = [X <= (1-d1)*M,X >=(1-d3)*m, m*(1-d2) <= X <= M*(1-d2), t == -d1 + d3,d1+d2+d3==1];
+                if isequal(getbase(X),[0 1]) && ismember(getvariables(X),yalmip('tempintvariables'))
+                    % Numerically unstable case with integer X
+                    % d1: Negative <= -1
+                    % d2: 0
+                    % d3: Postive >= 1
+                    F = [X >= m*d1, X <= M*d3, X <= (1-d1)*(M+1)-1,X >=(1-d3)*(m-1)+1, m*(1-d2) <= X <= M*(1-d2), t == -d1 + d3,d1+d2+d3==1];                    
+                else
+                    % Numerically unstable case with continuous X
+                    F = [X >= m*d1, X <= M*d3, X <= (1-d1)*M,X >=(1-d3)*m, m*(1-d2) <= X <= M*(1-d2), t == -d1 + d3,d1+d2+d3==1];
+                end
 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none');
