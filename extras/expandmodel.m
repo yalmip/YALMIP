@@ -22,13 +22,15 @@ extendedvariables = yalmip('extvariables');
 
 integers = yalmip('intvariables');
 binaries = yalmip('binvariables');
-declareI = find(is(F,'integer'));
-declareB = find(is(F,'binary'));
-if ~isempty(declareI)
-    integers = [integers depends(F(declareI))];
-end
-if ~isempty(declareB)
-    binaries = [binaries depends(F(declareB))];
+if ~isempty(F)
+    declareI = find(is(F,'integer'));
+    declareB = find(is(F,'binary'));
+    if ~isempty(declareI)
+        integers = [integers depends(F(declareI))];
+    end
+    if ~isempty(declareB)
+        binaries = [binaries depends(F(declareB))];
+    end
 end
 yalmip('settempintvariables',integers);
 yalmip('settempbinvariables',binaries);
