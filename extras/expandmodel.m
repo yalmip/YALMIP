@@ -20,7 +20,7 @@ global CONSTRAINTCUTSTATE
 % one so we will keep it and pass it along in the recursion
 extendedvariables = yalmip('extvariables');
 
-integers = yalmip('intvariables')
+integers = yalmip('intvariables');
 binaries = yalmip('binvariables');
 declareI = find(is(F,'integer'));
 declareB = find(is(F,'binary'));
