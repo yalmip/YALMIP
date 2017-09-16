@@ -1,4 +1,4 @@
-function [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model,xevaled)
+function [g,geq,dg,dgeq,xevaled] = fmincon_con_liftlayer(x,model,xevaled)
 
 if isempty(model.lift)    
     [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model);
