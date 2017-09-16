@@ -26,12 +26,12 @@ showprogress('Calling IPOPT',model.options.showprogress);
 % solver. 
 % model = compressLifted(model);
 
-Fupp = [ repmat(0,length(model.bnonlinineq),1);
+Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-Flow = [ repmat(-inf,length(model.bnonlinineq),1);
+Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
@@ -63,7 +63,7 @@ global latest_G
 global latest_g
 global latest_xevaled
 global latest_x_xevaled
-latest_G= [];
+latest_G = [];
 latest_g = [];
 latest_x_f = [];
 latest_x_g = [];

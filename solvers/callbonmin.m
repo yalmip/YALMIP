@@ -19,12 +19,12 @@ if model.options.savedebug
     save bonmindebug model
 end
 
-Fupp = [ repmat(0,length(model.bnonlinineq),1);
+Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-Flow = [ repmat(-inf,length(model.bnonlinineq),1);
+Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
@@ -79,7 +79,16 @@ end
 
 if ~isempty(Fupp)
     m = length(model.lb);    
-    allA=[model.Anonlinineq; model.Anonlineq];
+    allA=[model.Anonlinineq];
+    if size(model.F_struc,1) > 0
+        % These are SOCP cones
+        top = 1;
+        for i = 1:length(model.K.q)
+            rows = model.F_struc(top:top + model.K.q(i)-1,2:end)
+            allA = [allA;any(rows,1)];
+        end
+    end
+    allA = [allA;model.Anonlineq];
     jacobianstructure = spalloc(size(allA,1),m,0);    
     depends = allA | allA;   
     for i = 1:size(depends,1)
