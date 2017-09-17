@@ -16,7 +16,7 @@ if any(any(isinf(lowerupper)))
 else
     infbound = 0;
     lowerinf = 0;
-    upperinf = 1;
+    upperinf = 0;
 end
 
 b = basis(:,1);
