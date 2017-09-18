@@ -120,6 +120,7 @@ if options.verbose;
     disp(['Selected solver: ' options.solver]);
     disp('Iteration  Lower bound    Test           Upper bound    Gap          Status at test');
 end
+working_sol = [];
 while upper - lower > options.bisection.absgaptol
     test = (upper + lower)/2;
     solvertime = tic;
@@ -163,6 +164,10 @@ end
 if options.bisection.switchedsign
     optimal = -optimal;
 end
-% Assign computed solution
-assign(x,working_sol);
-assign(Objective,optimal);
+if isempty(working_sol)
+    diagnostic.problem = 1;
+else
+    % Assign computed solution
+    assign(x,working_sol);
+    assign(Objective,optimal);
+end
