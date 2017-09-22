@@ -452,7 +452,7 @@ if ~isempty(p.ub)
         return
     end
 end
-
+% 
 % Find quadratic and linear terms
 used_in_c = find(p.c);
 quadraticterms = used_in_c(find(ismember(used_in_c,nonlinear)));
@@ -482,28 +482,13 @@ D(abs(D)<1e-11) = 0;
 lb = p.lb(linear);
 ub = p.ub(linear);
 Z = V';
-newub = inf(length(lb),1);
-newlb = -inf(length(lb),1);
-for i = 1:length(lb)
-    z = Z(i,:);
-    neg = find(z<0);
-    pos = find(z>0);
-    if ~isempty(neg)
-        newub(i,1) = z(neg)*lb(neg);
-        newlb(i,1) = z(neg)*ub(neg);
-    end
-%    if ~isempty(pos)
-        newub(i,1) = z(pos)*ub(pos);
-        newlb(i,1) = z(pos)*lb(pos);        
-%    end
-%  newub(i,1) = z(z>0)*ub(z>0) + z(z<0)*lb(z<0);
-%        newlb(i,1) = z(z>0)*lb(z>0) + z(z<0)*ub(z<0);  
-end
-
+newub = sum([Z>0].*Z.*repmat(ub,1,length(Z)),2)+sum([Z<0].*Z.*repmat(lb,1,length(Z)),2);
+newlb = sum([Z>0].*Z.*repmat(lb,1,length(Z)),2)+sum([Z<0].*Z.*repmat(ub,1,length(Z)),2);
+newub(isnan(newub)) = inf;
+newlb(isnan(newlb)) = -inf;
 
 % Create new problem
 clin = V'*clin;
-%A = A*V;
 
 n = length(linear);
 pnew.original_linear = linear;
@@ -517,6 +502,13 @@ if size(p.F_struc,1)>0
     A = -p.F_struc(:,1 + linear);
     b = p.F_struc(:,1);
     pnew.F_struc = [b -A*V zeros(length(b),n)];
+    Abounds = [V;-V];
+    bbounds = [ub;-lb];
+    keep = find(~isinf(bbounds));
+    if ~isempty(keep)
+        pnew.F_struc = [pnew.F_struc;bbounds(keep) -Abounds(keep,:) zeros(length(b),n)];       
+        pnew.K.l = pnew.K.l + length(keep);
+    end
 end
 
 
