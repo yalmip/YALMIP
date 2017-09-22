@@ -413,6 +413,7 @@ function pnew = diagonalize_quadratic_program(p);
 pnew = p;
 pnew.V = [];
 pnew.diagonalized = 0;
+return
 
 % No quadratic terms
 if all(p.variabletype == 0)
@@ -506,7 +507,7 @@ if size(p.F_struc,1)>0
     bbounds = [ub;-lb];
     keep = find(~isinf(bbounds));
     if ~isempty(keep)
-        pnew.F_struc = [pnew.F_struc;bbounds(keep) -Abounds(keep,:) zeros(length(b),n)];       
+        pnew.F_struc = [pnew.F_struc;bbounds(keep) -Abounds(keep,:) zeros(length(keep),n)];       
         pnew.K.l = pnew.K.l + length(keep);
     end
 end
