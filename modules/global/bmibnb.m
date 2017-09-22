@@ -442,16 +442,16 @@ if ~isempty(p.F_struc)
     end
 end
 
-if ~isempty(p.lb)
-    if ~all(isinf(p.lb(nonlinear)))
-        return
-    end
-end
-if ~isempty(p.ub)
-    if ~all(isinf(p.ub(nonlinear)))
-        return
-    end
-end
+% if ~isempty(p.lb)
+%     if ~all(isinf(p.lb(nonlinear)))
+%         return
+%     end
+% end
+% if ~isempty(p.ub)
+%     if ~all(isinf(p.ub(nonlinear)))
+%         return
+%     end
+% end
 % 
 % Find quadratic and linear terms
 used_in_c = find(p.c);
