@@ -66,10 +66,10 @@ switch Y(1).type
             if isempty(bucket)                            
                 found = 0;
             else
+                F.LMIid   = F.LMIid(thelmi);
                 if bucket > 1
                     thelmi = thelmi - cumsum_n(bucket-1);
-                end
-                F.LMIid   = F.LMIid(thelmi);
+                end               
                 F.clauses = F.clauses{bucket}(thelmi);
                 found = 1;
             end
