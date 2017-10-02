@@ -113,7 +113,7 @@ elseif isequal(subs.type,'{}')
     
     if self.model.options.usex0
         if nargout < 5
-            warning('If you intend to use initial guesses, you must save fifth output [sol,~,~,~,P] = P{p}');
+            warning('If you intend to use initial guesses, you must use a fifth output as [sol,problem,~,~,P] = P(p)');
         end
     end
     
