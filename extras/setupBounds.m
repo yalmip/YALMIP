@@ -58,7 +58,7 @@ end
 % propagate simple quadratic
 quadratic = find(variabletype == 2);
 if ~isempty(quadratic)
-    monomtable = mainmonomtable(quadratic,:);
+    monomtable = mainmonomtable(quadratic,:);    
     [i,j] = find(monomtable');   
     x = i;    
     z = quadratic(:);
