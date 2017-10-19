@@ -253,8 +253,10 @@ switch res.sol.itr.prosta
         try
             if isequal(res.rcodestr,'MSK_RES_TRM_STALL')
                 problem = 4;
+            elseif isequal(res.rcodestr,'MSK_RES_OK')
+                problem = 0;
             else
-                problem = 9;
+                problem = 11;
             end
         catch
             problem = 9;
