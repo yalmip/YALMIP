@@ -233,6 +233,9 @@ if res.rcode == 2001
 elseif res.rcode == 10007
     problem = 16;
     return
+elseif res.rcode == 1400
+    problem = 20;
+    return    
 end
 
 switch res.sol.itr.prosta
