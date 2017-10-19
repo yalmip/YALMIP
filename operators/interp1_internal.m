@@ -4,7 +4,7 @@ function varargout = interp1_internal(varargin)
 switch class(varargin{1})
     
     case 'double'
-        if isequal(varargin{4},'graph') || isequal(varargin{4},'lp') || isequal(varargin{4},'milp')
+        if isequal(varargin{4},'graph') || isequal(varargin{4},'lp') || isequal(varargin{4},'milp') || isequal(varargin{4},'sos2')
             varargout{1} = interp1(varargin{2},varargin{3},varargin{1},'linear');
         else
             varargout{1} = interp1(varargin{2},varargin{3},varargin{1},varargin{4});
@@ -43,7 +43,7 @@ switch class(varargin{1})
                 operator = [];
             end
         else
-            if strcmpi(method,'milp') || strcmpi(method,'lp')
+            if strcmpi(method,'sos2') || strcmpi(method,'milp') || strcmpi(method,'lp')
                 lambda = sdpvar(length(xi),1);
                 Model = [sos2(lambda), x == lambda'*xi(:), t == lambda'*yi(:),lambda>=0, sum(lambda)==1];
                 [mono,def] = classifyData(yi);
