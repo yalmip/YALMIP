@@ -3,19 +3,59 @@ function varargout = interp2_internal(varargin)
 
 switch class(varargin{1})
 
-    case 'double'          
+    case 'double'                 
+        varargin{5} = 'linear';
         varargout{1} = interp2(varargin{2},varargin{3},varargin{4},varargin{1}(1),varargin{1}(2),varargin{5});
             
-    case 'char'        
-        L = [min(varargin{4}(:));min(varargin{5}(:))];
-        U = [max(varargin{4}(:));max(varargin{5}(:))];
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');      
-        operator.bounds = @bounds;
-        varargout{1} = [L <= varargin{3} <= U];
-        varargout{2} = operator;
-        varargout{3} = varargin{3};         
+    case 'char'  
+        if isequal(varargin{end},'milp') || isequal(varargin{end},'sos2')
+            
+            xi = varargin{4};
+            yi = varargin{5};
+            zi = varargin{6};            
+            [N,M] = size(xi);            
+            xy = varargin{3};
+            x = xy(1);
+            y = xy(2);
+            z = varargin{2};
+            
+            Lambda = sdpvar(N,M,'full');            
+            xinterp = sum(sum(xi.*Lambda));
+            yinterp = sum(sum(yi.*Lambda));
+            zinterp = sum(sum(zi.*Lambda));            
+            colsos = sdpvar(M,1,'full');
+            rowsos = sdpvar(N,1,'full');                        
+            F = [sum(sum(Lambda))==1, Lambda >= 0];
+            F = [F, colsos == sum(Lambda,1)'];
+            F = [F, rowsos == sum(Lambda,2)];
+            F = [F, sos2(colsos), sos2(rowsos)];
+            F = [F, z == sum(sum(Lambda.*zi)),
+                x == sum(sum(Lambda.*xi)),
+                y == sum(sum(Lambda.*yi))];
+            
+            Elements = reshape(1:N*M,N,M);
+            for i = -(N+M):N+M
+                j = diag(fliplr(Elements),i);
+                if length(j) >= 3
+                    F = [F, sos2(Lambda(j))];
+                end
+            end
+            operator = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');            
+            varargout{1} = F;
+            varargout{2} = operator;
+            varargout{3} = varargin{3};         
+                        
+        else
+            L = [min(varargin{4}(:));min(varargin{5}(:))];
+            U = [max(varargin{4}(:));max(varargin{5}(:))];
+            operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');      
+            operator.bounds = @bounds;
+            varargout{1} = [L <= varargin{3} <= U];
+            varargout{2} = operator;
+            varargout{3} = varargin{3};         
+        end
     otherwise
-        error('SDPVAR/INTERP1_INTERNAL called with strange argument');
+        error('SDPVAR/INTERP2_INTERNAL called with strange argument');
 end
 
 function [L,U] = bounds(xL,xU,varargin)
