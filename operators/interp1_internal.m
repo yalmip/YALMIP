@@ -32,7 +32,7 @@ switch class(varargin{1})
                     [Model,mono,def] = convexGraph(xi,yi,x,t,dyi);                                          
                     operator = struct('convexity','convex','monotonicity',mono,'definiteness',def,'model','graph');
                 elseif isconvexdata(xi,-yi)
-                    Model = concaveGraph(xi,yi,x,t);                      
+                    [Model,mono,def] = concaveGraph(xi,yi,x,t,dyi);                      
                     operator = struct('convexity','concave','monotonicity',mono,'definiteness',def,'model','graph');
                 else
                     Model = [];
@@ -116,7 +116,7 @@ else
 end
 [mono,def] = classifyData(yi);
 
-function Model = concaveGraph(xi,yi,x,t,dyi)
+function [Model,mono,def] = concaveGraph(xi,yi,x,t,dyi)
 
 Model = [min(xi) <= x <= max(xi)];
 if isempty(dyi)
