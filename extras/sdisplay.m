@@ -137,7 +137,7 @@ for i = 1:size(W,1)
                 if ~isempty(index_in_p)
                     already = ~isempty(global_names{index_in_p});
                     if already
-                        already = ~strfind(names{index_in_p},'internal');
+                        already = ~strfind(global_names{index_in_p},'internal');
                     end
                 else
                     already = 0;

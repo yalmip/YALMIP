@@ -306,11 +306,14 @@ end
 
 % Reset info about conic terms
 y.conicinfo = [0 0];
-Z.extra.opname='';
+y.extra.opname='';
 y = flush(y);
 y = clean(y);
-y = reshape(y,size(X));
-
+if numel(y)==numel(X)
+    y = reshape(y,size(X));
+else
+    y = reshape(y,size(Y));
+end
 
 
 function y = check_for_special_case(Y,X);
