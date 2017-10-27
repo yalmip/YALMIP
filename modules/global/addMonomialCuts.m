@@ -24,19 +24,21 @@ if any(p.originalModel.variabletype==3)
                 if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0
                    
                     % Tangent at x = lower bound
+                    % Wrong!
                     if L<=0                        
-                        p_cut.F_struc(end+1,1) = L^n-n*L^n;
-                        p_cut.F_struc(end,1+monom_index)=-1;
-                        p_cut.F_struc(end,1+monom_variable)=n*L^(n-1);
-                        p_cut.K.l = p_cut.K.l+1;
+                    %    p_cut.F_struc(end+1,1) = L^n-n*L^n;
+                    %    p_cut.F_struc(end,1+monom_index)=-1;
+                    %    p_cut.F_struc(end,1+monom_variable)=n*L^(n-1);
+                    %    p_cut.K.l = p_cut.K.l+1;
                     end
                      
                     % Tangent at x = upper bound
+                    % Wrong!
                     if U >= 0
-                        p_cut.F_struc(end+1,1) = -(U^n-n*U^n);
-                        p_cut.F_struc(end,1+monom_index)= 1;
-                        p_cut.F_struc(end,1+monom_variable)=-n*U^(n-1);
-                        p_cut.K.l =  p_cut.K.l+1;
+                    %    p_cut.F_struc(end+1,1) = -(U^n-n*U^n);
+                    %    p_cut.F_struc(end,1+monom_index)= 1;
+                    %    p_cut.F_struc(end,1+monom_variable)=-n*U^(n-1);
+                    %    p_cut.K.l =  p_cut.K.l+1;
                     end
                     
                     % Line between lower bound and tangent intersection
