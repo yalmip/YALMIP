@@ -9,6 +9,9 @@ switch class(varargin{1})
 
     case {'sdpvar','ndsdpvar'}
  
+        if nargin > 1
+            error('sdpvar/mvncdf currently only supports 1 argument, i.e. assumed zero mean and unit variance');
+        end
         varargin{1} = reshape(varargin{1},[],1);
         varargout{1} = yalmip('define',mfilename,varargin{1});        
 
