@@ -3,7 +3,8 @@ function [Constraints,Objective] = callsievesdp(Constraints,Objective,options)
 % Export in mosek format and reduce model
 [model,recovery,diagnostics,internal] = export(Constraints, Objective, sdpsettings('solver','mosek'));
 y_original = recover(recovery.used_variables);
-[probReduced,info] = SieveSDP(model.prob);
+probOriginal = model.prob;
+[probReduced,info] = SieveSDP(probOriginal);
 
 % Now go back to YALMIP model and solve the problem with the solver
 % specified (quick hack, will be done in purely numerical format in real
