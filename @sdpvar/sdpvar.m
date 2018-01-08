@@ -50,6 +50,8 @@ global FACTORTRACKING
 FACTORTRACKING = 0;
 
 superiorto('double');
+superiorto('gem');
+superiorto('sgem');
 if nargin==0
     sys = sdpvar(1,1);
     return
