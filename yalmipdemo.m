@@ -2,7 +2,7 @@
 %
 % See also YALMIPTEST
 
-disp('The examples here are obsolute.')
+disp('The examples here are obsolete.')
 disp(sprintf('Please check out the <a href="http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Tutorials.Tutorials">on-line tutorials</a> on the YALMIP Wiki instead'));
 return
 
