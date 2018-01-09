@@ -1,17 +1,16 @@
 function value = gemLibraryIsInPath()
 % This function checks whether the gem and sgem classes are in matlab path.
- 
-    persistent gemLiraryPresent;
- 
-    if isempty(gemLiraryPresent)
-        % the first time, we check if the classes exist
-        if exist('gem','class') &&  exist('sgem','class')
-            gemLiraryPresent = true;
+
+    try
+        if isequal(toStrings(gem('e',32),30), '2.71828182845904523536028747135') && ...
+           isequal(toStrings(sgem('e',32),30), '2.71828182845904523536028747135')
+            value = true;
         else
-            gemLiraryPresent = false;
+            value = false;
         end
+    catch me
+        value = false;
     end
-    
-    value = gemLiraryPresent;
+
 end
 
