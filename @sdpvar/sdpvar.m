@@ -51,8 +51,8 @@ FACTORTRACKING = 0;
 
 superiorto('double');
 try 
- superiorto('gem');
  superiorto('sgem');
+ superiorto('gem');
 catch
  % GEM not in path
 end
