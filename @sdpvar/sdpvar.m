@@ -50,9 +50,11 @@ global FACTORTRACKING
 FACTORTRACKING = 0;
 
 superiorto('double');
-if gemLibraryIsInPath
-    superiorto('gem');
-    superiorto('sgem');
+try 
+ superiorto('gem');
+ superiorto('sgem');
+catch
+ % GEM not in path
 end
 if nargin==0
     sys = sdpvar(1,1);
