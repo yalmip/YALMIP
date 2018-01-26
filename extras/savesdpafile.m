@@ -121,4 +121,5 @@ else
 end
 
 % Save to file
-createsdplibfile(F_struc, K, c, filename);
+integer_variables = find(ismember(used_variables,yalmip('intvariables')));
+createsdplibfile(F_struc, K, c, filename,integer_variables);

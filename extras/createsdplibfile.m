@@ -1,4 +1,4 @@
-function createsdplibfile(F_struc,K, c, filename)
+function createsdplibfile(F_struc,K, c, filename,integer_variables)
 %CREATESDPLIBFILE Internal function to create SDPA data files
 
 fid = fopen(filename,'w');
@@ -40,6 +40,12 @@ try
                     end
                 end
             end
+        end
+    end
+    if ~isempty(integer_variables)
+        fprintf(fid,'*INTEGER\r\n');
+        for i = 1:length(integer_variables)
+            fprintf(fid,'*%i ',integer_variables(i));
         end
     end
     fclose(fid);
