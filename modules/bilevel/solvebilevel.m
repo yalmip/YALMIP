@@ -57,7 +57,8 @@ if strcmp(options.bilevel.algorithm,'external')
     z = setdiff(z,depends(y));
     z = recover(unique(z));
     [K,details] = kkt(InnerConstraints,InnerObjective,z,options);    
-    Constraints = [K,OuterConstraints];    
+    Constraints = [K,OuterConstraints];   
+    options.solver = options.bilevel.outersolver;
     sol = solvesdp(Constraints,OuterObjective,options);
     info = [];
     return
