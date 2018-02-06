@@ -190,8 +190,11 @@ switch lower(solver.tag)
         model = yalmip2quadprog(interfacedata);
         model = rmfield(model,'Q');
         
-    case 'quadprog'
+    case 'quadprog'        
         model = yalmip2quadprog(interfacedata);
+        
+    case 'intlinprog'
+        model = yalmip2intlinprog(interfacedata);
         
     case {'sedumi-1.05','sedumi-1.1','sedumi-1.3'}        
         model = yalmip2sedumi(interfacedata);  
