@@ -120,7 +120,7 @@ switch settype(X)
         end
         
     case 'equality'
-        X = sdpvar(X);
+        X = sdpvar(X);X = reshape(X,[],1);
         n = length(X);
         if isequal(getbase(X),[-ones(n,1) eye(n)]) | isequal(getbase(X),[ones(n,1) -eye(n)]) & all(ismember(depends(X),yalmip('binvariables')));
             % Smart code for X == 1 implies Y
