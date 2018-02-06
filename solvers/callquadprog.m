@@ -4,7 +4,7 @@ options = interfacedata.options;
 model = yalmip2quadprog(interfacedata);
 
 if options.savedebug
-    save debugfile model
+    save quadprogdebug model
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
