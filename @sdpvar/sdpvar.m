@@ -346,7 +346,7 @@ switch nargin
 
                 case 104
                     matrix_type = 'full complex';
-                    nvar = 2*n*m;
+                    nvar = 2*sum(n.*m);
                     if nvar==1
                         matrix_type = 'symm complex';
                     end
@@ -524,7 +524,7 @@ for blk = 1:length(n)
             basis{blk} = [spalloc(n(blk)*m(blk),1,0) speye(n(blk)*m(blk))];%speye(nvar)];
 
         case 'full complex'
-            basis = [spalloc(n*m,1,0) speye(nvar/2) speye(nvar/2)*sqrt(-1)];
+            basis{blk} = [spalloc(n(blk)*m(blk),1,0) speye(n(blk)*m(blk)) speye(n(blk)*m(blk))*sqrt(-1)];
 
         case 'symmetric'
             if n(blk)==1
