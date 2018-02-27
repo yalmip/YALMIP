@@ -625,7 +625,7 @@ if convertQuadraticObjective
     end
     quad_info = [];
 end
-if solver.constraint.inequalities.rotatedsecondordercone == 0
+if solver.constraint.inequalities.rotatedsecondordercone.linear == 0
     [F,changed] = convertlorentz(F);
     if changed
         options.saveduals = 0; % We cannot calculate duals since we change the problem

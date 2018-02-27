@@ -221,13 +221,20 @@ if ProblemClass.constraint.inequalities.secondordercone.nonlinear & ~socp_are_re
     end
     solvers = solvers(find(keep));
 end  
-if ProblemClass.constraint.inequalities.rotatedsecondordercone & ~forced_choice
+if ProblemClass.constraint.inequalities.rotatedsecondordercone.linear & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.rotatedsecondordercone | solvers(i).constraint.inequalities.secondordercone.linear | solvers(i).constraint.inequalities.semidefinite.linear;
+        keep(i) = solvers(i).constraint.inequalities.rotatedsecondordercone.linear | solvers(i).constraint.inequalities.secondordercone.linear | solvers(i).constraint.inequalities.semidefinite.linear;
     end
     solvers = solvers(find(keep));
-end  
+end
+if ProblemClass.constraint.inequalities.rotatedsecondordercone.nonlinear & ~forced_choice
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)                      
+        keep(i) = solvers(i).constraint.inequalities.rotatedsecondordercone.nonlinear | solvers(i).constraint.inequalities.secondordercone.linear | solvers(i).constraint.inequalities.semidefinite.linear;
+    end
+    solvers = solvers(find(keep));
+end
 if ProblemClass.constraint.inequalities.powercone & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
