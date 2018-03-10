@@ -232,6 +232,7 @@ do_not_convert = do_not_convert | strcmpi(options.solver,'moment');
 do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
 do_not_convert = do_not_convert | strcmpi(options.solver,'baron');
 do_not_convert = do_not_convert | strcmpi(options.solver,'penlab');
+do_not_convert = do_not_convert | strcmpi(options.solver,'scip-nl');
 do_not_convert = do_not_convert | (options.convertconvexquad == 0);
 do_not_convert = do_not_convert | (options.relax == 1);
 if ~do_not_convert & any(variabletype(F_vars))
