@@ -435,18 +435,6 @@ solver(i).checkfor = {'cplexqcp.m','cplexlink120'};
 solver(i).subversion = '12.0';
 i = i+1;
 
-% Old interface, we really don't want to use it any longer
-solver(i) = qpsolver;
-solver(i).tag     = 'CPLEX';
-solver(i).version = 'CPLEXINT';
-solver(i).checkfor= {'cplexint'};
-solver(i).call    = 'callcplexint';
-solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-i = i+1;
-
 solver(i) = lpsolver;
 solver(i).tag     = 'GLPK';
 solver(i).version = 'GLPKMEX-CC';
