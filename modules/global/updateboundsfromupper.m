@@ -5,12 +5,12 @@ if ~isinf(upper)
         i = find(p.c.*(p.ub-p.lb));
         if p.c(i) > 0
             % We are minimizing x(i), since an upper bound is UPPER
-            % this means x(i) has to be < UPPER in optimal solution
-            p.ub(i) = min([p.ub(i) upper]);
+            % this means c(i)*x(i) has to be < UPPER in optimal solution
+            p.ub(i) = min([p.ub(i) upper/p.c(i)]);
         elseif p.c(i) < 0
             % We are maximizing x(i), since an lower bound is -UPPER
             % this means x(i) has to be > -UPPER in optimal solution
-            p.lb(i) = max([p.lb(i) -upper]);
+            p.lb(i) = max([p.lb(i) -upper/abs(p.c(i))]);
         end
             
     end
