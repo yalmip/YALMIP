@@ -19,6 +19,11 @@ end
 if model.f > 0
     obj = [obj '+' num2str(model.f)];
 end
+% YALMIP ctches log(1+z) and implements internal model slog(z) 
+% Replace with log
+expression = 'slog((\w*)';
+replace = 'log(1+$1';
+obj =  regexprep(obj,expression,replace);
 if length(obj)>0
     obj = strrep(obj,'+-','-');
     obj = ['@(x) ' obj];
@@ -42,6 +47,7 @@ if length(cu)>0
     cu(remove) = [];
     con = [con ']'];
     con = strrep(con,'sqrtm_internal','sqrt');
+    con =  regexprep(con,expression,replace);
     con = ['@(x) ' con];
     con = eval(con);
 else
