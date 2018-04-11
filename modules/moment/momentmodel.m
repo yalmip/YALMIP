@@ -1,4 +1,4 @@
-function [Fnew, obj, M,k,x,u,n,deg,linears,nonlinears] = momentmodel(F,obj,k,keepnonlinears)
+function [Fnew, obj, M,k,x,u,n,deg,linears,nonlinears,vecConstraints,isinequality,ulong] = momentmodel(F,obj,k,keepnonlinears)
 
 if nargin < 2
     obj = [];

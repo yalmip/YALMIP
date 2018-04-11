@@ -31,7 +31,8 @@ switch class(varargin{1})
         operator.range = [-inf inf];
         operator.domain = [-1 inf];
         operator.derivative = @(x) (1./(abs(1+x)+sqrt(eps)));
-
+        operator.inverse = @(x)(exp(x)-1);
+        
         varargout{1} = F;
         varargout{2} = operator;
         varargout{3} = X;

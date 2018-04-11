@@ -523,6 +523,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         Z.conicinfo = [0 0];
         Z.extra.opname='';
+        Z.extra.createTime = definecreationtime;
         Z = clean(Z);
     
 
@@ -559,9 +560,9 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     return
                 end
             else
-                if ~isa(Y,'double')
+                if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                     Y = double(Y);
-                end
+                end                
                 Z.dim(1) = n_Y;
                 Z.dim(2) = m_Y;
                 Z.basis = kron(Z.basis,Y(:));
@@ -570,10 +571,13 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 Z = addrightfactor(Z,Y);
                 Z = addleftfactor(Z,speye(size(Y,1)));
                 Z = clean(Z);
+                if length(size(Y))>2
+                    Z = reshape(reshape(Z,[],1),size(Y));
+                end
                 return
             end
         elseif y_isscalar
-            if ~isa(Y,'double')
+            if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                 Y = double(Y);
             end
             Z.dim(1) = n_X;
@@ -581,9 +585,10 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.basis = Z.basis*Y;
             Z.conicinfo = [0 0];
             Z.extra.opname='';
+            Z.extra.createTime = definecreationtime;
             Z = addrightfactor(Z,Y);
             Z = addleftfactor(Z,speye(size(Y,1)));
-            Z = clean(Z);
+            Z = clean(Z);          
             return
         end
 
@@ -594,13 +599,14 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % encountered in large-scale QPs
             Z.basis = [X.basis(:,1) Y.'];
         else
-            if ~isa(Y,'double')
+            if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
                 Y = double(Y);
             end
             Z.basis = kron(Y.',speye(n_X))*X.basis;
         end
         Z.conicinfo = [0 0];
         Z.extra.opname='';
+        Z.extra.createTime = definecreationtime;
         Z = addrightfactor(Z,Y);
         Z = clean(Z);
 
@@ -646,6 +652,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
                 Z.conicinfo = [0 0];
                 Z.extra.opname='';
+                Z.extra.createTime = definecreationtime;
                 Z = addleftfactor(Z,X);
                 if X==0
                     Z = clean(Z);
@@ -656,9 +663,13 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.dim(1) = n_X;
             Z.dim(2) = m_X;
             Z.basis = X(:)*Y.basis;
+            Z.extra.createTime = definecreationtime;
             Z = addleftfactor(Z,X);
             Z = addrightfactor(Z,speye(size(X,2)));
             Z = clean(Z);
+            if length(size(X))>2
+                Z = reshape(reshape(Z,[],1),size(X));
+            end
             return
         end
 
@@ -678,7 +689,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         else
             try
-                if ~isa(X,'double')
+                if isa(X,'uint8') || isa(X,'uint16') || isa(X,'uint32') || isa(X,'uint64')
                     X = double(X);
                 end
                 speyemy = speye(m_Y);
@@ -688,7 +699,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 disp('Multiplication of SDPVAR object caused memory error');
                 disp('Continuing using unvectorized version which is extremely slow');
                 Z.basis = [];
-                if ~isa(X,'double')
+                if isa(X,'uint8') || isa(X,'uint16') || isa(X,'uint32') || isa(X,'uint64')
                     X = double(X);
                 end
                 for i = 1:size(Y.basis,2);
@@ -701,6 +712,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         Z.dim(2) = m;
         Z.conicinfo = [0 0];
         Z.extra.opname='';
+        Z.extra.createTime = definecreationtime;
         Z = addleftfactor(Z,X);
         Z = clean(Z);
 
@@ -802,7 +814,8 @@ function Z = check_for_special_case(Y,X)
 args = yalmip('getarguments',Y);
 args = args.arg{1};
 if isequal(X,args)
-    Z = -entropy(X);
+    B = getbase(Y);
+    Z = X*B(1)-B(2)*entropy(X);
     return
 end
 if 0%isequal(getvariables(args),getvariables(X)) 

@@ -3,9 +3,16 @@ if ~isinf(upper)
     LU = [p.lb p.ub];
     if nnz(p.c.*(p.ub-p.lb)) == 1 & nnz(p.Q)==0
         i = find(p.c.*(p.ub-p.lb));
-        if p.c(i)>0
-            p.ub(i) = min([p.ub(i) upper]);
+        if p.c(i) > 0
+            % We are minimizing x(i), since an upper bound is UPPER
+            % this means c(i)*x(i) has to be < UPPER in optimal solution
+            p.ub(i) = min([p.ub(i) upper/p.c(i)]);
+        elseif p.c(i) < 0
+            % We are maximizing x(i), since an lower bound is -UPPER
+            % this means x(i) has to be > -UPPER in optimal solution
+            p.lb(i) = max([p.lb(i) -upper/abs(p.c(i))]);
         end
+            
     end
     if ~isempty(p.bilinears) & nnz(p.Q)==0
         quad_v = find(p.bilinears(:,2) == p.bilinears(:,3));

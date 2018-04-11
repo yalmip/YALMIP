@@ -21,6 +21,19 @@ if all(diff(x)>0)
     Ay = -[-ones(m,1);1];
     b  = [f - x.*df; f(end)*x(1)/(x(end)-x(1)) -  f(1)*x(end)/(x(end)-x(1))];
     Ax  = [-df;f(end)/(x(end)-x(1)) - f(1)/(x(end)-x(1))];
+    
+    % Don't use ill-conditioned cuts
+    if df(1)>1000
+        Ax(1)=[];
+        Ay(1) = [];
+        b(1) = [];
+    end
+    if df(end)<-1000
+        Ax(end)=[];
+        Ay(end) = [];
+        b(end) = [];
+    end     
+    
 else
     Ax = [];
     Ay = [];

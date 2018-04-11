@@ -1,10 +1,10 @@
 function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstraints,InnerObjective,InnerVariables,options)
 %SOLVEBILEVEL Simple global bilevel solver
 %
-%   min        CO(x,y)
-%   subject to OO(x,y)>0
+%   min        OO(x,y)
+%   subject to CO(x,y)>=0
 %              y = arg min OI(x,y)
-%              subject to CI(x,y)>0
+%              subject to CI(x,y)>=0
 %
 %   [DIAGNOSTIC,INFO] = SOLVEBILEVEL(CO, OO, CI, OI, y, options)
 %
@@ -12,8 +12,8 @@ function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstrai
 %   info       : Bilevel solver specific information
 %
 %   Input
-%      CI       : Outer constraints (linear elementwise)
-%      OI       : Outer objective (convex quadratic)
+%      CO       : Outer constraints (linear elementwise)
+%      OO       : Outer objective (convex quadratic)
 %      CI       : Inner constraints (linear elementwise)
 %      OI       : Inner objective (convex quadratic)
 %      y        : Inner variables
@@ -57,7 +57,8 @@ if strcmp(options.bilevel.algorithm,'external')
     z = setdiff(z,depends(y));
     z = recover(unique(z));
     [K,details] = kkt(InnerConstraints,InnerObjective,z,options);    
-    Constraints = [K,OuterConstraints];    
+    Constraints = [K,OuterConstraints];   
+    options.solver = options.bilevel.outersolver;
     sol = solvesdp(Constraints,OuterObjective,options);
     info = [];
     return
@@ -101,6 +102,7 @@ y = recover(unique([v1(:);v2(:);v3(:)]));
 
 % Export the outer model, and select solver
 options.solver = options.bilevel.outersolver;
+options.bmibnb.diagonalize = 0;
 [Omodel,Oax1,Oax2,outer_p] = export(OuterConstraints,OuterObjective,options,[],[],0);
 if isstruct(Oax2)
    sol = Oax2;

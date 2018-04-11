@@ -60,7 +60,7 @@ switch class(varargin{1})
                         varargout{1} = yalmip('define','norm_nuclear',varargin{:});
                     end
                 otherwise
-                    if isreal(varargin{1}) & min(size(varargin{1}))==1 & isa(varargin{2},'double')
+                    if isreal(varargin{1}) & min(size(varargin{1}))==1 & isnumeric(varargin{2})
                         varargout{1} = pnorm(varargin{:});
                     else
                         error('norm(x,P) only supported for P = 1, 2, inf, ''fro'' and ''nuclear''');

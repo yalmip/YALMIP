@@ -17,6 +17,7 @@ if isa(d,'sdpvar')
                 end                
                 D = real(D);
                 y = V*diag(diag(D).^d)*inv(V);
+                y.extra.createTime = definecreationtime;
                 return                
             else
                 error('Object class not support in x^d');
@@ -25,6 +26,9 @@ if isa(d,'sdpvar')
     end
     d = flush(d);d.conicinfo = [0 0];
     y = power_internal1(d,x);
+    if isa(y,'sdpvar')
+        y.extra.createTime = definecreationtime;
+    end
     return
 end
 
@@ -51,6 +55,7 @@ if d==2
                 if (isequal(model.arg{2},2) & min(size(z))==1) | isequal(model.arg{2},'fro')
                     z = reshape(model.arg{1},[],1);
                     y = real(z'*z);
+                    y.extra.createTime = definecreationtime;
                     return
                 end
             end
@@ -88,6 +93,7 @@ if (ceil(d)-d>0) | (d<0)
             y = (yalmip('define','mpower_internal',x))^d;           
         end
     end
+    y.extra.createTime = definecreationtime;
     return
 end
 
@@ -109,7 +115,7 @@ else %Integer power of scalar
         var = x.lmi_variables;
         newmt = mt(var,:)*d;
         newhash = newmt*hash;
-        previous_var = findhash(hashes , newhash);
+        previous_var = findhash(hashes , newhash,length(hashes));
         if isempty(previous_var)
             mt = [mt;newmt];
             yalmip('setmonomtable',mt,[variabletype newvariabletypegen(newmt)]);
@@ -137,6 +143,7 @@ else %Integer power of scalar
                 end
         end
     end
+    y.extra.createTime = definecreationtime;
 end
 
 

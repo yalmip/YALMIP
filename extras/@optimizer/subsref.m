@@ -113,7 +113,7 @@ elseif isequal(subs.type,'{}')
     
     if self.model.options.usex0
         if nargout < 5
-            warning('If you intend to use initial guesses, you must save fifth output [sol,~,~,~,P] = P{p}');
+            warning('If you intend to use initial guesses, you must use a fifth output as [sol,problem,~,~,P] = P(p)');
         end
     end
     
@@ -134,6 +134,26 @@ elseif isequal(subs.type,'{}')
         for i = 1:length(subs.subs)
             if self.complexInput(i)
                 subs.subs{i} = [real(subs.subs{i});imag(subs.subs{i})];
+            end
+        end
+        
+        % Check for garbage call
+        for i = 1:length(subs.subs)
+            if isnan(subs.subs{i})
+                if length(self.dimoutOrig)>1
+                    for j = 1:length(self.dimoutOrig)
+                        sol{j} = nan(self.dimoutOrig{j});
+                    end
+                else
+                    sol = nan(self.dimoutOrig{1});
+                end
+                varargout{1} = sol;
+                varargout{2} = -10;
+                varargout{3} = yalmiperror(-10);
+                varargout{4} = []; 
+                varargout{5} = self; 
+                varargout{6} = self; 
+                return
             end
         end
         
@@ -274,6 +294,15 @@ elseif isequal(subs.type,'{}')
             % Standard case where we eliminate all variables left
             self.instatiatedvalues(ismember(self.orginal_usedvariables,self.model.used_variables(self.model.parameterIndex))) = thisData(:);
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,self.model.parameterIndex,thisData(:),self.model.parameterIndex);
+            
+            % Remap all evaluation operators
+            self.model.evalVariables = [];
+            for k = 1:length(self.model.evalMap)
+                self.model.evalMap{k}.computes = find(self.model.evalMap{k}.computes == keptvariablesIndex);
+                self.model.evalMap{k}.variableIndex = find(self.model.evalMap{k}.variableIndex == keptvariablesIndex);
+                self.model.evalVariables = [self.model.evalVariables self.model.evalMap{k}.computes];
+            end                                         
+            self.model.evalVariables = sort(self.model.evalVariables);            
         end
 
         % Turn off equality presolving for simple programs. equality

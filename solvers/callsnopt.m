@@ -8,9 +8,18 @@ if ~model.derivative_available
     disp('Derivate-free call to snopt not yet implemented')
     error('Derivate-free call to snopt not yet implemented')
 end
+
+% Figure out which variables are artificially introduced to normalize
+% arguments in callback operators to simplify chain rules etc. We can do
+% our function evaluations and gradient computations in our lifted world,
+% but only expose the model in the original variables to the nonlinear
+% solver. 
+% model = compressLifted(model);
+
 if model.options.savedebug
     save snoptdebug model
 end
+
 showprogress('Calling SNOPT',model.options.showprogress);
 
 x0 = model.x0;
@@ -78,7 +87,14 @@ solvertime = toc(solvertime);
 
 lambda = Fmul(2:end);   
 
-x = RecoverNonlinearSolverSolution(model,xout);
+if ~isempty(xout) && ~isempty(model.lift);
+    x = zeros(length(model.linearindicies),1);
+    x(model.lift.linearIndex) = xout;
+    x(model.lift.liftedIndex) = model.lift.T*xout + model.lift.d;
+    x = RecoverNonlinearSolverSolution(model,x);
+else
+    x = RecoverNonlinearSolverSolution(model,xout);
+end
 
 problem = 0;
 

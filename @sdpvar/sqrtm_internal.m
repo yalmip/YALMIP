@@ -3,7 +3,7 @@ function varargout = sqrtm_internal(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
+    case {'double', 'gem', 'sgem'}
         varargout{1} = sqrt(varargin{1});
 
     case 'sdpvar'

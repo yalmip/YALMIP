@@ -33,19 +33,19 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %     optZ = optimizer(Constraints,Objective,[],[LB; UB],z);
 %     
 %     % Compute the optimal z when LB=1, UB = 3;
-%     zopt = optZ{[1; 3]}
+%     zopt = optZ([1; 3])
 %
 %     % Compute two solutions, one for (LB,UB) [1;3] and one for (LB,UB) [2;6]
-%     zopt = optZ{[[1; 3], [2;6]]}
+%     zopt = optZ([[1; 3], [2;6]])
 %
 %     % A second output argument can be used to catch infeasibility
-%     [zopt,infeasible] = optZ{[1; 3]}
+%     [zopt,infeasible] = optZ([1; 3])
 %
 %     % To avoid the need to vectorize in order to handle multiple
 %     parameters, a cell-based definition can be used 
 %
 %     optZ = optimizer(Constraints,Objective,[],{LB,UB},{z,sum(z)})
-%     [zopt,infeasible] = optZ{{1,3}};
+%     [zopt,infeasible] = optZ({1,3});
 %     zopt{1}
 %     zopt{2}
 
@@ -100,6 +100,12 @@ else
 end
 nIn = length(x);
 mIn = 1;
+
+if isa(x,'sdpvar')
+    if ~is(x,'lpcone')
+    error('All parameter arguments have to be simple variables (i.e., not expressions such a+b or 1+a)');
+    end
+end
 
 if isa(u,'cell')
     uvec = []; 
@@ -294,7 +300,7 @@ sys.ops = options;
 sys.complicatedEvalMap = 0;
 % Are all nonlinear operators acting on simple parameters? Elimination
 % strategy will only be applied on simple problems such as x<=exp(par)
-if ~isempty(sys.model.parameterIndex)
+if ~model.solver.evaluation
     for i = 1:length(sys.model.evalMap)
         if ~all(ismember(sys.model.evalMap{i}.variableIndex,sys.model.parameterIndex))
             sys.complicatedEvalMap = 1;
@@ -304,13 +310,12 @@ if ~isempty(sys.model.parameterIndex)
             % thingy for some internal stuff
             if nnz(cellfun('isclass',sys.model.evalMap{i}.arg,'sdpvar'))>2
                 sys.complicatedEvalMap = 1;
-            end
+            end            
         end
     end
-end
-
-if sys.complicatedEvalMap
-    error('Parameters are currently only allowed to enter function such as exp, sin etc as exp(a), sin(b) etc.')
+    if sys.complicatedEvalMap
+        error('Parameters are currently only allowed to enter function such as exp, sin etc as exp(a), sin(b) etc.')
+    end
 end
 
 sys.model.evalParameters = [];

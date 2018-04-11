@@ -21,7 +21,10 @@ if any(K.q)
     aux = [];
     top = 1 + K.f + K.l;
     for i = 1:length(K.q)
-        aux = [aux;model.F_struc(top,:)];
+        row = model.F_struc(top,:);
+        if any(row(2:end))
+            aux = [aux;row];
+        end
         top = top + model.K.q(i);
     end
     model.F_struc = [model.F_struc(1:K.f+K.l,:);aux;model.F_struc(K.f+K.l+1:end,:)];

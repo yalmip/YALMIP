@@ -98,7 +98,19 @@ end
 if ~isempty(properties)
     if isequal(properties{1}.model,'callback')
         F_normalizing = NormalizeCallback(method,extstruct.var,extstruct.arg{:});
-        F = F + F_normalizing;
+        if ~isempty(F_normalizing)
+            F = F + F_normalizing;
+            % If there are hard bounds on the argument, and a new variable
+            % has been introduced to normalize the model argument, add
+            % these hard bounds on the new variable
+            Xnormal = extstruct.arg{end};
+            if ~isinf( properties{1}.domain(1))
+                F = [F, Xnormal >= properties{1}.domain(1)];
+            end
+            if ~isinf( properties{1}.domain(2))
+                F = [F, Xnormal <= properties{1}.domain(2)];
+            end
+        end
     end
     if length(extstruct.computes)>1
         for i = 1:length(properties)

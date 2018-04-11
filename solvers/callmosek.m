@@ -34,6 +34,7 @@ if ~isempty(model.binary_variables)
     ub(model.binary_variables) = min(ub(model.binary_variables),1);
     model.lb = lb;
     model.ub = ub;
+    model.integer_variables = integer_variables;
 end
 
 % Some meta solvers might construct model with empty cones
@@ -232,6 +233,9 @@ if res.rcode == 2001
 elseif res.rcode == 10007
     problem = 16;
     return
+elseif res.rcode == 1400
+    problem = 20;
+    return    
 end
 
 switch res.sol.itr.prosta
@@ -249,8 +253,10 @@ switch res.sol.itr.prosta
         try
             if isequal(res.rcodestr,'MSK_RES_TRM_STALL')
                 problem = 4;
+            elseif isequal(res.rcodestr,'MSK_RES_OK')
+                problem = 0;
             else
-                problem = 9;
+                problem = 11;
             end
         catch
             problem = 9;
@@ -460,7 +466,7 @@ param = model.options.mosek;
 if ~isempty(model.x0)
     if model.options.usex0
         prob.sol.int.xx = zeros(max([length(model.Q) size(prob.a,2)]),1);
-        prob.sol.int.xx(model.integer_variables) = x0(model.integer_variables);
+        prob.sol.int.xx(model.integer_variables) = model.x0(model.integer_variables);
         evalc('[r,res] = mosekopt (''symbcon'')');
         sc = res.symbcon ;
         param.MSK_IPAR_MIO_CONSTRUCT_SOL = sc.MSK_ON;

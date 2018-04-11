@@ -17,6 +17,14 @@ if isfield(model.options.fmincon,'LargeScale')
         model.beq = full(model.beq);
     end
 end
+if isfield(model.options.fmincon,'Algorithm')
+    if isequal(model.options.fmincon.Algorithm,'sqp') || isequal(model.options.fmincon.Algorithm,'active-set')
+        model.A = full(model.A);
+        model.b = full(model.b);
+        model.Aeq = full(model.Aeq);
+        model.beq = full(model.beq);
+    end
+end
 
 if model.derivative_available
     model.options.fmincon.GradObj = 'on';  
@@ -40,6 +48,13 @@ if strcmp(model.options.fmincon.Algorithm,'trust-region-reflective')
     end
 end
 
+% Figure out which variables are artificially introduced to normalize
+% arguments in callback operators to simplify chain rules etc. We can do
+% our function evaluations and gradient computations in our lifted world,
+% but only expose the model in the original variables to the nonlinear
+% solver. 
+% model = compressLifted(model);
+
 global latest_xevaled
 global latest_x_xevaled
 latest_xevaled = [];
@@ -50,16 +65,21 @@ showprogress('Calling FMINCON',model.options.showprogress);
 if model.linearconstraints
     callback_con = [];
 else
-    callback_con = 'fmincon_con';
+    callback_con = 'fmincon_con_liftlayer';
 end
 
-%warning('off','optim:fmincon:NLPAlgLargeScaleConflict')
 solvertime = tic;
-[xout,fmin,flag,output,lambda] = fmincon('fmincon_fun',model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,callback_con,model.options.fmincon,model);
+[xout,fmin,flag,output,lambda] = fmincon('fmincon_fun_liftlayer',model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,callback_con,model.options.fmincon,model);
 solvertime = toc(solvertime);
-%warning('on','optim:fmincon:NLPAlgLargeScaleConflict')
 
-x = RecoverNonlinearSolverSolution(model,xout);
+if ~isempty(xout) && ~isempty(model.lift);
+    x = zeros(length(model.linearindicies),1);
+    x(model.lift.linearIndex) = xout;
+    x(model.lift.liftedIndex) = model.lift.T*xout + model.lift.d;
+    x = RecoverNonlinearSolverSolution(model,x);
+else
+    x = RecoverNonlinearSolverSolution(model,xout);
+end
 
 problem = 0;
 

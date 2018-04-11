@@ -7,5 +7,5 @@ x = x(:);
 if isequal(x,latest_x_f)
     df = latest_df;
 else
-    [f,df] = fmincon_fun(x,model);
+    [f,df] = fmincon_fun_liftlayer(x,model);
 end

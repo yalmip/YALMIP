@@ -41,8 +41,14 @@ try
                     error(lasterr)
                 end
             case 2
-                if ~isempty(Y)                    
-                    Y = sparse(double(Y));                    
+                if ~isempty(Y)     
+                    if isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
+                        Y = sparse(double(Y));
+                    elseif isnumeric(Y)
+                        Y = sparse(Y);
+                    else
+                        Y = sparse(double(Y));
+                    end
                 end
                 y = X;
                 

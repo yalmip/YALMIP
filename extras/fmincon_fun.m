@@ -1,4 +1,4 @@
-function [f,df,xevaledout] = fmincon_fun(x,model)
+function [f,df,xevaledout,dx] = fmincon_fun(x,model)
 
 global latest_xevaled
 global latest_x_xevaled
@@ -28,12 +28,13 @@ else
 end
 f=full(f);
 df = [];
+dx = [];
 if nargout==1 || ~model.derivative_available
     return
 elseif model.SimpleLinearObjective
-    df = model.c(model.linearindicies);
+    df = full(model.c(model.linearindicies));
 elseif model.SimpleQuadraticObjective
-    df = model.c(model.linearindicies) + 2*model.Q(model.linearindicies,model.linearindicies)*x;
+    df = full(model.c(model.linearindicies) + 2*model.Q(model.linearindicies,model.linearindicies)*x);
 elseif model.SimpleNonlinearObjective
     requested = model.c | any(model.Q,2);
     [i,j,k] = find((model.deppattern(find(requested),:)));

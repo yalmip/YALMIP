@@ -39,7 +39,7 @@ for i = 1:length(F.LMIid)
         LU(variables,1) = max([lb LU(variables,1)]')';
         LU(variables,2) = min([ub LU(variables,2)]')';  
         
-    elseif F.clauses{i}.type == 3 && nargin==1
+    elseif F.clauses{i}.type == 3 && (nargin==1 || (nargin > 1 && isempty(avoidequalitybounds)))
         % FIX : Extract from equalities and binary constraints
         X = F.clauses{i}.data;
         AB = getbase(X);

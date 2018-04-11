@@ -15,12 +15,9 @@ if nargin == 1
     error('>2 outputs in size?');
   end
 else
-	switch varargin{2}
-	case 1
-		varargout{1} = varargin{1}.dim(1);
-	case 2
-		varargout{1} = varargin{1}.dim(2);
-	otherwise
-		error('Report bug in size')
+    if varargin{2} > length(varargin{1}.dim)
+        varargout{1} = 1;
+    else
+        varargout{1} = varargin{1}.dim(varargin{2});	
 	end
 end

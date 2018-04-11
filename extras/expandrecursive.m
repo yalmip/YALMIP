@@ -88,7 +88,7 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
                 if isempty(F_graph)
                     switch fcn
                         case 'sqrt'
-                            cause = [cause 'See users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.SQRT'];
+                            cause = [cause 'See https://yalmip.github.io/squareroots/'];
                         case 'norm'
                             cause = [cause 'Only 1- and inf-norms can be used in a nonconvex fashion'];
                         otherwise

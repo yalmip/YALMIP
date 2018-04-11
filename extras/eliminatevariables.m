@@ -71,11 +71,9 @@ if model.K.f > 0
     end
 end
 if model.K.l > 0
+    % Find infeasible constraints
     candidates = find(~any(model.F_struc(model.K.f + (1:model.K.l),2:end),2));
-    %candidates = find(sum(abs(model.F_struc(model.K.f + (1:model.K.l),2:end)),2) == 0);
-    if ~isempty(candidates)
-        
-        %if find(model.F_struc(model.K.f + candidates,1)<0,1)
+    if ~isempty(candidates)                
         if any(model.F_struc(model.K.f + candidates,1)<-1e-14)
             model.infeasible  = 1;
             return
@@ -83,6 +81,12 @@ if model.K.l > 0
             model.F_struc(model.K.f + candidates,:) = [];
             model.K.l = model.K.l - length(candidates);
         end
+    end
+    % Find constraints f(x) <= inf and remove these
+    candidates = find(isinf(model.F_struc(model.K.f + (1:model.K.l),1)) & (model.F_struc(model.K.f + (1:model.K.l),1))>0)
+    if ~isempty(candidates)                       
+        model.F_struc(model.K.f + candidates,:) = [];
+        model.K.l = model.K.l - length(candidates);        
     end
 end
 if model.K.q(1) > 0
@@ -154,6 +158,7 @@ model.f = model.f + model.c(removethese)'*value;
 model.c(removethese)=[];
 if nnz(model.Q)>0
     model.c = model.c + 2*model.Q(keepingthese,removethese)*value;
+    model.f = model.f + value'*model.Q(removethese,removethese)*value;
 end
 
 if nnz(model.Q)==0
@@ -239,6 +244,10 @@ end
 if ~isempty(model.semicont_variables)
    temp=ismember(keptvariablesIndex,model.semicont_variables);
    model.semicont_variables = find(temp);  
+end
+if ~isempty(model.aux_variables)
+   temp=ismember(keptvariablesIndex,model.aux_variables);
+   model.aux_variables = find(temp);  
 end
 
 model.used_variables = model.used_variables(keptvariablesIndex);

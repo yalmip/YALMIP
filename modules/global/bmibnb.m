@@ -86,6 +86,12 @@ p.changedbounds = 1;
 p.counter.lpsolved = 0;
 p.counter.lowersolved = 0;
 p.counter.uppersolved = 0;
+
+% *************************************************************************
+% Extend partially specified initials
+% *************************************************************************
+p = completeInitial(p);
+
 % *************************************************************************
 % Some preprocessing to put the model in a better format
 % *************************************************************************
@@ -355,24 +361,20 @@ if p.feasible
     % *******************************
     % RUN BILINEAR BRANCH & BOUND
     % *******************************
-    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing);
+    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing);
        
     % ********************************
-    % CREATE SOLUTION AND DIAGNOSTICS
+    % ADJUST DIAGNOSTICS
     % ********************************
-    problem = 0;
-    if isinf(upper)
+    if isinf(upper) && problem == 0
         problem = 1;
     end
-    if isinf(lower) & (lower<0)
+    if isinf(lower) & (lower<0) && problem == 0
         problem = 2;
     end
-    if isinf(lower) & (lower>0)
+    if isinf(lower) & (lower>0) && problem == 0
         problem = 1;
-    end    
-    if solved_nodes == p.options.bmibnb.maxiter
-        problem = 3;
-    end
+    end        
 else
     counter = p.counter;
     problem = 1;
@@ -411,6 +413,7 @@ function pnew = diagonalize_quadratic_program(p);
 pnew = p;
 pnew.V = [];
 pnew.diagonalized = 0;
+return
 
 % No quadratic terms
 if all(p.variabletype == 0)
@@ -440,17 +443,17 @@ if ~isempty(p.F_struc)
     end
 end
 
-if ~isempty(p.lb)
-    if ~all(isinf(p.lb(nonlinear)))
-        return
-    end
-end
-if ~isempty(p.ub)
-    if ~all(isinf(p.ub(nonlinear)))
-        return
-    end
-end
-
+% if ~isempty(p.lb)
+%     if ~all(isinf(p.lb(nonlinear)))
+%         return
+%     end
+% end
+% if ~isempty(p.ub)
+%     if ~all(isinf(p.ub(nonlinear)))
+%         return
+%     end
+% end
+% 
 % Find quadratic and linear terms
 used_in_c = find(p.c);
 quadraticterms = used_in_c(find(ismember(used_in_c,nonlinear)));
@@ -480,28 +483,13 @@ D(abs(D)<1e-11) = 0;
 lb = p.lb(linear);
 ub = p.ub(linear);
 Z = V';
-newub = inf(length(lb),1);
-newlb = -inf(length(lb),1);
-for i = 1:length(lb)
-    z = Z(i,:);
-    neg = find(z<0);
-    pos = find(z>0);
-    if ~isempty(neg)
-        newub(i,1) = z(neg)*lb(neg);
-        newlb(i,1) = z(neg)*ub(neg);
-    end
-%    if ~isempty(pos)
-        newub(i,1) = z(pos)*ub(pos);
-        newlb(i,1) = z(pos)*lb(pos);        
-%    end
-%  newub(i,1) = z(z>0)*ub(z>0) + z(z<0)*lb(z<0);
-%        newlb(i,1) = z(z>0)*lb(z>0) + z(z<0)*ub(z<0);  
-end
-
+newub = sum([Z>0].*Z.*repmat(ub,1,length(Z)),2)+sum([Z<0].*Z.*repmat(lb,1,length(Z)),2);
+newlb = sum([Z>0].*Z.*repmat(lb,1,length(Z)),2)+sum([Z<0].*Z.*repmat(ub,1,length(Z)),2);
+newub(isnan(newub)) = inf;
+newlb(isnan(newlb)) = -inf;
 
 % Create new problem
 clin = V'*clin;
-%A = A*V;
 
 n = length(linear);
 pnew.original_linear = linear;
@@ -515,6 +503,13 @@ if size(p.F_struc,1)>0
     A = -p.F_struc(:,1 + linear);
     b = p.F_struc(:,1);
     pnew.F_struc = [b -A*V zeros(length(b),n)];
+    Abounds = [V;-V];
+    bbounds = [ub;-lb];
+    keep = find(~isinf(bbounds));
+    if ~isempty(keep)
+        pnew.F_struc = [pnew.F_struc;bbounds(keep) -Abounds(keep,:) zeros(length(keep),n)];       
+        pnew.K.l = pnew.K.l + length(keep);
+    end
 end
 
 
@@ -558,5 +553,4 @@ while goon
     goon = (norm(start-[p.lb;p.ub],'inf') > 1e-2) & i < 15;
     start = [p.lb;p.ub];
 end
-
 

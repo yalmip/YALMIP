@@ -22,7 +22,7 @@ if nnz(self.variabletype)==0
     % can be LP,QP,SDP,SOCP,MILP,MIQP
     if model.constraint.inequalities.semidefinite.linear
         p = 'SDP';
-    elseif model.constraint.inequalities.secondordercone.linear | model.constraint.inequalities.rotatedsecondordercone
+    elseif model.constraint.inequalities.secondordercone.linear | model.constraint.inequalities.rotatedsecondordercone.linear
         p = 'SOCP';
     else
         if model.objective.quadratic.convex == 1

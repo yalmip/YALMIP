@@ -9,6 +9,7 @@ switch class(varargin{1})
         
         operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
+        operator.domain = [1e-16 1-1e-16];
         operator.derivative = @(x)derivative(x,varargin{4:end});
         
         varargout{1} = [1-1e-8 >= varargin{3} >= 1e-8];

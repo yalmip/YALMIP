@@ -6,6 +6,7 @@ function error_string = yalmiperror(errorcode,solver)
 %
 %   The complete set of error codes are
 %
+%   -10 NaN in model data
 %    -9 Specified solver name not recognized
 %    -8 Problem does not satisfy geometric programming rules
 %    -7 Solver does not return error codes
@@ -36,11 +37,9 @@ function error_string = yalmiperror(errorcode,solver)
 %    17 Presolve recovery failed
 %    18 Missing non-negativity bounds in GP formulation
 %    19 Convexity requirements not met
+%    20 Solver complains about bad data
 %
-%   See also SOLVESDP
-
-% Author Johan Löfberg 
-% $Id: yalmiperror.m,v 1.8 2007-10-03 09:25:56 joloef Exp $
+%   See also OPTIMIZE
 
 if nargin ==0
     help yalmiperror
@@ -54,6 +53,8 @@ else
 end
 
 switch errorcode
+case -10
+  error_string = ['NaN in model data ' solver];          
 case -9
   error_string = ['Specified solver name not recognized ' solver];          
 case -8
@@ -112,6 +113,8 @@ case -3
   error_string = ['Missing non-negativity bounds in GP formulation ' solver ];         
  case 19
   error_string = ['Convexity requirements not met ' solver ];           
+case 20
+  error_string = ['Solver complains about bad data ' solver ];              
  otherwise
 end
 

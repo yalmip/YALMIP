@@ -119,6 +119,7 @@ y.lmi_variables = all_lmi_variables;
 % Reset info about conic terms
 y.conicinfo = [0 0];
 y.extra.opname='';
+y.extra.createTime = definecreationtime;
 y = unfactor(y);
 % Update the factors
 % But first, check to see that factors exist in all terms, if not simply
@@ -140,7 +141,7 @@ for i = 1:length(varargin)
             y.midfactors{end+1} = varargin{i}.midfactors{j};
             y.leftfactors{end+1} = varargin{i}.leftfactors{j};
         end
-    elseif isa(varargin{i},'double')
+    elseif isnumeric(varargin{i})
         if ~all(varargin{i}==0)
             %  if ~doublehere
             here = length(y.midfactors)+1;

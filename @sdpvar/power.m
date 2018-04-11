@@ -26,6 +26,9 @@ end
 if isa(d,'sdpvar')
     % Call helper which vectorizes the elements
     y = powerinternalhelper(d,x);
+    if isa(y,'sdpvar')
+        y.extra.createTime = definecreationtime;
+    end
     return
 end
 
@@ -39,12 +42,9 @@ else
 end
 
 % Trivial cases
-if isa(d,'double')
+if isnumeric(d)
     if all(all(d==0))
-        if x.dim(1)~=x.dim(2)
-            error('Matrix must be square.')
-        end
-        y = eye(x.dim(1),x.dim(2)).^0;
+        y = ones(x.dim(1),x.dim(2));
         return
     end
     if all(all(d==1))
@@ -63,6 +63,7 @@ if fractional | negative | different
         if isequal(x.basis,[spalloc(prod(x.dim),1,0) speye(prod(x.dim))]) & all(d==d(1))
             % Simple case x.^d
             y = vectorizedUnitPower(x,d);
+            y.extra.createTime = definecreationtime;
             return
         end
         [n,m] = size(x);        
@@ -78,6 +79,7 @@ if fractional | negative | different
             end
             y = [y;temp];
         end
+        y.extra.createTime = definecreationtime;
         return
     else
         base = getbase(x);
@@ -99,12 +101,14 @@ if fractional | negative | different
             error('Only unit scalars can have negative or non-integer powers.');
         end
     end
+    y.extra.createTime = definecreationtime;
     return
 end
 
 if isequal(x.basis,[spalloc(prod(x.dim),1,0) speye(prod(x.dim))]) & all(d==d(1))
      % Simple case x.^d
      y = vectorizedUnitPower(x,d);
+     y.extra.createTime = definecreationtime;
      return
  end
         

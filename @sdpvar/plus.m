@@ -17,7 +17,7 @@ if ~X_is_spdvar
         Y.basis = intval(Y.basis);
     elseif isa(X,'uint8') || isa(X,'uint16') || isa(X,'uint32') || isa(X,'uint64')
         X = double(X);  
-    elseif ~isa(X,'double')
+    elseif ~isnumeric(X)
         error(['Cannot add SDPVAR object and ' upper(class(X)) ' object']);
     end
 end
@@ -31,7 +31,7 @@ if ~Y_is_spdvar
         X.basis = intval(X.basis);
     elseif isa(Y,'uint8') || isa(Y,'uint16') || isa(Y,'uint32') || isa(Y,'uint64')
         Y = double(Y);          
-    elseif ~isa(Y,'double')
+    elseif ~isnumeric(Y)
         error(['Cannot add SDPVAR object and ' upper(class(Y)) ' object']);
     end
 end
@@ -77,12 +77,17 @@ switch 2*X_is_spdvar+Y_is_spdvar
         any_scalar = x_isscalar | y_isscalar;
         
         if x_isscalar && y_isscalar            
-             y.basis(1) = y.basis(1)+X;
-             % Reset info about conic terms
-             y.conicinfo = [0 0];
-             y.extra.opname='';
-             y = addfactors(y,X,Y);
-             return
+            tmp = y.basis(1)+X;
+            if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                y.basis = gemify(y.basis);
+            end
+            y.basis(1) = tmp;
+            % Reset info about conic terms
+            y.conicinfo = [0 0];
+            y.extra.opname='';
+            y.extra.createTime = definecreationtime;
+            y = addfactors(y,X,Y);
+            return
          end
          
         if any_scalar || all([n_Y m_Y]==[n_X m_X])
@@ -91,7 +96,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 y.dim(1) = n_X;
                 y.dim(2) = m_X;
             end
-            y.basis(:,1) = y.basis(:,1)+X(:);
+            tmp = y.basis(:,1)+X(:);
+            if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                y.basis = gemify(y.basis);
+            end
+            y.basis(:,1) = tmp;
         else
             error('Matrix dimensions must agree.');
         end
@@ -120,10 +129,15 @@ switch 2*X_is_spdvar+Y_is_spdvar
         
          % Special special case...
          if x_isscalar && y_isscalar
-             y.basis(1) = y.basis(1)+Y;
+             tmp = y.basis(1)+Y;
+             if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                 y.basis = gemify(y.basis);
+             end
+             y.basis(1) = tmp;
              % Reset info about conic terms
              y.conicinfo = [0 0];
              y.extra.opname='';
+             y.extra.createTime = definecreationtime;
              y = addfactors(y,X,Y);
              return
          end
@@ -134,13 +148,18 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 y.dim(1) = n_Y;
                 y.dim(2) = m_Y;
             end
-            y.basis(:,1) = y.basis(:,1)+Y(:);
+            tmp = y.basis(:,1)+Y(:);
+            if (isequal(class(tmp),'gem') || isequal(class(tmp),'sgem')) && ~isequal(class(y.basis), class(tmp))
+                y.basis = gemify(y.basis);
+            end
+            y.basis(:,1) = tmp;
         else
             error('Matrix dimensions must agree.');
         end
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname='';
+        y.extra.createTime = definecreationtime;
         y = addfactors(y,X,Y);
              
     case 3
@@ -253,6 +272,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname=''; 
+        y.extra.createTime = definecreationtime;
         y = addfactors(y,X,Y);
         if nnz(in_X_logical & in_Y_logical)>0
             y = clean(y);

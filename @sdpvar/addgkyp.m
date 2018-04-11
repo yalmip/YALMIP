@@ -9,11 +9,11 @@ if ~((prod(sx)==1) | (prod(sy)==1))
     end
 end
 
-if isa(Y,'double') | (isa(Y,'sdpvar') & ~is(Y,'gkyp'))   
+if isnumeric(Y) | (isa(Y,'sdpvar') & ~is(Y,'gkyp'))   
     X.extra.M =  X.extra.M+Y;
     X.typeflag = 0;
     y = X+Y;
-    if isa(y,'double')
+    if isnumeric(y)
         return
     else
         y.typeflag = 40;
@@ -31,7 +31,7 @@ else
     y.typeflag = 0;
     Y.typeflag = 0;
     y = y+Y;
-    if isa(y,'double')
+    if isnumeric(y)
         return
     else
         y.typeflag = 40;

@@ -10,7 +10,7 @@ if isequal(x,latest_x_g)
     G = latest_G;
 else
     % Compute the nonlinear terms in the constraints
-    [g,geq,dg,dgeq] = fmincon_con(x,model);
+    [g,geq,dg,dgeq] = fmincon_con_liftlayer(x,model);
 
     % Append with linear terms
     if isempty(dg)

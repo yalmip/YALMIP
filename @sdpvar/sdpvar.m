@@ -50,6 +50,12 @@ global FACTORTRACKING
 FACTORTRACKING = 0;
 
 superiorto('double');
+try 
+ superiorto('sgem');
+ superiorto('gem');
+catch
+ % GEM not in path
+end
 if nargin==0
     sys = sdpvar(1,1);
     return
@@ -340,7 +346,7 @@ switch nargin
 
                 case 104
                     matrix_type = 'full complex';
-                    nvar = 2*n*m;
+                    nvar = 2*sum(n.*m);
                     if nvar==1
                         matrix_type = 'symm complex';
                     end
@@ -386,6 +392,7 @@ switch nargin
         sys.extra = [];
         sys.extra.expanded = [];
         sys.extra.opname = '';
+        sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
         sys.originalbasis = 'unknown';
         if FACTORTRACKING
@@ -422,6 +429,7 @@ switch nargin
         sys.extra = [];
         sys.extra.expanded = [];
         sys.extra.opname = '';
+        sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
         sys.originalbasis = 'unknown';
         if FACTORTRACKING
@@ -458,6 +466,7 @@ switch nargin
         sys.extra = varargin{7};
         sys.extra.expanded = [];
         sys.extra.opname = '';
+        sys.extra.createTime = '';
         sys.conicinfo = varargin{7};
         sys.originalbasis = 'unknown';
         if FACTORTRACKING
@@ -515,7 +524,7 @@ for blk = 1:length(n)
             basis{blk} = [spalloc(n(blk)*m(blk),1,0) speye(n(blk)*m(blk))];%speye(nvar)];
 
         case 'full complex'
-            basis = [spalloc(n*m,1,0) speye(nvar/2) speye(nvar/2)*sqrt(-1)];
+            basis{blk} = [spalloc(n(blk)*m(blk),1,0) speye(n(blk)*m(blk)) speye(n(blk)*m(blk))*sqrt(-1)];
 
         case 'symmetric'
             if n(blk)==1
@@ -726,6 +735,7 @@ if isa(basis,'cell')
         sys{blk}.extra = [];
         sys{blk}.extra.expanded = [];
         sys{blk}.extra.opname = '';
+        sys{blk}.extra.createTime = definecreationtime;
         sys{blk}.conicinfo = conicinfo;
         sys{blk}.originalbasis = matrix_type;
         if FACTORTRACKING
@@ -754,6 +764,7 @@ else
     sys.extra = [];
     sys.extra.expanded = [];
     sys.extra.opname = '';
+    sys.extra.createTime = definecreationtime;
     sys.conicinfo = conicinfo;
     sys.originalbasis = matrix_type;
     if FACTORTRACKING

@@ -23,6 +23,12 @@ function varargout = geomean(varargin)
 switch class(varargin{1})
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
+        
+        if nargin == 2 && isequal(varargin{2},2)
+            varargout{1} = geomean(varargin{1}')';
+            return
+        end
+        
         X = varargin{1};
         [n,m] = size(X);
         if is(varargin{1},'hermitian') | min(n,m)==1

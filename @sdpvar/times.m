@@ -18,12 +18,12 @@ if isa(Y,'blkvar')
     Y = sdpvar(Y);
 end
 
-if isa(X,'double')
+if isnumeric(X)
     if any(isnan(X))
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
-if isa(Y,'double')
+if isnumeric(Y)
     if any(isnan(Y))
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
@@ -46,8 +46,12 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
         error('Product of norms not allowed');
     end
     
+    if numel(X)==1 && numel(Y) > 1
+        X = repmat(X,size(Y));
+    elseif numel(Y)==1 && numel(X) > 1
+        Y = repmat(Y,size(X));
+    end
   
-
     try
         
         y = check_for_special_case(Y,X);
@@ -294,16 +298,22 @@ y = Y;
 if prod(Y.dim)==1
     y.basis = X(:)*(y.basis);
     y.dim = size(X);
+    % Might be an nd-array
+    y.dim = [numel(X) 1];  
 else 
     y.basis = [(Y.basis.')*diag(sparse(X(:)))].';
 end
 
 % Reset info about conic terms
 y.conicinfo = [0 0];
-Z.extra.opname='';
+y.extra.opname='';
 y = flush(y);
 y = clean(y);
-
+if numel(y)==numel(X)
+    y = reshape(y,size(X));
+else
+    y = reshape(y,size(Y));
+end
 
 
 function y = check_for_special_case(Y,X);

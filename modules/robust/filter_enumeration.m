@@ -81,9 +81,24 @@ else
                 K = aux.K;
                 A = -aux.F_struc((1+K.f):(K.f + K.l),2:end);
                 b =  aux.F_struc((1+K.f):(K.f + K.l),1);
-                P = polytope(full(A),full(b));
+                
+                % Extract equalities Ex == f and project
+                if K.f > 0
+                    f = aux.F_struc(1:K.f,1);
+                    E = -full(aux.F_struc(1:K.f,2:end));
+                    En = null(E);
+                    x0 = (E\f);
+                    % x = null(E)*z + x0, A*(null(E)*z + x0) <= b
+                    P = polytope(full(A*En),full(b-A*x0));
+                else
+                    x0 = zeros(size(A,2),1);
+                    En = eye(size(A,2));
+                    P = polytope(full(A),full(b));
+                end
                 try
                     vertices = extreme(P)';
+                    % Map back to original variables
+                    vertices = repmat(x0,1,size(vertices,2)) + En*vertices;
                 catch
                     error('The uncertainty space is unbounded (could be an artefact of YALMIPs modelling of nonolinear oeprators).')
                 end

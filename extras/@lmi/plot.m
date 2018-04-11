@@ -145,5 +145,5 @@ end
 if nargout == 0
     plotInternalModel(internalmodel,x,n,localindex,color,opts);
 else
-    x_opt = plotInternalModel(internalmodel,x,n,localindex,color,opts);
+    varargout{1} = plotInternalModel(internalmodel,x,n,localindex,color,opts);
 end

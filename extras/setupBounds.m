@@ -35,10 +35,10 @@ end
 
 % propagate bilinear. This is needed when implies etc are used in a
 % bilinearly parameterized optimzer object
-[monomtable,variabletype] = yalmip('monomtable');
+[mainmonomtable,variabletype] = yalmip('monomtable');
 bilin = find(variabletype == 1);
 if ~isempty(bilin)
-    monomtable = monomtable(bilin,:);
+    monomtable = mainmonomtable(bilin,:);
     [i,j] = find(monomtable');
     i = reshape(i,2,[]);
     x = i(1,:)';
@@ -53,6 +53,24 @@ if ~isempty(bilin)
     
     LU(bilin,1) = max(LU(bilin,1),minz);
     LU(bilin,2) = min(LU(bilin,2),maxz);
+end
+
+% propagate simple quadratic
+quadratic = find(variabletype == 2);
+if ~isempty(quadratic)
+    monomtable = mainmonomtable(quadratic,:);    
+    [i,j] = find(monomtable');   
+    x = i;    
+    z = quadratic(:);
+    lb = LU(:,1);
+    ub = LU(:,2);
+    corners = [lb(x).*lb(x) ub(x).*lb(x) lb(x).*ub(x) ub(x).*ub(x)];
+    
+    maxz = max(corners,[],2);
+    minz = max(min(corners,[],2),0);
+    
+    LU(quadratic,1) = max(LU(quadratic,1),minz);
+    LU(quadratic,2) = min(LU(quadratic,2),maxz);
 end
 
 yalmip('setbounds',1:nv,LU(:,1),LU(:,2));

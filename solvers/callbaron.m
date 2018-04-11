@@ -19,6 +19,11 @@ end
 if model.f > 0
     obj = [obj '+' num2str(model.f)];
 end
+% YALMIP ctches log(1+z) and implements internal model slog(z) 
+% Replace with log
+expression = 'slog((\w*)';
+replace = 'log(1+$1';
+obj =  regexprep(obj,expression,replace);
 if length(obj)>0
     obj = strrep(obj,'+-','-');
     obj = ['@(x) ' obj];
@@ -42,6 +47,7 @@ if length(cu)>0
     cu(remove) = [];
     con = [con ']'];
     con = strrep(con,'sqrtm_internal','sqrt');
+    con =  regexprep(con,expression,replace);
     con = ['@(x) ' con];
     con = eval(con);
 else
@@ -87,7 +93,9 @@ switch exitflag
         problem = 1;
     case 3
         problem = 2;
-    case {4,5}
+    case 4
+        problem = 3;
+    case 5
         problem = 11;
     otherwise
         problem = 9;
@@ -137,14 +145,38 @@ if pos
     % This is a nonlinear operator
     map = model.evalMap{pos};
     % We might hqave vectorized things to compute several expressions at the same time
-    j = find(map.computes == i);
-    j = map.variableIndex(j);
-    % we have f(x(j)), but have to map back to linear indicies
-    jl = find(model.linearindicies == j);
-    if isempty(jl)
-        z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+    if strcmp(model.evalMap{pos}.fcn,'sum_square')
+        z = ['('];                
+        for j = map.variableIndex
+            jl = find(model.linearindicies == j);
+            if isempty(jl)
+                z =  [z '(' createmonomstring(model.monomtable(j,:),model) ')^2+'];
+            else
+                z =  [z 'x(' num2str(jl) ')^2+'];
+            end 
+        end
+        z = [z(1:end-1) ')'];
+    elseif strcmp(model.evalMap{pos}.fcn,'entropy')
+        z = ['('];                
+        for j = map.variableIndex
+            jl = find(model.linearindicies == j);
+            if isempty(jl)
+                z =  [z '(' createmonomstring(model.monomtable(j,:),model) ')^2+'];
+            else
+                z =  [z '-x(' num2str(jl) ')*log(x(' num2str(jl) '))+'];
+            end 
+        end
+        z = [z(1:end-1) ')'];        
     else
-        z =  [map.fcn '(x(' num2str(jl) '))'];
+        j = find(map.computes == i);
+        j = map.variableIndex(j);
+        % we have f(x(j)), but have to map back to linear indicies
+        jl = find(model.linearindicies == j);
+        if isempty(jl)
+            z =  [map.fcn '(' createmonomstring(model.monomtable(j,:),model)  ')'];
+        else
+            z =  [map.fcn '(x(' num2str(jl) '))'];
+        end
     end
 else
     i = find(model.linearindicies == i);

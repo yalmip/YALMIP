@@ -18,7 +18,7 @@ switch class(varargin{1})
         operator.bounds = @bounds;
 
         varargout{1} = F;
-        varargout{2} = operator
+        varargout{2} = operator;
         varargout{3} = X;
 
     otherwise

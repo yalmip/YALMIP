@@ -1,4 +1,9 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter] = branch_and_bound(p,x_min,upper,timing)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing)
+
+% *************************************************************************
+% Initialize diagnostic code
+% *************************************************************************
+problem = 0;
 
 % *************************************************************************
 % Create handles to solvers
@@ -20,6 +25,7 @@ options = p.options;
 % DEFINE UPPER BOUND PROBLEM. Basically just remove the cuts
 % *************************************************************************
 p_upper = cleanuppermodel(p);
+p_upper = compile_nonlinear_table(p_upper);
 
 % *************************************************************************
 % Active constraints in main model
@@ -246,7 +252,7 @@ while go_on
         [stack,lower] = prune(stack,upper,options,solved_nodes,p);
     end
     if isempty(stack)
-        if isinf(cost)
+        if isinf(cost) && (cost > 0)
             lower = upper;
         else
             lower = cost;
@@ -258,16 +264,9 @@ while go_on
     % ************************************************
     % CONTINUE SPLITTING?
     % ************************************************
-    if keep_digging & max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol
+    if ~isempty(p.branch_variables) && keep_digging && max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol && upper > lower
         node = [];
-      %  already_tested = []
-      %  while ~isempty(setdiff(p.branch_variables,already_tested)) & isempty(node)
-      %  temp = p.branch_variables;
-      %  p.branch_variables=setdiff(p.branch_variables,already_tested);
-        spliton = branchvariable(p,options,x);
-      %  p.branch_variables = union(p.branch_variables,already_tested);
-      %  already_tested = [already_tested spliton];
-      
+        spliton = branchvariable(p,options,x);      
         if ismember(spliton,p.complementary)
             i = find(p.complementary(:,1) == spliton);
             if isempty(i)
@@ -322,7 +321,9 @@ while go_on
                 end
             end
         end
-        lower = min([stack.lower]);
+        if ~isempty(stack)
+            lower = min([stack.lower]);
+        end
     end
 
     if ~isempty(p)
@@ -348,7 +349,7 @@ while go_on
     if options.bmibnb.verbose>0
         fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),info_text);
     end
-
+    
     absgap = upper-lower;
     % ************************************************
     % Continue?
@@ -364,11 +365,31 @@ while go_on
     lower_hist = [lower_hist lower];
     upper_hist = [upper_hist upper];
 end
-if options.bmibnb.verbose>0
+
+if options.bmibnb.verbose>0   
     fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '\n']);
+    if ~time_ok
+        fprintf(['* Termination due to time limit \n']);
+    elseif ~iter_ok
+        fprintf(['* Termination due to iteration limit \n']);
+    elseif ~any_nodes
+        fprintf(['* Termination with all nodes pruned \n']);
+    elseif ~relgap_too_big
+        fprintf(['* Termination with relative gap satisfied \n']);
+    elseif ~absgap_too_big
+        fprintf(['* Termination with relative gap satisfied \n']);
+    elseif uppertarget_not_met
+        fprintf(['* Termination with upper bound limit reached \n']);
+    elseif uppertarget_not_met
+        fprintf(['* Termination with upper bound target reached \n']);
+    elseif lowertarget_not_met
+        fprintf(['* Termination with lower bound target reached \n']);
+    end
 end
 
-%save dummy x_min
+if ~time_ok || ~iter_ok
+    problem = 3;
+end
 
 % *************************************************************************
 % Stack functionality
@@ -470,7 +491,7 @@ if p.K.s > 0
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         X = p.F_struc(top:top+n^2-1,:)*[1;x];
-        X = reshape(X,n,n);
+        X = full(reshape(X,n,n));
         [d,v] = eig(X);
         for m = 1:length(v)
             if v(m,m)<0
@@ -513,17 +534,19 @@ if p.K.s > 0
 end
 
 function p = addlpcuts(p,z)
-inactiveCuts = find(~p.cutState);
-violation = p.lpcuts(inactiveCuts,:)*[1;z];
-need_to_add = find(violation < -1e-4);
-if ~isempty(need_to_add)
-    p.cutState(inactiveCuts(need_to_add)) = 1;
-end
-inactiveCuts = find(p.InequalityConstraintState == 0 );
-violation = p.F_struc(p.K.f+inactiveCuts,:)*[1;z];
-need_to_add = find(violation < -1e-4);
-if ~isempty(need_to_add)
-    p.InequalityConstraintState(inactiveCuts(need_to_add)) = 1;
+if ~isempty(p.lpcuts)
+    inactiveCuts = find(~p.cutState);
+    violation = p.lpcuts(inactiveCuts,:)*[1;z];
+    need_to_add = find(violation < -1e-4);
+    if ~isempty(need_to_add)
+        p.cutState(inactiveCuts(need_to_add)) = 1;
+    end
+    inactiveCuts = find(p.InequalityConstraintState == 0 );
+    violation = p.F_struc(p.K.f+inactiveCuts,:)*[1;z];
+    need_to_add = find(violation < -1e-4);
+    if ~isempty(need_to_add)
+        p.InequalityConstraintState(inactiveCuts(need_to_add)) = 1;
+    end
 end
 
 % *************************************************************************

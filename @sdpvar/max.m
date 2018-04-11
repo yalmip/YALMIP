@@ -37,7 +37,9 @@ switch nargin
             return
         elseif min(size(X))==1
             X = removeInf(X);
-            if isa(X,'double')
+            if numel(X) == 0
+                y = -inf;
+            elseif isnumeric(X)
                 y = max(X);
             elseif length(X) == 1
                 y = X;
@@ -114,7 +116,9 @@ switch nargin
                 inparg = extsubsref(X,1:size(X,1),i);
                 if isa(inparg,'sdpvar')
                     inparg = removeInf(inparg);
-                    if  isa(inparg,'double')
+                    if  numel(inparg)==0
+                        y = [y -inf];
+                    elseif isnumeric(inparg)
                         y = [y max(inparg)];
                     elseif length(inparg) == 1
                         y = [y max(inparg)];

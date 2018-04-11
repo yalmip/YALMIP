@@ -130,7 +130,6 @@ if model.options.savesolveroutput
     solveroutput.fval = fval;
     solveroutput.exitflag = exitflag;
     solveroutput.info=info;
-    solveroutput.allsol=allsol;
 else
     solveroutput = [];
 end

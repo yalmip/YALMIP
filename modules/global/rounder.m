@@ -72,9 +72,11 @@ if length(prelaxed.sosgroups)>0
     xtemp = setnonlinearvariables(p,xtemp);
     upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
     if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)
-        x_min = xtemp;
-        upper =upperhere;
-        return
+        if all(xtemp(p.binary_variables) == fix(xtemp(p.binary_variables))) && all(xtemp(p.integer_variables) == fix(xtemp(p.integer_variables)))
+            x_min = xtemp;
+            upper =upperhere;
+            return
+            end
     end
 end
 

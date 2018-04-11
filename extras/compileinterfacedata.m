@@ -233,6 +233,8 @@ do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
 do_not_convert = do_not_convert | strcmpi(options.solver,'moment');
 do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
 do_not_convert = do_not_convert | strcmpi(options.solver,'baron');
+do_not_convert = do_not_convert | strcmpi(options.solver,'penlab');
+do_not_convert = do_not_convert | strcmpi(options.solver,'scip-nl');
 do_not_convert = do_not_convert | (options.convertconvexquad == 0);
 do_not_convert = do_not_convert | (options.relax == 1);
 if ~do_not_convert & any(variabletype(F_vars))
@@ -626,7 +628,7 @@ if convertQuadraticObjective
     end
     quad_info = [];
 end
-if solver.constraint.inequalities.rotatedsecondordercone == 0
+if solver.constraint.inequalities.rotatedsecondordercone.linear == 0
     [F,changed] = convertlorentz(F);
     if changed
         options.saveduals = 0; % We cannot calculate duals since we change the problem
@@ -1056,6 +1058,42 @@ if ~isempty(F_struc)
 end
 
 % *************************************************************************
+%% Does the solver support high precision input? If not, make sure the 
+% input is only double precision.
+% *************************************************************************
+
+if solver.supportshighprec ~= 1
+    if isa(F_struc, 'gem') || isa(F_struc, 'sgem')
+        F_struc = double(F_struc);
+    end
+    if isa(c, 'gem') || isa(c, 'sgem')
+        c = double(c);
+    end
+    if isa(Q, 'gem') || isa(Q, 'sgem')
+        Q = double(Q);
+    end
+    if isa(f, 'gem') || isa(f, 'sgem')
+        f = double(f);
+    end
+    if isa(lb, 'gem') || isa(lb, 'sgem')
+        lb = double(lb);
+    end
+    if isa(ub, 'gem') || isa(ub, 'sgem')
+        ub = double(ub);
+    end
+    if isa(x0, 'gem') || isa(x0, 'sgem')
+        x0 = double(x0);
+    end
+    if isa(oldF_struc, 'gem') || isa(oldF_struc, 'sgem')
+        oldF_struc = double(oldF_struc);
+    end
+    if isa(oldc, 'gem') || isa(oldc, 'sgem')
+        oldc = double(oldc);
+    end
+end
+
+
+% *************************************************************************
 %% GENERAL DATA EXCHANGE WITH SOLVER
 % *************************************************************************
 interfacedata.F_struc = F_struc;
@@ -1092,6 +1130,7 @@ interfacedata.Fremoved = Fremoved;
 interfacedata.evalMap = evalMap;
 interfacedata.evalVariables = evalVariables;
 interfacedata.evaluation_scheme = [];
+interfacedata.lift = [];
 if strcmpi(solver.tag,'bmibnb')
     interfacedata.equalitypresolved = 0;
     interfacedata.presolveequalities = 1;

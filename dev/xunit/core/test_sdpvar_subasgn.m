@@ -90,6 +90,6 @@ t14 = isa(p(1),'double') & isequal(p(1),5);
 x = sdpvar(2);
 y = x;
 y(:,2) = [];
-t15 = isequal(y,x(:,1));
+t15 = isequal(y-x(:,1),[0;0]);
 
 assertTrue(t1 & t2 & t3 & t4 & t5 & t6 & t7 & t8 & t9 & t10 &t11 & t12 & t13 & t14 & t15);

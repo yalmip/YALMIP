@@ -157,7 +157,7 @@ end
 if length(un_Z_vars2) < length(Z.lmi_variables)
     [un_Z_vars,hh,jj] = unique(Z.lmi_variables);
     if length(Z.lmi_variables) ~=length(un_Z_vars)
-        Z.basis = Z.basis*sparse([1 1+jj],[1 1+(1:length(jj))],ones(1,1+length(jj)))';
+        Z.basis = Z.basis*sparse([1 1+jj(:)'],[1 1+(1:length(jj))],ones(1,1+length(jj)))';
         Z.lmi_variables = un_Z_vars;
     end
 end

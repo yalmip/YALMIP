@@ -1,16 +1,29 @@
 function output = callnomad(model)
 
+%model.presolveequalities = 1;
+%model.equalitypresolved = 0;
 model = yalmip2nonlinearsolver(model);
 
 % Nomad does not need derivatives, so let us inform our callbacks that we
 % don't need there
 model.derivative_available = 0;
 
-nlrhs = [model.bnonlinineq*0;model.b*0];
+% Note, nomad does not support equalities, so we place in equalities
+nlrhs = [model.bnonlinineq*0;model.b*0;
+         model.bnonlineq*0;model.bnonlineq*0;
+         model.beq*0;model.beq*0];
 if isempty(nlrhs)
     % clean
     nlrhs = [];
 end
+model.Anonlinineq = [model.Anonlinineq;model.Anonlineq;-model.Anonlineq];
+model.Anonlineq = [];
+model.bnonlinineq = [model.bnonlinineq;model.bnonlineq;-model.bnonlineq];
+model.bnonlineq = [];
+model.A = [model.A;-model.Aeq;model.Aeq];
+model.Aeq = [];
+model.b = [model.b;-model.beq;model.beq];
+model.beq = [];
 
 % These are needed to avoid recomputation due to ipopts double call to get
 % f and df, and g and dg

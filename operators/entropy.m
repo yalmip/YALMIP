@@ -72,7 +72,17 @@ U = sum(U);
 
 function [Ax, Ay, b] = convexhull(xL,xU)
 
-if length(xL)==2
+if length(xL)==1
+    xM = (xU+xL)/2;
+    f1 = entropy(xL);
+    f2 = entropy(xM);
+    f3 = entropy(xU);        
+    df1 = derivative(xL);
+    df2 = derivative(xM);
+    df3 = derivative(xU);
+    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,f1,f2,f3,df1,df2,df3);
+
+elseif length(xL)==2
     x1 = [xL(1);xL(2)];
     x2 = [xU(1);xL(2)];
     x3 = [xL(1);xU(2)];

@@ -204,7 +204,7 @@ switch info.termcode
         problem = 0; % No problems detected
     case {-1,-5,-9} 
         problem = 5; % Lack of progress
-    case {-2,-3,-4,-7}
+    case {3,-2,-3,-4,-7}
         problem = 4; % Numerical problems
     case -6
         problem = 3; % Maximum iterations exceeded

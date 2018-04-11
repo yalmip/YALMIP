@@ -22,7 +22,7 @@ function options = sdpsettings(varargin)
 %
 %   GENERAL
 %
-%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|none ('')]
+%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|refiner|none ('')]
 %    verbose            - Display-level [0|1|2|...(0)] (0-silent, 1-normal, >1-loud)
 %    usex0              - Use the current values obtained from double as initial iterate if solver supports that [0|1 (0)]
 %
@@ -55,6 +55,10 @@ function options = sdpsettings(varargin)
 %
 %    options.bmibnb, see help bmibnb
 %
+%   ITERATIVE REFINEMENT for linear programs
+%
+%    options.refiner, see help iterative_refinement
+%
 %   EXTERNAL SOLVERS
 %
 %    See solver manuals.
@@ -72,201 +76,207 @@ if (nargin>0) && isstruct(varargin{1})
 else
     Names = {};
     paramstart = 1;
-    
+
     options = setup_core_options;
     Names = appendOptionNames(Names,options);
-            
+
     % Internal solver frameworks
     options.bisection = setup_bisection_options;
     Names = appendOptionNames(Names,options.bisection,'bisection');
-    
+
     options.bilevel = setup_bilevel_options;
     Names = appendOptionNames(Names,options.bilevel,'bilevel');
-    
+
     options.bmibnb = setup_bmibnb_options;
     Names = appendOptionNames(Names,options.bmibnb,'bmibnb');
-    
+
     options.bnb = setup_bnb_options;
     Names = appendOptionNames(Names,options.bnb,'bnb');
-   
+
     options.chance = setup_chance_options;
     Names = appendOptionNames(Names,options.chance,'chance');
     
     options.cutsdp = setup_cutsdp_options;
     Names = appendOptionNames(Names,options.cutsdp,'cutsdp');
-    
+
     options.kkt = setup_kkt_options;
     Names = appendOptionNames(Names,options.kkt,'kkt');
-    
+
     options.moment = setup_moment_options;
     Names = appendOptionNames(Names,options.moment,'moment');
-    
+
     options.mp = setup_mp_options;
     Names = appendOptionNames(Names,options.mp,'mp');
-    
+
     options.mpcvx = setup_mpcvx_options;
     Names = appendOptionNames(Names,options.mpcvx,'mpcvx');
-           
+
     options.plot = setup_plot_options;
     Names = appendOptionNames(Names,options.plot,'plot');
-    
+
     options.robust = setup_robust_options;
     Names = appendOptionNames(Names,options.robust,'robust');
-    
+
     options.sos = setup_sos_options;
     Names = appendOptionNames(Names,options.sos,'sos');
-    
+
+    options.refiner = setup_refiner_options;
+    Names = appendOptionNames(Names,options.refiner,'refiner');
+
     % External solvers  
     options.baron = setup_baron_options;
     Names = appendOptionNames(Names,options.baron,'baron');
-    
+
     options.bintprog = setup_bintprog_options;
     Names = appendOptionNames(Names,options.bintprog,'bintprog');
-    
+
     options.bonmin = setup_bonmin_options;
     Names = appendOptionNames(Names,options.bonmin,'bonmin');
-    
+
     options.cdcs = setup_cdcs_options;
     Names = appendOptionNames(Names,options.cdcs,'cdcs');
-    
+
     options.cdd = setup_cdd_options;
     Names = appendOptionNames(Names,options.cdd,'cdd');
-    
+
     options.cbc = setup_cbc_options;
     Names = appendOptionNames(Names,options.cbc,'cbc');
-    
+
     options.clp = setup_clp_options;
     Names = appendOptionNames(Names,options.clp,'clp');
-    
+
     options.cplex = setup_cplex_options;
     Names = appendOptionNames(Names,options.cplex,'cplex');
-    
+
     options.csdp = setup_csdp_options;
     Names = appendOptionNames(Names,options.csdp,'csdp');
-    
+
     options.dsdp = setup_dsdp_options;
     Names = appendOptionNames(Names,options.dsdp,'dsdp');
-    
+
     options.ecos = setup_ecos_options;
     Names = appendOptionNames(Names,options.ecos,'ecos');
-    
+
     options.filtersd = setup_filtersd_options;
     Names = appendOptionNames(Names,options.filtersd,'filtersd');
-    
+
     options.fmincon = setup_fmincon_options;
     Names = appendOptionNames(Names,options.fmincon,'fmincon');
-    
+
     options.fminsearch = setup_fminsearch_options;
     Names = appendOptionNames(Names,options.fminsearch,'fminsearch');
-    
+
     options.frlib = setup_frlib_options;
     Names = appendOptionNames(Names,options.frlib,'frlib');
-    
+
     options.glpk = setup_glpk_options;
     Names = appendOptionNames(Names,options.glpk,'glpk');
-    
+
     options.gurobi = setup_gurobi_options;
     Names = appendOptionNames(Names,options.gurobi,'gurobi');
-    
+
     options.ipopt = setup_ipopt_options;
     Names = appendOptionNames(Names,options.ipopt,'ipopt');
-    
+
     options.intlinprog = setup_intlinprog_options;
     Names = appendOptionNames(Names,options.intlinprog,'intlinprog');
-    
+
     options.knitro = setup_knitro_options;
     Names = appendOptionNames(Names,options.knitro,'knitro');
-    
+
     options.linprog = setup_linprog_options;
     Names = appendOptionNames(Names,options.linprog,'linprog');
-    
+
     options.lmilab = setup_lmilab_options;
     Names = appendOptionNames(Names,options.lmilab,'lmilab');
-    
+
     options.lmirank = setup_lmirank_options;
     Names = appendOptionNames(Names,options.lmirank,'lmirank');
-    
+
     options.logdetppa = setup_logdetppa_options;
     Names = appendOptionNames(Names,options.logdetppa,'logdetppa');
-    
+
     options.lpsolve = setup_lpsolve_options;
     Names = appendOptionNames(Names,options.lpsolve,'lpsolve');
-    
+
     options.lsqnonneg = setup_lsqnonneg_options;
     Names = appendOptionNames(Names,options.lsqnonneg,'lsqnonneg');
-    
+
     options.lsqlin = setup_lsqlin_options;
     Names = appendOptionNames(Names,options.lsqlin,'lsqlin');
-    
+
     options.kypd = setup_kypd_options;
     Names = appendOptionNames(Names,options.kypd,'kypd');
-    
+
     options.nag = setup_nag_options;
     Names = appendOptionNames(Names,options.nag,'nag');
-    
+
     options.mosek = setup_mosek_options;
     Names = appendOptionNames(Names,options.mosek,'mosek');
-    
+
     options.nomad = setup_nomad_options;
     Names = appendOptionNames(Names,options.nomad,'nomad');
-    
+
     options.ooqp = setup_ooqp_options;
     Names = appendOptionNames(Names,options.ooqp,'ooqp');
-    
+
     options.penbmi = setup_penbmi_options;
     Names = appendOptionNames(Names,options.penbmi,'penbmi');
-    
+
     options.penlab = setup_penlab_options;
     Names = appendOptionNames(Names,options.penlab,'penlab');
-    
+
     options.pensdp = setup_pensdp_options;
     Names = appendOptionNames(Names,options.pensdp,'pensdp');
 
     options.pop = setup_pop_options;
     Names = appendOptionNames(Names,options.pop,'pop');
-    
+
     options.qpoases = setup_qpoases_options;
     Names = appendOptionNames(Names,options.qpoases,'qpoases');
-    
+
+    options.osqp = setup_osqp_options;
+    Names = appendOptionNames(Names,options.osqp,'osqp');
+
     options.qsopt = setup_qsopt_options;
     Names = appendOptionNames(Names,options.qsopt,'qsopt');
-    
+
     options.quadprog = setup_quadprog_options;
     Names = appendOptionNames(Names,options.quadprog,'quadprog');
-    
+
     options.quadprogbb = setup_quadprogbb_options;
     Names = appendOptionNames(Names,options.quadprogbb,'quadprogbb');
-    
+
     options.scip = setup_scip_options;
     Names = appendOptionNames(Names,options.scip,'scip');
-        
+
     options.scs = setup_scs_options;
     Names = appendOptionNames(Names,options.scs,'scs');
-    
+
     options.sdpa = setup_sdpa_options;
     Names = appendOptionNames(Names,options.sdpa,'sdpa');
-    
+
     options.sdplr = setup_sdplr_options;
     Names = appendOptionNames(Names,options.sdplr,'sdplr');
-    
+
     options.sdpt3 = setup_sdpt3_options;
     Names = appendOptionNames(Names,options.sdpt3,'sdpt3');
-    
+
     options.sdpnal = setup_sdpnal_options;
     Names = appendOptionNames(Names,options.sdpnal,'sdpnal');
-    
+
     options.sedumi = setup_sedumi_options;
     Names = appendOptionNames(Names,options.sedumi,'sedumi');
-    
+
     options.sparsepop = setup_sparsepop_options;
     Names = appendOptionNames(Names,options.sparsepop,'sparsepop');
-    
+
     options.sparsecolo = setup_sparsecolo_options;
     Names = appendOptionNames(Names,options.sparsecolo,'sparsecolo');
-    
+
     options.vsdp = setup_vsdp_options;
     Names = appendOptionNames(Names,options.vsdp,'vsdp');
-        
+
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
 end
@@ -280,14 +290,14 @@ end
 expectval = 0;                          % start expecting a name, not a value
 while i <= nargin
     arg = varargin{i};
-    
+
     if ~expectval
         if ~ischar(arg)
             error(sprintf('Expected argument %d to be a string property name.', i));
         end
-        
+
         lowArg = lower(arg);
-        
+
         j = strmatch(lowArg,names);
         if isempty(j)                       % if no matches
             error(sprintf('Unrecognized property name ''%s''.', arg));
@@ -378,7 +388,7 @@ if ~isempty(options)
     else
         prefix = '';
     end
-    for i = 1:length(cNames)   
+    for i = 1:length(cNames)
         Names{end+1} = [prefix  cNames{i}];
     end
 end
@@ -562,6 +572,16 @@ sos.clean = eps;
 sos.savedecomposition = 1;
 sos.traceobj = 0;
 sos.reuse = 1;
+function refiner = setup_refiner_options
+refiner.precdigits = 30;
+refiner.maxiter = 200;
+refiner.internalsolver = '';
+refiner.refineprimal = true;
+refiner.refinedual = true;
+refiner.solveprimalfirst = true;
+refiner.primalinprimalform = true;
+refiner.dualinprimalform = true;
+
 
 function bpmpd = setup_bpmpd_options
 try
@@ -597,23 +617,31 @@ end
 
 function cplex = setup_cplex_options
 try
-    if strfind(version,'2016')
+    v = version;
+    if ~isempty(strfind(v,'2016')) && ~isempty(strfind(v,'2017'))
         cplex = cplexoptimset;
     else
         cplex = cplexoptimset('cplex');
         cplex.output.clonelog = 0;
-    end   
+    end
 catch
-    cplex.presol = 1;
-    cplex.niter = 1;
-    cplex.epgap = 1e-4;
-    cplex.epagap = 1e-6;
-    cplex.relobjdif = 0.0;
-    cplex.objdif = 0.0;
-    cplex.tilim = 1e75;
-    cplex.logfile = 0;
-    cplex.param.double = [];
-    cplex.param.int = [];
+    try
+        % cplex has p-compiled somehow in a manner in which
+        % cplexoptimset('cplex') fails to run, but cplexoptimset works
+        cplex = cplexoptimset;
+    catch
+        % old cplexmex?
+        cplex.presol = 1;
+        cplex.niter = 1;
+        cplex.epgap = 1e-4;
+        cplex.epagap = 1e-6;
+        cplex.relobjdif = 0.0;
+        cplex.objdif = 0.0;
+        cplex.tilim = 1e75;
+        cplex.logfile = 0;
+        cplex.param.double = [];
+        cplex.param.int = [];
+    end
 end
 
 function ecos = setup_ecos_options
@@ -1084,6 +1112,14 @@ catch
     qpoases =[];
 end
 
+function osqp_options = setup_osqp_options
+try
+    s = osqp;
+    osqp_options = s.default_settings();
+catch
+    osqp_options =[];
+end
+
 function baron = setup_baron_options
 try
     baron = baronset;
@@ -1103,23 +1139,23 @@ function cdcs = setup_cdcs_options
 try
     cdcs = cdcsOpts();
 catch
-    cdcs.solver     = 'primal';  
-    cdcs.relTol     = 1e-4;      
-    cdcs.rescale    = true;      
-    cdcs.verbose    = 1;         
-    cdcs.dispIter   = 50;        
-    cdcs.maxIter    = 1000;      
-    cdcs.chordalize = 1;         
-    cdcs.yPenalty   = true;      
-    cdcs.completion = true;      
-    cdcs.rho        = 1;         
-    cdcs.adaptive   = true;      
-    cdcs.tau        = 2;         
-    cdcs.mu         = 10;        
-    cdcs.rhoMax     = 1e6;       
-    cdcs.rhoMin     = 1e-6;      
-    cdcs.rhoIt      = 10;       
-    cdcs.KKTfact    = 'blk';     
+    cdcs.solver     = 'primal';
+    cdcs.relTol     = 1e-4;
+    cdcs.rescale    = true;
+    cdcs.verbose    = 1;
+    cdcs.dispIter   = 50;
+    cdcs.maxIter    = 1000;
+    cdcs.chordalize = 1;
+    cdcs.yPenalty   = true;
+    cdcs.completion = true;
+    cdcs.rho        = 1;
+    cdcs.adaptive   = true;
+    cdcs.tau        = 2;
+    cdcs.mu         = 10;
+    cdcs.rhoMax     = 1e6;
+    cdcs.rhoMin     = 1e-6;
+    cdcs.rhoIt      = 10;
+    cdcs.KKTfact    = 'blk';
 end
 
 function csdp = setup_csdp_options
@@ -1191,7 +1227,7 @@ end
 
 function quadprog = setup_quadprog_options
 try
-    quadprog = trytoset('quadprog');    
+    quadprog = trytoset('quadprog');
 catch
     quadprog.param = [];
 end
