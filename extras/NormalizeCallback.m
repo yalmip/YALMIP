@@ -7,7 +7,6 @@ for i = 3:nargin-1
         break
     end
 end
-%X = varargin{3};
 n = length(X);
 if isequal(getbase(X),[spalloc(n,1,0) speye(n)])
     F = lmi([]);
@@ -16,8 +15,7 @@ else
     if ~all(isnan(dX))
         assign(z_normalizing,dX);
     end
-    try
-        %[M,m] = derivebounds(X);
+    try       
         F = X == z_normalizing;
     catch
         disp('Report bug in NORMALIZECALLBACK');
