@@ -73,6 +73,19 @@ switch class(varargin{3})
         % Arguments xi yi x method -> x xi yi method
         varargout{1} = yalmip('define','interp1_internal',varargin{[3 1 2 4 5]});   
      
+    case 'double'
+        if isa(varargin{1},'double') && isa(varargin{2},'sdpvar')             
+            % User is trying to do nonlinear programming where the knot
+            % function values in an interpolant are free variables
+            varargout{1} = yalmip('define','interp1_nonlinear',varargin{3},varargin{1},varargin{2},varargin{4});            
+        elseif isa(varargin{1},'sdpvar') && isa(varargin{2},'sdpvar') 
+            % User is trying to do nonlinear programming where the knot
+            % function values and locations in an interpolant are free variables
+            varargout{1} = yalmip('define','interp1_nonlinear',varargin{3},[varargin{1} varargin{2}],[],varargin{4});            
+        else
+            error('SDPVAR/INTERP1 called with strange arguments!');    
+        end
+        
     otherwise
         error('SDPVAR/INTERP1 called with strange argument!');
 end

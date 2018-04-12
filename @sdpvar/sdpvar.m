@@ -342,7 +342,7 @@ switch nargin
                         error('Symmetric matrix must be square')
                     else
                         matrix_type = 'symm complex';
-                        nvar = 2*n*(n+1)/2;
+                        nvar = sum(2*n.*(n+1)/2);
                     end
 
                 case 104
@@ -545,35 +545,37 @@ for blk = 1:length(n)
             end
 
         case 'symm complex'
-            basis = spalloc(n^2,1+nvar,2);
+            nvari = 2*n(blk)*(n(blk)+1)/2;
+            tbasis = spalloc(n(blk)^2,1+nvari,2);
             l = 2;
-            an_empty = spalloc(n,n,2);
-            for i=1:n
+            an_empty = spalloc(n(blk),n(blk),2);
+            for i=1:n(blk)
                 temp = an_empty;
                 temp(i,i)=1;
-                basis(:,l)=temp(:);
+                tbasis(:,l)=temp(:);
                 l = l+1;
-                for j=i+1:n,
+                for j=i+1:n(blk),
                     temp = an_empty;
                     temp(i,j)=1;
                     temp(j,i)=1;
-                    basis(:,l)=temp(:);
+                    tbasis(:,l)=temp(:);
                     l = l+1;
                 end
             end
-            for i=1:n
+            for i=1:n(blk)
                 temp = an_empty;
                 temp(i,i)=sqrt(-1);
-                basis(:,l)=temp(:);
+                tbasis(:,l)=temp(:);
                 l = l+1;
-                for j=i+1:n,
+                for j=i+1:n(blk),
                     temp = an_empty;
                     temp(i,j)=sqrt(-1);
                     temp(j,i)=sqrt(-1);
-                    basis(:,l)=temp(:);
+                    tbasis(:,l)=temp(:);
                     l = l+1;
                 end
             end
+            basis{blk} = tbasis;
 
         case 'hermitian complex'
             if blk > 1 && any(n(blk)==n(1:blk-1))
