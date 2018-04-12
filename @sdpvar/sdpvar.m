@@ -68,8 +68,9 @@ end
 
 % Quick cell-based only for real full/symmetric matrices, so just
 % iteratively call sdpvar to generate all cells
-if length(varargin{1}) > 2 && nargin <= 4 && nargin > 2
-    if (nargin == 4 && isequal('complex',varargin{4})) || (nargin >= 3 && (isequal('toeplitz',varargin{3}) || isequal('hankel',varargin{3})))
+if length(varargin{1}) > 1 && nargin <= 4 && nargin > 2
+    %if (nargin == 4 && isequal('complex',varargin{4})) || (nargin >= 3 && (isequal('toeplitz',varargin{3}) || isequal('hankel',varargin{3})))
+    if  (nargin >= 3 && (isequal('toeplitz',varargin{3}) || isequal('hankel',varargin{3})))    
         n = varargin{1};
         m = varargin{2};
         structure = varargin{3};
@@ -300,7 +301,7 @@ switch nargin
                         error('Skew symmetric matrix must be square')
                     else
                         matrix_type = 'skew';
-                        nvar = (n*(n+1)/2)-n;
+                        nvar = sum((n.*(n+1)/2)-n);
                     end
 
                 case 7
@@ -308,7 +309,7 @@ switch nargin
                         error('Symmetric matrix must be square')
                     else
                         matrix_type = 'symmetric';
-                        nvar = n*(n+1)/2;
+                        nvar = sum(n.*(n+1)/2);
                     end
 
                     
@@ -372,7 +373,7 @@ switch nargin
                         error('Hermitian matrix must be square')
                     else
                         matrix_type = 'hermitian complex';
-                        nvar = n*(n+1)/2+(n*(n+1)/2-n);
+                        nvar = sum(n.*(n+1)/2+(n.*(n+1)/2-n));
                         conicinfo = [sqrt(-1) 0];
                     end
 
@@ -575,42 +576,53 @@ for blk = 1:length(n)
             end
 
         case 'hermitian complex'
-            basis = spalloc(n^2,1+nvar,2);
-            l = 2;
-            an_empty = spalloc(n,n,2);            
-            Y = reshape(1:n^2,n,n);
-            Y = tril(Y);
-            Y = (Y+Y')-diag(sparse(diag(Y)));
-            [uu,oo,pp] = unique(Y(:));
-            BasisReal = sparse(1:n(blk)^2,pp+1,1);
-                        
-            BasisImag = [spalloc(n^2,n*(n-1)/2,n)];
-            l = 1;
-            for i=1:n
-                for j=i+1:n,                                                                                  
-                    BasisImag(i+(j-1)*n,l)=sqrt(-1);
-                    BasisImag(j+(i-1)*n,l)=-sqrt(-1);
-                    l = l+1;
+            if blk > 1 && any(n(blk)==n(1:blk-1))
+                j = max((find(n(blk)==n(1:blk-1))));
+                basis{blk} = basis{j};
+            else
+                nvari = n(blk)*(n(blk)+1)/2+(n(blk)*(n(blk)+1)/2-n(blk));
+                tbasis = spalloc(n(blk)^2,1+nvari,2);
+                l = 2;
+                an_empty = spalloc(n(blk),n(blk),2);
+                Y = reshape(1:n(blk)^2,n(blk),n(blk));
+                Y = tril(Y);
+                Y = (Y+Y')-diag(sparse(diag(Y)));
+                [uu,oo,pp] = unique(Y(:));
+                BasisReal = sparse(1:n(blk)^2,pp+1,1);
+                
+                BasisImag = [spalloc(n(blk)^2,n(blk)*(n(blk)-1)/2,n(blk))];
+                l = 1;
+                for i=1:n(blk)
+                    for j=i+1:n(blk),
+                        BasisImag(i+(j-1)*n(blk),l)=sqrt(-1);
+                        BasisImag(j+(i-1)*n(blk),l)=-sqrt(-1);
+                        l = l+1;
+                    end
                 end
+                tbasis = [BasisReal BasisImag];
+                basis{blk} = tbasis;
             end
-            basis = [BasisReal BasisImag];
-
         case 'skew'
-            if n==1
+            if n(blk)==1
                 sys = 0;
                 return
             end
-            basis = spalloc(n^2,1+nvar,2);
-            l = 2;
-            an_empty = spalloc(n,n,2);
-            for i=1:n
-                for j=i+1:n,
-                    temp = an_empty;
-                    temp(i,j)=1;
-                    temp(j,i)=-1;
-                    basis(:,l)=temp(:);
-                    l = l+1;
+            if blk > 1 && n(blk) == n(blk-1)
+                basis{blk} = basis{blk-1};
+            else
+                tbasis = spalloc(n(blk)^2,1+(n(blk)*(n(blk)+1)/2)-n(blk),2);
+                l = 2;
+                an_empty = spalloc(n(blk),n(blk),2);
+                for i=1:n(blk)
+                    for j=i+1:n(blk),
+                        temp = an_empty;
+                        temp(i,j)=1;
+                        temp(j,i)=-1;
+                        tbasis(:,l)=temp(:);
+                        l = l+1;
+                    end
                 end
+                basis{blk} = tbasis;
             end
 
         case 'skew complex'
