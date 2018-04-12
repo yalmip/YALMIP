@@ -72,5 +72,9 @@ if ~isempty(quadratic)
     LU(quadratic,1) = max(LU(quadratic,1),minz);
     LU(quadratic,2) = min(LU(quadratic,2),maxz);
 end
-
+b = yalmip('tempbinvariables');
+if ~isempty(b)
+    LU(b,1) = max(0,LU(b,1));
+    LU(b,2) = min(1,LU(b,2));
+end
 yalmip('setbounds',1:nv,LU(:,1),LU(:,2));

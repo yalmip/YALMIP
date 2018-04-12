@@ -210,7 +210,7 @@ if ~isempty(polynomial)
             % simple case, just binary terms
             [ii,jj] = find(the_monom);
             x = recover(jj);
-            F = [F, x >= z_polynomial(i), length(x)-1+z_polynomial(i) >= sum(x), 0 <= z_polynomial(i) <= 1];
+            F = [F, x >= z_polynomial(i), length(x)-1+z_polynomial(i) >= sum(x), binary(z_polynomial(i))];
         end
     end
 else
