@@ -31,7 +31,7 @@ function varargout = binmodel(varargin)
 %
 %  F = binmodel([a^3*x+b*y + a*b*x >= 3, -2 <=[x y] <=2]);
 %
-% See also BINARY, BINVAR, SOLVESDP
+% See also BINARY, BINVAR, OPTIMIZE
 
 if isa(varargin{1},'lmi') || isa(varargin{1},'constraint')
     varargout{1} = binmodel_constraint(varargin{:});
