@@ -77,11 +77,44 @@ switch class(varargin{3})
         if isa(varargin{1},'double') && isa(varargin{2},'sdpvar')             
             % User is trying to do nonlinear programming where the knot
             % function values in an interpolant are free variables
-            varargout{1} = yalmip('define','interp1_nonlinear',varargin{3},varargin{1},varargin{2},varargin{4});            
+            zi = varargin{3};
+            [n,m] = size(zi);
+            if n*m == 1
+                varargout{1} = yalmip('define','interp1_nonlinear',varargin{1},varargin{2},varargin{3},varargin{4});
+            else
+                out = [];
+                zi = reshape(zi,1,n*m);
+                for i = 1:n*m
+                    Y.type = '()';
+                    Y.subs{1} = 1;
+                    Y.subs{2} = i;
+                    zij = subsref(zi,Y);
+                    out = [out  yalmip('define','interp1_nonlinear',varargin{1},varargin{2},zij,varargin{4})];
+                end
+                varargout{1} = reshape(out,n,m);
+            end
+
+                            
         elseif isa(varargin{1},'sdpvar') && isa(varargin{2},'sdpvar') 
             % User is trying to do nonlinear programming where the knot
             % function values and locations in an interpolant are free variables
-            varargout{1} = yalmip('define','interp1_nonlinear',varargin{3},[varargin{1} varargin{2}],[],varargin{4});            
+            
+            zi = varargin{3};
+            [n,m] = size(zi);
+            if n*m == 1
+                varargout{1} = yalmip('define','interp1_nonlinear',[varargin{1},varargin{2}],[],varargin{3},varargin{4});
+            else
+                out = [];
+                zi = reshape(zi,1,n*m);
+                for i = 1:n*m
+                    Y.type = '()';
+                    Y.subs{1} = 1;
+                    Y.subs{2} = i;
+                    zij = subsref(zi,Y);
+                    out = [out   yalmip('define','interp1_nonlinear',[varargin{1},varargin{2}],[],zij,varargin{4})];
+                end
+                varargout{1} = reshape(out,n,m);
+            end            
         else
             error('SDPVAR/INTERP1 called with strange arguments!');    
         end
