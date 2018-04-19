@@ -478,7 +478,7 @@ switch varargin{1}
                                 
             otherwise
                 % This is the standard operators. INPUTS -> 1 scalar output
-                if isequal(varargin{2},'or') || isequal(varargin{2},'xor') || isequal(varargin{2},'and')
+                if isequal(varargin{2},'or') || isequal(varargin{2},'xor') || isequal(varargin{2},'and') || isequal(varargin{2},'not')
                     y = binvar(1,1);
                 elseif isequal(varargin{2},'sign')
                     y = intvar(nout(1),nout(2));
