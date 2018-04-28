@@ -131,6 +131,10 @@ for uncertaintyGroup = 1:length(randomVariables)
                 confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
                 if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.name),'random')
                     switch randomVariables{uncertaintyGroup}.distribution.parameters{1}
+                        case 'dro'
+                            newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                            printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution);
+                            eliminatedConstraints(ic)=1;
                         case 'moment'
                             newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                             printout(options.verbose,'moment',randomVariables{uncertaintyGroup}.distribution);
