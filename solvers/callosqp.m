@@ -29,14 +29,22 @@ results = OSQPSolver.solve();
 switch results.info.status_val
     case 1
         problem = 0;
+    case 2
+        problem = 0;
     case -2
         problem = 3;
     case -3
         problem = 1;
+    case 3
+        problem = 1;
     case -4
+        problem = 2;
+    case 4
         problem = 2;
     case -5
         problem = 16;
+    case -10
+        problem = 11;
     otherwise
         problem = -10;
 end
