@@ -93,7 +93,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
          top = p.K.f + p.K.l+1;
          for i = 1:length(p.K.q)
              if ~any(p.F_struc(top,:))
-                 i
+                % i
              end
              %nnz(Ff(2:end,:))
               %   1
