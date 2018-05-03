@@ -1196,15 +1196,23 @@ if strcmp(p.options.bnb.method,'depthest') & (upper<inf)
 end
 
 function res = resids(p,x)
-res= [];
+res = [];
 if p.K.f>0
     res = -abs(p.F_struc(1:p.K.f,:)*[1;x]);
 end
 if p.K.l>0
     res = [res;p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]];
 end
-if (length(p.K.s)>1) | p.K.s>0
+if (length(p.K.q)>1) | p.K.q>0
     top = 1+p.K.f+p.K.l;
+    for i = 1:length(p.K.q)
+        n = p.K.q(i);
+        q = p.F_struc(top:top+n-1,:)*[1;x];top = top+n;        
+        res = [res;q(1) - norm(q(2:end))];
+    end
+end
+if (length(p.K.s)>1) | p.K.s>0
+    top = 1+p.K.f+p.K.l+sum(p.K.q);
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         X = p.F_struc(top:top+n^2-1,:)*[1;x];top = top+n^2;
