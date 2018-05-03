@@ -623,6 +623,13 @@ if convertQuadraticObjective
         f = quad_info.f;
         F = F + lmi(cone([2*R*x;1-(t-f)],1+t-f));
         h = t+c'*x;
+        if options.usex0
+            xx = value(x);
+            ff = norm(quad_info.R*xx)^2+f;
+            if ~isnan(ff)
+                assign(t,ff);
+            end
+        end
     end
     quad_info = [];
 end
