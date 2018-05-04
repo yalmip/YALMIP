@@ -13,7 +13,7 @@ if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],optio
 n_var = length(model.c);
 P = model.Q;
 q = model.c;
-eye_n = eye(n_var);
+eye_n = speye(n_var);
 A = [model.Aeq;model.A; eye_n];
 l = full([model.beq; -inf(length(model.b),1); model.lb]);
 u = full([model.beq; model.b; model.ub]);
