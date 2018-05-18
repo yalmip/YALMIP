@@ -4,8 +4,9 @@ function varargout = interp2_internal(varargin)
 switch class(varargin{1})
     
     case 'double'
-        if isequal(varargin{5},'graph') || isequal(varargin{5},'lp') || isequal(varargin{5},'milp') || isequal(varargin{5},'sos2')
-            varargin{5} = 'linear';
+        if isequal(varargin{5},'graph') || isequal(varargin{5},'lp') || isequal(varargin{5},'milp') || isequal(varargin{5},'sos2')           
+            varargout{1} = griddata(varargin{2},varargin{3},varargin{4},varargin{1}(1),varargin{1}(2));
+            return
         end
         varargout{1} = interp2(varargin{2},varargin{3},varargin{4},varargin{1}(1),varargin{1}(2),varargin{5});
         
