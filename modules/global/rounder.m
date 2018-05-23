@@ -25,12 +25,7 @@ if ismember('shifted ceil',p.options.bnb.rounding)
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
         xtemp = fix_semivar(p,xtemp);
-        xtemp = setnonlinearvariables(p,xtemp);
-        if isfield(p.options,'plottruss')
-            if p.options.plottruss
-                plottruss(4,'Shifted ceil',p,xtemp);
-            end
-        end
+        xtemp = setnonlinearvariables(p,xtemp);        
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
             x_min = xtemp;
@@ -46,12 +41,7 @@ if ismember('shifted round',p.options.bnb.rounding)
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
         xtemp = fix_semivar(p,xtemp);
-        xtemp = setnonlinearvariables(p,xtemp);
-        if isfield(p.options,'plottruss')
-            if p.options.plottruss
-                plottruss(2,'Shifted round',p,xtemp);
-            end
-        end
+        xtemp = setnonlinearvariables(p,xtemp);       
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
             x_min = xtemp;
@@ -92,16 +82,7 @@ if ismember('round',p.options.bnb.rounding)
     xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
     xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
     xtemp = fix_semivar(p,xtemp);
-    xtemp = setnonlinearvariables(p,xtemp);
-    if isfield(p.options,'plottruss')
-        if p.options.plottruss
-            subplot(2,2,2);
-            cla
-            title('Rounded node')
-            pic(p.options.truss,xtemp);
-            drawnow
-        end
-    end
+    xtemp = setnonlinearvariables(p,xtemp); 
     if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
         x_min = xtemp;
         upper = computecost(p.f,p.corig,p.Q,x_min,p);%p.f+x_min'*p.Q*x_min + p.corig'*x_min;
