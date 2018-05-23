@@ -405,12 +405,12 @@ if p.options.bnb.presolve
         p.c = eyev(n,i);
         output = feval(lowersolver,p);
         if output.problem == 0
-            p.lb(i) = max(p.lb(i),output.Primal(i));
+            p.lb(i) = max(p.lb(i),output.Primal(i)-1e-3);
         end
         p.c = -eyev(n,i);
         output = feval(lowersolver,p);
         if output.problem == 0
-            p.ub(i) = min(p.ub(i),output.Primal(i));
+            p.ub(i) = min(p.ub(i),output.Primal(i)+1e-3);
         end
         p.lb(saveBinary) = ceil(p.lb(saveBinary)-1e-3);
         p.ub(saveBinary) = floor(p.ub(saveBinary)+1e-3);
@@ -592,7 +592,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         end
        
         output = bnb_solvelower(lowersolver,relaxed_p,upper+abs(upper)*1e-2+1e-4,lower);
-                             
+        
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -606,8 +606,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
                 end
             end
         end
-        
-        
+                
         if output.problem == -4
             diagnostics = -4;
             x = nan+zeros(length(p.lb),1);
@@ -615,12 +614,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             if isempty(output.Primal)
                 output.Primal = zeros(length(p.c),1);
             end
-            try
-                x  = setnonlinearvariables(p,output.Primal);
-            catch
-                1
-            end
- 
+            x  = setnonlinearvariables(p,output.Primal);
             if(p.K.l>0) & any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
                 output.problem = 1;
             elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
@@ -653,10 +647,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         non_semivar_semivar = find(~(abs(x(p.semicont_variables))<p.options.bnb.inttol | (x(p.semicont_variables)>p.semibounds.lb & x(p.semicont_variables)<=p.semibounds.ub)));
     end
     
-    try
-        x  = setnonlinearvariables(p,x);
-    catch
-    end
+    x  = setnonlinearvariables(p,x);  
     
     TotalIntegerInfeas = sum(abs(round(x(non_integer_integer))-x(non_integer_integer)));
     TotalBinaryInfeas = sum(abs(round(x(non_integer_binary))-x(non_integer_binary)));
@@ -679,32 +670,18 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             if isnan(lower)
                 lower = cost;
             end
-            
-            if isfield(p.options,'plottruss')
-                if p.options.plottruss
-                    plottruss(1,'Relaxed node',poriginal,x);
-                end
-            end
-            
+                      
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
                 poriginal.upper = upper;
                 poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);
-                if upper1 < upper
-                    
-                    if isfield(p.options,'plottruss')
-                        if p.options.plottruss
-                            plottruss(3,'Best binary solution',poriginal,x_min1);
-                        end
-                    end
-                    
+                [upper1,x_min1] = feval(uppersolver,poriginal,output,p,lowersolver);                                                                               
+                if upper1 < upper                                        
                     x_min = x_min1;
                     upper = upper1;
                     [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p);
                     lower = min(lower,stacklower);
                     [p,poriginal,stack] = pruneglobally(p,poriginal,upper,lower,stack,x_min);
-                    [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,sdpmonotinicity);
-                    
+                    [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,sdpmonotinicity);                    
                 end
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
@@ -1241,7 +1218,7 @@ upper = inf;
 if p.options.usex0
     z = p.x0;
     residual = resids(p,z);
-    relaxed_feasible = all(residual(1:p.K.f)>=-1e-12) & all(residual(1+p.K.f:end)>=-1e-6);
+    relaxed_feasible = all(residual(1:p.K.f)>=-1e-8) & all(residual(1+p.K.f:end)>=-1e-6);
     if relaxed_feasible & all(z(p.integer_variables)==fix(z(p.integer_variables))) & all(z(p.binary_variables)==fix(z(p.binary_variables)))
         upper = computecost(p.f,p.corig,p.Q,z,p);%upper = p.f+p.c'*z+z'*p.Q*z;
         x_min = z;
