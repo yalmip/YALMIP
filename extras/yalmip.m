@@ -45,6 +45,8 @@ if isempty(internal_sdpvarstate)
     internal_sdpvarstate.ExtendedMap = [];
     internal_sdpvarstate.ExtendedMapHashes = [];
     internal_sdpvarstate.DependencyMap = sparse(0);
+    internal_sdpvarstate.DependencyMap_i = [];
+    internal_sdpvarstate.DependencyMap_j = [];
     internal_sdpvarstate.DependencyMapUser = sparse(0);
     internal_sdpvarstate.sosid = 0;
     internal_sdpvarstate.sos_index = [];
@@ -291,11 +293,14 @@ switch varargin{1}
         yB = getbase(y);yB = yB(:,2:end);
         xV = getvariables(X);
         xB = getbase(X);xB = xB(:,2:end);
-        internal_sdpvarstate.DependencyMap(max(yV),max(xV))=sparse(0);
+        %internal_sdpvarstate.DependencyMap(max(yV),max(xV))=sparse(0);
         for i = 1:length(yV)
-            internal_sdpvarstate.DependencyMap(yV(find(yB(i,:))),xV(find(xB(i,:))))=1;
-        end
-        %yalmip('setdependence',getvariables(y),getvariables(X));
+            ii = yV(find(yB(i,:)));
+            jj = xV(find(xB(i,:)));
+            internal_sdpvarstate.DependencyMap_i = [internal_sdpvarstate.DependencyMap_i repmat(ii,1,length(jj))];
+            internal_sdpvarstate.DependencyMap_j = [internal_sdpvarstate.DependencyMap_j jj(:)'];
+          %  internal_sdpvarstate.DependencyMap(yV(find(yB(i,:))),xV(find(xB(i,:))))=1;
+        end        
         return
         
         
@@ -576,7 +581,8 @@ switch varargin{1}
         end
         
     case 'getdependence'
-        varargout{1} =   internal_sdpvarstate.DependencyMap;
+        %varargout{1} =   internal_sdpvarstate.DependencyMap;
+        varargout{1} = sparse(internal_sdpvarstate.DependencyMap_i,internal_sdpvarstate.DependencyMap_j);
         n =  size(internal_sdpvarstate.monomtable,1);
         if size(varargout{1},1) < n || size(varargout{1},2)<n
             varargout{1}(n,n) = 0;
@@ -710,6 +716,8 @@ switch varargin{1}
         internal_sdpvarstate.ExtendedMap = [];
         internal_sdpvarstate.ExtendedMapHashes = [];
         internal_sdpvarstate.DependencyMap = sparse(0);
+        internal_sdpvarstate.DependencyMap_i = [];
+        internal_sdpvarstate.DependencyMap_j = [];
         internal_sdpvarstate.DependencyMapUser = sparse(0);
         internal_sdpvarstate.optSolution{1}.info = 'Initialized by YALMIP';
         internal_sdpvarstate.optSolution{1}.variables = [];
