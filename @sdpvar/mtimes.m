@@ -425,8 +425,12 @@ switch 2*X_is_spdvar+Y_is_spdvar
                             end                                                                                  
                         end
                         if before
-                            Z.lmi_variables = expandAllocation(Z.lmi_variables,i);
-                            Z.lmi_variables(i) = before;
+                            nn = length(Z.lmi_variables);
+                            if nn < i
+                                Z.lmi_variables = [Z.lmi_variables zeros(1,2*i-nn)];
+                            end
+                          %  Z.lmi_variables = expandAllocation(Z.lmi_variables,i); 
+                          Z.lmi_variables(i) = before;
                         else
                             changed_mt=1;                            
                             thesewhereactuallyused(acounter) = 1;
