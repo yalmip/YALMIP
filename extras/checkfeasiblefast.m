@@ -32,7 +32,7 @@ if ~isempty(p.F_struc)
     end
 
     if p.K.s(1)>0
-        top = 1+p.K.f+p.K.l+p.K.q;
+        top = 1+p.K.f+p.K.l+sum(p.K.q);
         for i = 1:length(p.K.s)
             n = p.K.s(i);
             X = reshape(vecres(top:top+n^2-1),n,n);top = top+n^2;
