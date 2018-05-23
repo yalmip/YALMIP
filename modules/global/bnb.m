@@ -674,7 +674,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
                 poriginal.upper = upper;
                 poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output,p,lowersolver);                                                                               
+                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);
                 if upper1 < upper                                        
                     x_min = x_min1;
                     upper = upper1;
