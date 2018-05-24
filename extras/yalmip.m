@@ -551,8 +551,19 @@ switch varargin{1}
             % if size(internal_sdpvarstate.DependencyMap,1) < nx || size(internal_sdpvarstate.DependencyMap,2) < ny
             %     internal_sdpvarstate.DependencyMap(nx,ny) = 0;
             % end
-            % internal_sdpvarstate.DependencyMap(index) = 1;            
-            internal_sdpvarstate.DependencyMap(varargin{2},varargin{3}) = 1;
+            % internal_sdpvarstate.DependencyMap(index) = 1;   
+            
+            %internal_sdpvarstate.DependencyMap(varargin{2},varargin{3}) = 1;
+            if numel(varargin{2}) ~= numel(varargin{3})
+                varargin{2} = repmat(varargin{2},1,numel(varargin{3}));
+            end
+            disp('HH')
+            varargin{2}
+            varargin{3}
+            
+            internal_sdpvarstate.DependencyMap_i = [internal_sdpvarstate.DependencyMap_i varargin{2}];
+            internal_sdpvarstate.DependencyMap_j = [internal_sdpvarstate.DependencyMap_j varargin{3}];
+            
             n = size(internal_sdpvarstate.monomtable,1);
             if size(internal_sdpvarstate.DependencyMap,1) < n
                 internal_sdpvarstate.DependencyMap(n,1)=0;
@@ -582,7 +593,15 @@ switch varargin{1}
         
     case 'getdependence'
         %varargout{1} =   internal_sdpvarstate.DependencyMap;
-        varargout{1} = sparse(internal_sdpvarstate.DependencyMap_i,internal_sdpvarstate.DependencyMap_j);
+        if isempty(internal_sdpvarstate.DependencyMap_i)
+            varargout{1} = sparse(0);
+        else
+            try
+                varargout{1} = sparse(internal_sdpvarstate.DependencyMap_i,internal_sdpvarstate.DependencyMap_j,1);
+            catch
+                1
+            end
+        end
         n =  size(internal_sdpvarstate.monomtable,1);
         if size(varargout{1},1) < n || size(varargout{1},2)<n
             varargout{1}(n,n) = 0;
