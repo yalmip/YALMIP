@@ -551,18 +551,12 @@ switch varargin{1}
             % if size(internal_sdpvarstate.DependencyMap,1) < nx || size(internal_sdpvarstate.DependencyMap,2) < ny
             %     internal_sdpvarstate.DependencyMap(nx,ny) = 0;
             % end
-            % internal_sdpvarstate.DependencyMap(index) = 1;   
             
-            %internal_sdpvarstate.DependencyMap(varargin{2},varargin{3}) = 1;
-            if numel(varargin{2}) ~= numel(varargin{3})
-                varargin{2} = repmat(varargin{2},1,numel(varargin{3}));
-            end
-            disp('HH')
-            varargin{2}
-            varargin{3}
-            
-            internal_sdpvarstate.DependencyMap_i = [internal_sdpvarstate.DependencyMap_i varargin{2}];
-            internal_sdpvarstate.DependencyMap_j = [internal_sdpvarstate.DependencyMap_j varargin{3}];
+            temp1 = repmat(varargin{2},size(varargin{3},2),1);temp1 = temp1(:)';
+            temp2 = repmat(varargin{3},1,size(varargin{2},2));temp2 = temp2(:)';
+           
+            internal_sdpvarstate.DependencyMap_i = [internal_sdpvarstate.DependencyMap_i temp1];
+            internal_sdpvarstate.DependencyMap_j = [internal_sdpvarstate.DependencyMap_j temp2];
             
             n = size(internal_sdpvarstate.monomtable,1);
             if size(internal_sdpvarstate.DependencyMap,1) < n
