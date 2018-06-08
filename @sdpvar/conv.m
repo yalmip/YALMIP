@@ -22,7 +22,7 @@ for i = 1:length(x_lmi_variables)+1
     [iiz,jjz,ssz] = find(z(:));
     ii = [ii iiz(:)'];
     jj = [jj jjz(:)'+i-1];
-    ss = [ss ssz(:)'];
+    ss = [ss ssz(:)'];    
 end  
 Z.basis = sparse(ii,jj,ss);
 Z.dim(1) = size(z,1);
