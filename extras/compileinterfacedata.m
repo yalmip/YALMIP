@@ -623,6 +623,13 @@ if convertQuadraticObjective
         f = quad_info.f;
         F = F + lmi(cone([2*R*x;1-(t-f)],1+t-f));
         h = t+c'*x;
+        if options.usex0
+            xx = value(x);
+            ff = norm(quad_info.R*xx)^2+f;
+            if ~isnan(ff)
+                assign(t,ff);
+            end
+        end
     end
     quad_info = [];
 end
@@ -1031,27 +1038,27 @@ end
 % Sanity check
 if ~isempty(c)
     if any(isnan(c) )
-        error('You have NaNs in your objective!. Read more: http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.NANInModel')
+        error('You have NaNs in your objective!. Read more: https://yalmip.github.io/naninmodel/')
     end
 end
 if ~isempty(Q)
     if any(any(isnan(Q)))
-        error('You have NaNs in your quadratic objective!. Read more: http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.NANInModel')
+        error('You have NaNs in your quadratic objective!. Read more: https://yalmip.github.io/naninmodel/')
     end
 end
 if ~isempty(lb)
     if any(isnan(lb))
-        error('You have NaNs in a lower bound!. Read more: http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.NANInModel')
+        error('You have NaNs in a lower bound!. Read more: https://yalmip.github.io/naninmodel/')
     end
 end
 if ~isempty(ub)
     if any(isnan(ub))
-        error('You have NaNs in an upper bound!.Read more: http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.NANInModel')
+        error('You have NaNs in an upper bound!.Read more: https://yalmip.github.io/naninmodel/')
     end
 end
 if ~isempty(F_struc)
     if any(any(isnan(F_struc)))
-        error('You have NaNs in your constraints!. Read more: http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Extra.NANInModel')        
+        error('You have NaNs in your constraints!. Read more: https://yalmip.github.io/naninmodel/')        
     end
 end
 

@@ -182,7 +182,7 @@ end
 
 try
     x = res.sol.itr.y;
-catch
+catch    
     x = nan(length(model.c),1);    
 end
 
@@ -235,7 +235,13 @@ elseif res.rcode == 10007
     return
 elseif res.rcode == 1400
     problem = 20;
-    return    
+    return   
+elseif res.rcode == 1001
+    problem = -11;
+    return;
+elseif res.rcode == 1008
+    problem = -12;
+    return;
 end
 
 switch res.sol.itr.prosta

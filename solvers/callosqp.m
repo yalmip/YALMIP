@@ -13,7 +13,7 @@ if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],optio
 n_var = length(model.c);
 P = model.Q;
 q = model.c;
-eye_n = eye(n_var);
+eye_n = speye(n_var);
 A = [model.Aeq;model.A; eye_n];
 l = full([model.beq; -inf(length(model.b),1); model.lb]);
 u = full([model.beq; model.b; model.ub]);
@@ -29,14 +29,22 @@ results = OSQPSolver.solve();
 switch results.info.status_val
     case 1
         problem = 0;
+    case 2
+        problem = 0;
     case -2
         problem = 3;
     case -3
         problem = 1;
+    case 3
+        problem = 1;
     case -4
+        problem = 2;
+    case 4
         problem = 2;
     case -5
         problem = 16;
+    case -10
+        problem = 11;
     otherwise
         problem = -10;
 end

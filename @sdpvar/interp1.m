@@ -22,6 +22,13 @@ switch class(varargin{3})
                 varargout{1} = reshape(varargout{1},d);
                 return
             end
+            
+            if any(any(isnan(varargin{1})))
+                error('Interpolation grid contains NaNs');
+            end
+            if any(any(isnan(varargin{2})))
+                error('Interpolation data contains NaNs');
+            end
                      
             % If only one data sequence, place in row vector
             if min(size(varargin{1})) == 1

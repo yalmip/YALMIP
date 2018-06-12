@@ -47,6 +47,22 @@ monomvalue = prod(aux,2);
 removethese = model.removethese;
 keepingthese = model.keepingthese;
 
+% Look for constraints which evaluate to inf + a'*x + b >= 0
+infinite_monoms = removethese(isinf(monomvalue(removethese)));
+if ~isempty(infinite_monoms)
+    if model.K.l > 0
+        A = model.F_struc(model.K.f + 1:model.K.f + model.K.l,1 + infinite_monoms);
+        redundant = find(all(A,2));
+        model.F_struc(model.K.f + redundant,:)=[];
+        model.K.l = model.K.l - length(redundant);
+    end
+    % If that infinite variable is used nowhere else, simply zero it so we
+    % don't get any inf*0 expressions as these leads to nan
+    if ~any(model.F_struc(:,1+infinite_monoms))
+        monomvalue(infinite_monoms)=0;
+    end
+end
+
 value = monomvalue(removethese);
 monomgain = monomvalue(keepingthese);
 
@@ -83,7 +99,7 @@ if model.K.l > 0
         end
     end
     % Find constraints f(x) <= inf and remove these
-    candidates = find(isinf(model.F_struc(model.K.f + (1:model.K.l),1)) & (model.F_struc(model.K.f + (1:model.K.l),1))>0)
+    candidates = find(isinf(model.F_struc(model.K.f + (1:model.K.l),1)) & (model.F_struc(model.K.f + (1:model.K.l),1))>0);
     if ~isempty(candidates)                       
         model.F_struc(model.K.f + candidates,:) = [];
         model.K.l = model.K.l - length(candidates);        

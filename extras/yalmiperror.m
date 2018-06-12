@@ -6,6 +6,8 @@ function error_string = yalmiperror(errorcode,solver)
 %
 %   The complete set of error codes are
 %
+%   -12 Solver license cannot be located
+%   -11 Solver license expired
 %   -10 NaN in model data
 %    -9 Specified solver name not recognized
 %    -8 Problem does not satisfy geometric programming rules
@@ -53,6 +55,10 @@ else
 end
 
 switch errorcode
+case -12
+  error_string = ['Solver license cannot be located ' solver];          
+case -11 
+  error_string = ['Solver license expired ' solver];          
 case -10
   error_string = ['NaN in model data ' solver];          
 case -9

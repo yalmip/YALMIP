@@ -97,7 +97,7 @@ end
 % Normalize the callback expression and check for some obsoleted stuff
 if ~isempty(properties)
     if isequal(properties{1}.model,'callback')
-        F_normalizing = NormalizeCallback(method,extstruct.var,extstruct.arg{:});
+        F_normalizing = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);
         F = F + F_normalizing;
     end
     if length(extstruct.computes)>1

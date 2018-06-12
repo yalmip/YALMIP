@@ -6,8 +6,15 @@ if nargin == 1 && nargout > 1 && nargout == length(X.dim)
         varargout{i} = X.dim(i);
     end
     return
+elseif nargin == 1 && nargout > 1 && nargout < length(X.dim)
+    % Weird but this is MATLAB standard
+    for i = 1:nargout-1
+        varargout{i} = X.dim(i);
+    end
+    varargout{end+1} = prod(X.dim(nargout:end));
+    return
 end
-
+    
 if nargin == 1
     varargout{1} = X.dim;
 else

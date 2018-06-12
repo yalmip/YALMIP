@@ -33,7 +33,7 @@ end
 variabletype(1,size(mt,1)) = 0;
 if ~isempty(newmt)
     new_hash = 3*rand_hash(size(mt,2),size(newmt,2),1);
-    hashed_monoms = [hashed_monoms;newmt*new_hash];
+    hashed_monoms = [hashed_monoms;full(newmt*new_hash)];
     current_hash = [current_hash;new_hash];
     yalmip('setmonomtable',mt,variabletype,hashed_monoms,current_hash);
 else 
