@@ -857,7 +857,17 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         p.sosgroups = node.sosgroups;
         p.sosvariables = node.sosvariables;
     end
-    gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
+    
+    if isempty(node)
+        % There are no nodes left
+         if ~isinf(upper)
+            gap = 0;
+         end
+    else    
+        % We pulled a new node from stack, so there are nodes left
+        gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
+    end
+    
     if isnan(gap)
         gap = inf;
     end
