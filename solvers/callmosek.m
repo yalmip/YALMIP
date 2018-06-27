@@ -244,7 +244,13 @@ elseif res.rcode == 1008
     return;
 end
 
-switch res.sol.itr.prosta
+try
+    solinfo = res.sol.itr;
+catch
+    solinfo = res.sol.bas;
+end
+
+switch solinfo.prosta
     case 'PRIMAL_AND_DUAL_FEASIBLE'        
         problem = 0;
     case 'DUAL_INFEASIBLE'
