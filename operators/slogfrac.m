@@ -10,12 +10,18 @@ switch class(varargin{1})
         x = varargin{1};        
         % Safe version with defined negative values (helps fmincon when
         % outside feasible region)  
-        if all(x)==0
+        if all(x==0)
             varargout{1} = log(2);% ?definition...
         elseif x(1)==0
             varargout{1} = log(1);
         else
-            varargout{1} = log(1 + (x(1)./(x(2)+sqrt(eps))));
+            aux = 1 + (x(1)./(x(2)+sqrt(eps)));
+            if aux <= 0
+                varargout{1} = -15;
+            else
+                varargout{1} = log(1 + (x(1)./(x(2)+sqrt(eps))));
+            end
+            
         end
      
     case 'sdpvar'
