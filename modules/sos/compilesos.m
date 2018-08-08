@@ -227,6 +227,16 @@ end
 noRANK = all(isinf(ranks));
 options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData);
 
+switch options.sos.model
+    case 'auto'
+        options.sos.model = 1;
+    case 'kernel'
+        options.sos.model = 1;
+    case 'image'
+        options.sos.model = 2;
+    otherwise
+end
+             
 if ~isempty(yalmip('extvariables')) & options.sos.model == 2 & nargin<4
     disp(' ')
     disp('**Using nonlinear operators in SOS problems can cause problems.')
