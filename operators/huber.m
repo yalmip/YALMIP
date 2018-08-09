@@ -14,16 +14,20 @@ switch class(varargin{1})
     case 'double'
 
         if nargin < 2
-            M = 1;
+            M = repmat(1,size(varargin{1}));
         else
             M = varargin{2};
         end
 
         x = varargin{1};
+        if isscalar(M) && ~isscalar(x)
+            M = repmat(M,size(x));
+        end
+       
         y = x.^2;
         r = find(abs(x) > M);
-        y(r) = M.*(2*abs(x(r)) - M);
-        varargout{1} = y;
+        y(r) = M(r).*(2*abs(x(r)) - M(r));
+        varargout{1} = sum(y);
         
     case 'sdpvar' % Pass on args and save them.
 
@@ -39,9 +43,19 @@ switch class(varargin{1})
         if min(n,m) == 1
             X = X(:);
         end
+        
+        if ~isequal(size(M),size(X))
+            M = repmat(M,size(X));
+            if ~isequal(size(M),size(X))
+                error('M must be scalar or same size as x')
+            end
+            varargin{2} = M;
+        end
+        
         y = [];
-        for i = size(X,2);
+        for i = 1:size(X,2)
             varargin{1} = X(:,i);
+            varargin{2} = M(:,i);
             y = [y yalmip('define',mfilename,varargin{:})];
         end
         varargout{1} = y;
