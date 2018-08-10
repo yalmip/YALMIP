@@ -60,7 +60,7 @@ switch class(varargin{1})
             
             [Model,Properties] = sumk_generator(X,k,t);
             varargout{1} = Model;
-            varargout{2} = Properties        
+            varargout{2} = Properties;        
             varargout{3} = X;            
         else
         end
