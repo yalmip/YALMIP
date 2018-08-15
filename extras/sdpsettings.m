@@ -293,7 +293,7 @@ while i <= nargin
             error(sprintf('Expected argument %d to be a string property name.', i));
         end
 
-        lowArg = lower(arg);
+        lowArg = strtrim(lower(arg));
 
         j = strmatch(lowArg,names);
         if isempty(j)                       % if no matches
