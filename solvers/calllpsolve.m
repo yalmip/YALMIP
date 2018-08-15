@@ -80,38 +80,38 @@ if ~isempty(semicont_variables)
     end
 end
 if options.savedebug
-    save mxlpsolvedebug f A b e UB LB xint 
+    save lpsolvedebug f A b e UB LB xint 
 end
 
 lp = create_lp_solve_model(A,b,f,xint,LB,UB,e,options);
 if ~isempty(K.sos)
     for i = 1:length(K.sos.type)
-       mxlpsolve('add_SOS', lp, 'Dummy', str2num(K.sos.type(i)), 1, K.sos.variables{i}, K.sos.weight{i});
+       lp_solve('add_SOS', lp, 'Dummy', str2num(K.sos.type(i)), 1, K.sos.variables{i}, K.sos.weight{i});
     end
 end
 if ~isempty(semicont_variables)
-    mxlpsolve('set_semicont', lp, semicont_variables) 
+    lp_solve('set_semicont', lp, semicont_variables) 
 end
 
 try    
     if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
     solvertime = tic;
-    result=mxlpsolve('solve', lp);
+    result=lp_solve('solve', lp);
     solvertime = toc(solvertime);
     if result == 0 | result == 1 | result == 11 | result == 12        
-        [obj, x, duals] = mxlpsolve('get_solution', lp);
+        [obj, x, duals] = lp_solve('get_solution', lp);
     else
         obj = [];
         x = zeros(length(c),1);
         duals = [];
     end
-    mxlpsolve('delete_lp', lp);
+    lp_solve('delete_lp', lp);
 catch
     obj = [];
     x = zeros(length(c),1);
     duals = [];
     result = -1;
-    mxlpsolve('delete_lp', lp);
+    lp_solve('delete_lp', lp);
 end
 
 
