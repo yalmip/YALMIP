@@ -22,8 +22,24 @@ if nargin < 2
     precision = inf;
 end
 
-r1=1:size(pvec,1);
-r2=1:size(pvec,2);
+% Support displaying non-sdpvar input
+if ~isa(pvec,'sdpvar')
+    for r1=1:size(pvec,1)
+        for r2=1:size(pvec,2)
+            p = pvec(r1,r2);
+            if isa(p,'double')
+                symb_pvec{r1,r2} = num2str2(p,precision);
+            else
+                symb_pvec{r1,r2} = p;
+            end
+        end
+    end
+    if prod(size(symb_pvec))==1 & nargout==0
+        display(symb_pvec{1,1});
+        clear symb_pvec
+    end
+    return;
+end
 
 % First, some boooring stuff. we need to
 % figure out the symbolic names and connect
