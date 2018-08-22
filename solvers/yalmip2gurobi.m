@@ -117,10 +117,13 @@ model.Q = sparse(Q);
 if ~isequal(K.q,0)
     top = n_original + 1;
     for i = 1:length(K.q)
-        n = K.q(i);
-        model.cones(i).index = top:top+n-1;
+        n = K.q(i);      
+        Qi = sparse(top:top+n-1,top:top+n-1,[-1 repmat(1,1,n-1)],length(c),length(c))
+        model.quadcon(i).Qc=Qi;       
+        model.quadcon(i).q=zeros(length(c),1);
+        model.quadcon(i).rhs=0;
         top = top + n;
-    end 
+    end
 end
 
 model.params = interfacedata.options.gurobi;
