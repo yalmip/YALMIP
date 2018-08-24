@@ -5,7 +5,7 @@ function varargout = subsref(varargin)
 % x = sdpvar(2);x(1,:,:)
 Y = varargin{2};
 if length(Y)==1
-    if  length(Y.subs) > 2 && isequal(Y.type,'()')
+    if  length(Y.subs) > 2 && isequal(Y.type,'()') && ~( isa(Y(1).subs{1},'constraint') || isa(Y(1).subs{1},'lmi') )
         i = 3;
         ok = 1;
         while ok && (i <= length(Y.subs))
@@ -29,8 +29,20 @@ end
 try
     switch Y(1).type
         case '()'
-            if  isa(Y(1).subs{1},'constraint')
-                error('Conditional indexing not supported.');
+            if  isa(Y(1).subs{1},'constraint') || isa(Y(1).subs{1},'lmi') 
+                z = Y(1).subs{1};
+                for i = 1:length(Y(1).subs)
+                    z = [z, Y(1).subs{i}];
+                end
+                % z == 0 => b+Ax == 0 => x = -A\b
+                z = sdpvar(z);
+                B = getbase(z);
+                A = B(:,2:end);
+                b = B(:,1);
+                x0 = -A\b;
+                x = recover(getvariables(z));
+                varargout{1} = replace(X,x,x0);
+                return                
             end
             % Check for simple cases to speed things up (yes, ugly but we all want speed don't we!)
             switch size(Y(1).subs,2)
