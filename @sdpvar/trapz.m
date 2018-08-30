@@ -1,24 +1,6 @@
 function Y=trapz(X,I,dummy)
 %TRAPZ (overloaded)
 
-if length(X.dim)==2
-    if nargin == 1
-        I = 1;
-    end
-    if min(X.dim) == 1 && nargin == 1
-        Y = ones(1,max(X.dim))*reshape(X,[],1);
-        return
-    end
-    switch I
-        case 1
-			Y = ones(1,X.dim(1)-1) * (X(1:m-1,:) + X(2:m,:))/2;
-        case 2
-			Y = (X(1:m-1,:) + X(2:m,:))/2 * ones(X.dim(1)-1,1);
-        otherwise
-            Y = X;
-    end
-    return
-end
 try
     n = X.dim(1);
     m = X.dim(2);
