@@ -1458,6 +1458,7 @@ solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
 solver(i).constraint.complementarity.variable = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).dual = 0;

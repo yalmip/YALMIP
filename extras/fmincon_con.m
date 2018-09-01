@@ -32,7 +32,8 @@ if nnz(model.K.q) > 0
     top = 1;
     for i = 1:length(model.K.q)
         z = model.F_struc(top:top+model.K.q(i)-1,:)*[1;xevaled];
-        g = [g;-(z(1)^2 - z(2:end)'*z(2:end))];
+      %  g = [g;-(z(1)^2 - z(2:end)'*z(2:end))];
+        g = [g;-(z(1) - sqrt(z(2:end)'*z(2:end)))];
         top = top + model.K.q(i);
     end
 end
@@ -121,8 +122,13 @@ if any(model.K.q)
         
         if nargin == 2
             % No inner derivative
-            
-            conederiv = [conederiv;(2*A(:,model.linearindicies)'*(A(:,model.linearindicies)*z(model.linearindicies)+b)-2*c(model.linearindicies)*(c(model.linearindicies)'*z(model.linearindicies)+d))'];
+            A = A(:,model.linearindicies);
+            c = c(model.linearindicies);
+            % -c'*x - d + ||Ax+b||>=0
+            e = A*z(model.linearindicies) + b;
+            smoothed = sqrt(10^-10 + e'*e);
+            conederiv = [conederiv;-c'+(A'*b + A'*A*z(model.linearindicies))'/smoothed];             
+           % conederiv = [conederiv;(2*A(:,model.linearindicies)'*(A(:,model.linearindicies)*z(model.linearindicies)+b)-2*c(model.linearindicies)*(c(model.linearindicies)'*z(model.linearindicies)+d))'];
         else
             % inner derivative
             aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
