@@ -11,4 +11,4 @@ F = [-10 <= xhat <= 10, cone(y-A*xhat,u), cone(exp(0.1*xhat.^2),v), exp(xhat) <=
 sol = solvesdp(F,u + v,sdpsettings('solver','bmibnb'));
 
 mbg_asserttrue(sol.problem == 0);
-mbg_asserttrue(abs(double(u+v)-5.343096e+01) <= 1e-3);
+mbg_asserttrue(abs(double(u+v)-5.343096e+01) <= 1e-2);
