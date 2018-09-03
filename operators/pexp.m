@@ -13,7 +13,10 @@ switch class(varargin{1})
     
     case 'double'
         
-        if ~isequal(prod(size(varargin{1})),2)
+        if nargin == 2
+            varargin{1} = [varargin{1};varargin{2}];
+        end
+        if nargin == 1 && ~isequal(prod(size(varargin{1})),2)
             error('PEXP only defined for 2x1 arguments');
         end
         x = varargin{1};
@@ -23,6 +26,9 @@ switch class(varargin{1})
 
     case 'sdpvar'
 
+        if nargin == 2
+            varargin{1} = [varargin{1};varargin{2}];
+        end               
         if ~isequal(prod(size(varargin{1})),2)
             error('PEXP only defined for 2x1 arguments');
         else
