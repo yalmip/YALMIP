@@ -40,7 +40,7 @@ else
             lmi_variables = getvariables(h);
             base = getbase(h);base = base(2:end);
             OKindex = find(~isinf(base));
-            c=base(OKindex(1))*zeros(nvars,1);
+            c=full(base(OKindex(1))*zeros(nvars,1));
             c(lmi_variables) = base;
             Q = spalloc(nvars,nvars,0); 
             f = full(getbasematrix(h,0));
