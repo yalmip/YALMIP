@@ -25,13 +25,10 @@ if nargin < 3 || isempty(options)
 end
 
 % Initialize the lower bound
-if 1 % nargin < 5 || isempty(lower)
-    lower = 0;
-    userGaveLower = 0;
-else
-    userGaveLower = 1;
-end
+% Typically a good guess
+lower = 0;
 
+% Silly upper bound
 bestUpper = inf;
 
 % Create an optimizer object which solves feasibility problem for a
@@ -48,24 +45,23 @@ P = optimizer(Constraints,[],options,Objective,x);
 solvertime = tic;
 [sol, flag] = P{lower};
 diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
-if flag ~=0 && userGaveLower
-    error('Cannot initialize the bisection at supplied lower bound.')
-elseif flag ~=0
+if flag ~=0
     % This was infeasible, hernce we can use it as an upper bound    
     i = 1;
     while flag
         bestUpper = lower;
-        lower = lower - 2^i;i = i+1;
+        lower = lower - 2^(-4+i);i = i+1;
         try
             solvertime = tic;
             [sol, flag] = P{lower};
             diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
             if lower < -1e6
-                diagnostic.problem = 1;
+                diagnostic.problem = 21;
                 diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
+                return
             end
         catch            
-            diagnostic.problem = -1;
+            diagnostic.problem = 1;
             diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
             return
         end
@@ -73,22 +69,7 @@ elseif flag ~=0
 end
 v = sol;
 optimal = lower;
-
-upper = inf;
-if 0%nargin == 6 && ~isempty(upper)
-    if upper < bestUpper
-        % User has supplied an upper bound. Is it really infeasible
-        [sol, flag] = P{lower};
-        if ~flag
-            % No, the supppplied upper bound isn't valid
-            upper = bestUpper;
-        end
-    else
-        upper = bestUpper;
-    end
-else
-    upper = bestUpper;
-end
+upper = bestUpper;
 
 if isinf(upper)
     upper = lower+1;

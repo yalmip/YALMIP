@@ -40,6 +40,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    18 Missing non-negativity bounds in GP formulation
 %    19 Convexity requirements not met
 %    20 Solver complains about bad data
+%    21 Failed to initialize bisection space
 %
 %   See also OPTIMIZE
 
@@ -120,7 +121,10 @@ case -3
  case 19
   error_string = ['Convexity requirements not met ' solver ];           
 case 20
-  error_string = ['Solver complains about bad data ' solver ];              
+  error_string = ['Solver complains about bad data ' solver ];
+case 21
+  error_string = ['Failed to initialize bisection space ' solver ];              
+  
  otherwise
 end
 
