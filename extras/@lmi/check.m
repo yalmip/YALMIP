@@ -218,15 +218,22 @@ else
         keep(5) = 0;
     end
     
-    if all(isnan(resdual))
-        keep(4) = 0;  
-    end
+ %   if all(isnan(resdual))
+ %       keep(4) = 0;  
+ %   end
     
     header = {header{:,find(keep)}};
     temp = {data{:,find(keep)}};
     data = reshape(temp,length(temp)/nnz(keep),nnz(keep));
-    
-    yalmiptable('',header,data)
+
+    post{1} = 'A primal-dual optimal solution would show non-negative residuals.'
+    post{end+1} = 'In practice, many solvers converge to slightly infeasible';
+    post{end+1} = 'solutions, which may cause some residuals to be negative.';
+    post{end+1} = 'It is up to the user to judge the importance and impact of';
+    post{end+1} = 'slightly negative residuals (i.e. infeasibilities)';
+    post{end+1} = 'https://yalmip.github.io/command/check/';
+    post{end+1} = 'https://yalmip.github.io/faq/solutionviolated/';
+    yalmiptable('',header,data,[],post)
     disp(' ');
 end
 
