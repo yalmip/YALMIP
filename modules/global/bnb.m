@@ -281,7 +281,7 @@ if p.K.l >= 0
     for j = 1:p.K.l
         b = p.F_struc(top+j,1);
         a = p.F_struc(top+j,2:end);
-        if isempty(nonintvars) || a(nonintvars)==0
+        if isempty(nonintvars) || all(a(nonintvars)==0)
             if all(a(intvars)==1)                
                 if all(p.ub(intvars)<=0)
                     p.cardinality.upper = b;
