@@ -410,6 +410,8 @@ switch res.sol.itr.prosta
         problem = 1;
     case 'PRIMAL_INFEASIBLE'
         problem = 2;
+    case 'ILL_POSED'
+        problem = 22;
     case 'UNKNOWN'
         try
             if isequal(res.rcodestr,'MSK_RES_TRM_STALL')

@@ -41,6 +41,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    19 Convexity requirements not met
 %    20 Solver complains about bad data
 %    21 Failed to initialize bisection space
+%    22 Ill-posed problem according to solver
 %
 %   See also OPTIMIZE
 
@@ -124,7 +125,9 @@ case 20
   error_string = ['Solver complains about bad data ' solver ];
 case 21
   error_string = ['Failed to initialize bisection space ' solver ];              
-  
+case 22
+  error_string = ['Ill-posed problem according to solver ' solver ];              
+    
  otherwise
 end
 
