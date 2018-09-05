@@ -269,6 +269,37 @@ catch
 end
 
 % *******************************
+%% Extract simple cardinalities
+%% might be useful to know
+% *******************************
+p.cardinality.upper = inf;
+p.cardinality.lower = 0;
+if p.K.l >= 0
+    top = p.K.f;
+    intvars = union(p.binary_variables,p.integer_variables);
+    nonintvars = setdiff(1:length(p.c),intvars);
+    for j = 1:p.K.l
+        b = p.F_struc(top+j,1);
+        a = p.F_struc(top+j,2:end);
+        if isempty(nonintvars) || a(nonintvars)==0
+            if all(a(intvars)==1)                
+                if all(p.ub(intvars)<=0)
+                    p.cardinality.upper = b;
+                elseif all(p.lb(intvars)>=0)
+                    p.cardinality.lower = -b;
+                end
+            elseif all(a(intvars)==-1)                
+                if all(p.ub(intvars)<=0)
+                    p.cardinality.lower = -b;
+                elseif all(p.lb(intvars)>=0)
+                    p.cardinality.upper = b;
+                end
+            end
+        end
+    end        
+end
+
+% *******************************
 %% START BRANCHING
 % *******************************
 setuptime = etime(clock,bnbsolvertime);
@@ -535,7 +566,7 @@ p.sosgroups = sosgroups;
 p.sosvariables = sosvariables;
 oldp = p;
 while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
-    
+
     % ********************************************
     % Adjust variable bound based on upper bound
     % ********************************************
@@ -695,7 +726,7 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     feasible = 1;
     
     switch output.problem
-        case -1;
+        case {-1}
             % Solver behaved weird. Make sure we continue digging
             keep_digging = 1;
             feasible = 1;
@@ -705,14 +736,15 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
             if can_use_ceil_lower
                 lower = ceil(lower-1e-8);
             end
-        case {1,12,-4}
+        case {1,12,-4,22}
             keep_digging = 0;
             cost = inf;
             feasible = 0;
         case 2
             cost = -inf;
         otherwise
-            % This part has to be much more robust
+            % This part has to be much more robust because this could be a
+            % numerical problem leading to a non-trustworthy solution
             cost = f+c'*x+x'*Q*x;
     end
     
@@ -959,8 +991,8 @@ switch options.bnb.branchrule
         [val,index] = min(abs(x(nint)));
         index = nint(index);
     case 'max'
-        [val,index] = max((abs(x(all_variables)-round(x(all_variables)))));
-        %[val,index] = max(abs(p.c(all_variables)).^2.*(abs(x(all_variables)-round(x(all_variables)))));
+        %[val,index] = max((abs(x(all_variables)-round(x(all_variables)))));
+        [val,index] = max((1 + min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables)))));
     otherwise
         error('Branch-rule not supported')
 end
