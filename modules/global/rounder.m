@@ -49,7 +49,7 @@ if ismember('shifted round',p.options.bnb.rounding)
         end
     end
     % Round, update nonlinear terms, and compute feasibility
-    for tt = -.45:0.05:0.45
+    for tt = -.5:0.1:0.5
         xtemp = x;xtemp(intvars) = round(xtemp(intvars)+tt);
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
