@@ -1,4 +1,4 @@
-function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower)
+function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min)
 
 if all(relaxed_p.lb==relaxed_p.ub)
     x = relaxed_p.lb;
@@ -11,8 +11,33 @@ if all(relaxed_p.lb==relaxed_p.ub)
     return
 end
 
+if ~(relaxed_p.all_integers && all(relaxed_p.c == fix(relaxed_p.c)) && nnz(relaxed_p.Q)==0)
+    % Objective contains floating-point numbers, so add some margin
+    % if we add an  upper bound cut
+    upper = upper + 1e-4;
+end
+
 p = relaxed_p;
 p.solver.tag = p.solver.lower.tag;
+
+% Exclusion cuts for negated binaries
+if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)
+    nz = find(x_min ~= 0);
+    zv = find(x_min == 0);
+    b = length(zv)-1;
+    a = spalloc(1,length(x_min),length(zv));
+    a(nz) = -1;
+    a(zv) = 1;
+    p.F_struc = [p.F_struc(1:p.K.f,:);b a;p.F_struc(1+p.K.f:end,:)];
+    p.K.l=p.K.l+1;   
+end
+
+% if ~isinf(p.cardinality.upper)
+%     b = p.cardinality.upper;
+%     a = sparse(ones(1,length(p.c)));   
+%     p.F_struc = [p.F_struc(1:p.K.f,:);b a;p.F_struc(1+p.K.f:end,:)];
+%     p.K.l=p.K.l+1;   
+% end
 
 removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
@@ -120,9 +145,17 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
             p.solver.version = p.solver.lower.version;
             p.solver.subversion = p.solver.lower.subversion;            
             if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
-                p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
-                p.K.l=p.K.l+1;
-            end
+                if p.all_integers && all(p.c == fix(p.c))
+                    % All integer objective coefficients and all integer
+                    % variables, we must find a solution which is at least
+                    % 1 better than current upper bound 
+                    p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
+                    p.K.l=p.K.l+1;                                  
+                else
+                    p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
+                    p.K.l=p.K.l+1;
+                end
+            end           
             output = feval(lowersolver,p);
         end
     end

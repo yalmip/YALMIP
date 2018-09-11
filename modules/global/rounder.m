@@ -113,23 +113,17 @@ if length(prelaxed.sosgroups)>0
     end
 end
 
-if upper<inf
-    return
-end
-
-
-if ismember('round',p.options.bnb.rounding)
-    
+if ismember('round',p.options.bnb.rounding)    
     % Round, update nonlinear terms, and compute feasibility
     xtemp = x;xtemp(intvars) = round(xtemp(intvars));
     xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
     xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
     xtemp = fix_semivar(p,xtemp);
     xtemp = setnonlinearvariables(p,xtemp); 
-    if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
+    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
+    if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
         x_min = xtemp;
-        upper = computecost(p.f,p.corig,p.Q,x_min,p);%p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return    
+        upper = upperhere;
     end
 end
 
@@ -140,10 +134,10 @@ if ismember('fix',p.options.bnb.rounding)
     xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
     xtemp = fix_semivar(p,xtemp);
     xtemp = setnonlinearvariables(p,xtemp);
-    if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
+    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
+    if upperhere < upper & checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
         x_min = xtemp;
-        upper = computecost(p.f,p.corig,p.Q,x_min,p);%upper = p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return
+        upper = upperhere;
     end
 end
 
@@ -154,11 +148,11 @@ if ismember('ceil',p.options.bnb.rounding)
     xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
     xtemp = fix_semivar(p,xtemp);
     xtemp = setnonlinearvariables(p,xtemp);
-    if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
+    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
+    if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
         x_min = xtemp;
-        upper = computecost(p.f,p.corig,p.Q,x_min,p);%upper = p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return   
-     end
+        upper = upperhere;
+    end
 end
 
 if ismember('floor',p.options.bnb.rounding)
@@ -168,11 +162,11 @@ if ismember('floor',p.options.bnb.rounding)
     xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
     xtemp = fix_semivar(p,xtemp);
     xtemp = setnonlinearvariables(p,xtemp);
-    if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
+    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
+    if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
         x_min = xtemp;
-        upper = computecost(p.f,p.corig,p.Q,x_min,p);%upper = p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-        return    
-     end
+        upper = upperhere;
+    end
 end
 
 function x = fix_semivar(p,x);
