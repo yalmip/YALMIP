@@ -13,6 +13,10 @@ switch class(varargin{3})
             varargin{5} = [];
         end        
         
+        if isa(varargin{2},'function_handle')
+            varargin{2} = varargin{2}(varargin{1});
+        end
+        
         if numel(varargin{3}) > 1
             d = size(varargin{3});
             
