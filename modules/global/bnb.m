@@ -217,6 +217,12 @@ end
 % 1 : Display branching
 % 2 : Display node solver prints
 % *******************************
+if p.options.verbose ~= fix(p.options.verbose)
+    p.options.print_interval = ceil(1/p.options.verbose);
+    p.options.verbose = ceil(p.options.verbose);
+else
+    p.options.print_interval = 1;
+end
 switch max(min(p.options.verbose,3),0)
     case 0
         p.options.bnb.verbose = 0;
@@ -887,7 +893,10 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
     end
     
     %DEBUG    if p.options.bnb.verbose;fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f   %2.0f %2.0f %2.0f %2.0f\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),sedd);end
-    if p.options.bnb.verbose;fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));end
+    if p.options.bnb.verbose;
+     if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0)
+         fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));end
+    end
     
 end
 if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
