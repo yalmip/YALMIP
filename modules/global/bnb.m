@@ -555,6 +555,29 @@ if p.K.f > 0 & ~isempty(p.binary_variables)
         end
     end
 end
+atmostgroups = {};
+atmostvariables = [];
+if p.K.l > 0 & ~isempty(p.integer_variables)
+    nint = length(p.integer_variables);
+    Aeq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
+    beq = p.F_struc(p.K.f + (1:p.K.l),1);
+    notinteger_var_index = setdiff(1:length(p.lb),p.integer_variables);
+    only_integer = ~any(Aeq(:,notinteger_var_index),2);
+    Aeq_bin = Aeq(find(only_integer),p.integer_variables);
+    beq_bin = beq(find(only_integer),:);
+    % Detect groups with constraints sum(d_i) <= 1
+    atmostgroups = {};
+    for i = 1:size(Aeq_bin,1)
+        if beq_bin(i) == 1
+            [ix,jx,sx] = find(Aeq_bin(i,:));
+            if all(sx == -1) && all(p.lb(jx)<=0)
+                % n negative integers of at most 1 is non-zero
+                atmostgroups{end+1} = p.integer_variables(jx);
+                atmostvariables = [atmostvariables p.integer_variables(jx)];
+            end
+        end
+    end
+end
 
 pid = 0;
 lowerhist = [];
@@ -845,6 +868,40 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         node0.sosgroups = p0.sosgroups;
         node0.sosvariables = p0.sosvariables;
         
+        if ismember(globalindex,atmostvariables)
+            for j = 1:length(atmostgroups)
+                xy = atmostgroups{j};
+                if any(xy == globalindex)
+                    if ~(node0.lb(globalindex)==0 && node0.ub(globalindex)==0)
+                        % The variable has been fixed to a non-zero value
+                        % Hence, its sister has to be set to 0
+                        sisters = xy(xy~=globalindex);
+                        for k = sisters
+                            if node0.lb(k) > 0 || node0.ub(k) < 0
+                                p0_feasible = 0;
+                                break
+                            else
+                                node0.lb(k) = 0;
+                                node0.ub(k) = 0;
+                            end                            
+                        end
+                    end
+                    if ~(node1.lb(globalindex)==0 && node1.ub(globalindex)==0)
+                        sisters = xy(xy~=globalindex);
+                        for k = sisters
+                            if node1.lb(k) > 0 || node1.ub(k) < 0
+                                p1_feasible = 0;
+                                break
+                            else
+                                node1.lb(k) = 0;
+                                node1.ub(k) = 0;
+                            end                            
+                        end
+                    end
+                end
+            end
+        end
+        
         if p0_feasible
             stack = push(stack,node0);
         end
@@ -892,7 +949,6 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         drawnow
     end
     
-    %DEBUG    if p.options.bnb.verbose;fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f   %2.0f %2.0f %2.0f %2.0f\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),sedd);end
     if p.options.bnb.verbose;
      if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0)
          fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));end
