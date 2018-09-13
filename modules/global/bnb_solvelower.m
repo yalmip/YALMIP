@@ -12,13 +12,26 @@ if all(relaxed_p.lb==relaxed_p.ub)
 end
 
 if ~(relaxed_p.all_integers && all(relaxed_p.c == fix(relaxed_p.c)) && nnz(relaxed_p.Q)==0)
-    % Objective contains floating-point numbers, so add some margin
-    % if we add an  upper bound cut
-    upper = upper + 1e-4;
+     % Objective contains floating-point numbers, so add some margin
+     % if we add an  upper bound cut
+     upper = upper + 1e-4;
 end
 
 p = relaxed_p;
 p.solver.tag = p.solver.lower.tag;
+
+if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
+    if p.all_integers && all(p.c == fix(p.c))
+        % All integer objective coefficients and all integer
+        % variables, we must find a solution which is at least
+        % 1 better than current upper bound
+        p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
+        p.K.l=p.K.l+1;
+    else
+       p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
+       p.K.l=p.K.l+1;
+    end
+end
 
 % Exclusion cuts for negated binaries
 if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)
@@ -109,19 +122,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
              p.K.l = p.K.l - length(remove_these);
          end
     end
-     if p.K.q> 0
-         top = p.K.f + p.K.l+1;
-         for i = 1:length(p.K.q)
-             if ~any(p.F_struc(top,:))
-                % i
-             end
-             %nnz(Ff(2:end,:))
-              %   1
-             %end
-         end
-     end
-             
-    
+       
     % Derive bounds from this model, and if we fix more variables, apply
     % recursively  
     if isempty(p.F_struc)
@@ -136,26 +137,14 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         dummy = p;
         dummy.lb = newlb;
         dummy.ub = newub;
-        output = bnb_solvelower(lowersolver,dummy,upper,lower);        
+        output = bnb_solvelower(lowersolver,dummy,inf,lower);        
     else
         if any(p.lb>p.ub+0.1)
             output.problem = 1;
             output.Primal = zeros(length(p.lb),1);
         else
             p.solver.version = p.solver.lower.version;
-            p.solver.subversion = p.solver.lower.subversion;            
-            if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
-                if p.all_integers && all(p.c == fix(p.c))
-                    % All integer objective coefficients and all integer
-                    % variables, we must find a solution which is at least
-                    % 1 better than current upper bound 
-                    p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
-                    p.K.l=p.K.l+1;                                  
-                else
-                    p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
-                    p.K.l=p.K.l+1;
-                end
-            end           
+            p.solver.subversion = p.solver.lower.subversion;                                  
             output = feval(lowersolver,p);
         end
     end
