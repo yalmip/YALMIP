@@ -31,6 +31,8 @@ function output = bnb(p)
 %
 % maxiter          Maximum number of nodes explored
 %
+% maxtime          Maximum time allowed
+%
 % inttol           Tolerance for declaring a variable as integer
 %
 % feastol          Tolerance for declaring constraints as feasible
@@ -323,6 +325,9 @@ else
     if solved_nodes == p.options.bnb.maxiter
         output.problem = 3;
     end
+    if bnbsolvertime > p.options.bnb.maxtime
+        output.problem = 3;
+    end
 end
 output.solved_nodes = solved_nodes;
 output.Primal      = x_min;
@@ -355,6 +360,8 @@ p.options.savesolveroutput = 0;
 p.options.saveduals = 0;
 p.options.dimacs = 0;
 diagnostics = 0;
+bnbsolvertime = clock;
+
 % *******************************
 % Tracking performance etc
 % *******************************
@@ -606,7 +613,7 @@ else
     p.all_integers = 0;
 end
 
-while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
+while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
     
     % ********************************************
     % Adjust variable bound based on upper bound

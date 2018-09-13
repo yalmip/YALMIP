@@ -482,6 +482,7 @@ bnb.plotbounds = 0;
 bnb.rounding = {'ceil','floor','round','shifted round','fix'};
 bnb.round = 1;
 bnb.maxiter = 300;
+bnb.maxtime = 3600;
 bnb.prunetol = 1e-4;
 bnb.multiple = 0;
 bnb.profile = 0;

@@ -26,7 +26,7 @@ if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
         % variables, we must find a solution which is at least
         % 1 better than current upper bound
         p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
-        p.K.l=p.K.l+1;
+        p.K.l=p.K.l+1;       
     else
        p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
        p.K.l=p.K.l+1;
@@ -122,7 +122,26 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
              p.K.l = p.K.l - length(remove_these);
          end
     end
-       
+    if p.K.s(1) > 0
+        top = 1 + p.K.f + p.K.l + sum(p.K.q);
+        for j = 1:length(p.K.s)
+            X = p.F_struc(top:top + p.K.s(j)^2-1,:); 
+            X = reshape(sum(X | X,2),p.K.s(j),p.K.s(j));
+            e = find(~any(X,2));
+            if any(e)
+                Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
+                for k = 1:length(e);
+                    Z(:,e(k))=1;
+                    Z(e(k),:)=1;
+                end            
+                m = find(Z(:));
+                p.F_struc(top + m - 1,:)=[];
+                p.K.s(j) = p.K.s(j) - length(e);
+            end
+                top = top + p.K.s(j)^2;
+        end
+    end
+                          
     % Derive bounds from this model, and if we fix more variables, apply
     % recursively  
     if isempty(p.F_struc)
@@ -145,7 +164,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         else
             p.solver.version = p.solver.lower.version;
             p.solver.subversion = p.solver.lower.subversion;                                  
-            output = feval(lowersolver,p);
+            output = feval(lowersolver,p);           
         end
     end
     x=relaxed_p.c*0;

@@ -54,7 +54,7 @@ if ismember('shifted round',p.options.bnb.rounding)
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
         xtemp = fix_semivar(p,xtemp);
-        xtemp = fix_atmost(p,xtemp,x);
+      %  xtemp = fix_atmost(p,xtemp,x);
         xtemp = setnonlinearvariables(p,xtemp);  
         if nnz(xtemp(intvars)) > p.cardinality.upper
             [sorted,loc] = sort(abs(x(intvars)));   
