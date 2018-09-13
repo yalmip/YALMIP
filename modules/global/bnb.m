@@ -555,37 +555,49 @@ if p.K.f > 0 & ~isempty(p.binary_variables)
         end
     end
 end
+p.sosgroups = sosgroups;
+p.sosvariables = sosvariables;
+
 atmostgroups = {};
+atmostbounds = [];
 atmostvariables = [];
 if p.K.l > 0 & ~isempty(p.integer_variables)
     nint = length(p.integer_variables);
-    Aeq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
-    beq = p.F_struc(p.K.f + (1:p.K.l),1);
+    Aineq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
+    bineq = p.F_struc(p.K.f + (1:p.K.l),1);
     notinteger_var_index = setdiff(1:length(p.lb),p.integer_variables);
-    only_integer = ~any(Aeq(:,notinteger_var_index),2);
-    Aeq_bin = Aeq(find(only_integer),p.integer_variables);
-    beq_bin = beq(find(only_integer),:);
-    % Detect groups with constraints sum(d_i) <= 1
+    only_integer = ~any(Aineq(:,notinteger_var_index),2);
+    Aineq_bin = Aineq(find(only_integer),p.integer_variables);
+    bineq_bin = bineq(find(only_integer),:);
+    % Detect groups with constraints #(d_i ~= 0) <= k (for binaries)
     atmostgroups = {};
-    for i = 1:size(Aeq_bin,1)
-        if beq_bin(i) == 1
-            [ix,jx,sx] = find(Aeq_bin(i,:));
-            if all(sx == -1) && all(p.lb(jx)<=0)
-                % n negative integers of at most 1 is non-zero
+    for i = 1:size(Aineq_bin,1)
+        if bineq_bin(i) >= 1
+            [ix,jx,sx] = find(Aineq_bin(i,:));
+            % 0/1 or -1/0 variables with with bounded cardinality
+            if all(sx == -1) && ((all(p.lb(jx)==-1) && all(p.ub(jx)==0)) || (all(p.ub(jx)==1) && all(p.lb(jx)==0)))                
                 atmostgroups{end+1} = p.integer_variables(jx);
+                atmostbounds = [atmostbounds floor(bineq_bin(i))];
                 atmostvariables = [atmostvariables p.integer_variables(jx)];
             end
         end
     end
 end
+p.atmost.groups = atmostgroups;
+p.atmost.bounds = atmostbounds;
+p.atmost.variables = atmostvariables;
+
+poriginal.atmost.groups = atmostgroups;
+poriginal.atmost.bounds = atmostbounds;
+poriginal.atmost.variables = atmostvariables;
+
 
 pid = 0;
 lowerhist = [];
 upperhist = [];
 p.fixedvariable = [];
 p.fixdir = '';
-p.sosgroups = sosgroups;
-p.sosvariables = sosvariables;
+
 oldp = p;
 
 if length(p.integer_variables) == length(p.c)
@@ -850,7 +862,8 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         node1.pid = pid;pid = pid + 1;
         node1.sosgroups = p1.sosgroups;
         node1.sosvariables = p1.sosvariables;
-        
+        node1.atmost = p1.atmost;
+                
         node0.lb = p0.lb;
         node0.ub = p0.ub;
         node0.depth = p0.depth;
@@ -867,11 +880,12 @@ while ~isempty(node) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | 
         node0.pid = pid;pid = pid + 1;
         node0.sosgroups = p0.sosgroups;
         node0.sosvariables = p0.sosvariables;
+        node0.atmost = p0.atmost;
         
-        if ismember(globalindex,atmostvariables)
-            for j = 1:length(atmostgroups)
-                xy = atmostgroups{j};
-                if any(xy == globalindex)
+        if ismember(globalindex,p.atmost.variables)
+            for j = 1:length(p.atmost.groups)
+                xy = p.atmost.groups{j};
+                if p.atmost.bounds(j)==1 && any(xy == globalindex)
                     if ~(node0.lb(globalindex)==0 && node0.ub(globalindex)==0)
                         % The variable has been fixed to a non-zero value
                         % Hence, its sister has to be set to 0
@@ -1082,8 +1096,7 @@ friends = [];
 if ~isempty(sosvariables)
     if ismember(variable,sosvariables)
         i = 1;
-        while i<=length(sosgroups)
-            
+        while i<=length(sosgroups)            
             if ismember(variable,sosgroups{i})
                 friends = setdiff(sosgroups{i},variable);
                 break

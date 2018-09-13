@@ -54,6 +54,7 @@ if ismember('shifted round',p.options.bnb.rounding)
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
         xtemp = fix_semivar(p,xtemp);
+        xtemp = fix_atmost(p,xtemp,x);
         xtemp = setnonlinearvariables(p,xtemp);  
         if nnz(xtemp(intvars)) > p.cardinality.upper
             [sorted,loc] = sort(abs(x(intvars)));   
@@ -187,5 +188,29 @@ for i = 1:length(p.semicont_variables)
             case 3
                 x(j) = p.semibounds.lb(i);
         end
+    end
+end
+
+function xtemp = fix_atmost(p,xtemp,x);
+
+would = zeros(1,length(x));
+for i = 1:length(p.atmost.groups)   
+    k = p.atmost.groups{i};    
+    if nnz(xtemp(k))> p.atmost.bounds(i);
+        n_should_be_zero = length(p.atmost.groups{i}) - p.atmost.bounds(i);
+        [y,loc] = sort(abs(x(k)));
+        would(k(loc(1:n_should_be_zero))) =  would(k(loc(1:n_should_be_zero))) + 1;        
+    end
+end
+
+for i = 1:length(p.atmost.groups)
+    k = p.atmost.groups{i};
+    if nnz(xtemp(k))> p.atmost.bounds(i);
+        adjusted = 1;
+        n_should_be_zero = length(p.atmost.groups{i}) - p.atmost.bounds(i);
+        [y,loc] = sort(-would(k)+abs(x(k))');
+        xtemp(k(loc(1:n_should_be_zero))) = 0;
+        x(k(loc(1:n_should_be_zero))) = 0;
+        would(k(loc(n_should_be_zero+1:end))) =  would(k(loc(n_should_be_zero+1:end)))-1;           
     end
 end
