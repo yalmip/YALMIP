@@ -610,6 +610,7 @@ lowerhist = [];
 upperhist = [];
 p.fixedvariable = [];
 p.fixdir = '';
+lastUpper = upper;
 
 oldp = p;
 
@@ -977,9 +978,15 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     end
     
     if p.options.bnb.verbose;
-     if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0)
-         fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));end
+        if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)
+            if lastUpper > upper
+                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),'-> Found improved solution!');
+            else
+                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));
+            end
+        end            
     end
+    lastUpper = upper;
     
 end
 if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
