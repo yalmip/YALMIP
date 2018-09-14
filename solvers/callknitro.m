@@ -130,7 +130,7 @@ end
 % Save all data from the solver?
 if model.options.savesolveroutput
     solveroutput.x = x;
-    solveroutput.fmin = fmin;
+    solveroutput.fval = fval;
     solveroutput.exitflag = exitflag;
     solveroutput.output=output;
     solveroutput.lambda=lambda;
