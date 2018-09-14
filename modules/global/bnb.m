@@ -1252,6 +1252,21 @@ if ~isempty(stack)
     end
 end
 
+if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0
+    bad = [];
+    for i = 1:length(stack)
+        neg = find(p.c < 0);
+        pos = find(p.c > 0);
+        obj = p.c(pos)'*stack(i).lb(pos) + p.c(neg)'*stack(i).ub(neg);
+        if obj > upper
+            bad = [bad i];
+        end
+    end
+    if ~isempty(bad)
+        stack(bad)=[];
+    end    
+end
+
 if ~isempty(stack)
     lower = min([stack.lower]);
 else
