@@ -276,6 +276,10 @@ else
 
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
+    
+    options.default.cplex = options.cplex;
+    options.default.gurobi = options.gurobi;
+    options.default.mosek = options.mosek;
 end
 
 names = lower(Names);

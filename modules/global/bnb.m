@@ -51,6 +51,12 @@ bnbsolvertime = clock;
 showprogress('Branch and bound started',p.options.showprogress);
 
 % ********************************
+%% Remove options if none has been changed
+%%  Improves peroformance when calling solver many times
+% ********************************
+p.options = pruneOptions(p.options);
+
+% ********************************
 %% We might have a GP : pre-calc
 % ********************************
 p.nonlinear = find(~(sum(p.monomtable~=0,2)==1 & sum(p.monomtable,2)==1));
