@@ -23,7 +23,7 @@ try
     found = 0;
     integers = [];
     while ischar(tline) && ~found
-        if strmatch(tline,'*INTEGERS*')
+        if isequal(tline,'*INTEGERS*') || isequal(tline,'*INTEGER')
             found = 1;
         end
         tline = fgetl(fid);
