@@ -493,6 +493,7 @@ bnb.profile = 0;
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
 cutsdp.maxiter = 100;
+cutsdp.maxtime = 3600;
 cutsdp.cutlimit = inf;
 cutsdp.feastol = -1e-8;
 cutsdp.recoverdual = 0;
