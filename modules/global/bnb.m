@@ -608,6 +608,7 @@ poriginal.atmost.variables = atmostvariables;
 pid = 0;
 lowerhist = [];
 upperhist = [];
+stacksizehist = [];
 p.fixedvariable = [];
 p.fixdir = '';
 lastUpper = upper;
@@ -930,15 +931,19 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
             end
         end
         
+        % Make sure we don't push trivially poor stuff to stack, so reuse
+        % pruning code by creating temporary stacks first
+        tempstack = [];
         if p0_feasible
-            stack = push(stack,node0);
+            tempstack = push(tempstack,node0);
         end
         if p1_feasible
-            stack = push(stack,node1);
+            tempstack = push(tempstack,node1);
         end
-        
+        tempstack = prune(tempstack,upper,p.options,solved_nodes,p);
+        stack = push(stack,tempstack);       
     end
-    
+        
     % Lowest cost in any open node
     if ~isempty(stack)
         lower = min([stack.lower]);
@@ -969,19 +974,31 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         gap = inf;
     end
     
-    if p.options.bnb.plotbounds
-        lowerhist = [lowerhist lower];
-        upperhist = [upperhist upper];
-        hold off
-        plot([lowerhist' upperhist']);
-        drawnow
-    end
-    
+    lowerhist = [lowerhist lower];
+    upperhist = [upperhist upper];
+    stacksizehist = [stacksizehist length(stack)];
+      
     if p.options.bnb.verbose;
         if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)
             if lastUpper > upper
+                if p.options.bnb.plotbounds                    
+                    hold off
+                    subplot(1,2,1);
+                    plot([lowerhist' upperhist']);
+                    subplot(1,2,2);
+                    plot(stacksizehist);
+                    drawnow
+                end
                 fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),'-> Found improved solution!');
             else
+                if p.options.bnb.plotbounds                   
+                    hold off
+                    subplot(1,2,1);
+                    plot([lowerhist' upperhist']);
+                    subplot(1,2,2);
+                    plot(stacksizehist);
+                    drawnow
+                end
                 fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));
             end
         end            
@@ -996,7 +1013,14 @@ function stack = push(stackin,p)
 if ~isempty(stackin)
     stack = [p;stackin];
 else
-    stack(1)=p;
+    if isempty(p)
+        stack = stackin;
+    elseif length(p)==1
+        stack(1) = p;
+    else
+        stack(1) = p(1);
+        stack = [stack;p(2)];
+    end
 end
 
 %%
@@ -1251,27 +1275,67 @@ function [stack,lower] = prune(stack,upper,options,solved_nodes,p)
 % *********************************
 % PRUNE STACK W.R.T NEW UPPER BOUND
 % *********************************
-if ~isempty(stack)
+if ~isempty(stack) && ~isinf(upper)
     %    toolarge = find([stack.lower]>upper*(1-1e-4));
-    toolarge = find([stack.lower]>upper*(1-options.bnb.prunetol));
+    if length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0
+        toolarge = find([stack.lower]>=upper-0.999);
+    else
+        toolarge = find([stack.lower]>upper*(1-.01*options.bnb.prunetol));
+    end
     if ~isempty(toolarge)
         stack(toolarge)=[];
     end
 end
 
+% Prune simple linear model w.r.t bound constraints only
 if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0
     bad = [];
     for i = 1:length(stack)
         neg = find(p.c < 0);
         pos = find(p.c > 0);
         obj = p.c(pos)'*stack(i).lb(pos) + p.c(neg)'*stack(i).ub(neg);
-        if obj > upper
+        if obj >= upper
             bad = [bad i];
         end
     end
     if ~isempty(bad)
         stack(bad)=[];
     end    
+end
+
+% Prune simple linear model w.r.t bound constraints and at-most groups
+if ~isempty(p.atmost.variables)
+    bad = [];
+     if length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0
+         drop = .999;
+     else 
+         drop = 0;
+     end
+     for i = 1:length(stack)
+        neg = double((p.c < 0));
+        pos = double((p.c > 0));
+        %           Positive terms in c     Negative Terms in c    
+        obj_terms = pos.*(p.c).*(stack(i).lb)+neg.*(p.c).*(stack(i).ub);
+        obj_terms(p.c==0) = 0;  
+        obj_terms(isnan(obj_terms)) = -inf;
+        k = setdiff(length(p.c),p.atmost.variables);
+        obj = sum(obj_terms(k));
+        for j = 1:length(p.atmost.groups)
+            k = p.atmost.groups{j};
+            [s,loc] = sort(obj_terms(k));
+            these_obj = obj_terms(k(loc(1:p.atmost.bounds(j))));            
+            obj = obj + sum(these_obj(these_obj <=0));
+        end        
+        if obj >= upper - drop
+            bad = [bad i];
+        end
+        if obj >= stack(i).lower
+            stack(i).lower = obj;
+        end
+     end
+     if ~isempty(bad)
+        stack(bad)=[];
+    end 
 end
 
 if ~isempty(stack)
