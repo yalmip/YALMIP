@@ -8,6 +8,18 @@ function output = cutsdp(p)
 % *************************************************************************
 bnbsolvertime = clock;
 showprogress('Cutting plane solver started',p.options.showprogress);
+optionsIn = p.options;
+
+% ********************************
+%% Remove options if none has been changed
+%% Improves peroformance when calling solver many times
+% ********************************
+p.options = pruneOptions(p.options);
+
+% ********************************
+%% Always try to warm-start
+% ********************************
+p.options.usex0 = 1;
 
 % *************************************************************************
 %% If we want duals, we may not extract bounds. However, bounds must be
@@ -98,6 +110,12 @@ p.options.savesolveroutput = 0;
 % 1 : Display cut progress
 % 2 : Display node solver prints
 % *************************************************************************
+if p.options.verbose ~= fix(p.options.verbose)
+    p.options.print_interval = ceil(1/p.options.verbose);
+    p.options.verbose = ceil(p.options.verbose);
+else
+    p.options.print_interval = 1;
+end
 switch max(min(p.options.verbose,3),0)
     case 0
         p.options.cutsdp.verbose = 0;
@@ -118,6 +136,7 @@ end
 % *************************************************************************
 %% START CUTTING
 % *************************************************************************
+cutsdpsolvertime = clock;
 [x_min,solved_nodes,lower,feasible,D_struc] = cutting(p);
 %% --
 
@@ -130,13 +149,19 @@ if ~feasible
 end
 if solved_nodes == p.options.cutsdp.maxiter
     output.problem = 3;
+elseif etime(clock,cutsdpsolvertime) > p.options.cutsdp.maxtime
+    output.problem = 3;
 end
 output.solved_nodes = solved_nodes;
 output.Primal       = x_min;
 output.Dual = D_struc;
 output.Slack = [];
 output.solverinput  = 0;
-output.solveroutput =[];
+if optionsIn.savesolveroutput
+    output.solveroutput.solved_nodes =solved_nodes;
+else
+    output.solveroutput =[];
+end
 output.solvertime   = etime(clock,bnbsolvertime);
 %% --
 
@@ -153,6 +178,8 @@ if any(p.lb>p.ub)
     D_struc = [];
     return
 end
+
+cutsdpsolvertime = clock;
 
 % *************************************************************************
 %% Create function handle to solver
@@ -177,7 +204,7 @@ if p.options.cutsdp.verbose
     disp(['* Max iterations : ' num2str(p.options.cutsdp.maxiter)]);
 end
 
-if p.options.bnb.verbose;
+if p.options.cutsdp.verbose
     if p.K.s(1)>0
         disp(' Node       Infeasibility     Lower bound    Upper bound  LP cuts   Infeasible SDP cones');
     else
@@ -286,6 +313,9 @@ p.F_struc = p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
 
 upper = inf;
 standard_options = p_lp.options;
+x = [];
+activity = zeros(length(p_lp.K.l),1);
+start_integer = 0;
 while goon
     
     p_lp = nodeTight(p,p_lp);
@@ -303,11 +333,27 @@ while goon
         if p.solver.lower.constraint.inequalities.secondordercone.linear
             ptemp = p_lp;
             ptemp.F_struc = [p_lp.F_struc;p.F_struc(1+p.K.f+p.K.l:p.K.f+p.K.l+sum(p.K.q),:)];
-            ptemp.K.q = p.K.q;
-            output = feval(cutsolver,ptemp);
+            ptemp.K.q = p.K.q;            
+            ptemp.x0 = x;
+            if start_integer
+                output = feval(cutsolver,ptemp);
+            else
+                ptemp.binary_variables = [];
+                ptemp.integer_variables = [];
+                output = feval(cutsolver,ptemp);
+            end                
         else
+            p_lp.x0 = x;
             output = feval(cutsolver,p_lp);
         end
+        
+        if length(activity) < p_lp.K.l
+            activity(p_lp.K.l) = 0;
+        end
+        
+     %   Inactive_Here = find(p_lp.F_struc*[1;output.Primal] >= 1e-6);
+     %   activity(Inactive_Here) = 0.99*activity(Inactive_Here) + 1;
+     %   bar(activity)
         
         % Assume we won't find a feasible solution which we try to improve
         goon_locally = 0;
@@ -365,26 +411,36 @@ while goon
                 end
             end
             
+            if infeasibility >= p.options.cutsdp.feastol && ~start_integer
+                start_integer = 1;
+                infeasibility = infeasibility  - inf;
+                feasible = 1;
+                upper = inf;
+            end
+            
             goon = infeasibility <= p.options.cutsdp.feastol || output.problem ==3;
             goon = goon & feasible;
-            goon = goon || eig_failure;% not psd, but no interesting eigenvalue correctly computed
+            goon = goon || eig_failure;% not psd, but no interesting eigenvalue correctly computed                                    
             goon = goon & (solved_nodes < p.options.cutsdp.maxiter-1);
             goon = goon & ~(upper <=lower);
+            goon = goon && (etime(clock,cutsdpsolvertime) < p.options.cutsdp.maxtime);
         end
         
         solved_nodes = solved_nodes + 1;
         if eig_failure
             infeasibility = nan;
         end
-        if p.options.cutsdp.verbose;
-            if p.K.s(1)>0
-                if output.problem == 3
-                    fprintf(' %4.0f :    %12.3E      %12.3E*  %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+        if p.options.cutsdp.verbose
+            if mod(solved_nodes-1,p.options.print_interval)==0
+                if p.K.s(1)>0
+                    if output.problem == 3
+                        fprintf(' %4.0f :    %12.3E      %12.3E*  %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+                    else
+                        fprintf(' %4.0f :    %12.3E      %12.3E   %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+                    end
                 else
-                    fprintf(' %4.0f :    %12.3E      %12.3E   %12.3E     %2.0f         %2.0f/%2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l,nnz(infeasible_sdp_cones),length(p.K.s));
+                    fprintf(' %4.0f :      %12.3E      %12.3E   %12.3E     %2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l);
                 end
-            else
-                fprintf(' %4.0f :      %12.3E      %12.3E   %12.3E     %2.0f\n',solved_nodes,infeasibility,lower,upper,p_lp.K.l-p.K.l);
             end
         end
         
@@ -495,9 +551,9 @@ if infeasibility<0
     
     if ~isempty(permutation)
         [~,inversepermutation] = ismember(1:length(permutation),permutation);
-        localFstruc = p.semidefinite{i}.F_struc';
+       % localFstruc = p.semidefinite{i}.F_struc';
     else
-        localFstruc = p.semidefinite{i}.F_struc';
+       % localFstruc = p.semidefinite{i}.F_struc';
     end
     
     for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'
@@ -515,23 +571,21 @@ if infeasibility<0
                         dhere = sparse(d(inversepermutation,m));
                     else
                         dhere = sparse(d(:,m));
-                    end
-                    if nnz(dhere)>100
-                        [~,ii] = sort(-abs(dhere));
-                        dhere(abs(dhere) <= abs(dhere(ii(100))))=0;
-                    end
+                    end                  
                     dd = dhere*dhere';dd = dd(:);
-                    index = p.semidefinite{i}.index;
-                    used = find(dd);
-                    bA = (localFstruc(:,index(used))*sparse(dd(used)))';
-                catch
-                    bA = sparse(dd(used))'*p.F_struc(index(used),:);
+                   % index = p.semidefinite{i}.index;
+                   % used = find(dd);
+                    %bA = (localFstruc(:,index(used))*sparse(dd(used)))';
+                 %    bA = sparse(dd)'*p.F_struc(index,:);
+                %catch
+                   % bA = sparse(dd'*p.semidefinite{i}.F_struc(index,:);
+                    bA = sparse(dd'*p.semidefinite{i}.F_struc);
                 end
             end
             b = bA(:,1);
             A = -bA(:,2:end);
             newF = real([newF;[b -A]]);                                  
-            newcuts = newcuts + 1;
+            newcuts = newcuts + 1;            
             if isempty(asave)
                 A(abs(A)<1e-12)=0;
                 b(abs(b)<1e-12)=0;
