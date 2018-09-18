@@ -2,14 +2,15 @@ function output = bnb(p)
 %BNB          General branch-and-bound scheme for conic programs
 %
 % BNB applies a branch-and-bound scheme to solve mixed integer
-% conic programs (LP, QP, SOCP, SDP) and mixed integer geometric programs.
+% coonvex programs.
 %
 % BNB is never called by the user directly, but is called by
 % YALMIP from SOLVESDP, by choosing the solver tag 'bnb' in sdpsettings.
 %
 % BNB is used if no other mixed integer solver is found, and
-% is only useful for very small problems, due to its simple
-% and naive implementation.
+% is only meant to be used for mxied-integer SDP, or general nonconvex
+% mixed-integer problems (as there are much better solvers available for
+% standard LP/QP/SOCP models)
 %
 % The behaviour of BNB can be altered using the fields
 % in the field 'bnb' in SDPSETTINGS
