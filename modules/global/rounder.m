@@ -14,39 +14,35 @@ x_min = x;
 
 % These should be integer
 intvars = [p.integer_variables(:);p.binary_variables(:)];
+convars = p.noninteger_variables;
 
 if ismember('shifted ceil',p.options.bnb.rounding)
     % Round, update nonlinear terms, and compute feasibility
-    for tt = logspace(0,-4,4)
-        
+    for tt = logspace(0,-4,4)        
         f = x(intvars)-floor(x(intvars));
         xtemp = x;xtemp(intvars) = round(xtemp(intvars));
         xtemp(intvars(f > tt)) = ceil(x(intvars(f > tt)));
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
         xtemp = fix_semivar(p,xtemp);
-        xtemp = setnonlinearvariables(p,xtemp);        
+        xtemp = setnonlinearvariables(p,xtemp);
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-        if upperhere < upper 
+        if upperhere < upper
             if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
                 x_min = xtemp;
-                upper =upperhere;                                       
+                upper =upperhere;
             end
         end
     end
 end
 
 if ismember('shifted round',p.options.bnb.rounding)
-    % Pre-extract...
-    if nnz(p.Q)==0 && nnz(p.corig)==1 && length(p.K.s)==1 && p.K.s(1)>0
-        k = find(p.corig);
-        if ~ismember(k,intvars)
-            other = setdiff(1:length(p.corig),k);
-            H = p.F_struc(1+p.K.l+p.K.f:end,:);
-            H0 = reshape(H(:,1),p.K.s(1),p.K.s(1));
-            Hx = reshape(H(:,1+k),p.K.s(1),p.K.s(1));
-            Hz = H(:,1 + other);
-        end
+    % Pre-extract...    
+    if length(convars)==1 && length(p.K.s)==1
+        H = p.F_struc(1+p.K.l+p.K.f:end,:);
+        H0 = reshape(H(:,1),p.K.s(1),p.K.s(1));if nnz(H0)/numel(H0)>0.5;H0 = full(H0);end
+        Hx = reshape(H(:,1+convars),p.K.s(1),p.K.s(1));if nnz(Hx)/numel(Hx)>0.5;Hx = full(Hx);end
+        Hz = H(:,1 + intvars);if nnz(Hz)/numel(Hz)>0.5;Hz = full(Hz);end
     end
     % Round, update nonlinear terms, and compute feasibility
     for tt = -.5:0.1:0.5
@@ -54,40 +50,34 @@ if ismember('shifted round',p.options.bnb.rounding)
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
         xtemp = fix_semivar(p,xtemp);
-      %  xtemp = fix_atmost(p,xtemp,x);
-        xtemp = setnonlinearvariables(p,xtemp);  
-        if nnz(xtemp(intvars)) > p.cardinality.upper
-            [sorted,loc] = sort(abs(x(intvars)));   
-            xtemp(intvars(loc(1:(length(intvars)-p.cardinality.upper))))=0;
-        end
+        % xtemp = fix_atmost(p,xtemp,x);
+        xtemp = setnonlinearvariables(p,xtemp);        
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper
             if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
                 x_min = xtemp;
-                upper =upperhere;%p.f+x_min'*p.Q*x_min + p.corig'*x_min;
-               % return
+                upper =upperhere;               
             else
                 % Check for common SDP case such as maximizing smallest eigenvalue
-                % or minimizing largest.
-                % We are lookng for 1 variable objective, and that variable
-                % only enters a single matrix constraint                
+                % or minimizing largest.                  
                 % With x fixed, smallest t can be computed by gevp
-                if nnz(p.Q)==0 && nnz(p.corig)==1 && length(p.K.s)==1 && p.K.s(1)>0
-                    k = find(p.corig);
-                    if ~ismember(k,intvars)                        
-                      %  other = setdiff(1:length(p.corig),k);
-                      %  H = p.F_struc(1+p.K.l+p.K.f:end,:);
-                      %  H0 = reshape(H(:,1),p.K.s(1),p.K.s(1));
-                      %  Hx = reshape(H(:,1+k),p.K.s(1),p.K.s(1));
-                      %  Hy = H0 + reshape(H(:,1 + other)*xtemp(other),p.K.s(1),p.K.s(1));
-                        Hy = H0 + reshape(Hz*xtemp(other),p.K.s(1),p.K.s(1));
-                        xtemp(k) = min(-1./eig(full(Hx),full(Hy)));
-                        upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-                        if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
-                            x_min = xtemp;
-                            upper =upperhere;
-                        %    return
-                        end
+                % TODO: Support and loop over several LMIs
+                if length(convars) == 1 && length(p.K.s)==1 && p.K.s(1)>0                    
+                    Hy = H0 + reshape(Hz*xtemp(intvars),p.K.s(1),p.K.s(1));
+                    s = eig(full(Hx),full(Hy));
+                    s(isinf(s))=[];
+                    s(isnan(s))=[];
+                    if any(s)                             
+                        xtemp(convars) = min(-1./s(s~=0));                        
+                        if ~isnan(xtemp(convars))
+                            xtemp(convars) = max(xtemp(convars),p.lb(convars));
+                            xtemp(convars) = min(xtemp(convars),p.ub(convars));
+                            upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
+                            if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
+                                x_min = xtemp;
+                                upper = upperhere;                          
+                            end
+                        end                    
                     end
                 end
             end
@@ -200,17 +190,5 @@ for i = 1:length(p.atmost.groups)
         n_should_be_zero = length(p.atmost.groups{i}) - p.atmost.bounds(i);
         [y,loc] = sort(abs(x(k)));
         would(k(loc(1:n_should_be_zero))) =  would(k(loc(1:n_should_be_zero))) + 1;        
-    end
-end
-
-for i = 1:length(p.atmost.groups)
-    k = p.atmost.groups{i};
-    if nnz(xtemp(k))> p.atmost.bounds(i);
-        adjusted = 1;
-        n_should_be_zero = length(p.atmost.groups{i}) - p.atmost.bounds(i);
-        [y,loc] = sort(-would(k)+abs(x(k))');
-        xtemp(k(loc(1:n_should_be_zero))) = 0;
-        x(k(loc(1:n_should_be_zero))) = 0;
-        would(k(loc(n_should_be_zero+1:end))) =  would(k(loc(n_should_be_zero+1:end)))-1;           
     end
 end

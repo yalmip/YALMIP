@@ -42,6 +42,9 @@ p.options = pruneOptions(p.options);
 % ********************************
 p.options.usex0 = 1;
 
+% Arg, new format
+p.options.cutsdp.feastol = -p.options.cutsdp.feastol;
+
 % *************************************************************************
 %% If we want duals, we may not extract bounds. However, bounds must be
 % extracted in discrete problems.
@@ -330,7 +333,7 @@ while goon
     
     % Keep history of what we have been doing. Used for some diagnostics
     phaseHistory = [phaseHistory integerPhase ];
-    
+       
     % Basic presolve etc (currently not used)
     p_lp = nodeTight(p,p_lp);
     p_lp = nodeFix(p,p_lp);
@@ -406,8 +409,11 @@ while goon
         infeasibility = 0;
         [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);
         [p_lp,infeasibility,infeasible_sdp_cones,eig_failure] = add_sdp_cut(p,p_lp,x,infeasibility);
-        if integerPhase
+       
+        added_no_good = 0;
+        if integerPhase %&& any(infeasible_sdp_cones)
             [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility);
+            added_no_good = 1;          
         end
         
         if p.options.cutsdp.plotcut
@@ -451,16 +457,30 @@ while goon
             bigImprovementbyInteger = 0;
         end
         
+        aggresiveJustTurnedOff = 0;
         if aggresive && ~goon && ~bigImprovementbyInteger
             goon = 1;
             aggresive = 0;
-            upper = upper  + 1e-6;
+            upper = upper;
+            aggresiveJustTurnedOff = 1;
+            if added_no_good
+                % We're backing off and now running without the pushing
+                % lower bound. If we added a no-good on last solution, we
+                % must remove it, as this actually could have been the
+                % optimal solution
+                p_lp.F_struc(end,:)=[];
+                p_lp.K.l = p_lp.K.l - 1;
+            end;
         end
         
         goon = goon & feasible;
         goon = goon || eig_failure;% not psd, but no interesting eigenvalue correctly computed
         goon = goon & (solved_nodes < p.options.cutsdp.maxiter-1);
         goon = goon & ~(upper <=lower);
+        if ~aggresiveJustTurnedOff && ~aggresive
+         goon = goon && lower < upper;
+        end        
+        goon = goon || aggresiveJustTurnedOff;
         goon = goon && (etime(clock,cutsdpsolvertime) < p.options.cutsdp.maxtime);
     end
     
@@ -495,27 +515,22 @@ if p.K.s(1)>0
         x = xsave;
         iter = 1;
         keep_projecting = 1;
-        infeasibility = 0;
-        %    lin = p_lp.K.l;
+        infeasibility = 0;                
+        psave = p_lp;
         while iter <= p.options.cutsdp.maxprojections+1 & (infeasibility(end) < -p.options.cutsdp.feastol) && keep_projecting
-            % Add one cut b + a'*x >= 0 (if x infeasible)
-            %l0 = p_lp.K.l;
+            % Add cuts b + a'*x >= 0 (if x infeasible)            
             [X,p_lp,infeasibility(iter),a,b,failure] = add_one_sdp_cut(p,p_lp,x,i);
+               
             eig_computation_failure = eig_computation_failure & failure;
             if infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
                 % Project current point on the hyper-plane associated with
                 % the most negative eigenvalue and move towards the SDP
-                % feasible region, and the iterate a couple of iterations
-                % to generate a deeper cut
-                x0 = x;
-                try
-                    x = x + a*(-b-a'*x)/(a'*a);
-                    x(x <= p.lb) = p.lb(x <= p.lb);
-                    x(x >= p.ub) = p.ub(x >= p.ub);
-                    % x(p.integer_variables) = round(x(p.integer_variables));
-                catch
-                    
-                end
+                % feasible region, and then iterate a couple of iterations
+                % to generate a deeper cut                
+                x0 = x;                
+                x = x + a*(-b-a'*x)/(a'*a);
+                x(x <= p.lb) = p.lb(x <= p.lb);                
+                x(x >= p.ub) = p.ub(x >= p.ub);               
                 keep_projecting = norm(x-x0)>= p.options.cutsdp.projectionthreshold;
             else
                 keep_projecting = 0;
@@ -555,12 +570,14 @@ bsave = [];
 permutation = [];
 failure = 0;
 if p.options.cutsdp.cutlimit == 0
-    [R,indefinite] = chol(X+eye(length(X))*1e-12);
-    if indefinite
-        infeasibility = -1;
-    else
-        infeasibility = 0;
-    end
+     [d,v] = eig(full(X));
+     infeasibility = v(1,1);
+    %[R,indefinite] = chol(X+eye(length(X))*1e-12);
+    %if indefinite
+    %    infeasibility = -1;
+    %else
+    %    infeasibility = 0;
+    %end
     return
 end
 
@@ -586,10 +603,7 @@ if infeasibility<0
     [ii,jj] = sort(diag(v));
     
     if ~isempty(permutation)
-        [~,inversepermutation] = ismember(1:length(permutation),permutation);
-        % localFstruc = p.semidefinite{i}.F_struc';
-    else
-        % localFstruc = p.semidefinite{i}.F_struc';
+        [~,inversepermutation] = ismember(1:length(permutation),permutation);      
     end
     
     for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'
@@ -647,22 +661,11 @@ function [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility)
 if length(x) ==  length(p.binary_variables)
     % Add a nogood cut. Might already have been generated by
     % the SDP cuts, but it doesn't hurt to add it
-    zv = find(x == 0);
-    nz = find(x == 1);
-    a = zeros(1,length(x));
-    a(zv) = 1;
-    a(nz) = -1;
-    b = length(x)-length(zv)-1;
-    newF = [b a];
-    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);newF];
+    [b,a] = exclusionCut(x,1);    
+    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);b a];
     p_lp.K.l = p_lp.K.l + 1;
 elseif length(p.c)==length(p.integer_variables) && all(p_lp.ub <= 0) && all(p_lp.lb >= -1)
-    nz = find(x ~= 0);
-    zv = find(x == 0);
-    b = length(zv)-1;
-    a = spalloc(1,length(x),length(zv));
-    a(nz) = -1;
-    a(zv) = 1;
+    [b,a] = exclusionCut(x,-1);
     p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);b a];
     p_lp.K.l=p_lp.K.l+1;
 end
@@ -889,12 +892,10 @@ if ~isempty(prevRem)
     % We're keeping a pool of removed cuts, and if they turn active
     % again, add them and define them as very likely to be kept
     Violated_Here = find((prevRem*[1;output.Primal] <= 0));
-    p_lp.F_struc = [p_lp.F_struc;prevRem(Violated_Here,:)];
-    p_lp.K.l = p_lp.K.l + length(Violated_Here);
-    if integerPhase
-        activity = [activity ones(1,length(Violated_Here))*-20];
-    else
-        activity = [activity ones(1,length(Violated_Here))*-2000];
+    if ~isempty(Violated_Here)
+        p_lp.F_struc = [p_lp.F_struc;prevRem(Violated_Here,:)];
+        p_lp.K.l = p_lp.K.l + length(Violated_Here);
+        activity = [activity ones(1,length(Violated_Here))*-20];      
+        prevRem(Violated_Here,:)=[];
     end
-    prevRem(Violated_Here,:)=[];
 end

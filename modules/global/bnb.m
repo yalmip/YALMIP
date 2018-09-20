@@ -1,32 +1,20 @@
 function output = bnb(p)
-%BNB          General branch-and-bound scheme for conic programs
+%BNB          General branch-and-bound scheme for (primarily) conic programs
 %
-% BNB applies a branch-and-bound scheme to solve mixed integer
-% coonvex programs.
+% BNB applies a branch-and-bound scheme to solve mixed-integer
+% convex programs, in particular linear mixed-integer semidefinite
+% programs
 %
 % BNB is never called by the user directly, but is called by
 % YALMIP from SOLVESDP, by choosing the solver tag 'bnb' in sdpsettings.
 %
-% BNB is used if no other mixed integer solver is found, and
-% is only meant to be used for mxied-integer SDP, or general nonconvex
-% mixed-integer problems (as there are much better solvers available for
-% standard LP/QP/SOCP models)
+% BNB is used if no other mixed-integer solver is found, and
+% is only meant to be used for mixed-integer SDP, or maybe general
+% nonlinear mixed-integer problems (as there are much better solvers
+% available for standard LP/QP/SOCP models) 
 %
-% The behaviour of BNB can be altered using the fields
-% in the field 'bnb' in SDPSETTINGS
-%
-% bnb.branchrule   Deceides on what variable to branch
-%                   'max'     : Variable furthest away from being integer
-%                   'min'     : Variable closest to be being integer
-%                   'first'   : First variable (lowest variable index in YALMIP)
-%                   'last'    : Last variable (highest variable index in YALMIP)
-%                   'weight'  : See manual
-%
-% bnb.method       Branching strategy
-%                   'depth'   : Depth first
-%                   'breadth' : Breadth first
-%                   'best'    : Expand branch with lowest lower bound
-%                   'depthX'  : Depth until integer solution found, then X (e.g 'depthbest')
+% The behaviour of BNB can be altered using the fields in the field 'bnb'
+% in SDPSETTINGS (although defaults are recommended)
 %
 % solver           Solver for the relaxed problems (standard solver tag, see SDPSETTINGS)
 %
@@ -42,8 +30,24 @@ function output = bnb(p)
 %
 % round            Round variables smaller than bnb.inttol
 %
+% plot             Plot the upper and lower bound, stack size, and
+%                  histogram of lower bounds in stack
 %
-% See also SOLVESDP, BINVAR, INTVAR, BINARY, INTEGER
+% bnb.branchrule   Deceides on what variable to branch
+%                   'max'     : Variable furthest away from being integer
+%                   'min'     : Variable closest to be being integer
+%                   'first'   : First variable (lowest variable index in YALMIP)
+%                   'last'    : Last variable (highest variable index in YALMIP)
+%                   'weight'  : See manual
+%
+% bnb.method       Branching strategy
+%                   'depth'   : Depth first
+%                   'breadth' : Breadth first
+%                   'best'    : Expand branch with lowest lower bound
+%                   'depthX'  : Depth until integer solution found, then X (e.g 'depthbest')
+%
+%
+% See also OPTIMIZE, BINVAR, INTVAR, BINARY, INTEGER
 
 % ********************************
 %% INITIALIZE DIAGNOSTICS IN YALMIP
@@ -82,40 +86,7 @@ end
 % ********************************
 %% Extract bounds from model
 % ********************************
-if ~isempty(p.F_struc)
-    [lb,ub,used_rows_eq,used_rows_lp] = findulb(p.F_struc,p.K);
-    if ~isempty(used_rows_lp)
-        used_rows_lp = used_rows_lp(~any(full(p.F_struc(p.K.f + used_rows_lp,1+p.nonlinear)),2));
-        if ~isempty(used_rows_lp)
-            lower_defined = find(~isinf(lb));
-            if ~isempty(lower_defined)
-                p.lb(lower_defined) = max(p.lb(lower_defined),lb(lower_defined));
-            end
-            upper_defined = find(~isinf(ub));
-            if ~isempty(upper_defined)
-                p.ub(upper_defined) = min(p.ub(upper_defined),ub(upper_defined));
-            end
-            p.F_struc(p.K.f + used_rows_lp,:)=[];
-            p.K.l = p.K.l - length(used_rows_lp);
-        end
-    end
-    
-    if ~isempty(used_rows_eq)
-        used_rows_eq = used_rows_eq(~any(full(p.F_struc(used_rows_eq,1+p.nonlinear)),2));
-        if ~isempty(used_rows_eq)
-            lower_defined = find(~isinf(lb));
-            if ~isempty(lower_defined)
-                p.lb(lower_defined) = max(p.lb(lower_defined),lb(lower_defined));
-            end
-            upper_defined = find(~isinf(ub));
-            if ~isempty(upper_defined)
-                p.ub(upper_defined) = min(p.ub(upper_defined),ub(upper_defined));
-            end
-            p.F_struc(used_rows_eq,:)=[];
-            p.K.f = p.K.f - length(used_rows_eq);
-        end
-    end
-end
+p = extractBounds(p);
 
 % ********************************
 %% ADD CONSTRAINTS 0<x<1 FOR BINARY
@@ -142,36 +113,11 @@ end
 p = compile_nonlinear_table(p);
 p = updatemonomialbounds(p);
 
-% *******************************
-%% PRE-SOLVE (nothing fancy coded)
-% *******************************
-pss=[];
+% % *******************************
+% %% PRE-SOLVE (nothing fancy coded)
+% % *******************************
+p = simplePresolve(p)
 p = propagate_bounds_from_equalities(p);
-
-if p.K.f > 0
-    pp = p;
-    r = find(p.lb == p.ub);
-    pp.F_struc(:,1) = pp.F_struc(:,1) + pp.F_struc(:,r+1)*p.lb(r);
-    pp.F_struc(:,r+1)=[];
-    pp.lb(r)=[];
-    pp.ub(r)=[];
-    pp.variabletype(r)=[];
-    % FIXME: This is lazy, should update new list
-    pp.binary_variables = [];
-    pp.integer_variables = [];
-    pp = propagate_bounds_from_equalities(pp);
-    other = setdiff(1:length(p.lb),r);
-    p.lb(other) = pp.lb;
-    p.ub(other) = pp.ub;
-    p = update_integer_bounds(p);
-    redundant = find(~any(pp.F_struc(1:p.K.f,2:end),2));
-    if any(p.F_struc(redundant,1)<0)
-        p.feasible = 0;
-    else
-        p.F_struc(redundant,:)=[];
-        p.K.f = p.K.f - length(redundant);
-    end
-end
 
 if isempty(p.nonlinear)
     if p.K.f>0
@@ -206,18 +152,6 @@ if p.K.l > 0
         p.F_struc(p.K.f + redundant,:) = [];
         p.K.l = p.K.l - length(redundant);
     end
-end
-
-% *******************************
-%% PERTURBATION OF LINEAR COST
-% *******************************
-p.corig = p.c;
-if nnz(p.Q)==0 & isequal(p.K.m,0)
-    %     g = randn('seed');
-    %     randn('state',1253); %For my testing, I keep this the same...
-    %     % This perturbation has to be better. Crucial for many real LP problems
-    %     p.c = (p.c).*(1+randn(length(p.c),1)*1e-4);
-    %     randn('seed',g);
 end
 
 % *******************************
@@ -274,37 +208,6 @@ try % Probably buggy first version...
 catch
     disp('Something wrong with weights. Please report bug');
     p.weight = ones(length(p.c),1);
-end
-
-% *******************************
-%% Extract simple cardinalities
-%% might be useful to know
-% *******************************
-p.cardinality.upper = inf;
-p.cardinality.lower = 0;
-if p.K.l >= 0
-    top = p.K.f;
-    intvars = union(p.binary_variables,p.integer_variables);
-    nonintvars = setdiff(1:length(p.c),intvars);
-    for j = 1:p.K.l
-        b = p.F_struc(top+j,1);
-        a = p.F_struc(top+j,2:end);
-        if isempty(nonintvars) || all(a(nonintvars)==0)
-            if all(a(intvars)==1)
-                if all(p.ub(intvars)<=0)
-                    p.cardinality.upper = b;
-                elseif all(p.lb(intvars)>=0)
-                    p.cardinality.lower = -b;
-                end
-            elseif all(a(intvars)==-1)
-                if all(p.ub(intvars)<=0)
-                    p.cardinality.lower = -b;
-                elseif all(p.lb(intvars)>=0)
-                    p.cardinality.upper = b;
-                end
-            end
-        end
-    end
 end
 
 % *******************************
@@ -388,37 +291,39 @@ p.lower = NaN;
 if p.options.usex0
     [x_min,upper] = initializesolution(p);
     if isinf(upper)
-        % Try to initialize to lowerbound+ upperbound. fmincon really
+        % Try to initialize to lowerbound+upperbound. fmincon really
         % doesn't like zero initial guess, despite having bounds available
-        x_min   = zeros(length(p.c),1);
+        x_min = zeros(length(p.c),1);
         violates_finite_bounds = ((x_min < p.lb) | (x_min < p.ub));
         violates_finite_bounds = find(violates_finite_bounds & ~isinf(p.lb) & ~isinf(p.ub));
         x_min(violates_finite_bounds) = (p.lb(violates_finite_bounds) + p.ub(violates_finite_bounds))/2;
-        x_min  = setnonlinearvariables(p,x_min);
+        x_min = setnonlinearvariables(p,x_min);
     end
-    p.x0    = x_min;
+    p.x0 = x_min;
 else
-    upper   = inf;
-    x_min   = zeros(length(p.c),1);
+    upper = inf;
+    x_min = zeros(length(p.c),1);
     violates_finite_bounds = ((x_min < p.lb) | (x_min < p.ub));
     violates_finite_bounds = find(violates_finite_bounds & ~isinf(p.lb) & ~isinf(p.ub));
     x_min(violates_finite_bounds) = (p.lb(violates_finite_bounds) + p.ub(violates_finite_bounds))/2;
-    x_min  = setnonlinearvariables(p,x_min);
-    p.x0    = x_min;
+    x_min = setnonlinearvariables(p,x_min);
+    p.x0 = x_min;
 end
 
 
 % *******************************
 %% Global stuff
 % *******************************
-lower   = NaN;
-stack   = [];
+lower = NaN;
+stack = stackCreate;
 
 % *******************************
 %% Create function handle to solver
 % *******************************
 lowersolver = p.solver.lower.call;
 uppersolver = p.options.bnb.uppersolver;
+
+p.corig = p.c;
 
 % *******************************
 %% INVARIANT PROBLEM DATA
@@ -510,7 +415,7 @@ if p.options.bnb.verbose
         
     end
 end
-if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)      Lower    Open');end;
+if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
 
 if nnz(Q)==0 & nnz(c)==1 & isequal(p.K.m,0)
     p.simplecost = 1;
@@ -521,90 +426,9 @@ end
 poriginal = p;
 p.cuts = [];
 
-%% MAIN LOOP
-% p.options.rounding = [1 1 1];
-
-if p.options.bnb.nodefix & (p.K.s(1)>0)
-    top=1+p.K.f+p.K.l+sum(p.K.q);
-    for i=1:length(p.K.s)
-        n=p.K.s(i);
-        for j=1:size(p.F_struc,2)-1;
-            X=full(reshape(p.F_struc(top:top+n^2-1,j+1),p.K.s(i),p.K.s(i)));
-            X=(X+X')/2;
-            v=real(eig(X+sqrt(eps)*eye(length(X))));
-            if all(v>=0)
-                sdpmonotinicity(i,j)=-1;
-            elseif all(v<=0)
-                sdpmonotinicity(i,j)=1;
-            else
-                sdpmonotinicity(i,j)=nan;
-            end
-        end
-        top=top+n^2;
-    end
-else
-    sdpmonotinicity=[];
-end
-
-% Try to find sum(d_i) = 1
-sosgroups = {};
-sosvariables = [];
-if p.K.f > 0 & ~isempty(p.binary_variables)
-    nbin = length(p.binary_variables);
-    Aeq = -p.F_struc(1:p.K.f,2:end);
-    beq = p.F_struc(1:p.K.f,1);
-    notbinary_var_index = setdiff(1:length(p.lb),p.binary_variables);
-    only_binary = ~any(Aeq(:,notbinary_var_index),2);
-    Aeq_bin = Aeq(find(only_binary),p.binary_variables);
-    beq_bin = beq(find(only_binary),:);
-    % Detect groups with constraints sum(d_i) == 1
-    sosgroups = {};
-    for i = 1:size(Aeq_bin,1)
-        if beq_bin(i) == 1
-            [ix,jx,sx] = find(Aeq_bin(i,:));
-            if all(sx == 1)
-                sosgroups{end+1} = p.binary_variables(jx);
-                sosvariables = [sosvariables p.binary_variables(jx)];
-            end
-        end
-    end
-end
-p.sosgroups = sosgroups;
-p.sosvariables = sosvariables;
-
-atmostgroups = {};
-atmostbounds = [];
-atmostvariables = [];
-if p.K.l > 0 & ~isempty(p.integer_variables)
-    nint = length(p.integer_variables);
-    Aineq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
-    bineq = p.F_struc(p.K.f + (1:p.K.l),1);
-    notinteger_var_index = setdiff(1:length(p.lb),p.integer_variables);
-    only_integer = ~any(Aineq(:,notinteger_var_index),2);
-    Aineq_bin = Aineq(find(only_integer),p.integer_variables);
-    bineq_bin = bineq(find(only_integer),:);
-    % Detect groups with constraints #(d_i ~= 0) <= k (for binaries)
-    atmostgroups = {};
-    for i = 1:size(Aineq_bin,1)
-        if bineq_bin(i) >= 1
-            [ix,jx,sx] = find(Aineq_bin(i,:));
-            % 0/1 or -1/0 variables with with bounded cardinality
-            if all(sx == -1) && ((all(p.lb(jx)==-1) && all(p.ub(jx)==0)) || (all(p.ub(jx)==1) && all(p.lb(jx)==0)))                
-                atmostgroups{end+1} = p.integer_variables(jx);
-                atmostbounds = [atmostbounds floor(bineq_bin(i))];
-                atmostvariables = [atmostvariables p.integer_variables(jx)];
-            end
-        end
-    end
-end
-p.atmost.groups = atmostgroups;
-p.atmost.bounds = atmostbounds;
-p.atmost.variables = atmostvariables;
-
-poriginal.atmost.groups = atmostgroups;
-poriginal.atmost.bounds = atmostbounds;
-poriginal.atmost.variables = atmostvariables;
-
+p = detectSOS(p);
+p = detectAtMost(p);
+poriginal.atmost = p.atmost;
 
 pid = 0;
 lowerhist = [];
@@ -621,23 +445,19 @@ if length(p.integer_variables) == length(p.c)
 else
     p.all_integers = 0;
 end
+p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
+poriginal.noninteger_variables = p.noninteger_variables;
 
+feasibilityHistory = [];
+aggresiveprune = 0;
+% Save of all optimal solutions
+allSolutions = [];
 while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
-    
-    % ********************************************
-    % Adjust variable bound based on upper bound
-    % ********************************************
-    % This code typically never runs but can be turned on
-    % using options.bnb.nodetight and bnb.nodefix.
-    if ~isinf(upper) & ~isnan(lower)
-        [p,poriginal,stack] = pruneglobally(p,poriginal,upper,lower,stack,x);
-        [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,sdpmonotinicity);      
-    end
-    
+
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
-    binary_variables  = p.binary_variables;
+    binary_variables = p.binary_variables;
     
     % ********************************************
     % SO ARE SEMI VARIABLES
@@ -664,21 +484,9 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         relaxed_p.binary_variables = [];
         relaxed_p.semicont_variables = [];
         relaxed_p.ub(p.ub<p.lb) = relaxed_p.lb(p.ub<p.lb);
-        % Exclusion cuts for binaries
-        % TODO: Move to solvelower
-        if upper<inf & length(poriginal.binary_variables)==length(poriginal.c) & p.K.f == 0
-            positive = find(x_min==1);
-            zero = find(x_min==0);
-            % Add cut c'*x < c*xmin,
-            cc = poriginal.c;
-            cc(positive) = ceil(cc(positive));
-            cc(zero) = floor(cc(zero));
-            relaxed_p.K.l =  relaxed_p.K.l+1;
-            relaxed_p.F_struc = [-1+sum(cc(positive)) -cc';relaxed_p.F_struc];
-        end
         
         % Solve node relaxation
-        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min);
+        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
         
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
@@ -762,19 +570,22 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
                 poriginal.upper = upper;
                 poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);
+                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);               
                 if upper1 < upper
                     x_min = x_min1;
+                    allSolutions = x_min;
                     upper = upper1;
-                    [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p);
-                    lower = min(lower,stacklower);
-                    [p,poriginal,stack] = pruneglobally(p,poriginal,upper,lower,stack,x_min);
-                    [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,sdpmonotinicity);
+                    [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+                    lower = min(lower,stacklower);                   
+                elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
+                    % Yet another solution with same value
+                     allSolutions = [allSolutions x_min1];                    
                 end
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
         end
     end
+        
     p = adaptivestrategy(p,upper,solved_nodes);
     
     % *************************************
@@ -783,7 +594,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     feasible = 1;
     
     switch output.problem
-        case {-1}
+        case {-1,4}
             % Solver behaved weird. Make sure we continue digging
             keep_digging = 1;
             feasible = 1;
@@ -812,7 +623,8 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         if (cost<upper) & feasible
             x_min = x;
             upper = cost;
-            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p);
+            allSolutions = x_min;
+            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
         end
         p = adaptivestrategy(p,upper,solved_nodes);
         keep_digging = 0;
@@ -821,10 +633,11 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     % **************************************
     % Stop digging if it won't give sufficient improvement anyway
     % **************************************
-    if cost>upper*(1-1e-6)
+    if cost>upper*(1-p.options.bnb.gaptol)
         keep_digging = 0;
     end
     
+    feasibilityHistory(end+1) = feasible;
     % **********************************
     % CONTINUE SPLITTING?
     % **********************************
@@ -858,10 +671,10 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
                 
             case 'sos1'
                 [p0,p1] = sos1split(p,x,index,cost,x_min);
-                
+                                        
             otherwise
         end
-        
+                
         node1.lb = p1.lb;
         node1.ub = p1.ub;
         node1.depth = p1.depth;
@@ -878,7 +691,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         node1.pid = pid;pid = pid + 1;
         node1.sosgroups = p1.sosgroups;
         node1.sosvariables = p1.sosvariables;
-        node1.atmost = p1.atmost;
+        node1.atmost = p1.atmost;        
                 
         node0.lb = p0.lb;
         node0.ub = p0.ub;
@@ -896,7 +709,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         node0.pid = pid;pid = pid + 1;
         node0.sosgroups = p0.sosgroups;
         node0.sosvariables = p0.sosvariables;
-        node0.atmost = p0.atmost;
+        node0.atmost = p0.atmost;        
         
         if ismember(globalindex,p.atmost.variables)
             for j = 1:length(p.atmost.groups)
@@ -934,24 +747,31 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         
         % Make sure we don't push trivially poor stuff to stack, so reuse
         % pruning code by creating temporary stacks first
-        tempstack = [];
-        if p0_feasible
+        tempstack = stackCreate;
+        if p0_feasible            
             tempstack = push(tempstack,node0);
         end
         if p1_feasible
             tempstack = push(tempstack,node1);
         end
-        tempstack = prune(tempstack,upper,p.options,solved_nodes,p);
-        stack = push(stack,tempstack);       
+        tempstack = prune(tempstack,upper,p.options,solved_nodes,p,allSolutions);
+        stack = mergeStack(stack,tempstack);    
     end
         
-    % Lowest cost in any open node
-    if ~isempty(stack)
-        lower = min([stack.lower]);
+     if stackLength(stack)>0
+        lower = stackLower(stack);
         if can_use_ceil_lower
             lower = ceil(lower);
         end
     end
+    
+    % Dude, all problems we solve now are infeasible. Start presolving LPs
+    % before going all in on the full SDP
+    if length(feasibilityHistory) > 5 && all(feasibilityHistory(end-4:end)==0)
+        aggresiveprune = 1;
+    else
+        aggresiveprune = 0;
+    end    
     
     % **********************************
     % Get a new node to solve
@@ -977,94 +797,42 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     
     lowerhist = [lowerhist lower];
     upperhist = [upperhist upper];
-    stacksizehist = [stacksizehist length(stack)];
+    stacksizehist = [stacksizehist stackLength(stack)];
       
     if p.options.bnb.verbose;
         if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)
-            if lastUpper > upper
-                if p.options.bnb.plotbounds                    
-                    hold off
-                    subplot(1,2,1);
-                    plot([lowerhist' upperhist']);
-                    subplot(1,2,2);
-                    plot(stacksizehist);
-                    drawnow
-                end
-                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),'-> Found improved solution!');
-            else
-                if p.options.bnb.plotbounds                   
-                    hold off
-                    subplot(1,2,1);
-                    plot([lowerhist' upperhist']);
-                    subplot(1,2,2);
-                    plot(stacksizehist);
-                    drawnow
-                end
-                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',solved_nodes,upper,100*gap,lower,length(stack)+length(node),yalmiperror(output.problem));
+            if p.options.bnb.plot
+                hold off
+                subplot(1,3,1);               
+                l = plot([lowerhist' upperhist']);set(l,'linewidth',2);
+                title('Upper/lower bounds')
+                subplot(1,3,2);                
+                l = plot(stacksizehist);set(l,'linewidth',2);
+                title('Open nodes')
+                drawnow
+                subplot(1,3,3);   
+                hist(getStackLowers(stack),25);
+                title('Histogram lower bounds')
+                drawnow
             end
-        end            
+            if lastUpper > upper
+                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),'-> Found improved solution!');
+            else
+                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),yalmiperror(output.problem));
+            end
+        end
     end
-    lastUpper = upper;
-    
+    lastUpper = upper;    
 end
 if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
-
-
-function stack = push(stackin,p)
-if ~isempty(stackin)
-    stack = [p;stackin];
-else
-    if isempty(p)
-        stack = stackin;
-    elseif length(p)==1
-        stack(1) = p;
-    else
-        stack(1) = p(1);
-        stack = [stack;p(2)];
-    end
-end
-
-%%
-function [p,stack] = pull(stack,method,x_min,upper);
-
-if ~isempty(stack)
-    switch method
-        case {'depth','depthfirst','depthbreadth','depthproject','depthbest'}
-            [i,j]=max([stack.depth]);
-            p=stack(j);
-            stack = stack([1:1:j-1 j+1:1:end]);
-            
-        case 'project'
-            [i,j]=min([stack.projection]);
-            p=stack(j);
-            stack = stack([1:1:j-1 j+1:1:end]);
-            
-        case 'breadth'
-            [i,j]=min([stack.depth]);
-            p=stack(j);
-            stack = stack([1:1:j-1 j+1:1:end]);
-            
-        case 'best'
-            [i,j]=min([stack.lower]);
-            % candidates = find([stack.lower] == stack(j).lower);
-            % [i,j] = min([stack(candidates).IntInfeas]);
-            % j = candidates(j);
-            p=stack(j);
-            stack = stack([1:1:j-1 j+1:1:end]);
-            
-        otherwise
-    end
-else
-    p = [];
-end
-
+    
 % **********************************
 %% BRANCH VARIABLE
 % **********************************
 function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p)
 all_variables = [integer_variables(:);binary_variables(:)];
 
-if isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')
+if ~isempty(p.sosvariables) && isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')
     % All variables are in SOS1 constraints
     for i = 1:length(p.sosgroups)
         dist(i) = (sum(x(p.sosgroups{i}))-max(x(p.sosgroups{i})))/length(p.sosgroups{i});
@@ -1072,8 +840,7 @@ if isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrul
     % Which SOS to branch on
     [val,index] = max(dist);
     whatsplit = 'sos1';
-    globalindex = index;
-    return
+    globalindex = index;  
 end
 
 switch options.bnb.branchrule
@@ -1221,8 +988,6 @@ v = p.sosgroups{index};
 n = ceil(length(v)/2);
 v1 = v(randperm(length(v),n));
 v2 = setdiff(v,v1);
-%v1 = v(1:n);
-%v2 = v(n+1:end);
 
 % In first node, set v2 to 0 and v1 to sosgroup
 p0 = p;p0.lower = lower;
@@ -1233,7 +998,6 @@ p0.ub(v2) = 0;
 p1 = p;p1.lower = lower;
 p1.sosgroups{index} = v2;
 p1.ub(v1) = 0;
-
 
 function [p0,p1] = semisplit(p,x,index,lower,options,x_min)
 
@@ -1261,8 +1025,6 @@ p0.semibounds.ub(index)=[];
 p1.semibounds.lb(index)=[];
 p1.semibounds.ub(index)=[];
 
-
-
 function s = num2str2(x,d,c);
 if nargin==3
     s = num2str(x,c);
@@ -1272,75 +1034,44 @@ end
 s = [repmat(' ',1,d-length(s)) s];
 
 
-function [stack,lower] = prune(stack,upper,options,solved_nodes,p)
+function [stack,lower] = prune(stack,upper,options,solved_nodes,p,allSolutions)
 % *********************************
 % PRUNE STACK W.R.T NEW UPPER BOUND
 % *********************************
-if ~isempty(stack) && ~isinf(upper)
-    %    toolarge = find([stack.lower]>upper*(1-1e-4));
-    if length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0
-        toolarge = find([stack.lower]>=upper-0.999);
-    else
-        toolarge = find([stack.lower]>upper*(1-.01*options.bnb.prunetol));
+if stackLength(stack)>0 && ~isinf(upper)
+    if length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0       
+        L = stack.lower;
+        tooLarge = find(~isinf(L) & L>=upper-0.999);
+    else     
+        L = stack.lower;
+        tooLarge = find(~isinf(L) & L>=upper*(1-options.bnb.prunetol));
     end
-    if ~isempty(toolarge)
-        stack(toolarge)=[];
+    if ~isempty(tooLarge)        
+        stack.nodeCount = stack.nodeCount - length(tooLarge);
+        stack.lower(tooLarge) = inf;        
     end
 end
 
 % Prune simple linear model w.r.t bound constraints only
 if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0
-    bad = [];
-    for i = 1:length(stack)
+    tooLarge = [];
+    for i = find(~isinf(stack.lower))
+        pi = stack.nodes{i};
         neg = find(p.c < 0);
         pos = find(p.c > 0);
-        obj = p.c(pos)'*stack(i).lb(pos) + p.c(neg)'*stack(i).ub(neg);
+        obj = p.f + p.c(pos)'*pi.lb(pos) + p.c(neg)'*pi.ub(neg);
         if obj >= upper
-            bad = [bad i];
+            tooLarge = [tooLarge i];
         end
     end
-    if ~isempty(bad)
-        stack(bad)=[];
+    if ~isempty(tooLarge)
+        stack.nodeCount = stack.nodeCount - length(tooLarge);
+        stack.lower(tooLarge) = inf;  
     end    
 end
 
-% Prune simple linear model w.r.t bound constraints and at-most groups
-if ~isempty(p.atmost.variables)
-    bad = [];
-     if length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0
-         drop = .999;
-     else 
-         drop = 0;
-     end
-     for i = 1:length(stack)
-        neg = double((p.c < 0));
-        pos = double((p.c > 0));
-        %           Positive terms in c     Negative Terms in c    
-        obj_terms = pos.*(p.c).*(stack(i).lb)+neg.*(p.c).*(stack(i).ub);
-        obj_terms(p.c==0) = 0;  
-        obj_terms(isnan(obj_terms)) = -inf;
-        k = setdiff(length(p.c),p.atmost.variables);
-        obj = sum(obj_terms(k));
-        for j = 1:length(p.atmost.groups)
-            k = p.atmost.groups{j};
-            [s,loc] = sort(obj_terms(k));
-            these_obj = obj_terms(k(loc(1:p.atmost.bounds(j))));            
-            obj = obj + sum(these_obj(these_obj <=0));
-        end        
-        if obj >= upper - drop
-            bad = [bad i];
-        end
-        if obj >= stack(i).lower
-            stack(i).lower = obj;
-        end
-     end
-     if ~isempty(bad)
-        stack(bad)=[];
-    end 
-end
-
-if ~isempty(stack)
-    lower = min([stack.lower]);
+if stack.nodeCount > 0
+    lower = min(stack.lower);
 else
     lower = upper;
 end
@@ -1392,18 +1123,6 @@ if (length(p.K.s)>1) | p.K.s>0
 end
 res = [res;min([p.ub-x;x-p.lb])];
 
-function p = Updatecostbound(p,upper,lower);
-if p.simplecost
-    if ~isinf(upper)
-        ind = find(p.c);
-        if p.c(ind)>0
-            p.ub(ind) = min(p.ub(ind),(upper-p.f)/p.c(ind));
-        else
-            p.lb(ind) = max(p.lb(ind),(p.f-upper)/abs(p.c(ind)));
-        end
-    end
-end
-
 function [x_min,upper] = initializesolution(p);
 
 x_min = zeros(length(p.c),1);
@@ -1428,90 +1147,6 @@ else
     end
 end
 
-
-
-function [p,poriginal,stack] = pruneglobally(p,poriginal,upper,lower,stack,x);
-
-if isempty(p.nonlinear) & (nnz(p.Q)==0) & p.options.bnb.nodetight
-    pp = poriginal;
-    
-    if p.K.l > 0
-        A = -pp.F_struc(1+pp.K.f:pp.K.f+pp.K.l,2:end);
-        b = pp.F_struc(1+p.K.f:p.K.f+p.K.l,1);
-    else
-        A = [];
-        b = [];
-    end
-    
-    if (nnz(p.Q)==0) & ~isinf(upper)
-        A = [pp.c';-pp.c';A];
-        b = [upper;-(lower-0.0001);b];
-    else
-        % c = p.c;
-        % Q = p.Q;
-        % A = [c'+2*x'*Q;A];
-        % b = [2*x'*Q*x+c'*x;b];
-    end
-    
-    [lb,ub,redundant,pss] = milppresolve(A,b,pp.lb,pp.ub,pp.integer_variables,pp.binary_variables,ones(length(pp.lb),1));
-    
-    if ~isempty(redundant)
-        if (nnz(p.Q)==0) & ~isinf(upper)
-            redundant = redundant(redundant>2)-2;
-        else
-            %    redundant = redundant(redundant>1)-1;
-        end
-        if length(redundant)>0
-            poriginal.K.l=poriginal.K.l-length(redundant);
-            poriginal.F_struc(poriginal.K.f+redundant,:)=[];
-            p.K.l=p.K.l-length(redundant);
-            p.F_struc(p.K.f+redundant,:)=[];
-        end
-    end
-    if ~isempty(stack)
-        keep = ones(length(stack),1);
-        for i = 1:length(stack)
-            stack(i).lb = max([stack(i).lb lb]')';
-            stack(i).ub = min([stack(i).ub ub]')';
-            if any(stack(i).lb>stack(i).ub)
-                keep(i) = 0;
-            end
-        end
-        stack = stack(find(keep));
-    end
-    poriginal.lb = max([poriginal.lb lb]')';
-    poriginal.ub = min([poriginal.ub ub]')';
-    p.lb = max([p.lb lb]')';
-    p.ub = min([p.ub ub]')';
-end
-
-
-function [p,poriginal,stack] = fixvariables(p,poriginal,upper,lower,stack,x_min,monotinicity)
-% Fix variables
-
-if p.options.bnb.nodefix & (p.K.f == 0) & (nnz(p.Q)==0) & isempty(p.nonlinear)
-    
-    A = -poriginal.F_struc(poriginal.K.f + (1:poriginal.K.l),2:end);
-    b = poriginal.F_struc(poriginal.K.f + (1:poriginal.K.l),1);
-    c = poriginal.c;
-    [fix_up,fix_down] = presolve_fixvariables(A,b,c,poriginal.lb,poriginal.ub,monotinicity);
-    %
-    poriginal.lb(fix_up) = 1;
-    p.lb(fix_up) = 1;
-    
-    if ~isempty(stack) & ~(isempty(fix_up)  & isempty(fix_down))
-        keep = ones(length(stack),1);
-        for i = 1:length(stack)
-            stack(i).lb = max([stack(i).lb poriginal.lb]')';
-            stack(i).ub = min([stack(i).ub poriginal.ub]')';
-            if any(stack(i).lb>stack(i).ub)
-                keep(i) = 0;
-            end
-        end
-        stack = stack(find(keep));
-    end
-end
-
 function p = copyNode(p,node);
 p.lb = node.lb;
 p.ub = node.ub;
@@ -1529,4 +1164,230 @@ p.semibounds = node.semibounds;
 p.pid = node.pid;
 p.sosgroups = node.sosgroups;
 p.sosvariables = node.sosvariables;
+p.atmost = node.atmost;
 
+function stack = stackCreate
+stack.nodes = {};
+stack.lower = [];
+stack.nodeCount = 0;
+
+function stack = push(stack,p)
+stack.nodes{end + 1} = p;
+stack.lower(end + 1) = p.lower;
+stack.nodeCount = stack.nodeCount + 1;   
+
+function stack1 = mergeStack(stack1,stack2)
+for i = 1:1:length(stack2.nodes)
+    if ~isinf(stack2.lower(i))
+        stack1.nodes{end + 1} = stack2.nodes{i};
+        stack1.lower(end + 1) = stack2.lower(i);
+        stack1.nodeCount = stack1.nodeCount + 1;   
+    end
+end
+
+function stack = compressStack(stack)
+
+used = find(~isinf(stack.lower));
+stack.lower = stack.lower(used);
+stack.nodes = {stack.nodes{used}};
+
+function [p,stack] = pull(stack,method,x_min,upper);
+
+if stackLength(stack) > 0
+    if numel(stack.lower) > 100 && nnz(isinf(stack.lower)) > 0.25*numel(stack.lower)
+        stack = compressStack(stack);
+    end
+    switch method
+        case {'depth','depthfirst','depthbreadth','depthproject','depthbest'}
+            depths = getStackDepths(stack);
+            [i,j] = max(depths);
+            % Silly for backward testing compatibility. Stack order has
+            % changed, to be able to compare some examples, make sure we
+            % traverse the tree in exactly the same was as before on ties
+            j = max(find(depths == i));
+            p = getStackNode(stack,j);
+            stack = removeStackNode(stack,j);
+                     
+        case 'project'
+            error
+            [i,j]=min([stack.projection]);
+            p=stack(j);
+            stack = stack([1:1:j-1 j+1:1:end]);
+            
+        case 'breadth'
+            error
+            [i,j]=min([stack.depth]);
+            p=stack(j);
+            stack = stack([1:1:j-1 j+1:1:end]);
+            
+        case 'best'                       
+            lowers = getStackLowers(stack);
+            [i,j] = min(lowers);
+            % Silly for backward testing compatibility. Stack order has
+            % changed, to be able to compare some examples, make sure we
+            % traverse the tree in exactly the same was as before on ties
+            j = max(find(lowers == i));
+            p = getStackNode(stack,j);
+            stack = removeStackNode(stack,j);
+            
+        otherwise
+    end
+else
+    p = [];
+end
+
+function n = stackLength(stack)
+n = stack.nodeCount;
+
+function [L,pos,N] = stackLower(stack)
+if stack.nodeCount > 0
+    if nargout == 1
+        L = min(stack.lower);
+    elseif nargout == 2
+        [L,pos] = min(stack.lower);
+    elseif nargout == 3
+        [L,pos] = min(stack.lower);
+        N = stack.nodes(pos);
+    end
+else
+    L = nan;
+end
+
+function D = getStackDepths(stack)
+D = -inf(1,length(stack.nodes));
+for i = find(~isinf(stack.lower))
+    D(i) = stack.nodes{i}.depth;
+end
+
+function L = getStackLowers(stack)
+L = stack.lower;
+
+function N = getStackNode(stack,j)
+N = stack.nodes{j};
+
+function stack = removeStackNode(stack,j)
+stack.nodeCount = stack.nodeCount - length(j);
+stack.lower(j) = inf;
+
+        
+function p = detectAtMost(p)
+atmostgroups = {};
+atmostbounds = [];
+atmostvariables = [];
+if p.K.l > 0 & ~isempty(p.integer_variables)
+    nint = length(p.integer_variables);
+    Aineq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
+    bineq = p.F_struc(p.K.f + (1:p.K.l),1);
+    notinteger_var_index = setdiff(1:length(p.lb),p.integer_variables);
+    only_integer = ~any(Aineq(:,notinteger_var_index),2);
+    Aineq_bin = Aineq(find(only_integer),p.integer_variables);
+    bineq_bin = bineq(find(only_integer),:);
+    % Detect groups with constraints #(d_i ~= 0) <= k (for binaries)
+    atmostgroups = {};
+    for i = 1:size(Aineq_bin,1)
+        if bineq_bin(i) >= 1
+            [ix,jx,sx] = find(Aineq_bin(i,:));
+            % 0/1 or -1/0 variables with with bounded cardinality
+            if all(sx == -1) && ((all(p.lb(jx)==-1) && all(p.ub(jx)==0)) || (all(p.ub(jx)==1) && all(p.lb(jx)==0)))                
+                atmostgroups{end+1} = p.integer_variables(jx);
+                atmostbounds = [atmostbounds floor(bineq_bin(i))];
+                atmostvariables = [atmostvariables p.integer_variables(jx)];
+            end
+        end
+    end
+end
+p.atmost.groups = atmostgroups;
+p.atmost.bounds = atmostbounds;
+p.atmost.variables = atmostvariables;
+    
+function p = detectSOS(p)
+sosgroups = {};
+sosvariables = [];
+if p.K.f > 0 & ~isempty(p.binary_variables)
+    nbin = length(p.binary_variables);
+    Aeq = -p.F_struc(1:p.K.f,2:end);
+    beq = p.F_struc(1:p.K.f,1);
+    notbinary_var_index = setdiff(1:length(p.lb),p.binary_variables);
+    only_binary = ~any(Aeq(:,notbinary_var_index),2);
+    Aeq_bin = Aeq(find(only_binary),p.binary_variables);
+    beq_bin = beq(find(only_binary),:);
+    % Detect groups with constraints sum(d_i) == 1
+    sosgroups = {};
+    for i = 1:size(Aeq_bin,1)
+        if beq_bin(i) == 1
+            [ix,jx,sx] = find(Aeq_bin(i,:));
+            if all(sx == 1)
+                sosgroups{end+1} = p.binary_variables(jx);
+                sosvariables = [sosvariables p.binary_variables(jx)];
+            end
+        end
+    end
+end
+p.sosgroups = sosgroups;
+p.sosvariables = sosvariables;
+
+
+function p = simplePresolve(p)
+pss=[];
+p = propagate_bounds_from_equalities(p);
+
+if p.K.f > 0
+    pp = p;
+    r = find(p.lb == p.ub);
+    pp.F_struc(:,1) = pp.F_struc(:,1) + pp.F_struc(:,r+1)*p.lb(r);
+    pp.F_struc(:,r+1)=[];
+    pp.lb(r)=[];
+    pp.ub(r)=[];
+    pp.variabletype(r)=[];
+    % FIXME: This is lazy, should update new list
+    pp.binary_variables = [];
+    pp.integer_variables = [];
+    pp = propagate_bounds_from_equalities(pp);
+    other = setdiff(1:length(p.lb),r);
+    p.lb(other) = pp.lb;
+    p.ub(other) = pp.ub;
+    p = update_integer_bounds(p);
+    redundant = find(~any(pp.F_struc(1:p.K.f,2:end),2));
+    if any(p.F_struc(redundant,1)<0)
+        p.feasible = 0;
+    else
+        p.F_struc(redundant,:)=[];
+        p.K.f = p.K.f - length(redundant);
+    end
+end    
+
+function p = extractBounds(p)
+if ~isempty(p.F_struc)
+    [lb,ub,used_rows_eq,used_rows_lp] = findulb(p.F_struc,p.K);
+    if ~isempty(used_rows_lp)
+        used_rows_lp = used_rows_lp(~any(full(p.F_struc(p.K.f + used_rows_lp,1+p.nonlinear)),2));
+        if ~isempty(used_rows_lp)
+            lower_defined = find(~isinf(lb));
+            if ~isempty(lower_defined)
+                p.lb(lower_defined) = max(p.lb(lower_defined),lb(lower_defined));
+            end
+            upper_defined = find(~isinf(ub));
+            if ~isempty(upper_defined)
+                p.ub(upper_defined) = min(p.ub(upper_defined),ub(upper_defined));
+            end
+            p.F_struc(p.K.f + used_rows_lp,:)=[];
+            p.K.l = p.K.l - length(used_rows_lp);
+        end
+    end
+    
+    if ~isempty(used_rows_eq)
+        used_rows_eq = used_rows_eq(~any(full(p.F_struc(used_rows_eq,1+p.nonlinear)),2));
+        if ~isempty(used_rows_eq)
+            lower_defined = find(~isinf(lb));
+            if ~isempty(lower_defined)
+                p.lb(lower_defined) = max(p.lb(lower_defined),lb(lower_defined));
+            end
+            upper_defined = find(~isinf(ub));
+            if ~isempty(upper_defined)
+                p.ub(upper_defined) = min(p.ub(upper_defined),ub(upper_defined));
+            end
+            p.F_struc(used_rows_eq,:)=[];
+            p.K.f = p.K.f - length(used_rows_eq);
+        end
+    end
+end

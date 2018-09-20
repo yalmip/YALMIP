@@ -1,4 +1,4 @@
-function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min)
+function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions)
 
 if all(relaxed_p.lb==relaxed_p.ub)
     x = relaxed_p.lb;
@@ -33,24 +33,14 @@ if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
     end
 end
 
-% Exclusion cuts for negated binaries
-if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)
-    nz = find(x_min ~= 0);
-    zv = find(x_min == 0);
-    b = length(zv)-1;
-    a = spalloc(1,length(x_min),length(zv));
-    a(nz) = -1;
-    a(zv) = 1;
-    p.F_struc = [p.F_struc(1:p.K.f,:);b a;p.F_struc(1+p.K.f:end,:)];
-    p.K.l=p.K.l+1;   
+% Exclusion cuts for negated binaries based on some optimal solutions
+if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)   
+    for i = 1:min(size(allSolutions,2),10);
+        [b,a] = exclusionCut(allSolutions(:,end-i+1),-1);
+        p.F_struc = [p.F_struc(1:p.K.f,:);b a;p.F_struc(1+p.K.f:end,:)];
+        p.K.l=p.K.l+1;
+    end    
 end
-
-% if ~isinf(p.cardinality.upper)
-%     b = p.cardinality.upper;
-%     a = sparse(ones(1,length(p.c)));   
-%     p.F_struc = [p.F_struc(1:p.K.f,:);b a;p.F_struc(1+p.K.f:end,:)];
-%     p.K.l=p.K.l+1;   
-% end
 
 removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
@@ -126,7 +116,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         top = 1 + p.K.f + p.K.l + sum(p.K.q);
         for j = 1:length(p.K.s)
             X = p.F_struc(top:top + p.K.s(j)^2-1,:); 
-            X = reshape(sum(X | X,2),p.K.s(j),p.K.s(j));
+            X = reshape(any(X,2),p.K.s(j),p.K.s(j));
             e = find(~any(X,2));
             if any(e)
                 Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
@@ -138,7 +128,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
                 p.F_struc(top + m - 1,:)=[];
                 p.K.s(j) = p.K.s(j) - length(e);
             end
-                top = top + p.K.s(j)^2;
+            top = top + p.K.s(j)^2;
         end
     end
                           
@@ -156,15 +146,15 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         dummy = p;
         dummy.lb = newlb;
         dummy.ub = newub;
-        output = bnb_solvelower(lowersolver,dummy,inf,lower);        
+        output = bnb_solvelower(lowersolver,dummy,inf,lower,x_min,aggresiveprune,[]);        
     else
         if any(p.lb>p.ub+0.1)
             output.problem = 1;
             output.Primal = zeros(length(p.lb),1);
         else
             p.solver.version = p.solver.lower.version;
-            p.solver.subversion = p.solver.lower.subversion;                                  
-            output = feval(lowersolver,p);           
+            p.solver.subversion = p.solver.lower.subversion;                                                                          
+            output = feval(lowersolver,p);                       
         end
     end
     x=relaxed_p.c*0;
