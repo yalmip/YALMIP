@@ -16,7 +16,7 @@ else
 end
 
 model.options = interfacedata.options.osqp;
-model.P = interfacedata.Q;
+model.P = 2*interfacedata.Q;
 model.q = interfacedata.c;
 eye_n = speye(length(model.q));
 model.A = [Aeq; A; eye_n];
