@@ -15,7 +15,7 @@ function [model,recoverdata,diagnostic,interfacedata] = export(varargin)
 %   If the solver format not is support by EXPORT,the YALMIP model used to
 %   call the solver is returned)
 %
-%   If YALMIP by some reason failed to generate a model, the DIAGNOSTIC 
+%   If YALMIP by some reason failed to generate a model, the DIAGNOSTIC
 %   variable will be non-empty.
 %
 %   The fourth output is the internal model used by YALMIP to communicate
@@ -67,11 +67,11 @@ if nargin>=2
             diagnostic.problem = -2;
             return
         end
-        h = getcx(h);       
+        h = getcx(h);
         if isempty(F)
            F = ([]);
         end
-        
+
     else
       logdetStruct = [];
     end
@@ -117,13 +117,13 @@ F = flatten(F);
 % ******************************************
 % Export SOS problem to SOS first
 % ******************************************
- if any(is(F,'sos'))   
+ if any(is(F,'sos'))
      old =  options.verbose;
      options.verbose = max(options.verbose - 1,0);
      [F,h] = compilesos(F,h,options);
      options.verbose = old;
  end
- 
+
 % ******************************************
 % COMPILE IN GENERALIZED YALMIP FORMAT
 % ******************************************
@@ -135,7 +135,7 @@ else
     [interfacedata,recoverdata,solver,diagnostic,F] = compileinterfacedata(F,[],logdetStruct,h,options,findallsolvers);
 end
 
-if ~isempty(diagnostic)   
+if ~isempty(diagnostic)
     model = [];
     recoverdata = [];
     return
@@ -151,69 +151,71 @@ end
 % CONVERT
 % ******************************************
 switch lower(solver.tag)
- 
+
     case 'cplex-ibm'
-        
+
         % Hack to handle CPLEX slow treatment of parameters. Remove all
-        % default settings, so optimizer runs fast        
-        interfacedata.options = prunecplexoptions(interfacedata.options);        
+        % default settings, so optimizer runs fast
+        interfacedata.options = prunecplexoptions(interfacedata.options);
         model = yalmip2cplex(interfacedata);
 
     case 'ecos'
-        model = yalmip2ecos(interfacedata);      
-        
-        
+        model = yalmip2ecos(interfacedata);
+
+    case 'osqp'
+        model = yalmip2osqp(interfacedata);
+
     case 'cbc'
-        model = yalmip2cbc(interfacedata);       
-                
+        model = yalmip2cbc(interfacedata);
+
     case 'dsdp-opti'
-        model = yalmip2optidsdp(interfacedata);       
-        
-    case 'gurobi-gurobi'        
-        model = yalmip2gurobi(interfacedata);       
-        
-    case 'gurobi-mex'        
-        model = yalmip2gurobimex(interfacedata);       
-        
+        model = yalmip2optidsdp(interfacedata);
+
+    case 'gurobi-gurobi'
+        model = yalmip2gurobi(interfacedata);
+
+    case 'gurobi-mex'
+        model = yalmip2gurobimex(interfacedata);
+
     case 'cplex-cplexint'
         [model.H,model.C,model.A,model.B,model.LB,model.UB,model.QC,model.VARTYPE,model.INDEQ,model.PARAM,model.OPTIONS] = cplex2yalmip(interfacedata);
-        
+
     case {'mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
         if interfacedata.K.s(1)>0
-            model.prob = yalmip2SDPmosek(interfacedata);                       
+            model.prob = yalmip2SDPmosek(interfacedata);
         else
             model.prob = yalmip2mosek(interfacedata);
         end
         model.param = interfacedata.options.mosek;
-   
+
     case 'linprog'
         model = yalmip2quadprog(interfacedata);
         model = rmfield(model,'Q');
-        
-    case 'quadprog'        
+
+    case 'quadprog'
         model = yalmip2quadprog(interfacedata);
-        
+
     case 'intlinprog'
         model = yalmip2intlinprog(interfacedata);
-        
-    case {'sedumi-1.05','sedumi-1.1','sedumi-1.3'}        
-        model = yalmip2sedumi(interfacedata);  
-        
+
+    case {'sedumi-1.05','sedumi-1.1','sedumi-1.3'}
+        model = yalmip2sedumi(interfacedata);
+
    case {'scs-direct','scs-indirect'}
-        model = yalmip2scs(interfacedata);  
-        
-    case {'powersolver'}        
+        model = yalmip2scs(interfacedata);
+
+    case {'powersolver'}
         model = yalmip2powersolver(interfacedata);
-        
-    case 'csdp'        
-        model = yalmip2csdp(interfacedata);       
-        
-    case 'dsdp-5'  
+
+    case 'csdp'
+        model = yalmip2csdp(interfacedata);
+
+    case 'dsdp-5'
         model = yalmip2dsdp(interfacedata);
 
-    case 'sdpa-m'        
+    case 'sdpa-m'
         model = yalmip2sdpa(interfacedata);
-                        
+
     case {'sdpt3-3.1','sdpt3-4'}
         % Convert from internal (sedumi-like) format
         if isequal(interfacedata.K.m,0)
@@ -221,28 +223,28 @@ switch lower(solver.tag)
         else
             error('MAXDET models still not supported in SDPT3 export')
         end
-        
+
     case {'glpk-glpkmex','glpk-glpkmex-cc'}
         model = yalmip2glpkmex(interfacedata);
-                
-    case 'pensdp-penopt'        
+
+    case 'pensdp-penopt'
         model = yalmip2pensdp(interfacedata);
-        
+
     case 'penlab'
         model.penstruct = sedumi2penbmi(interfacedata.F_struc,interfacedata.c,interfacedata.Q,interfacedata.K,interfacedata.monomtable,interfacedata.options,interfacedata.x0);
-                
+
     case 'mpt'
         interfacedata.parametric_variables = find(ismember(recoverdata.used_variables,getvariables(F(find(is(F,'parametric'))))));
         interfacedata.requested_variables = [];
         model = yalmip2mpt(interfacedata);
-                
-    case 'penbmi-penopt'        
+
+    case 'penbmi-penopt'
         model.penstruct = sedumi2penbmi(interfacedata.F_struc,interfacedata.c,interfacedata.Q,interfacedata.K,interfacedata.monomtable,interfacedata.options,interfacedata.x0);
-        
+
     case {'qpip','qpas'}
         model = yalmip2quadprog(interfacedata);
         model.options = interfacedata.options.qpip;
-        
+
     otherwise
         model = [];
 end
