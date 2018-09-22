@@ -49,9 +49,7 @@ p.options.cutsdp.feastol = -p.options.cutsdp.feastol;
 %% If we want duals, we may not extract bounds. However, bounds must be
 % extracted in discrete problems.
 % *************************************************************************
-if p.options.cutsdp.recoverdual
-    warning('Dual recovery not implemented yet in CUTSDP')
-end
+p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
 
 % *************************************************************************
 %% Define infinite bounds
@@ -195,6 +193,8 @@ cutsdpsolvertime = clock;
 % *************************************************************************
 cutsolver = p.solver.lower.call;
 
+p = addImpliedSDP(p);
+
 % *************************************************************************
 %% Create copy of model without
 %  the SDP part
@@ -203,6 +203,8 @@ p_lp = p;
 p_lp.F_struc = p_lp.F_struc(1:p.K.l+p.K.f,:);
 p_lp.K.s = 0;
 p_lp.K.q = 0;
+
+p_original = p;
 
 % *************************************************************************
 %% DISPLAY HEADER
@@ -314,7 +316,8 @@ else
 end
 
 % Some structures for keeping a pool of cuts
-activity = zeros(length(p_lp.K.l),1);
+% silly but we include equalities for simplicity, always active of course)
+activity = zeros(p_lp.K.f + p_lp.K.l,1);
 prevRem = [];
 
 %% Initialize
@@ -325,10 +328,11 @@ solved_nodes = 0;
 feasible = 1;
 lower = -inf;
 upper = inf;
-aggresive = 1;
+aggresive = 0;
 lowerHistory = -inf;
 phaseHistory = [];
 goon = 1;
+x_found_by_sdp_pump = [];
 while goon
     
     % Keep history of what we have been doing. Used for some diagnostics
@@ -364,6 +368,7 @@ while goon
         ptemp.F_struc = [p_lp.F_struc;p.F_struc(1+p.K.f+p.K.l:p.K.f+p.K.l+sum(p.K.q),:)];
         ptemp.K.q = p.K.q;
     end
+    ptemp = adjustMaxTime(ptemp,ptemp.options.cutsdp.maxtime,etime(clock,cutsdpsolvertime));
     if integerPhase
         output = feval(cutsolver,ptemp);
     else
@@ -371,7 +376,7 @@ while goon
         ptemp.integer_variables = [];
         output = feval(cutsolver,ptemp);
     end
-    
+   
     % Remove lower/upper bounds if we added those (avoid accumulating them)
     if ~isinf(lower) && (nnz(p_lp.Q)==0) && aggresive
         p_lp.K.l = p_lp.K.l - 1;
@@ -406,17 +411,29 @@ while goon
             lower = cost;
         end
         
+        was_lp_really_feasible = checkfeasiblefast(p_lp,x,-p.options.cutsdp.feastol);
+         
+        x(p.integer_variables)=round(x(p.integer_variables));                
         infeasibility = 0;
         [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);
         [p_lp,infeasibility,infeasible_sdp_cones,eig_failure] = add_sdp_cut(p,p_lp,x,infeasibility);
-       
+
+        [xtemp,upptemp,pumpPossible] = sdpPump(p_original,x,-p.options.cutsdp.feastol);
+        
         added_no_good = 0;
-        if integerPhase %&& any(infeasible_sdp_cones)
+        if (integerPhase && was_lp_really_feasible && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && checkfeasiblefast(p_original,x,-p.options.cutsdp.feastol))
+            % Don't add no-good if we time out etc
             [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility);
             added_no_good = 1;          
-        end
+        end  
         
-        if p.options.cutsdp.plotcut
+         if upptemp < upper
+             upper = upptemp;
+             x_found_by_sdp_pump = xtemp;
+%             [p_lp,infeasibility2,infeasible_sdp_cones,eig_failure] = add_sdp_cut(p,p_lp,xtemp,infeasibility);
+         end
+                    
+        if p.options.cutsdp.plot
             plotP(p_lp);drawnow
         end
         
@@ -438,7 +455,7 @@ while goon
             integerPhase = 1;
             infeasibility = infeasibility  - inf;
             feasible = 1;
-            upper = inf;
+          %  upper = inf;
         elseif infeasibility >= p.options.cutsdp.feastol && integerPhase
             feasible = 1;
             upper = cost;
@@ -481,6 +498,14 @@ while goon
          goon = goon && lower < upper;
         end        
         goon = goon || aggresiveJustTurnedOff;
+        
+        if ~isinf(upper) && ~isinf(lower)
+            gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
+        else
+            gap = inf;
+        end
+        goon = goon && gap >= p.options.cutsdp.gaptol;
+        
         goon = goon && (etime(clock,cutsdpsolvertime) < p.options.cutsdp.maxtime);
     end
     
@@ -495,6 +520,14 @@ while goon
         if mod(solved_nodes-1,p.options.print_interval)==0 || goon == 0
             fprintf(' %4.0f :  %s  %11.3E %12.3E      %14.3E   %11.3E     %3.0f     %5.1f\n',solved_nodes,phaseString{currentPhase+1},sdpInfeasibility,integerInfeasibility,lower,upper,p_lp.K.l-p.K.l,etime(clock,cutsdpsolvertime));
         end
+    end
+end
+% We perhaps terminated before the LP problems found a feasible solution,
+% but the SDP pump found a solution along the way, so return that feasible
+% solution.
+if ~checkfeasiblefast(p_lp,x,-p.options.cutsdp.feastol)
+    if ~isempty(x_found_by_sdp_pump)
+        x = x_found_by_sdp_pump;
     end
 end
 D_struc = [];
@@ -592,12 +625,12 @@ else
     % Sparse eigenvalues can easily fails so we catch info about this
     [d,v,permutation,failure] = dmpermblockeig(X,p_lp.options.cutsdp.switchtosparse);
 end
-if ~isempty(v)
+%if ~isempty(v)
     d(abs(d)<1e-12)=0;
     infeasibility = min(diag(v));
-else
-    infeasibility = 0;
-end
+%else
+%    infeasibility = 0;
+%end
 
 if infeasibility<0
     [ii,jj] = sort(diag(v));
@@ -607,7 +640,7 @@ if infeasibility<0
     end
     
     for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'
-        if v(m,m)<-1e-12
+        if v(m,m)<=0%-1e-12
             if 0
                 index = reshape(1:n^2,n,n);
                 indexpermuted = index(permutation,permutation);
@@ -647,12 +680,11 @@ newF(abs(newF)<1e-12) = 0;
 keep=find(any(newF(:,2:end),2));
 newF = newF(keep,:);
 if size(newF,1)>0
-    if ~p_lp.options.cutsdp.detect
+   % if ~p_lp.options.cutsdp.detect
         % No reason to say v'*X*v >=0 when when only require certain tolerance
         % anyway, unless we try to detect infeasibility though
-        newF(:,1) = newF(:,1)-p_lp.options.cutsdp.feastol*.2;
-    end
-    % p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);newF;p_lp.F_struc(1+p_lp.K.f:end,:)];
+    %    newF(:,1) = newF(:,1)-p_lp.options.cutsdp.feastol*.2;
+    %end
     p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);newF];
     p_lp.K.l = p_lp.K.l + size(newF,1);
 end
@@ -868,12 +900,12 @@ function plotP(p)
 b = p.F_struc(1+p.K.f:p.K.f+p.K.l,1);
 A = -p.F_struc(1+p.K.f:p.K.f+p.K.l,2:end);
 x = sdpvar(size(A,2),1);
-plot([A*x <= b, p.lb <= x <= p.ub],x,'b',[],sdpsettings('plot.shade',.2));
+plot([A*x <= b, p.lb <= x <= p.ub],x(1:2),'b',[],sdpsettings('plot.shade',.2));
 
 
 function [p_lp,activity,prevRem] = handleCutPool(p_lp,activity,prevRem,output,integerPhase)
-if length(activity) < p_lp.K.l
-      activity(p_lp.K.l) = 0;
+if length(activity) < p_lp.K.l + p_lp.K.f
+      activity(p_lp.K.l+p_lp.K.f) = 0;
 end
 if ~integerPhase
     % Save info about active cuts
@@ -895,7 +927,7 @@ if ~isempty(prevRem)
     if ~isempty(Violated_Here)
         p_lp.F_struc = [p_lp.F_struc;prevRem(Violated_Here,:)];
         p_lp.K.l = p_lp.K.l + length(Violated_Here);
-        activity = [activity ones(1,length(Violated_Here))*-20];      
+        activity = [activity(:);ones(length(Violated_Here),1)*-20];      
         prevRem(Violated_Here,:)=[];
     end
 end
