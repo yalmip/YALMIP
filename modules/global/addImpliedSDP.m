@@ -22,7 +22,7 @@ if p.K.q(1)==0
                             row(find(row)) = 1;
                             newF = [newF;-1 -row];
                         elseif all(row >=0) && all(p.lb(used)>=0)
-                            row(find(row)) = -1;
+                            row(find(row)) = 1;
                             newF = [newF;-1 row];
                         end
                     end
@@ -42,30 +42,52 @@ if p.K.q(1)==0
     % not entering anywhere else in model. Bad modelling?
     % First, they should not appear in LP cone (can be generalized by
     % checking that it acts in the correct direction)
+    % TODO: Check for possibility of different signs etc, currently only
+    % implemented for typical test cases
     candidates = find(~any(p.F_struc(1:p.K.f + p.K.l,2:end),1));
-    fixable = ones(1,length(candidates));
+    fixable = nan(1,length(candidates));   
     
-    for i = candidates(:)'
-        top = p.K.f + p.K.l + 1;
-        for j = 1:length(p.K.s)
-            F = p.F_struc(top:top + p.K.s(j)^2-1,:);
-            X0 = reshape(F(:,1 + i),p.K.s(j),p.K.s(j));
-            % Diagonal matrix
+    top = p.K.f + p.K.l + 1;
+    for j = 1:length(p.K.s)
+        F = p.F_struc(top:top + p.K.s(j)^2-1,:);
+        for i = 1:length(candidates(:)')
+            X0 = reshape(F(:,1 + candidates(i)),p.K.s(j),p.K.s(j));
+            % Diagonal matrix?
             d = diag(X0);
-            if nnz((X0-diag(d)))==0
-                if all(sign(d)<=0)
-                    
+            if nnz((X0-diag(d)))==0                
+                if all(sign(d)<=0) && p.c(i)>=0 && (isnan(fixable(i)) || fixable(i)==-1)
+                    fixable(i) = -1;
+                elseif all(sign(d)>=0) && p.c(i)<=0 && (isnan(fixable(i)) || fixable(i)==1)
+                    fixable(i) = 1;
                 else
                     fixable(i) = 0;
                 end
-            end
-            top = top + p.K.s(j)^2;
+            else
+                fixable(i) = 0;
+            end          
         end
-    end   
-    for i = fixable
-       p.ub(i) = p.lb(i);
-       p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,i+1)*p.lb(i);
-       p.F_struc(:,i+1) = 0;
-    end    
+        top = top + p.K.s(j)^2;
+    end
+    p.adjustable = candidates(find(fixable));
+    for i = candidates(find(~isnan(fixable)))
+%         if fixable(i) == -1
+%             if ~isinf(p.lb(i))
+%                 %             p.ub(i) = p.lb(i);
+%                 %             p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,i+1)*p.lb(i);
+%                 %             p.F_struc(:,i+1) = 0;
+%                 %         else
+%                 %             % TODO whole row/column should be removed from the LMI!
+%             end
+%         elseif fixable(i) == 1
+%             if ~isinf(p.ub(i))
+%                 %             p.ub(i) = p.lb(i);
+%                 %             p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,i+1)*p.lb(i);
+%                 %             p.F_struc(:,i+1) = 0;
+%                 %         else
+%                 %             % TODO whole row/column should be removed from the LMI!
+%             end
+%         end
+        
+    end
 end
 

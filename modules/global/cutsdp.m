@@ -19,8 +19,6 @@ function output = cutsdp(p)
 %
 % twophase         Start by solving integer-relaxed LPs for a while
 %
-% detect           Try to detect marginally infeasible models
-%
 % See also OPTIMIZE, BNB, BINVAR, INTVAR, BINARY, INTEGER
 
 % *************************************************************************
@@ -188,6 +186,13 @@ end
 
 cutsdpsolvertime = clock;
 
+% Solver feasibility too low can cause issues in the termination. 
+% However, some solver installations will fail if we do this, so it is not
+% default (we have way to combat low precision anyway)
+if p.options.cutsdp.adjustsolvertol
+    p = adjustSolverPrecision(p);
+end
+
 % *************************************************************************
 %% Create function handle to solver
 % *************************************************************************
@@ -196,8 +201,7 @@ cutsolver = p.solver.lower.call;
 p = addImpliedSDP(p);
 
 % *************************************************************************
-%% Create copy of model without
-%  the SDP part
+%% Create copy of model without the Conic part
 % *************************************************************************
 p_lp = p;
 p_lp.F_struc = p_lp.F_struc(1:p.K.l+p.K.f,:);
@@ -213,6 +217,7 @@ if p.options.cutsdp.verbose
     disp('* Starting YALMIP cutting plane for MISDP based on MILP');
     disp(['* Lower solver   : ' p.solver.lower.tag]);
     disp(['* Max iterations : ' num2str(p.options.cutsdp.maxiter)]);
+    disp(['* Max time       : ' num2str(p.options.cutsdp.maxtime)]);
 end
 
 if p.options.cutsdp.verbose
@@ -308,6 +313,10 @@ end
 p.F_struc = p.F_struc';
 p.F_struc = p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
 
+p.sdpsymmetry = [];
+p = detect3x3SymmetryGroups(p);
+[p,p_lp] = addSymmetryCuts(p,p_lp);
+
 standard_options = p_lp.options;
 if p.options.cutsdp.twophase
     integerPhase = 0;
@@ -328,34 +337,27 @@ solved_nodes = 0;
 feasible = 1;
 lower = -inf;
 upper = inf;
-aggresive = 0;
 lowerHistory = -inf;
 phaseHistory = [];
 goon = 1;
 x_found_by_sdp_pump = [];
+p_original.sdpPumpData = [];
+p_lp_unused = p_lp;
+p_lp_unused.F_struc = [];
+p_lp_unused.K.f = 0;
+p_lp_unused.K.l = 0;
 while goon
-    
+
     % Keep history of what we have been doing. Used for some diagnostics
     phaseHistory = [phaseHistory integerPhase ];
        
     % Basic presolve etc (currently not used)
     p_lp = nodeTight(p,p_lp);
     p_lp = nodeFix(p,p_lp);
-    
-    % Add lower bound, often speeds up the MILP solver slightly.
-    % Careful though, we have to back off a bit once we found a feasible
-    % solution and resolve without this constraint, to ensure we haven't
-    % accumulated small tolerances and drifted off
-    if ~isinf(lower) && (nnz(p_lp.Q)==0) && aggresive
-        p_lp.F_struc = [p_lp.F_struc;-lower p_lp.c'];
-        p_lp.K.l = p_lp.K.l + 1;
-    end
-    
-    % Add upper bound constraint, speeds up the MILP solver slightly somtimes
-    % (we have an upper bound when we're recovering after aggresive phase)
+        
+    % Add upper bound constraint, speeds up the MILP solver slightly somtimes    
     if ~isinf(upper) && (nnz(p_lp.Q)==0)
-        p_lp.F_struc = [p_lp.F_struc;upper -p_lp.c'];
-        p_lp.K.l = p_lp.K.l + 1;
+        p_lp = addLinearCut(p_lp,[upper -p_lp.c']);     
     end
     
     p_lp.options = standard_options;
@@ -371,17 +373,19 @@ while goon
     ptemp = adjustMaxTime(ptemp,ptemp.options.cutsdp.maxtime,etime(clock,cutsdpsolvertime));
     if integerPhase
         output = feval(cutsolver,ptemp);
+        if min(ptemp.F_struc*[1;output.Primal]) < -abs(p.options.cutsdp.feastol)
+            % Ugly hack
+            ptemp.F_struc = 1000*ptemp.F_struc;
+            output = feval(cutsolver,ptemp);
+            ptemp.F_struc = 0.001*ptemp.F_struc;
+        end
     else
         ptemp.binary_variables = [];
         ptemp.integer_variables = [];
         output = feval(cutsolver,ptemp);
     end
-   
-    % Remove lower/upper bounds if we added those (avoid accumulating them)
-    if ~isinf(lower) && (nnz(p_lp.Q)==0) && aggresive
-        p_lp.K.l = p_lp.K.l - 1;
-        p_lp.F_struc = p_lp.F_struc(1:end-1,:);
-    end
+      
+    % Remove upper bounds if we added those (avoid accumulating them)   
     if ~isinf(upper) && (nnz(p_lp.Q)==0)
         p_lp.K.l = p_lp.K.l - 1;
         p_lp.F_struc = p_lp.F_struc(1:end-1,:);
@@ -389,7 +393,7 @@ while goon
        
     % Detect inactive cuts during integer-relaxed phase. Drop these, but
     % same them in a pool to add them later if required
-    [p_lp,activity,prevRem] = handleCutPool(p_lp,activity,prevRem,output,integerPhase);
+    % [p_lp,activity,prevRem] = handleCutPool(p_lp,activity,prevRem,output,integerPhase,15);
     
     infeasible_socp_cones = ones(1,length(p.K.q));
     infeasible_sdp_cones = ones(1,length(p.K.s));
@@ -411,26 +415,32 @@ while goon
             lower = cost;
         end
         
-        was_lp_really_feasible = checkfeasiblefast(p_lp,x,-p.options.cutsdp.feastol);
-         
-        x(p.integer_variables)=round(x(p.integer_variables));                
+        was_lp_really_feasible = checkfeasiblefast(ptemp,x,-p.options.cutsdp.feastol);               
+        
+       if p.options.cutsdp.sdppump & integerPhase                     
+            [xtemp,upptemp,pumpPossible,p_original,pumpSuccess] = sdpPump(p_original,x,-p.options.cutsdp.feastol);                                               
+        else
+            upptemp = inf;
+        end
+        
         infeasibility = 0;
-        [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);
-        [p_lp,infeasibility,infeasible_sdp_cones,eig_failure] = add_sdp_cut(p,p_lp,x,infeasibility);
-
-        [xtemp,upptemp,pumpPossible] = sdpPump(p_original,x,-p.options.cutsdp.feastol);
+        [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);        
+        [p_lp,infeasibility,infeasible_sdp_cones,eig_failure] = add_sdp_cut(p,p_lp,x,infeasibility,p_original); 
+                        
+        % Don't add no-good if we time out etc, for purely integer problems
+        % or problems where we analytically can compute the continuous from
+        % given integers
+        if was_lp_really_feasible && isinf(upptemp) && (output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))            )
+           p_lp = add_nogood_cut(p,p_lp,x,infeasibility);                    
+        end
         
-        added_no_good = 0;
-        if (integerPhase && was_lp_really_feasible && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && checkfeasiblefast(p_original,x,-p.options.cutsdp.feastol))
-            % Don't add no-good if we time out etc
-            [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility);
-            added_no_good = 1;          
-        end  
+        if output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))
+        %   p_lp = add3x3sdpsymmetrycut(p,p_lp,x);                   
+        end
         
-         if upptemp < upper
+        if upptemp < upper
              upper = upptemp;
              x_found_by_sdp_pump = xtemp;
-%             [p_lp,infeasibility2,infeasible_sdp_cones,eig_failure] = add_sdp_cut(p,p_lp,xtemp,infeasibility);
          end
                     
         if p.options.cutsdp.plot
@@ -454,8 +464,7 @@ while goon
         if (infeasibility >= p.options.cutsdp.feastol || solved_nodes > 2000 || noprogress) && ~integerPhase
             integerPhase = 1;
             infeasibility = infeasibility  - inf;
-            feasible = 1;
-          %  upper = inf;
+            feasible = 1;          
         elseif infeasibility >= p.options.cutsdp.feastol && integerPhase
             feasible = 1;
             upper = cost;
@@ -473,39 +482,18 @@ while goon
         else
             bigImprovementbyInteger = 0;
         end
-        
-        aggresiveJustTurnedOff = 0;
-        if aggresive && ~goon && ~bigImprovementbyInteger
-            goon = 1;
-            aggresive = 0;
-            upper = upper;
-            aggresiveJustTurnedOff = 1;
-            if added_no_good
-                % We're backing off and now running without the pushing
-                % lower bound. If we added a no-good on last solution, we
-                % must remove it, as this actually could have been the
-                % optimal solution
-                p_lp.F_struc(end,:)=[];
-                p_lp.K.l = p_lp.K.l - 1;
-            end;
-        end
-        
+                              
         goon = goon & feasible;
         goon = goon || eig_failure;% not psd, but no interesting eigenvalue correctly computed
         goon = goon & (solved_nodes < p.options.cutsdp.maxiter-1);
-        goon = goon & ~(upper <=lower);
-        if ~aggresiveJustTurnedOff && ~aggresive
-         goon = goon && lower < upper;
-        end        
-        goon = goon || aggresiveJustTurnedOff;
-        
+        goon = goon & ~(upper <=lower);      
+        goon = goon && lower < upper;                       
         if ~isinf(upper) && ~isinf(lower)
             gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
         else
             gap = inf;
         end
-        goon = goon && gap >= p.options.cutsdp.gaptol;
-        
+        goon = goon && gap >= p.options.cutsdp.gaptol;        
         goon = goon && (etime(clock,cutsdpsolvertime) < p.options.cutsdp.maxtime);
     end
     
@@ -534,7 +522,7 @@ D_struc = [];
 
 
 
-function [p_lp,worstinfeasibility,infeasible_sdp_cones,eig_computation_failure] = add_sdp_cut(p,p_lp,x,infeasibility_in);
+function [p_lp,worstinfeasibility,infeasible_sdp_cones,eig_computation_failure] = add_sdp_cut(p,p_lp,x,infeasibility_in,p_original);
 
 worstinfeasibility = infeasibility_in;
 eig_computation_failure = 0;
@@ -552,10 +540,10 @@ if p.K.s(1)>0
         psave = p_lp;
         while iter <= p.options.cutsdp.maxprojections+1 & (infeasibility(end) < -p.options.cutsdp.feastol) && keep_projecting
             % Add cuts b + a'*x >= 0 (if x infeasible)            
-            [X,p_lp,infeasibility(iter),a,b,failure] = add_one_sdp_cut(p,p_lp,x,i);
+            [X,p_lp,infeasibility(iter),a,b,failure] = add_one_sdp_cut(p,p_lp,x,i,p_original);
                
             eig_computation_failure = eig_computation_failure & failure;
-            if infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
+            if ~isempty(a) && infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
                 % Project current point on the hyper-plane associated with
                 % the most negative eigenvalue and move towards the SDP
                 % feasible region, and then iterate a couple of iterations
@@ -578,7 +566,7 @@ else
 end
 
 
-function  [X,p_lp,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,p_lp,x,i);
+function  [X,p_lp,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,p_lp,x,i,p_original);
 
 newcuts = 0;
 newF = [];
@@ -589,7 +577,6 @@ else
     X = p.semidefinite{i}.F_struc*[1;x];
 end
 X = reshape(X,n,n);X = (X+X')/2;
-
 asave = [];
 bsave = [];
 % First check if it happens to be psd. Then we are done. Quicker
@@ -604,13 +591,7 @@ permutation = [];
 failure = 0;
 if p.options.cutsdp.cutlimit == 0
      [d,v] = eig(full(X));
-     infeasibility = v(1,1);
-    %[R,indefinite] = chol(X+eye(length(X))*1e-12);
-    %if indefinite
-    %    infeasibility = -1;
-    %else
-    %    infeasibility = 0;
-    %end
+     infeasibility = v(1,1);   
     return
 end
 
@@ -625,13 +606,8 @@ else
     % Sparse eigenvalues can easily fails so we catch info about this
     [d,v,permutation,failure] = dmpermblockeig(X,p_lp.options.cutsdp.switchtosparse);
 end
-%if ~isempty(v)
-    d(abs(d)<1e-12)=0;
-    infeasibility = min(diag(v));
-%else
-%    infeasibility = 0;
-%end
-
+d(abs(d)<1e-12)=0;
+infeasibility = min(diag(v));
 if infeasibility<0
     [ii,jj] = sort(diag(v));
     
@@ -640,37 +616,30 @@ if infeasibility<0
     end
     
     for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'
-        if v(m,m)<=0%-1e-12
-            if 0
-                index = reshape(1:n^2,n,n);
-                indexpermuted = index(permutation,permutation);
-                indexused = index(find(d(:,m)),find(d(:,m)));
-                localFstruc = p.F_struc(indexused,:);
-                dd=d(find(d(:,m)),m);
-                bA = dd'*(kron(dd,speye(length(dd))).'*localFstruc);
-            else
-                try
-                    if ~isempty(permutation)
-                        dhere = d(inversepermutation,m);
-                    else
-                        dhere = d(:,m);
-                    end
-                    dd = dhere*dhere';dd = dd(:);
-                    bA = dd'*p.semidefinite{i}.F_struc;
-                    if numel(bA)/nnz(bA) < .1
-                        bA = sparse(bA);
-                    end
+        if v(m,m)<=-1e-12                       
+            try
+                if ~isempty(permutation)
+                    dhere = d(inversepermutation,m);
+                else
+                    dhere = d(:,m);
+                end
+                dd = dhere*dhere';dd = dd(:);
+                bA = dd'*p.semidefinite{i}.F_struc;
+                if numel(bA)/nnz(bA) < .1
+                    bA = sparse(bA);
                 end
             end
             b = bA(:,1);
             A = -bA(:,2:end);
-            newF = real([newF;[b -A]]);
-            newcuts = newcuts + 1;
-            if isempty(asave)
-                A(abs(A)<1e-12)=0;
-                b(abs(b)<1e-12)=0;
-                asave = -A(:);
-                bsave = b;
+            if isempty(p_lp.F_struc) || ~any(sum(abs(p_lp.F_struc-[b -A]),2)<= 1e-12)
+                newF = real([newF;[b -A]]);
+                newcuts = newcuts + 1;
+                if isempty(asave)
+                    A(abs(A)<1e-12)=0;
+                    b(abs(b)<1e-12)=0;
+                    asave = -A(:);
+                    bsave = b;
+                end
             end
         end
     end
@@ -680,24 +649,27 @@ newF(abs(newF)<1e-12) = 0;
 keep=find(any(newF(:,2:end),2));
 newF = newF(keep,:);
 if size(newF,1)>0
-   % if ~p_lp.options.cutsdp.detect
-        % No reason to say v'*X*v >=0 when when only require certain tolerance
-        % anyway, unless we try to detect infeasibility though
-    %    newF(:,1) = newF(:,1)-p_lp.options.cutsdp.feastol*.2;
-    %end
+    newF(:,1) = newF(:,1) + 0*0.02*abs(p_lp.options.cutsdp.feastol);
     p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);newF];
     p_lp.K.l = p_lp.K.l + size(newF,1);
 end
 
-function [p_lp,infeasibility] = add_nogood_cut(p,p_lp,x,infeasibility)
-if length(x) ==  length(p.binary_variables)
-    % Add a nogood cut. Might already have been generated by
-    % the SDP cuts, but it doesn't hurt to add it
+function [p_lp] = add_nogood_cut(p,p_lp,x,infeasibility)
+% Add a nogood cut. Might already have been generated by
+% the SDP cuts, but it doesn't hurt to add it
+if length(x) ==  length(p.binary_variables)    
+    % Standard binary case
     [b,a] = exclusionCut(x,1);    
     p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);b a];
     p_lp.K.l = p_lp.K.l + 1;
-elseif length(p.c)==length(p.integer_variables) && all(p_lp.ub <= 0) && all(p_lp.lb >= -1)
-    [b,a] = exclusionCut(x,-1);
+elseif all(p_lp.ub(p.integer_variables) <= 0) && all(p_lp.lb(p.integer_variables) >= -1) && length(p.binary_variables)==0
+    % Not all variables are integer, but we've analytically showed that
+    % this solution isn't possible anyway. Also, this is the negated binary
+    % case. TODO: Generalize    
+    x(p_lp.noninteger_variables) = [];
+    [b,atemp] = exclusionCut(x,-1);
+    a = zeros(1,length(p.c));
+    a(p.integer_variables) = atemp;
     p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);b a];
     p_lp.K.l=p_lp.K.l+1;
 end
@@ -903,7 +875,7 @@ x = sdpvar(size(A,2),1);
 plot([A*x <= b, p.lb <= x <= p.ub],x(1:2),'b',[],sdpsettings('plot.shade',.2));
 
 
-function [p_lp,activity,prevRem] = handleCutPool(p_lp,activity,prevRem,output,integerPhase)
+function [p_lp,activity,prevRem] = handleCutPool(p_lp,activity,prevRem,output,integerPhase,activitylimit)
 if length(activity) < p_lp.K.l + p_lp.K.f
       activity(p_lp.K.l+p_lp.K.f) = 0;
 end
@@ -914,7 +886,7 @@ if ~integerPhase
     activity(find(Inactive_Here)) = activity(find(Inactive_Here)) + 1;
     activity(find(~Inactive_Here)) = 0;
     % Prune inactive cuts that have been inactive for many iterations
-    remove = find(activity(:)>15);
+    remove = find(activity(:)>activitylimit);
     prevRem = [prevRem;p_lp.F_struc(remove,:)];
     p_lp.F_struc(remove,:) = [];
     p_lp.K.l = p_lp.K.l - length(remove);
@@ -925,9 +897,168 @@ if ~isempty(prevRem)
     % again, add them and define them as very likely to be kept
     Violated_Here = find((prevRem*[1;output.Primal] <= 0));
     if ~isempty(Violated_Here)
-        p_lp.F_struc = [p_lp.F_struc;prevRem(Violated_Here,:)];
-        p_lp.K.l = p_lp.K.l + length(Violated_Here);
+        p_lp = addLinearCut(p_lp,prevRem(Violated_Here,:));
+%        p_lp.F_struc = [p_lp.F_struc;prevRem(Violated_Here,:)];
+%        p_lp.K.l = p_lp.K.l + length(Violated_Here);
         activity = [activity(:);ones(length(Violated_Here),1)*-20];      
         prevRem(Violated_Here,:)=[];
+    end
+end
+
+function p = addLinearCut(p,row);
+p.F_struc = [p.F_struc;row];
+p.K.l = p.K.l + size(row,1);
+
+
+function p = adjustSolverPrecision(p)
+
+switch p.options.cutsdp.solver
+    case 'cplex'
+        try
+            % Case that user specified, catch error if empty
+            p.options.cplex.simplex.tolerances.feasibility = min([abs(p.options.cutsdp.feastol/10) p.options.cplex.simplex.tolerances.feasibility]);
+        catch
+            % Options has been removed, i.e. user has not specified?
+            try
+                p.options.cplex.simplex.tolerances.feasibility = min([abs(p.options.cutsdp.feastol/10) p.options.default.cplex.simplex.tolerances.feasibility]);
+            catch
+                % User is sitting on obsolete cplex/matlab
+                disp('WARNING: You should update CPLEX. THe options structure does not work as expected');
+            end
+        end        
+            
+    otherwise
+end
+
+
+function p = detect3x3SymmetryGroups(p)
+
+good = zeros(1,length(p.c));
+good(p.integer_variables) = 1;
+good( (p.lb ~= -1) | (p.ub ~=0)) = 0;
+if any(good)
+    for j = 1:length(p.K.s)
+        n = 3;
+        X = spalloc(p.K.s(j),p.K.s(j),p.K.s(j)^2);
+        X(1:n,1:n) = 1;
+        index0 = find(X);
+        index = index0;
+        corner = 0;
+        groups = {};
+        for block = 1:p.K.s(j)-n
+            dataBlock = p.semidefinite{j}.F_struc(index,:);
+            used = find(any(dataBlock,1));
+            dataBlock = dataBlock(:,used);
+            v = used;v = v(v>1)-1;
+            if all(good(v))
+                if isempty(groups)
+                    groups{1}.dataBlock = dataBlock;
+                    groups{1}.variables{1} = used;
+                else
+                    found = 0;
+                    for k = 1:length(groups)
+                        if isequal(length(used),length(groups{1}.variables{1}))
+                            if isequal(groups{1}.dataBlock,dataBlock)
+                                found = 1;
+                                groups{1}.variables{end+1} = used;
+                            else
+                                % s = groups{1}.dataBlock(:)\dataBlock(:);
+                                % norm(s*groups{1}.dataBlock-dataBlock,inf)
+                            end
+                        end
+                    end
+                    if ~found
+                        groups{end+1}.dataBlock = dataBlock;
+                        groups{end}.variables{1} = used;
+                    end
+                end
+            end
+            index = index + p.K.s(j)+1;
+        end
+    end
+    for i = 1:length(groups)
+        if length(groups{i}.variables) > 1
+            keep(i) = 1;
+        else
+            keep(i) = 0;
+        end
+    end
+    groups = {groups{find(keep)}};
+    if length(groups) > 0
+        for i = 1:length(groups)
+            for j = 1:length(groups{i}.variables);
+                v = groups{i}.variables{j};
+                v = v(v>1)-1;
+                groups{i}.variables{j} = v;
+            end
+        end
+    end
+else
+    groups = {};
+end
+p.sdpsymmetry = groups;
+    
+    
+function p_lp = add3x3sdpsymmetrycut(p,p_lp,x) 
+
+for j = 1:length(p.sdpsymmetry)    
+    excludes = [];
+    n = sqrt(size(p.sdpsymmetry{j}.dataBlock,1));
+    for i = 1:length(p.sdpsymmetry{j}.variables)        
+        if min(eig(reshape(p.sdpsymmetry{j}.dataBlock*[1;x(p.sdpsymmetry{j}.variables{i})],n,n))) < -abs(p_lp.options.cutsdp.feastol)
+            excludes = [excludes x(p.sdpsymmetry{j}.variables{i})];
+        end
+    end
+    if ~isempty(excludes)
+        newF = [];
+        infeasible_combinations = unique(excludes','rows')';
+        for k = 1:size(infeasible_combinations,2)
+            % Local cut for reduced set
+            [b,atemp] = exclusionCut(infeasible_combinations(:,k),-1);
+            % Add that cut for every variable groups
+            for s = 1:length(p.sdpsymmetry{j}.variables)
+                a = spalloc(1,length(p_lp.c),1);
+                a(p.sdpsymmetry{j}.variables{s}) = atemp;
+                if all(sum(abs(p_lp.F_struc - [b a]),2)<=1e-12)
+                    newF = [newF;b a];
+                end
+            end
+        end
+        p_lp = addLinearCut(p_lp,newF);
+    end
+end
+    
+    
+function [p,p_lp] = addSymmetryCuts(p,p_lp)
+
+for j = 1:length(p.sdpsymmetry)    
+    if length(p.sdpsymmetry{j}.variables{1}) <= 4
+        % We can enumerate easily infeasibles
+        excludes = [];
+        n = sqrt(size(p.sdpsymmetry{j}.dataBlock,1));
+        combs = -dec2decbin(0:2^length(p.sdpsymmetry{j}.variables{1})-1,length(p.sdpsymmetry{j}.variables{1}))';
+        for i = 1:size(combs,2)
+            if min(eig(reshape(p.sdpsymmetry{j}.dataBlock*[1;combs(:,i)],n,n))) < -abs(p_lp.options.cutsdp.feastol)
+                excludes = [excludes combs(:,i)];
+            end
+        end
+        if ~isempty(excludes)
+            newF = [];
+            infeasible_combinations = unique(excludes','rows')';
+            for k = 1:size(infeasible_combinations,2)
+                % Local cut for reduced set
+                [b,atemp] = exclusionCut(infeasible_combinations(:,k),-1);
+                % Add that cut for every variable groups
+                for s = 1:length(p.sdpsymmetry{j}.variables)
+                    a = spalloc(1,length(p_lp.c),1);
+                    a(p.sdpsymmetry{j}.variables{s}) = atemp;                    
+                    newF = [newF;b a];                  
+                end
+            end
+            p_lp = addLinearCut(p_lp,newF);
+            % Delete, won't need these in the future
+            p.sdpsymmetry{j}.dataBlock = [];
+            p.sdpsymmetry{j}.variables = [];
+        end
     end
 end
