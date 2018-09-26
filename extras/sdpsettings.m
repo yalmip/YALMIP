@@ -612,13 +612,10 @@ end
 
 function cplex = setup_cplex_options
 try
-    v = version;
-    if ~isempty(strfind(v,'2016')) && ~isempty(strfind(v,'2017'))
-        cplex = cplexoptimset;
-    else
-        cplex = cplexoptimset('cplex');
-        cplex.output.clonelog = 0;
-    end
+
+    cplex = cplexoptimset('cplex');
+	cplex.output.clonelog = 0;
+
 catch
     try
         % cplex has p-compiled somehow in a manner in which
