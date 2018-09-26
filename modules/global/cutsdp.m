@@ -318,8 +318,8 @@ end
 p.F_struc = p.F_struc';
 p.F_struc = p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
 p.sdpsymmetry = [];
-%p = detect3x3SymmetryGroups(p);
-%[p,p_lp] = addSymmetryCuts(p,p_lp);
+p = detect3x3SymmetryGroups(p);
+[p,p_lp] = addSymmetryCuts(p,p_lp);
 
 standard_options = p_lp.options;
 if p.options.cutsdp.twophase
@@ -439,7 +439,7 @@ while goon
         end
         
         if output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))
-        %   p_lp = add3x3sdpsymmetrycut(p,p_lp,x);                   
+          p_lp = add3x3sdpsymmetrycut(p,p_lp,x);                   
         end
         
         if upptemp < upper
@@ -956,7 +956,7 @@ if any(good)
             dataBlock = p.semidefinite{j}.F_struc(index,:);
             used = find(any(dataBlock,1));
             dataBlock = dataBlock(:,used);
-            if used(1) > 0;dataBlock = [zeros(size(dataBlock,1),1) dataBlock];end
+            if used(1) == 0;dataBlock = [zeros(size(dataBlock,1),1) dataBlock];end
             v = used;v = v(v>1)-1;
             if all(good(v))
                 if isempty(groups)
