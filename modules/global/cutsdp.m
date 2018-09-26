@@ -299,7 +299,7 @@ else
 end
 
 % Avoid data shuffling later on when creating cuts for SDPs
-top = 1+p.K.f + sum(p.K.l)+sum(p.K.q);
+top = 1 + p.K.l+p.K.f+sum(p.K.q);
 % Slicing columns much faster
 p.F_struc = p.F_struc';
 for i = 1:length(p.K.s)
@@ -312,10 +312,9 @@ for i = 1:length(p.K.s)
 end
 p.F_struc = p.F_struc';
 p.F_struc = p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
-
 p.sdpsymmetry = [];
-p = detect3x3SymmetryGroups(p);
-[p,p_lp] = addSymmetryCuts(p,p_lp);
+%p = detect3x3SymmetryGroups(p);
+%[p,p_lp] = addSymmetryCuts(p,p_lp);
 
 standard_options = p_lp.options;
 if p.options.cutsdp.twophase
@@ -431,7 +430,7 @@ while goon
         % or problems where we analytically can compute the continuous from
         % given integers
         if was_lp_really_feasible && isinf(upptemp) && (output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))            )
-           p_lp = add_nogood_cut(p,p_lp,x,infeasibility);                    
+            p_lp = add_nogood_cut(p,p_lp,x,infeasibility);                    
         end
         
         if output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))
@@ -937,18 +936,19 @@ good = zeros(1,length(p.c));
 good(p.integer_variables) = 1;
 good( (p.lb ~= -1) | (p.ub ~=0)) = 0;
 if any(good)
+    groups = {};
     for j = 1:length(p.K.s)
         n = 3;
         X = spalloc(p.K.s(j),p.K.s(j),p.K.s(j)^2);
         X(1:n,1:n) = 1;
         index0 = find(X);
         index = index0;
-        corner = 0;
-        groups = {};
+        corner = 0;        
         for block = 1:p.K.s(j)-n
             dataBlock = p.semidefinite{j}.F_struc(index,:);
             used = find(any(dataBlock,1));
             dataBlock = dataBlock(:,used);
+            if used(1) > 0;dataBlock = [zeros(size(dataBlock,1),1) dataBlock];end
             v = used;v = v(v>1)-1;
             if all(good(v))
                 if isempty(groups)

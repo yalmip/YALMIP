@@ -116,7 +116,7 @@ p = updatemonomialbounds(p);
 % % *******************************
 % %% PRE-SOLVE (nothing fancy coded)
 % % *******************************
-p = simplePresolve(p)
+p = simplePresolve(p);
 p = propagate_bounds_from_equalities(p);
 
 if isempty(p.nonlinear)
@@ -217,7 +217,7 @@ setuptime = etime(clock,bnbsolvertime);
 bnbsolvertime = clock;
 [x_min,solved_nodes,lower,upper,profile,diagnostics] = branch_and_bound(p,pss);
 bnbsolvertime =  etime(clock,bnbsolvertime);
-output.solvertime   = setuptime + bnbsolvertime;
+output.solvertime = setuptime + bnbsolvertime;
 
 % **********************************
 %% CREATE SOLUTION
@@ -448,12 +448,36 @@ end
 p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
 poriginal.noninteger_variables = p.noninteger_variables;
 
+p = addImpliedSDP(p);
+
+% Resuse some code from cutsdp to add simple cuts required for SDP
+% feasibility for problems with some trivial symmetries
+% TODO: Clean up, refactor, generalize
+if p.K.f == 0 % Still to lazy to fix last insertion
+    top = 1 + p.K.l + p.K.f + sum(p.K.q);
+    p.F_struc = p.F_struc';
+    for i = 1:length(p.K.s)
+        p.semidefinite{i}.F_struc = p.F_struc(:,top:top+p.K.s(i)^2-1)';
+        top = top + p.K.s(i)^2;
+    end
+    p.F_struc = p.F_struc';
+    p.sdpsymmetry = [];
+    p = detect3x3SymmetryGroups(p);
+    pp = p;pp.F_struc = [];pp.K.l = 0;pp.K.f = 0;pp.K.s = 0;
+    [p,pp] = addSymmetryCuts(p,pp);
+    p = addLinearCut(p,pp.F_struc);
+    p.semidefinite=[];
+end
+
 feasibilityHistory = [];
+% Not used, deleted feature...
 aggresiveprune = 0;
 % Save of all optimal solutions
 allSolutions = [];
+sosgroups = [];
+sosvariables = [];
 while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
-
+    
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
@@ -485,9 +509,13 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         relaxed_p.semicont_variables = [];
         relaxed_p.ub(p.ub<p.lb) = relaxed_p.lb(p.ub<p.lb);
         
-        % Solve node relaxation
-        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
-        
+        % Solve node relaxation     
+        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);%         
+        if output.problem == 2 && ~isinf(p.lower)
+            % Some solvers mess upp when we have objective cut
+            output = bnb_solvelower(lowersolver,relaxed_p,inf,lower,x_min,aggresiveprune,allSolutions);
+        end
+       
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -500,6 +528,12 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
                     p.fastdiff = output.solverinput.model.fastdiff;
                 end
             end
+        end
+        
+        if output.problem == 2 && ~isinf(p.lower)
+            % Solver messed up completely and claimed unbounded
+            % THis is almost always infeasible
+            output.problem = 1;
         end
         
         if output.problem == -4
@@ -1132,7 +1166,7 @@ if p.options.usex0
     residual = resids(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-1e-8) & all(residual(1+p.K.f:end)>=-1e-6);
     if relaxed_feasible & all(z(p.integer_variables)==fix(z(p.integer_variables))) & all(z(p.binary_variables)==fix(z(p.binary_variables)))
-        upper = computecost(p.f,p.corig,p.Q,z,p);%upper = p.f+p.c'*z+z'*p.Q*z;
+        upper = computecost(p.f,p.corig,p.Q,z,p);
         x_min = z;
     end
 else
@@ -1142,7 +1176,7 @@ else
     residual = resids(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);
     if relaxed_feasible
-        upper = computecost(p.f,p.corig,p.Q,z,p);%upper = p.f+p.c'*z+z'*p.Q*z;
+        upper = computecost(p.f,p.corig,p.Q,z,p);
         x_min = x;
     end
 end
@@ -1268,38 +1302,7 @@ N = stack.nodes{j};
 function stack = removeStackNode(stack,j)
 stack.nodeCount = stack.nodeCount - length(j);
 stack.lower(j) = inf;
-
-        
-function p = detectAtMost(p)
-atmostgroups = {};
-atmostbounds = [];
-atmostvariables = [];
-if p.K.l > 0 & ~isempty(p.integer_variables)
-    nint = length(p.integer_variables);
-    Aineq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
-    bineq = p.F_struc(p.K.f + (1:p.K.l),1);
-    notinteger_var_index = setdiff(1:length(p.lb),p.integer_variables);
-    only_integer = ~any(Aineq(:,notinteger_var_index),2);
-    Aineq_bin = Aineq(find(only_integer),p.integer_variables);
-    bineq_bin = bineq(find(only_integer),:);
-    % Detect groups with constraints #(d_i ~= 0) <= k (for binaries)
-    atmostgroups = {};
-    for i = 1:size(Aineq_bin,1)
-        if bineq_bin(i) >= 1
-            [ix,jx,sx] = find(Aineq_bin(i,:));
-            % 0/1 or -1/0 variables with with bounded cardinality
-            if all(sx == -1) && ((all(p.lb(jx)==-1) && all(p.ub(jx)==0)) || (all(p.ub(jx)==1) && all(p.lb(jx)==0)))                
-                atmostgroups{end+1} = p.integer_variables(jx);
-                atmostbounds = [atmostbounds floor(bineq_bin(i))];
-                atmostvariables = [atmostvariables p.integer_variables(jx)];
-            end
-        end
-    end
-end
-p.atmost.groups = atmostgroups;
-p.atmost.bounds = atmostbounds;
-p.atmost.variables = atmostvariables;
-    
+          
 function p = detectSOS(p)
 sosgroups = {};
 sosvariables = [];
@@ -1391,3 +1394,149 @@ if ~isempty(p.F_struc)
         end
     end
 end
+
+function p = detect3x3SymmetryGroups(p)
+
+good = zeros(1,length(p.c));
+good(p.integer_variables) = 1;
+good( (p.lb ~= -1) | (p.ub ~=0)) = 0;
+if any(good)
+    groups = {};
+    for j = 1:length(p.K.s)
+        if p.K.s(j) >= 3
+        n = 3;
+        X = spalloc(p.K.s(j),p.K.s(j),p.K.s(j)^2);
+        X(1:n,1:n) = 1;
+        index0 = find(X);
+        index = index0;
+        corner = 0;        
+        for block = 1:p.K.s(j)-n
+            dataBlock = p.semidefinite{j}.F_struc(index,:);
+            used = find(any(dataBlock,1));
+            dataBlock = dataBlock(:,used);             
+            if used(1) == 0;dataBlock = [zeros(size(dataBlock,1),1) dataBlock];end
+            v = used;v = v(v>1)-1;
+            if all(good(v))
+                if isempty(groups)
+                    groups{1}.dataBlock = dataBlock;
+                    groups{1}.variables{1} = used;
+                else
+                    found = 0;
+                    for k = 1:length(groups)
+                        if isequal(length(used),length(groups{1}.variables{1}))
+                            if isequal(groups{1}.dataBlock,dataBlock)
+                                found = 1;
+                                groups{1}.variables{end+1} = used;
+                            else
+                                % TODO: Look for simple scaled versions
+                                % s = groups{1}.dataBlock(:)\dataBlock(:);
+                                % norm(s*groups{1}.dataBlock-dataBlock,inf)
+                            end
+                        end
+                    end
+                    if ~found
+                        groups{end+1}.dataBlock = dataBlock;
+                        groups{end}.variables{1} = used;
+                    end
+                end
+            end
+            index = index + p.K.s(j)+1;
+        end
+        end
+    end
+    for i = 1:length(groups)
+        if length(groups{i}.variables) > 1
+            keep(i) = 1;
+        else
+            keep(i) = 0;
+        end
+    end
+    groups = {groups{find(keep)}};
+    if length(groups) > 0
+        for i = 1:length(groups)
+            for j = 1:length(groups{i}.variables);
+                v = groups{i}.variables{j};
+                v = v(v>1)-1;
+                groups{i}.variables{j} = v;
+            end
+        end
+    end
+else
+    groups = {};
+end
+p.sdpsymmetry = groups;
+    
+    
+function p_lp = add3x3sdpsymmetrycut(p,p_lp,x) 
+
+for j = 1:length(p.sdpsymmetry)    
+    excludes = [];
+    n = sqrt(size(p.sdpsymmetry{j}.dataBlock,1));
+    for i = 1:length(p.sdpsymmetry{j}.variables)        
+        if min(eig(reshape(p.sdpsymmetry{j}.dataBlock*[1;x(p.sdpsymmetry{j}.variables{i})],n,n))) < -abs(p_lp.options.bnb.feastol)
+            excludes = [excludes x(p.sdpsymmetry{j}.variables{i})];
+        end
+    end
+    if ~isempty(excludes)
+        newF = [];
+        infeasible_combinations = unique(excludes','rows')';
+        for k = 1:size(infeasible_combinations,2)
+            % Local cut for reduced set
+            [b,atemp] = exclusionCut(infeasible_combinations(:,k),-1);
+            % Add that cut for every variable groups
+            for s = 1:length(p.sdpsymmetry{j}.variables)
+                a = spalloc(1,length(p_lp.c),1);
+                a(p.sdpsymmetry{j}.variables{s}) = atemp;
+                if all(sum(abs(p_lp.F_struc - [b a]),2)<=1e-12)
+                    newF = [newF;b a];
+                end
+            end
+        end
+        p_lp = addLinearCut(p_lp,newF);
+    end
+end
+    
+    
+function [p,p_lp] = addSymmetryCuts(p,p_lp)
+
+for j = 1:length(p.sdpsymmetry)    
+    if length(p.sdpsymmetry{j}.variables{1}) <= 4
+        % We can enumerate easily infeasibles
+        excludes = [];
+        n = sqrt(size(p.sdpsymmetry{j}.dataBlock,1));
+        combs = -dec2decbin(0:2^length(p.sdpsymmetry{j}.variables{1})-1,length(p.sdpsymmetry{j}.variables{1}))';
+        for i = 1:size(combs,2)
+            if min(eig(reshape(p.sdpsymmetry{j}.dataBlock*[1;combs(:,i)],n,n))) < -abs(p_lp.options.bnb.feastol)
+                excludes = [excludes combs(:,i)];
+            end
+        end
+        if ~isempty(excludes)
+            newF = [];
+            infeasible_combinations = unique(excludes','rows')';
+            for k = 1:size(infeasible_combinations,2)
+                % Local cut for reduced set
+                [b,atemp] = exclusionCut(infeasible_combinations(:,k),-1);
+                % Add that cut for every variable groups
+                for s = 1:length(p.sdpsymmetry{j}.variables)
+                    a = spalloc(1,length(p_lp.c),1);
+                    a(p.sdpsymmetry{j}.variables{s}) = atemp;                    
+                    newF = [newF;b a];                  
+                end
+            end
+            p_lp = addLinearCut(p_lp,newF);
+            % Delete, won't need these in the future
+            p.sdpsymmetry{j}.dataBlock = [];
+            p.sdpsymmetry{j}.variables = [];
+        end
+    end
+end
+
+function p = addLinearCut(p,row);
+if sum(p.K.s) == 0 && sum(p.K.q)==0
+    % Just append in the end
+    p.F_struc = [p.F_struc;row];
+else
+    % Insert before conics
+    p.F_struc = [p.F_struc(1:(p.K.f+p.K.l),:);row;p.F_struc(1+p.K.f+p.K.l:end,:)];
+end
+p.K.l = p.K.l + size(row,1);

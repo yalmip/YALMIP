@@ -1,9 +1,6 @@
 function [upper,x_min] = rounder(p,relaxedsolution,prelaxed)
 
-% Extremely simple heuristic for finding integer
-% solutions.
-%
-% Rounds up and down, fixes etc.
+% Extremely simple heuristic for finding integer solutions.
 
 % This was the relaxed solution
 x = relaxedsolution.Primal;
@@ -15,26 +12,6 @@ x_min = x;
 % These should be integer
 intvars = [p.integer_variables(:);p.binary_variables(:)];
 convars = p.noninteger_variables;
-
-if ismember('shifted ceil',p.options.bnb.rounding)
-    % Round, update nonlinear terms, and compute feasibility
-    for tt = logspace(0,-4,4)        
-        f = x(intvars)-floor(x(intvars));
-        xtemp = x;xtemp(intvars) = round(xtemp(intvars));
-        xtemp(intvars(f > tt)) = ceil(x(intvars(f > tt)));
-        xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
-        xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-        xtemp = fix_semivar(p,xtemp);
-        xtemp = setnonlinearvariables(p,xtemp);
-        upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-        if upperhere < upper
-            if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
-                x_min = xtemp;
-                upper =upperhere;
-            end
-        end
-    end
-end
 
 if ismember('shifted round',p.options.bnb.rounding)
     % Pre-extract...    
@@ -49,8 +26,8 @@ if ismember('shifted round',p.options.bnb.rounding)
         xtemp = x;xtemp(intvars) = round(xtemp(intvars)+tt);
         xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
         xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-        xtemp = fix_semivar(p,xtemp);
-        % xtemp = fix_atmost(p,xtemp,x);
+        xtemp = fix_semivar(p,xtemp);  
+        xtemp = fix_atmost(p,xtemp,x);
         xtemp = setnonlinearvariables(p,xtemp);        
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper
@@ -99,64 +76,7 @@ if length(prelaxed.sosgroups)>0
         if all(xtemp(p.binary_variables) == fix(xtemp(p.binary_variables))) && all(xtemp(p.integer_variables) == fix(xtemp(p.integer_variables)))
             x_min = xtemp;
             upper =upperhere;
-            return
-            end
-    end
-end
-
-if ismember('round',p.options.bnb.rounding)    
-    % Round, update nonlinear terms, and compute feasibility
-    xtemp = x;xtemp(intvars) = round(xtemp(intvars));
-    xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
-    xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-    xtemp = fix_semivar(p,xtemp);
-    xtemp = setnonlinearvariables(p,xtemp); 
-    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-    if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
-        x_min = xtemp;
-        upper = upperhere;
-    end
-end
-
-if ismember('fix',p.options.bnb.rounding)
-    % Do same using fix instead
-    xtemp = x;xtemp(intvars) = fix(xtemp(intvars));
-    xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
-    xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-    xtemp = fix_semivar(p,xtemp);
-    xtemp = setnonlinearvariables(p,xtemp);
-    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-    if upperhere < upper & checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
-        x_min = xtemp;
-        upper = upperhere;
-    end
-end
-
-if ismember('ceil',p.options.bnb.rounding)
-    % ...or ceil
-    xtemp = x;xtemp(intvars) = ceil(xtemp(intvars));
-    xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
-    xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-    xtemp = fix_semivar(p,xtemp);
-    xtemp = setnonlinearvariables(p,xtemp);
-    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-    if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
-        x_min = xtemp;
-        upper = upperhere;
-    end
-end
-
-if ismember('floor',p.options.bnb.rounding)
-    % or floor
-    xtemp = x;xtemp(intvars) = floor(xtemp(intvars));
-    xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
-    xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-    xtemp = fix_semivar(p,xtemp);
-    xtemp = setnonlinearvariables(p,xtemp);
-    upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-    if upperhere < upper && checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%if res>-p.options.bnb.feastol
-        x_min = xtemp;
-        upper = upperhere;
+        end
     end
 end
 
@@ -189,6 +109,6 @@ for i = 1:length(p.atmost.groups)
     if nnz(xtemp(k))> p.atmost.bounds(i);
         n_should_be_zero = length(p.atmost.groups{i}) - p.atmost.bounds(i);
         [y,loc] = sort(abs(x(k)));
-        would(k(loc(1:n_should_be_zero))) =  would(k(loc(1:n_should_be_zero))) + 1;        
+        xtemp(k(loc(1:n_should_be_zero))) = 0;
     end
 end

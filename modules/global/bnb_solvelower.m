@@ -110,6 +110,11 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
              remove_these = zero_row(zero_row_pos);
              p.F_struc(p.K.f + remove_these,:) = [];
              p.K.l = p.K.l - length(remove_these);
+             zero_row_neg = find(lhs < -p.options.bnb.feastol);
+             if ~isempty(zero_row_neg)
+                output.problem = 1;    
+                output.Primal = p.lb; 
+             end
          end
     end
     if p.K.s(1) > 0
