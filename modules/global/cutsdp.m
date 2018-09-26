@@ -143,19 +143,23 @@ end
 %% START CUTTING
 % *************************************************************************
 cutsdpsolvertime = clock;
-[x_min,solved_nodes,lower,feasible,D_struc] = cutting(p);
+[x_min,solved_nodes,lower,feasible,D_struc,interrupted] = cutting(p);
 
 % *************************************************************************
 %% CREATE SOLUTION
 % *************************************************************************
-output.problem = 0;
-if ~feasible
-    output.problem = 1;
-end
-if solved_nodes == p.options.cutsdp.maxiter
-    output.problem = 3;
-elseif etime(clock,cutsdpsolvertime) > p.options.cutsdp.maxtime
-    output.problem = 3;
+if interrupted
+    output.problem = 16;
+else
+    output.problem = 0;
+    if ~feasible
+        output.problem = 1;
+    end
+    if solved_nodes == p.options.cutsdp.maxiter
+        output.problem = 3;
+    elseif etime(clock,cutsdpsolvertime) > p.options.cutsdp.maxtime
+        output.problem = 3;
+    end
 end
 output.solved_nodes = solved_nodes;
 output.Primal       = x_min;
@@ -170,8 +174,9 @@ end
 output.solvertime   = etime(clock,bnbsolvertime);
 %% --
 
-function [x,solved_nodes,lower,feasible,D_struc] = cutting(p)
+function [x,solved_nodes,lower,feasible,D_struc,interrupted] = cutting(p)
 
+interrupted = 0;
 % *************************************************************************
 %% Sanity check
 % *************************************************************************
@@ -383,7 +388,7 @@ while goon
         ptemp.integer_variables = [];
         output = feval(cutsolver,ptemp);
     end
-      
+     
     % Remove upper bounds if we added those (avoid accumulating them)   
     if ~isinf(upper) && (nnz(p_lp.Q)==0)
         p_lp.K.l = p_lp.K.l - 1;
@@ -494,6 +499,7 @@ while goon
         end
         goon = goon && gap >= p.options.cutsdp.gaptol;        
         goon = goon && (etime(clock,cutsdpsolvertime) < p.options.cutsdp.maxtime);
+        goon = goon && ~(output.problem == 16);
     end
     
     solved_nodes = solved_nodes + 1;
@@ -518,7 +524,9 @@ if ~checkfeasiblefast(p_lp,x,-p.options.cutsdp.feastol)
     end
 end
 D_struc = [];
-
+if output.problem == 16
+    interrupted = 1;
+end
 
 
 function [p_lp,worstinfeasibility,infeasible_sdp_cones,eig_computation_failure] = add_sdp_cut(p,p_lp,x,infeasibility_in,p_original);
