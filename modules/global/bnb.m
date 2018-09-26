@@ -118,7 +118,7 @@ p = updatemonomialbounds(p);
 % % *******************************
 p = simplePresolve(p);
 p = propagate_bounds_from_equalities(p);
-
+pss = [];
 if isempty(p.nonlinear)
     if p.K.f>0
         Aeq = -p.F_struc(1:p.K.f,2:end);

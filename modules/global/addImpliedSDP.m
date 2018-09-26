@@ -1,5 +1,5 @@
 function p = addImpliedSDP(p)
-if p.K.q(1)==0
+if p.K.q(1)==0 && p.K.s(1) > 0
     % Search for rows where there is a constant, and a diagonal term 
     % which thus has to be structly positive, we might leads us to a
     % constraints of the type sum x_i >= 1, if only non-negative integer
