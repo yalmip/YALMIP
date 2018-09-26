@@ -1166,7 +1166,7 @@ if p.options.usex0
     residual = resids(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-1e-8) & all(residual(1+p.K.f:end)>=-1e-6);
     if relaxed_feasible & all(z(p.integer_variables)==fix(z(p.integer_variables))) & all(z(p.binary_variables)==fix(z(p.binary_variables)))
-        upper = computecost(p.f,p.corig,p.Q,z,p);
+        upper = computecost(p.f,p.c,p.Q,z,p);
         x_min = z;
     end
 else
@@ -1176,7 +1176,7 @@ else
     residual = resids(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);
     if relaxed_feasible
-        upper = computecost(p.f,p.corig,p.Q,z,p);
+        upper = computecost(p.f,p.c,p.Q,z,p);
         x_min = x;
     end
 end
