@@ -653,7 +653,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     % **************************************
     % YAHOO! INTEGER SOLUTION FOUND
     % **************************************
-    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1)
+    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4)
         if (cost<upper) & feasible
             x_min = x;
             upper = cost;
