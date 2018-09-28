@@ -511,9 +511,8 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         
         % Solve node relaxation     
         output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);%         
-        if output.problem == 2 && ~isinf(p.lower)
-            % Some solvers mess upp when we have objective cut
-            output = bnb_solvelower(lowersolver,relaxed_p,inf,lower,x_min,aggresiveprune,allSolutions);
+        if (output.problem == 12 || output.problem == 2) && ~isinf(p.lower)
+            output.problem = 1;
         end
        
         if p.options.bnb.profile
@@ -529,13 +528,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
                 end
             end
         end
-        
-        if output.problem == 2 && ~isinf(p.lower)
-            % Solver messed up completely and claimed unbounded
-            % THis is almost always infeasible
-            output.problem = 1;
-        end
-        
+                
         if output.problem == -4
             diagnostics = -4;
             x = nan+zeros(length(p.lb),1);
