@@ -265,6 +265,14 @@ if ~isempty(model.aux_variables)
    temp=ismember(keptvariablesIndex,model.aux_variables);
    model.aux_variables = find(temp);  
 end
+if ~isempty(model.K.sos)
+    if ~isempty(model.K.sos.variables)
+        for i = 1:length(model.K.sos.variables)
+            temp=ismember(keptvariablesIndex,model.K.sos.variables{i});
+            model.K.sos.variables{i} = find(temp);            
+        end
+    end
+end
 
 model.used_variables = model.used_variables(keptvariablesIndex);
 
