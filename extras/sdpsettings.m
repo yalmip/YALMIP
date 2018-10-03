@@ -279,7 +279,8 @@ else
     
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
-    options.default.mosek = options.mosek;    
+    options.default.mosek = options.mosek;   
+    options.default.osqp = options.osqp;   
 end
 
 names = lower(Names);

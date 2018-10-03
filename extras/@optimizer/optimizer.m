@@ -239,6 +239,8 @@ model.getsolvertime = 0;
 
 model.solver.callhandle = str2func(model.solver.call);
 
+model.options = pruneOptions(model.options);
+
 sys.recover = aux2;
 sys.model = model;
 sys.dimin = [nIn mIn];

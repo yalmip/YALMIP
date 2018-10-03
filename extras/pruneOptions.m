@@ -25,6 +25,14 @@ else
         options.gurobi = opsDiff;
     end
 end
+if isequal(options.osqp,options.default.osqp)
+    options.osqp = [];
+else
+    [same,opsDiff] = isequalInf(options.osqp,options.default.osqp);
+    if ~same
+        options.osqp = opsDiff;
+    end
+end
 
 function [same,d] = isequalInf(a,b)
 same = 1;
