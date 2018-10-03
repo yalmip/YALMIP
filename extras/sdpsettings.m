@@ -279,7 +279,7 @@ else
     
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
-    options.default.mosek = options.mosek;
+    options.default.mosek = options.mosek;    
 end
 
 names = lower(Names);
@@ -357,15 +357,15 @@ end
 
 
 
-function cNames = recursivefieldnames(options,append);
+function cNames = recursivefieldnames(options,append)
 
 if nargin == 1
     append = '';
 end
 
 cNames = fieldnames(options);
-for i = 1:length(cNames)
-    eval(['temporaryOptions = options.' cNames{i} ';']);
+for i = 1:length(cNames)    
+    temporaryOptions = getfield(options,cNames{i});
     if isa(temporaryOptions,'struct')
         cNames = [cNames;recursivefieldnames(temporaryOptions,[cNames{i}])];
     end
