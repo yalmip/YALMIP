@@ -10,6 +10,11 @@ diagnostic.solvertime = 0;
 diagnostic.info = '';
 diagnostic.problem = 0;
 
+the_sign = 1;
+if options.bisection.switchedsign
+    the_sign = -1;
+end
+
 if length(getvariables(Objective)) > 1
     diagnostic.problem = -4;
     return
@@ -50,9 +55,15 @@ if ~isempty(strfind(struct(P).model.options.solver,'lmilab'))
     return
 end
 
+if options.verbose;
+    disp(['Selected solver: ' options.solver]);
+    fprintf(['Testing initial bound: ' num2str(lower*the_sign)]);
+end
+
 % Make sure we actually can solve the lower problem
 solvertime = tic;
 [sol, flag] = P{lower};
+
 diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
 if flag == 1    
     % This was infeasible, hernce we can use it as an upper bound    
@@ -60,11 +71,17 @@ if flag == 1
     while flag
         bestUpper = lower;
         lower = lower - 2^(-4+i);i = i+1;
+        if options.verbose;        
+            fprintf([' (fail), ' num2str(lower*the_sign)]);
+        end
         try
             solvertime = tic;
             [sol, flag] = P{lower};
             diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
             if lower < -1e6
+                  if options.verbose;        
+                     fprintf([' (fail). Giving up!\n']);
+                  end
                 diagnostic.problem = 21;
                 diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
                 return
@@ -75,11 +92,19 @@ if flag == 1
             return
         end
     end
+    if options.verbose;        
+        fprintf([' (ok).']);
+    end
 elseif flag ~=0
 	diagnostic.problem = flag;
 	diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
     return
 end
+
+if options.verbose
+    fprintf(['\n']);
+end
+
 v = sol;
 optimal = lower;
 upper = bestUpper;
@@ -110,9 +135,8 @@ end
 
 % Perform bisection
 iter = 1;
-if options.verbose;
-    disp(['Selected solver: ' options.solver]);
-    disp('Iteration  Lower bound    Test           Upper bound    Gap          Status at test');
+if options.verbose
+    disp('Iteration  Lower bound    Test           Upper bound    Gap          Solver status at test');
 end
 working_sol = [];
 while upper - lower > options.bisection.absgaptol
@@ -137,7 +161,7 @@ while upper - lower > options.bisection.absgaptol
                   fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,L,T,U,U-L,[yalmiperror(flag) '(looks ok)'] );   
                   flag = 0;
                 else
-                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,L,T,U,U-L,[yalmiperror(flag) '(looks like failure)']);                     
+                  fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,L,T,U,U-L,[yalmiperror(flag) '(assumed infeasible)']);                     
                 end
            else               
             fprintf(' %4.0f :   %12.5E   %12.5E   %12.5E   %12.5E  %s\n',iter,L,T, U,U-L,yalmiperror(flag));
@@ -164,4 +188,9 @@ else
     % Assign computed solution
     assign(x,working_sol);
     assign(Objective,optimal);
+end
+if options.verbose  
+    if diagnostic.problem==0
+        disp(['Bisection terminated successfully with objective ' num2str(optimal)]);
+    end
 end
