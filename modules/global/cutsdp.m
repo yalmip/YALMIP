@@ -387,6 +387,11 @@ while goon
         ptemp.binary_variables = [];
         ptemp.integer_variables = [];
         output = feval(cutsolver,ptemp);
+        if output.problem == 12
+            ptemp.c = ptemp.c*0;
+            ptemp.Q = ptemp.Q*0;
+            output = feval(cutsolver,ptemp);
+        end
     end
      
     % Remove upper bounds if we added those (avoid accumulating them)   
@@ -403,6 +408,7 @@ while goon
     infeasible_sdp_cones = ones(1,length(p.K.s));
     
     eig_failure = 0;
+    currentPhase = integerPhase ;
     if output.problem == 1 | output.problem == 12
         % LP relaxation was infeasible, hence problem is infeasible
         feasible = 0;
@@ -460,8 +466,7 @@ while goon
         else
             noprogress = 0;
         end
-        
-        currentPhase = integerPhase ;
+               
         sdpInfeasibility = infeasibility;
         % We terminate integrality-relaxed phase if solution is close to
         % SDP-feasible, or no progress in objective, or too many nodes
