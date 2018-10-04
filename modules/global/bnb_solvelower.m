@@ -117,6 +117,39 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
              end
          end
     end
+    
+%     if relaxed_p.K.q(1) > 0
+%         top = 1 + p.K.f + p.K.l;
+%         dels = zeros(sum(p.K.q),1);
+%         deli = zeros(length(p.K.q),1);
+%         for j = 1:length(p.K.q)
+%             m = p.K.q(j);
+%             M = p.F_struc(top:top+1,:);
+%             if nnz(M)==4
+%                 if all(M(:,1)==0)
+%                     [ii,jj,s] = find(M(1,:));
+%                     if all(s==1)
+%                         [ii2,jj2,s2] = find(M(2,:));
+%                         if isequal(s2,[1 -1]) && isequal(ii,ii2) && isequal(jj,jj2)
+%                            if any(isinf(p.ub(jj-1)))
+%                                deli(j)=1;
+%                                dels(top:top+p.K.q(j)-1)=1;
+%                            end
+%                         end
+%                     end
+%                 end
+%             end
+%             top = top + p.K.q(j);
+%         end
+%         if any(deli)
+%              p.F_struc(find(dels),:)=[];
+%              p.K.q(find(deli))=[];
+%              if length(p.K.q) == 0
+%                  p.K.q = 0;
+%              end
+%         end
+%     end
+    
     if p.K.s(1) > 0
         top = 1 + p.K.f + p.K.l + sum(p.K.q);
         for j = 1:length(p.K.s)
