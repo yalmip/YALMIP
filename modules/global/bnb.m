@@ -510,7 +510,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         relaxed_p.ub(p.ub<p.lb) = relaxed_p.lb(p.ub<p.lb);
         
         % Solve node relaxation     
-        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);%         
+        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
         if (output.problem == 12 || output.problem == 2) && ~isinf(p.lower)
             output.problem = 1;
         end
