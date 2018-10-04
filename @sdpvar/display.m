@@ -176,7 +176,7 @@ switch(X.typeflag)
                 end
             end
             
-            B = getbase(x);
+            B = getbase(X);
             [ii,jj,ss1] = find(real(getbase(B)));
             [ii,jj,ss2] = find(imag(getbase(B)));
             ss = [ss1;ss2];
