@@ -73,7 +73,7 @@ switch output.cplexstatus
         problem = 0;
     case {3,103,106}
         problem = 1; % Infeasible
-    case {2,20,21,118}
+    case {2,20,21,118,133}
         problem = 2; % Unbounded
     case {4,119}
         problem = 15;    
