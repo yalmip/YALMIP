@@ -41,6 +41,15 @@ if isempty(options) || isequal(options.solver,'')
 end
 P = optimizer(Constraints,[],options,Objective,x);
 
+% Safe-guard aganst using LMILAB
+if ~isempty(strfind(struct(P).model.options.solver,'lmilab'))
+    disp('Selected solver LMILAB lacks features making it unsuitable for BISECTION')
+    disp('See why here https://yalmip.github.io/solver/lmilab/');
+    disp('Select another SDP solver or/and install a better SDP solver');       
+    error('Cannot proceed due to poor SDP solver');
+    return
+end
+
 % Make sure we actually can solve the lower problem
 solvertime = tic;
 [sol, flag] = P{lower};
