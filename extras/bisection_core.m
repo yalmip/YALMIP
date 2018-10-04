@@ -54,7 +54,7 @@ end
 solvertime = tic;
 [sol, flag] = P{lower};
 diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
-if flag ~=0
+if flag == 1    
     % This was infeasible, hernce we can use it as an upper bound    
     i = 1;
     while flag
@@ -75,6 +75,10 @@ if flag ~=0
             return
         end
     end
+elseif flag ~=0
+	diagnostic.problem = flag;
+	diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
+    return
 end
 v = sol;
 optimal = lower;
