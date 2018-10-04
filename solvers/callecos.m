@@ -1,8 +1,7 @@
 function output = callecos(yalmipmodel)
 
-% Retrieve needed data
+% Fix ECOS options
 options = yalmipmodel.options;
-
 options.ecos.verbose = options.verbose~=0;
 if ~isempty(yalmipmodel.binary_variables)
     options.ecos.bool_vars_idx = yalmipmodel.binary_variables;
@@ -12,37 +11,28 @@ if ~isempty(yalmipmodel.integer_variables)
 end
 model.opts = options.ecos;
 
-
-% first setup an scs model
-K = yalmipmodel.K;
-F_struc = yalmipmodel.F_struc;
-ub      = yalmipmodel.ub;
-lb      = yalmipmodel.lb;
-c = yalmipmodel.c;
-if ~isempty(ub)
-    [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
+if ~isempty(yalmipmodel.ub)
+    [yalmipmodel.F_struc,yalmipmodel.K] = addStructureBounds(yalmipmodel.F_struc,yalmipmodel.K,yalmipmodel.ub,yalmipmodel.lb);
 end
 
-data.A = -F_struc(:,2:end);
-data.b = full(F_struc(:,1));
-data.c = full(c);
-cones = [];
-cones.f = K.f;
-cones.l = K.l;
-cones.q = K.q;
-cones.s = K.s;
-cones.ep = 0;
-[data,cones,output] = addExponentialCone(data,cones,yalmipmodel);
+% Write nonlinear functions using exponential cone operators, if possible
+[yalmipmodel,output] = normalizeExponentialCone(yalmipmodel);
 if output.problem
     return
 end
 
 % Map to ECOS syntax
-model.c = full(data.c);
-model.A = data.A(1:cones.f,:);if isempty(model.A);model.A = [];end
-model.b = data.b(1:cones.f,:);if isempty(model.b);model.b = [];end
-model.G = data.A(1+cones.f:end,:);if isempty(model.G);model.G = [];end
-model.h = data.b(1+cones.f:end,:);if isempty(model.h);model.h = [];end
+cones = [];
+cones.f = yalmipmodel.K.f;
+cones.l = yalmipmodel.K.l;
+cones.q = yalmipmodel.K.q;
+cones.s = yalmipmodel.K.s;
+cones.ep = yalmipmodel.K.e;
+model.c = full(yalmipmodel.c);
+model.A = -yalmipmodel.F_struc(1:cones.f,2:end);if isempty(model.A);model.A = [];end
+model.b = full(yalmipmodel.F_struc(1:cones.f,1));if isempty(model.b);model.b = [];end
+model.G = -yalmipmodel.F_struc(1+cones.f:end,2:end);if isempty(model.G);model.G = [];end
+model.h = full(yalmipmodel.F_struc(1+cones.f:end,1));if isempty(model.h);model.h = [];end
 if nnz(cones.l) > 0
     model.dims.l = cones.l;
 end

@@ -41,6 +41,7 @@ K.q = 0; % SOCP
 K.r = 0; % Rotated SOCP (obsolete)
 K.p = 0; % Power cone
 K.s = 0; % SDP cone
+K.e = 0; % Eponential cone
 K.rank = [];
 K.dualrank = [];
 K.scomplex = [];
@@ -53,6 +54,8 @@ KCut.q = [];
 KCut.r = [];
 KCut.p = [];
 KCut.s = [];
+KCut.e = [];
+
 
 top = 1;
 localtop = 1;
