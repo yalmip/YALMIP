@@ -57,7 +57,7 @@ end
 
 if options.verbose;
     disp(['Selected solver: ' options.solver]);
-    fprintf(['Testing initial bound: ' num2str(lower*the_sign)]);
+    fprintf(['Generating initial bound: ' num2str(lower*the_sign)]);
 end
 
 % Make sure we actually can solve the lower problem
@@ -80,7 +80,7 @@ if flag == 1
             diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
             if lower < -1e6
                   if options.verbose;        
-                     fprintf([' (fail). Giving up!\n']);
+                     fprintf([' (fail). Giving up, never feasible\n']);
                   end
                 diagnostic.problem = 21;
                 diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
@@ -95,14 +95,12 @@ if flag == 1
     if options.verbose;        
         fprintf([' (ok).']);
     end
-elseif flag ~=0
+elseif flag == 0    
+   
+else
 	diagnostic.problem = flag;
 	diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
     return
-end
-
-if options.verbose
-    fprintf(['\n']);
 end
 
 v = sol;
@@ -111,12 +109,18 @@ upper = bestUpper;
 
 if isinf(upper)
     upper = lower+1;
+    if options.verbose;        
+       fprintf([' (ok), ' num2str(upper*the_sign)]);
+    end   
     [sol, flag] = P{upper};
     i = 1;
     while ~flag
         upper = upper + 2^i;i = i+1;
         try                         
             solvertime = tic;
+            if options.verbose;        
+                fprintf([' (ok), ' num2str(upper*the_sign)]);
+            end   
             [sol, flag] = P{upper};
             diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
         catch
@@ -126,11 +130,21 @@ if isinf(upper)
             return
         end
         if upper > 1e6
+            if options.verbose;        
+                     fprintf([' (oj). Giving up, always feasible!\n']);
+            end
             diagnostic.problem = 2;
             diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');            
             return
         end
     end
+    if options.verbose;        
+        fprintf([' (fail).']);
+    end   
+end
+
+if options.verbose
+    fprintf(['\n']);
 end
 
 % Perform bisection
