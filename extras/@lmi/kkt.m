@@ -9,6 +9,10 @@ if ~isempty(F)
     end
 end
 
+if nargin < 3
+    parametricVariables = [];
+end
+
 if iscell(parametricVariables)
     newParameters = [];
     for i = 1:length(parametricVariables)
