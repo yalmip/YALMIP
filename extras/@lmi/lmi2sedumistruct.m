@@ -29,6 +29,7 @@ qdr_con = find(type_of_constraint == 4);
 mqdr_con = find(type_of_constraint == 54);
 rlo_con = find(type_of_constraint == 5);
 pow_con = find(type_of_constraint == 20);
+exp_con = find(type_of_constraint == 21);
 sos2_con = find(type_of_constraint == 50);
 sos1_con = find(type_of_constraint == 51);
 cmp_con = find(type_of_constraint == 55);
@@ -39,9 +40,9 @@ K.l = 0; % Linear inequality
 K.c = 0; % Complementarity constraints
 K.q = 0; % SOCP
 K.r = 0; % Rotated SOCP (obsolete)
+K.e = 0; % Eponential cone
 K.p = 0; % Power cone
 K.s = 0; % SDP cone
-K.e = 0; % Eponential cone
 K.rank = [];
 K.dualrank = [];
 K.scomplex = [];
@@ -52,10 +53,9 @@ KCut.l = [];
 KCut.c = [];
 KCut.q = [];
 KCut.r = [];
+KCut.e = [];
 KCut.p = [];
 KCut.s = [];
-KCut.e = [];
-
 
 top = 1;
 localtop = 1;
@@ -172,11 +172,6 @@ qdr_con = union(qdr_con,mqdr_con);
 if length(qdr_con) > 0
     [F_struc,K,KCut] = recursive_socp_fix(F,F_struc,K,KCut,qdr_con,nvars,8,1);
 end
-% % 
-% if length(mqdr_con) > 0
-%    [F_struc,K,KCut] = recursive_msocp_fix(F,F_struc,K,KCut,mqdr_con,nvars,inf,1);
-% end
-
 
 % Rotated Lorentz cone constraints
 for i = 1:length(rlo_con)
@@ -198,6 +193,35 @@ for i = 1:length(rlo_con)
     
     top = top+ntimesm;
     K.r(i) = n;
+end
+
+% Exponejntial cone constraints
+for i = 1:length(exp_con)
+    constraints = exp_con(i);
+    
+    [n,m] = size(F.clauses{constraints}.data);
+    ntimesm = n*m; %Just as well pre-calc
+    
+    % Should always have size 4
+    if n~=3
+        error('Exponential cone constraint has strange dimension')
+    end
+    
+    % Which variables are needed in this constraint
+    lmi_variables = getvariables(F.clauses{constraints}.data);
+    
+    % We allocate the structure blockwise...
+    F_structemp  = spalloc(1+nvars,ntimesm,0);
+    % Add these rows only
+    F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
+    
+    %alpha = F_structemp(1,end);
+    %F_structemp(:,end)=[];
+    % ...and add them together (efficient for large structures)
+    F_struc = [F_struc F_structemp];
+    
+    top = top+ntimesm;
+    K.e = K.e + 1;
 end
 
 % Power cone constraints

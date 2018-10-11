@@ -25,6 +25,8 @@ lmiinfo{14}= 'Low-rank data declaration';
 lmiinfo{15}= 'Uncertainty declaration';
 lmiinfo{16}= 'Distribution declaration';
 lmiinfo{20}= 'Power cone constraint';
+lmiinfo{21} = 'Exponential cone constraints';
+lmiinfo{22} = 'Vectorized exponential cone constraints';
 lmiinfo{30}= 'User defined compilation';
 lmiinfo{40}= 'Generalized KYP constraint';
 lmiinfo{50}= 'Special ordered set of type 2';
@@ -101,7 +103,7 @@ if nlmi>0
                 data{i,2} = [data{i,2} ' (' classification(2:end) ')'];
             end
 
-            if ismember(X.clauses{i}.type,[1 2 3 4 5 9]);
+            if ismember(X.clauses{i}.type,[1 2 3 4 5 9 21]);
                 data{i,2} = [data{i,2} ' ' num2str(size(X.clauses{i}.data,1)) 'x' num2str(size(X.clauses{i}.data,2))];
                 
                 B = getbase(X.clauses{i}.data);

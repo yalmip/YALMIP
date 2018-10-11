@@ -539,7 +539,7 @@ if ~isempty(logdetStruct)
         if isempty(h)
             h = 0;
         end
-        if can_solve_expcone
+        if 0%can_solve_expcone
             for i = 1:length(logdetStruct.P)
                 [vi,Modeli] = eigv(logdetStruct.P{i});
                 F = [F, Modeli, logdetStruct.P{i} >= 0];

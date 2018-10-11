@@ -1,5 +1,7 @@
 function [model,output] = normalizeExponentialCone(model)
 
+% N.B: YALMIP Definition % x2*exp(x1/x2)  <= x3
+
 % Temporarily extract the data in a more standard name min c'*y, b + Ay >= 0
 data.A = model.F_struc(:,2:end);
 data.b = full(model.F_struc(:,1));
@@ -151,7 +153,7 @@ if ~isempty(model.evalMap)
     
     % Describe all exponential cones
     m = length(model.evalMap);
-    cones.e = m;       
+    cones.e = model.K.e + m;       
     for i = 1:m
         switch model.evalMap{i}.fcn
             case 'exp'
@@ -221,6 +223,15 @@ if ~isempty(model.evalMap)
     model.F_struc = [data.b data.A];
     model.c = data.c;
     model.K = cones;
-else
-    model.K.e = 0;
+%else
+%    model.K.e = 0;    
+end
+n = size(model.F_struc,2)-1;
+if n > length(model.lb)
+    missing = n - length(model.lb);
+    model.lb = [model.lb;-inf(missing,1)];
+end
+if size(model.F_struc,2)-1 > length(model.ub)
+    missing = n - length(model.ub);
+    model.ub = [model.ub;inf(missing,1)];
 end

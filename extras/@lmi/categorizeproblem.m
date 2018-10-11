@@ -182,6 +182,8 @@ for i = 1:Counter
                 problem.constraint.inequalities.rotatedsecondordercone.linear = 1;
             case 20
                 problem.constraint.inequalities.powercone = 1;
+            case 21
+                problem.exponentialcone = 1;
             case 50
                 problem.constraint.sos2 = 1;
             case 51
@@ -316,6 +318,8 @@ for i = 1:Counter
                     problem.constraint.binary = 1;
                 case 16
                     problem.random = 1;
+                case 21
+                    problem.exponentialcone = 1;
                 case 50
                     problem.constraint.sos2 = 1;
                 case 51
