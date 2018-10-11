@@ -1,7 +1,9 @@
 function options = pruneOptions(options)
 
 % Mosek is easy to check since there are no inf parameters...
-if isequal(options.mosek,options.default.mosek)
+if isempty(options.mosek)
+    return
+elseif isequal(options.mosek,options.default.mosek)
     options.mosek = [];
 else
     [same,opsDiff] = isequalInf(options.mosek,options.default.mosek);
@@ -9,7 +11,9 @@ else
         options.mosek = opsDiff;
     end
 end
-if isequal(options.cplex,options.default.cplex)
+if isempty(options.cplex)
+    return
+elseif isequal(options.cplex,options.default.cplex)
     options.cplex = [];
 else
     [same,opsDiff] = isequalInf(options.cplex,options.default.cplex);
@@ -17,7 +21,9 @@ else
         options.cplex = opsDiff;
     end
 end
-if isequal(options.gurobi,options.default.gurobi)
+if isempty(options.gurobi)
+    return
+elseif isequal(options.gurobi,options.default.gurobi)
     options.gurobi = [];
 else
     [same,opsDiff] = isequalInf(options.gurobi,options.default.gurobi);
