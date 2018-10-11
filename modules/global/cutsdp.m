@@ -321,8 +321,10 @@ p.sdpsymmetry = [];
 p = detect3x3SymmetryGroups(p);
 [p,p_lp] = addSymmetryCuts(p,p_lp);
 
+integer_variables = [p.binary_variables p.integer_variables];
+
 standard_options = p_lp.options;
-if p.options.cutsdp.twophase
+if p.options.cutsdp.twophase || isempty(integer_variables)
     integerPhase = 0;
 else
     integerPhase = 1;
@@ -470,7 +472,7 @@ while goon
         sdpInfeasibility = infeasibility;
         % We terminate integrality-relaxed phase if solution is close to
         % SDP-feasible, or no progress in objective, or too many nodes
-        if (infeasibility >= p.options.cutsdp.feastol || solved_nodes > 2000 || noprogress) && ~integerPhase
+        if ~isempty(integer_variables) && (infeasibility >= p.options.cutsdp.feastol || solved_nodes > 2000 || noprogress) && ~integerPhase
             integerPhase = 1;
             infeasibility = infeasibility  - inf;
             feasible = 1;          
