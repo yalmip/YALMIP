@@ -1,4 +1,4 @@
-function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqp(model);
+function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
 
 prob.c = model.c;
 if ~isempty(model.F_struc)

@@ -89,11 +89,11 @@ end
 if nnz(model.Q)==0 && isempty(model.integer_variables) && isempty(model.x0) && model.K.e==0
     % Standard cone problem which we can model by sending our standard dual
     % and then recover solution via Moseks dual
-    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdpdual(model);    
+    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_dual(model);    
 else
     % Integer conic program 
     % Quadratic objective
     % Exponential cones
-    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqp(model);
+    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
 end
 
