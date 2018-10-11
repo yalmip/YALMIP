@@ -74,7 +74,7 @@ if isa(x,'cell')
       end
       sizeOrigIn{i} = size(x{i});
       z = x{i}(:);
-      mask{i} = uniqueRows(z);      
+      mask{i} = uniqueNonZeroRows(z);      
       xvec = [xvec;z(mask{i})];
   end
   x = xvec;
@@ -87,7 +87,7 @@ else
     end
     sizeOrigIn{1} = size(x);
     x = x(:);
-    mask{1} = uniqueRows(x);
+    mask{1} = uniqueNonZeroRows(x);
     x = x(mask{1});
 end
 nIn = length(x);
@@ -355,7 +355,7 @@ sys.model.K.f = sys.model.K.f-prod(sys.dimin);
 sys = class(sys,'optimizer');
 sys = optimizer_precalc(sys);
 
-function i = uniqueRows(x);
+function i = uniqueNonZeroRows(x);
 B = getbase(x);
 % Quick check for trivially unique rows, typical 99% case
 [n,m] = size(B);
@@ -365,9 +365,11 @@ if n == m-1 && nnz(B)==n
         return
     end
 end
-if  length(unique(B*randn(size(B,2),1))) == n
+if  length(unique(B*randn(size(B,2),1))) == n && nnz(B*randn(size(B,2),1)) == size(B,1)
     i = 1:n;
     return
 end
-[temp,i,j] = unique(B,'rows');
+[temp,i] = unique(B*randn(size(B,2),1));
+z = find(~any(B,2));
+i = setdiff(i,z);
 i = i(:);
