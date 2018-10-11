@@ -1,5 +1,5 @@
 function output = callscs(model)
-
+originalModel = model; 
 % *********************************************
 % Bounded variables converted to constraints
 % N.B. Only happens when caller is BNB
@@ -86,7 +86,7 @@ solvertime = toc(t);
 
 % Internal format. Only recover the original variables
 Primal = H*x_s+xsol;
-Primal = Primal(1:length(model.c));
+Primal = Primal(1:length(originalModel.c));
 if ~isempty(model.evalMap)
     % No support for duals when exponential cones yet
     Dual = [];

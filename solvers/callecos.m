@@ -1,5 +1,5 @@
 function output = callecos(yalmipmodel)
-
+originalModel = yalmipmodel;
 % Fix ECOS options
 options = yalmipmodel.options;
 options.ecos.verbose = options.verbose~=0;
@@ -71,9 +71,9 @@ end
 
 % Internal format, only keep original variablesop
 if ~isempty(x)
-    Primal = x(1:length(yalmipmodel.c));
+    Primal = x(1:length(originalModel.c));
 else
-    Primal = nan(length(yalmipmodel.c),1);
+    Primal = nan(length(originalModel.c),1);
 end
 if ~isempty(yalmipmodel.evalMap)
     % No support for duals when exponential cones yet
