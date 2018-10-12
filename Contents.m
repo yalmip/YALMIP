@@ -1,3 +1,3 @@
 % YALMIP
-% Version 26-September-2018
+% Version 12-October-2018
 % Help on http://yalmip.github.io
