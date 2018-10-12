@@ -194,11 +194,10 @@ newmonomtable(removethese,:) = [];
 
 if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
-    alreadyAdded = zeros(1,size(newmonomtable,1));      
-    %[ii,jj,kk] = unique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1),'rows','stable');
-    [ii,jj,kk,skipped] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
-    S = sparse(kk,1:length(kk),1);
-   % skipped = setdiff(1:length(kk),jj);
+    alreadyAdded = zeros(1,size(newmonomtable,1));         
+    [ii,jj,kk,skipped] = stableunique(newmonomtable*model.hashCache(1:size(newmonomtable,2)));   
+    %[ii,jj,kk,skipped] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
+    S = sparse(kk,1:length(kk),1);   
     model.precalc.S = S;
     model.precalc.skipped = skipped;
     model.precalc.newmonomtable = newmonomtable;
@@ -208,11 +207,9 @@ else
     skipped = model.precalc.skipped;
 end
 model.c = S*model.c;
-%model.F_struc2 = [model.F_struc(:,1) (S*model.F_struc(:,2:end)')'];
 if ~isempty(model.F_struc)
-    model.F_struc = model.F_struc*model.precalc.blkOneS;%blkdiag(1,S');
+    model.F_struc = model.F_struc*model.precalc.blkOneS;
 end
-%norm(model.F_struc-model.F_struc2)
 
 model.lb(skipped) = [];
 model.ub(skipped) = [];

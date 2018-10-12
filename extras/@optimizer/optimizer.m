@@ -240,6 +240,7 @@ model.getsolvertime = 0;
 model.solver.callhandle = str2func(model.solver.call);
 
 model.options = pruneOptions(model.options);
+model.hashCache = gen_rand_hash(0,size(model.monomtable,2),1);
 
 sys.recover = aux2;
 sys.model = model;
