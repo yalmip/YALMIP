@@ -67,7 +67,7 @@ if nnz(model.K.e) > 0
     nof_original = size(prob.a,2);
     extendedBasis = [spalloc(model.K.f + model.K.l + sum(model.K.q),nof_new,0);
                      speye(m*3);
-                     spalloc(sum(model.K.s).^2,nof_new,0)];
+                     spalloc(sum(model.K.s.^2),nof_new,0)];
     prob.a = [prob.a extendedBasis]
     prob.c = [prob.c;zeros(nof_new,1)];
     expRows = 1+model.K.f+model.K.l+sum(model.K.q):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e;
@@ -84,7 +84,7 @@ end
 
 if model.K.s(1)>0
     
-    sdpRows = 1+model.K.f+model.K.l+sum(model.K.q):model.K.f+model.K.l+sum(model.K.q)+sum(model.K.s.^2);
+    sdpRows = 1+model.K.f+model.K.l+3*model.K.e+sum(model.K.q):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.s.^2);
     prob.blc(sdpRows) = prob.buc(sdpRows);    
   
     prob.bara.subi = [];
@@ -98,7 +98,7 @@ if model.K.s(1)>0
     prob.barc.subk = [];
     prob.barc.subl = [];
     prob.barc.val = [];
-    top = model.K.f + model.K.l + sum(model.K.q);
+    top = model.K.f + model.K.l + sum(model.K.q) + 3*model.K.e;
     A = prob.a(top+1:end,:);
     blc = prob.blc(top+1:end);    
     buc = prob.buc(top+1:end);       

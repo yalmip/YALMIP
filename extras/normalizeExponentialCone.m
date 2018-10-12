@@ -3,13 +3,20 @@ function [model,output] = normalizeExponentialCone(model)
 % N.B: YALMIP Definition % x2*exp(x1/x2)  <= x3
 
 % Temporarily extract the data in a more standard name min c'*y, b + Ay >= 0
-data.A = model.F_struc(:,2:end);
-data.b = full(model.F_struc(:,1));
-data.c = full(model.c);
-cones = model.K;
-
 output.problem = 0;
 if ~isempty(model.evalMap)
+
+    % Temporarily extract the data in a more standard name min c'*y, b + Ay >= 0    
+    data.A = model.F_struc(:,2:end);    
+    data.b = full(model.F_struc(:,1));
+    data.c = full(model.c);
+    cones = model.K;
+    % Clear away the SDP cone to easier add new rows. Will be put back in
+    % place later
+    data.A(end-sum(model.K.s.^2)+1:end,:)=[];
+    data.b(end-sum(model.K.s.^2)+1:end) = [];
+    sdpData = model.F_struc(end-sum(model.K.s.^2)+1:end,:);
+    
     % First check that we have only exponentials
     convexFunctions = [];
     concaveFunctions = [];
@@ -222,9 +229,14 @@ if ~isempty(model.evalMap)
     end
     model.F_struc = [data.b data.A];
     model.c = data.c;
-    model.K = cones;
-%else
-%    model.K.e = 0;    
+    model.K = cones;   
+    % Put back the SDP cone in place
+    if model.K.s(1)>0
+        if size(sdpData,2) < size(model.F_struc,2)
+            sdpDAta(end,size(model.F_struc,2)) = 0;
+        end
+        model.F_struc = [model.F_struc;sdpData];
+    end
 end
 n = size(model.F_struc,2)-1;
 if n > length(model.lb)
