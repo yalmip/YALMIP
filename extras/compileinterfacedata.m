@@ -160,7 +160,7 @@ if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
     if (options.cachesolvers==0)
         if ((NCHECKS >= 3 & (sum(EXISTTIME)/NCHECKS > 1)) | EXISTTIME(end)>2)
             if warningon
-                info = 'Warning: YALMIP has detected that your drive or network is unusually slow.\nThis causes a severe delay in SOLVESDP when I try to find available solvers.\nTo avoid this, use the options CACHESOLVERS in SDPSETTINGS.\nSee the FAQ for more information.\n';
+                info = 'Warning: YALMIP has detected that your drive or network is unusually slow.\nThis causes a severe delay in OPTIMIZE when I try to find available solvers.\nTo avoid this, use the options CACHESOLVERS in SDPSETTINGS.\nSee the FAQ for more information.\n';
                 fprintf(info);
             end
         end
