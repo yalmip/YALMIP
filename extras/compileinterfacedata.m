@@ -114,6 +114,20 @@ if options.expand
     catch
     end
     [F,failure,cause,operators] = expandmodel(F,h,options);
+    % Models temporarily added for analysis phase. Can be deleted now
+    try
+        F('placeholder') = [];
+    catch
+    end    
+    % Some operators are temporarily modelled using linear hypograph
+    % models, but might benefit from some other more direct form, and this
+    % has been estabslished by the operator
+    for i = 1:length(operators)
+        if ~isempty(operators{i}.properties.replace)            
+            F = replace(F, operators{i}.properties.replace.this,operators{i}.properties.replace.with);
+            h = replace(h, operators{i}.properties.replace.this,operators{i}.properties.replace.with);
+        end
+    end
     F = flatten(F);
     if failure % Convexity propgation failed
         interfacedata = [];

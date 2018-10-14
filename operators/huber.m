@@ -69,13 +69,12 @@ switch class(varargin{1})
             u = sdpvar(length(X),1);
             v = sdpvar(length(X),1);
 
-            % From Boyd & Vandenberghe
-%            E = [v>=0, 0 <= u <= M, -u-v <= X <= u + v, u'*u + 2*M*sum(v) <= t];
             % From Mangasarian & Musicant
-            E = [-v <= X-u <= v, u'*u + 2*M*sum(v) <= t];
-            
+            E = [-v <= X-u <= v, (u'*u + 2*sum(M.*v) <= t):'placeholder'];
+            replacer.this = t;
+            replacer.with = u'*u + 2*sum(M.*v);
             varargout{1} = E;
-            varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph');
+            varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph','replace',replacer);
             varargout{3} = X;
 
         else

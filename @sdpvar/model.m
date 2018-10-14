@@ -82,6 +82,7 @@ if ~isempty(properties)
         properties{i} = assertProperty(properties{i},'convexhull',[]);
         properties{i} = assertProperty(properties{i},'bounds',[]);
         properties{i} = assertProperty(properties{i},'domain',[-inf inf]);
+        properties{i} = assertProperty(properties{i},'replace',[]);
         switch properties{i}.definiteness
             case 'positive'
                 properties{i} = assertProperty(properties{i},'range',[0 inf]);
