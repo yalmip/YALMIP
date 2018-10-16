@@ -576,6 +576,14 @@ solver(i).call    = 'calloslprog';
 solver(i).constraint.integer = 1;
 i = i+1;
 
+solver(i) = qpsolver;
+solver(i).tag     = 'MOSEK';
+solver(i).version = 'LP/QP';
+solver(i).checkfor= {'mosekopt'};
+solver(i).call    = 'callmosek';
+solver(i).constraint.integer = 1;
+i = i+1;
+
 solver(i) = lpsolver;
 solver(i).tag     = 'MOSEK';
 solver(i).version = 'SOCP';
