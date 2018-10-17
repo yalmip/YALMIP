@@ -14,7 +14,7 @@ function varargout = pnorm(varargin)
 switch class(varargin{1})
     
     case {'double', 'gem', 'sgem'}
-        varargout{1} = sum(varargin{1}.^varargin{2}).^(1/varargin{2});
+        varargout{1} = sum(abs(varargin{1}).^varargin{2}).^(1/varargin{2});
         
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         X = varargin{1};
