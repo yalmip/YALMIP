@@ -23,8 +23,17 @@ if length(clauses) > 2
     used = uniquestripped([used1 used2]);
 else
     used = [];
-    for i = 1:length(clauses)
-        Fivar = getvariables(clauses{i}.data);
+    for i = 1:length(clauses)        
+        if clauses{i}.type == 56
+            % Meta constraint such as implies. This object is just holding
+            % the data involved 
+            Fivar = [];
+            for j = 1:length(clauses{i}.data)
+                Fivar = [Fivar getvariables(clauses{i}.data{j})];
+            end
+        else
+            Fivar = getvariables(clauses{i}.data);
+        end
         used = uniquestripped([used Fivar(:)']);
     end
 end
