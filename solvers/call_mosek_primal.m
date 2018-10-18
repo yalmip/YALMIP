@@ -168,6 +168,10 @@ elseif r == 1200
     problem = 7;
     x = [];
     D_struc = [];
+elseif r == 1295
+    problem = -4;
+    x = [];
+    D_struc = [];
 else
     % Recover solutions
     sol = res.sol;
