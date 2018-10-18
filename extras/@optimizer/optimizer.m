@@ -113,7 +113,7 @@ if isa(u,'cell')
     end
     u = uvec;
 else
-    if is(u,'complex')
+    if isa(u,'sdpvar') && is(u,'complex')
         complexOutput(1) = 1;
         u = [real(u);imag(u)];
     else
@@ -201,7 +201,7 @@ end
 
 % Try to set up an optimal way to compute the output
 base = getbase(u);
-if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2)==1) & all(base(:,1)==0)
+if isempty(u) || (is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2)==1) & all(base(:,1)==0))
     % This is just a vecotr of variables
     z = [];
     map = [];
@@ -231,7 +231,7 @@ else
     end        
 end
 
-if isempty(map) | min(size(map))==0
+if ~isempty(u) && (isempty(map) | min(size(map))==0)
     error('The requested decision variable (argument 4) is not in model');
 end
 
