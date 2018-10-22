@@ -20,7 +20,7 @@ end
 p = relaxed_p;
 p.solver.tag = p.solver.lower.tag;
 
-if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
+if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0) && ~any(p.variabletype)
     if p.all_integers && all(p.c == fix(p.c))
         % All integer objective coefficients and all integer
         % variables, we must find a solution which is at least
