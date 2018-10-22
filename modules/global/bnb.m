@@ -404,6 +404,7 @@ if p.options.bnb.verbose
     disp('* Starting YALMIP integer branch & bound.');
     disp(['* Lower solver   : ' p.solver.lower.tag]);
     disp(['* Upper solver   : ' p.options.bnb.uppersolver]);
+    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
     disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
     
     if possiblynonconvex & p.options.warning
