@@ -168,16 +168,25 @@ for i = 1:length(b)
             end
 
             if Zmodel.K.q(1) > 0
-                for j = 1:length(Zmodel.K.q)
-                    zeta = sdpvar(Zmodel.K.q(j),1);
-                    if length(zeta)>2
-                        Flocal = Flocal + (cone(zeta));
-                    else
-                        Flocal = Flocal + (zeta(2) <= zeta(1)) + (-zeta(2) <= zeta(1));
+                if all(Zmodel.K.q == Zmodel.K.q(1)) && Zmodel.K.q(1)>2
+                    % Complete vectorization possible
+                    zeta = sdpvar(Zmodel.K.q(1),length(Zmodel.K.q),'full');
+                    Flocal = Flocal + cone(zeta);
+                    lhs1 = lhs1 + Zmodel.F_struc(top:top + sum(Zmodel.K.q)-1,2:end)'*zeta(:);
+                    lhs2 = lhs2 - Zmodel.F_struc(top:top + sum(Zmodel.K.q)-1,1)'*zeta(:);
+                    top = top + sum(Zmodel.K.q);
+                else
+                    for j = 1:length(Zmodel.K.q)
+                        zeta = sdpvar(Zmodel.K.q(j),1);
+                        if length(zeta)>2
+                            Flocal = Flocal + (cone(zeta));
+                        else
+                            Flocal = Flocal + (zeta(2) <= zeta(1)) + (-zeta(2) <= zeta(1));
+                        end
+                        lhs1 = lhs1 + Zmodel.F_struc(top:top + Zmodel.K.q(j)-1,2:end)'*zeta(:);
+                        lhs2 = lhs2 - Zmodel.F_struc(top:top + Zmodel.K.q(j)-1,1)'*zeta(:);
+                        top = top + Zmodel.K.q(j);
                     end
-                    lhs1 = lhs1 + Zmodel.F_struc(top:top + Zmodel.K.q(j)-1,2:end)'*zeta(:);
-                    lhs2 = lhs2 - Zmodel.F_struc(top:top + Zmodel.K.q(j)-1,1)'*zeta(:);
-                    top = top + Zmodel.K.q(j);
                 end
             end
             
