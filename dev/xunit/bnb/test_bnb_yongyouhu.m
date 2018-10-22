@@ -53,5 +53,5 @@ sol = solvesdp(F,obj)
 obj
 
 mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(obj), 3000, 1e-5);
+mbg_asserttolequal(double(obj), 3100, 1e-5);
 
