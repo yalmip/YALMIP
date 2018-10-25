@@ -1,41 +1,21 @@
 function y = sdpcone(varargin)
-%SDPCONE Defines a semidefinite constraint X>=0
+%SDPCONE Low-level operator to define several SDP constraints in vectorized
+%form
 %
 % Input
-%    z       : Linear SDPVAR object.
-%    h       : Linear scalar SDPVAR object
+%    X       : Linear SDPVAR object of size n^2 x N
 %
 % Example
 %
-% A standard SDP constraint normally written as [X>=0] is defined with
-%    F = sdpcone(X)
+% The typical use is when we want to define a very large number of LMI
+% constraints with reduced overhead (no analysis or check for symmetry etc)
 %
-% The typical use though is when we want to define a large number of
-% constraint without overhead. By stacking N matrices of size nxn, sdpcone
-% defines N SDP constraints directly, without any analysis or check for
-% symmetry etc
+% This operator is very specialized and low-level, and not normally used...
 %
-% X = sdpvar([5 5 5],[5 5 5]);
-% F = sdpcone([X{:}]);
-%
-% Alternatively
-% F = sdpcone(X{:});
+% X = sdpvar(5);Y = sdpvar(5);
+% F = sdpcone([X(:) Y(:)]); % Equivalent to [X>=0, Y>=0]
 %
 % See also  @SDPVAR/CONE, @SDPVAR/RCONE
 
-try
-    y = [varargin{:}];
-catch
-    error('All matrices must have the same dimension.')
-end
-
-[n,m] = size(y);
-if n == m
-    y = y>=0;
-    return
-end
-if rem(m,n)
-    error('This cannot be N stacked nxn matrices.');
-end
 y.typeflag = 57;
 y=lmi(y);
