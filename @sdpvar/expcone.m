@@ -1,5 +1,5 @@
-function y = cone(x)
-%CONE Defines a low-level exponential cone constraint x(2)*exp(x(1)/x(2)) <= x(3)
+function y = expcone(x)
+%EXPCONE Defines a low-level exponential cone constraint x(2)*exp(x(1)/x(2)) <= x(3)
 %
 % Input
 %    x       : Linear 3x1 SDPVAR object
@@ -13,7 +13,7 @@ function y = cone(x)
 % command is then short-hand for 
 % for i = 1:size(x,2);F = [F,cone(x(:,i))];end 
 %
-% See also  @SDPVAR/CONE
+% See also  @SDPVAR/CONE, @SDPVAR/SDPCONE
 
 
 [n,m] = size(x);
