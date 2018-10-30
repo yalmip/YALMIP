@@ -154,8 +154,19 @@ end
 if length(F) > 0
     unc_declarations = is(F,'uncertain');
     if any(unc_declarations)
-        diagnostic = solverobust(F(find(~unc_declarations)),h,options,recover(getvariables(sdpvar(F(find(unc_declarations))))));
-        return
+        try
+            diagnostic = solverobust(F(find(~unc_declarations)),h,options,recover(getvariables(sdpvar(F(find(unc_declarations))))));
+            return
+        catch
+            if strfind(lasterr,'Undefined function ''solverobust'' ') 
+                display('***');
+                display('It looks like you have failed to add yalmip/modules/robust to your path');
+                display('Information on required paths https://yalmip.github.io/tutorial/installation/');
+                display(['For complete path, use addpath(genpath(''' fileparts(which('yalmiptest.m')) '''))']);
+                display('***');
+                error(lasterr)
+            end
+        end        
     end
 end
     
