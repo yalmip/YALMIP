@@ -45,7 +45,12 @@ ss = [];
 for j = 1:length(varargin)
     nnindex = indextable(1+nsums(j):nsums(j+1),1+msums(j):msums(j+1));
     if isasdpvar(j)
-        this_uses = find(ismembc(all_lmi_variables,varargin{j}.lmi_variables));
+        try
+            this_uses = find(ismembc(all_lmi_variables,varargin{j}.lmi_variables));
+        catch
+            % Octave fix...
+            this_uses = find(ismembc(all_lmi_variables,varargin{j}.lmi_variables));
+        end
         mindex = [1 this_uses+1];
 
         [a,b,d] = find(varargin{j}.basis.');
