@@ -1391,6 +1391,7 @@ solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).constraint.inequalities.elementwise.sigmonial = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
