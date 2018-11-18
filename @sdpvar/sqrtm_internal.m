@@ -12,7 +12,7 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = (X >= eps);
+        F = (X >= 0);
 
         varargout{1} = F;
         varargout{2} = struct('convexity','concave','monotonicity','increasing','definiteness','positive','convexhull',@convexhull,'bounds',@bounds,'model','callback','derivative',@(x) 1./(eps + 2*abs(x).^0.5),'inverse',@(x)x.^2);
