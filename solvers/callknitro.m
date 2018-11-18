@@ -86,7 +86,7 @@ model.objFnType = [];
 model.xType = zeros(length(model.lb),1);
 model.xType(model.binary_variables) = 2;
 model.xType(model.integer_variables) = 1;
-model.cineqFnType = repmat(2,length(model.bnonlinineq),1);
+model.cineqFnType = repmat(2,length(model.bnonlinineq)+nnz(model.K.q),1);
 
 solvertime = tic;
 [xout,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro,model.options.knitro.optionsfile);
