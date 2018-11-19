@@ -232,7 +232,7 @@ switch varargin{1}
             if ~simpleAllDifferentNew
                 if vec_isdoubles(i)
                     found = 1;
-                    y(i) = X(i);
+                    y(i) = feval(varargin{2},X(i));
                 else
                     if ~isempty(correct_operator)
                         this_hash = vec_hashes(i);
