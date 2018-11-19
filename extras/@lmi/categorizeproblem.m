@@ -309,7 +309,7 @@ for i = 1:Counter
                 case {4,54}
                     problem.constraint.inequalities.secondordercone.linear = 1;
                 case 5
-                    problem.constraint.inequalities.rotatedsecondordercone = 1;
+                    problem.constraint.inequalities.rotatedsecondordercone.linear = 1;
                 case 20
                     problem.constraint.inequalities.powercone = 1;
                 case 7
