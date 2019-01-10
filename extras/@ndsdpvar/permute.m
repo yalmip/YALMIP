@@ -1,6 +1,9 @@
 function X=permute(X,p)
 %PERMUTE (overloaded)
 
+if length(X.dim) < length(p)
+    X.dim = [X.dim ones(1,length(p)-length(X.dim))];
+end
 i = 1:prod(X.dim);
 i = reshape(i,X.dim);
 i = permute(i,p);
