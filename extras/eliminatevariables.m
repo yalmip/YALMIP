@@ -237,7 +237,7 @@ model.x0 = zeros(length(model.c),1);
 
 if nnz(model.Q) > 0
     if  model.solver.objective.quadratic.convex == 0 &  model.solver.objective.quadratic.nonconvex == 0
-        error('The objective instantiates as a quadratic after fixing parameters, but this is not directly supported by the solver. YALMIP will not reformulate models if they structurally change in call to optimizer. A typical trick to circumvent this is to define a new set of variable e, use the quadratic function e''e, and add an equality constraint e = something. The SOCP formulation can then be done a-priori by YALMIP.');
+        error('The objective instantiates as a quadratic after fixing parameters, but this is not directly supported by the solver. YALMIP will not reformulate models if they structurally change in call to optimizer. A typical trick to circumvent this is to define a new set of variable e, use the quadratic function e''e, and add an equality constraint e = something. The SOCP formulation can then be done a-priori by YALMIP.Alternatively, use a formulation using norm or cone');
     end
 end
 
