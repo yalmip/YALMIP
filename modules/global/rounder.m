@@ -63,6 +63,7 @@ if ismember('shifted round',p.options.bnb.rounding)
 end
 
 if length(prelaxed.sosgroups)>0
+    try
     xtemp = x;
     for i = 1:length(prelaxed.sosgroups)
         xi = x(prelaxed.sosgroups{1});
@@ -77,6 +78,8 @@ if length(prelaxed.sosgroups)>0
             x_min = xtemp;
             upper =upperhere;
         end
+    end
+    catch
     end
 end
 
