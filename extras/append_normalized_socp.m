@@ -9,20 +9,18 @@ if K.q(1)>0
     nNew = sum(K.q);
     nOriginal = length(c);
     Ftemp = F_struc(1+K.f+K.l:end,:);
+    if ~isempty(x0)
+        x0 = [x0(:);Ftemp*[1;x0(:)]];
+    end
     F_strucSOCP = [Ftemp -speye(nNew)];
     F_struc = [F_struc(1:K.f+K.l,:) spalloc(K.f+K.l,nNew,0)];
     F_struc = [F_strucSOCP;F_struc];
     K.f = K.f + nNew;
     c(end+nNew) = sparse(0);
     Q(end+nNew,end+nNew) = sparse(0);
-    %c = [c;spalloc(nNew,1,0)];
-    %Q = blkdiag(Q,spalloc(nNew,nNew,0));
     UB = [UB;inf(nNew,1)];
     lb_local = -inf(sum(K.q),1);lb_local([1 1+cumsum(K.q(1:end-1))])=0;
     LB = [LB;lb_local];
-  %  for i = 1:length(K.q);
-  %      LB = [LB;0;-inf(K.q(i)-1,1)];
-  %  end
     if nargout > 7
         % Cplex interface needs explicit representations of z'Q*z+Lz+r
         top = nOriginal+1;
