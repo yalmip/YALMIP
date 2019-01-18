@@ -68,7 +68,7 @@ if nnz(model.K.e) > 0
     extendedBasis = [spalloc(model.K.f + model.K.l + sum(model.K.q),nof_new,0);
                      speye(m*3);
                      spalloc(sum(model.K.s.^2),nof_new,0)];
-    prob.a = [prob.a extendedBasis]
+    prob.a = [prob.a extendedBasis];
     prob.c = [prob.c;zeros(nof_new,1)];
     expRows = 1+model.K.f+model.K.l+sum(model.K.q):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e;
     prob.blc(expRows) = prob.buc(expRows);
