@@ -991,20 +991,22 @@ if any(good)
             index = index + p.K.s(j)+1;
         end
     end
-    for i = 1:length(groups)
-        if length(groups{i}.variables) > 1
-            keep(i) = 1;
-        else
-            keep(i) = 0;
-        end
-    end
-    groups = {groups{find(keep)}};
     if length(groups) > 0
         for i = 1:length(groups)
-            for j = 1:length(groups{i}.variables);
-                v = groups{i}.variables{j};
-                v = v(v>1)-1;
-                groups{i}.variables{j} = v;
+            if length(groups{i}.variables) > 1
+                keep(i) = 1;
+            else
+                keep(i) = 0;
+            end
+        end
+        groups = {groups{find(keep)}};
+        if length(groups) > 0
+            for i = 1:length(groups)
+                for j = 1:length(groups{i}.variables);
+                    v = groups{i}.variables{j};
+                    v = v(v>1)-1;
+                    groups{i}.variables{j} = v;
+                end
             end
         end
     end
