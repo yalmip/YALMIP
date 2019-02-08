@@ -1445,13 +1445,15 @@ if any(good)
             keep(i) = 0;
         end
     end
-    groups = {groups{find(keep)}};
     if length(groups) > 0
-        for i = 1:length(groups)
-            for j = 1:length(groups{i}.variables);
-                v = groups{i}.variables{j};
-                v = v(v>1)-1;
-                groups{i}.variables{j} = v;
+        groups = {groups{find(keep)}};
+        if length(groups) > 0
+            for i = 1:length(groups)
+                for j = 1:length(groups{i}.variables);
+                    v = groups{i}.variables{j};
+                    v = v(v>1)-1;
+                    groups{i}.variables{j} = v;
+                end
             end
         end
     end
