@@ -644,8 +644,8 @@ if infeasibility<0
                 end
             end
             b = bA(:,1);
-            A = -bA(:,2:end);
-            if isempty(p_lp.F_struc) || ~any(sum(abs(p_lp.F_struc-[b -A]),2)<= 1e-12)
+            A = -bA(:,2:end);            
+            if isempty(p_lp.F_struc) || ~any(sum(abs(p_lp.F_struc-repmat([b -A],size(p_lp.F_struc,1),1)),2)<= 1e-12)
                 newF = real([newF;[b -A]]);
                 newcuts = newcuts + 1;
                 if isempty(asave)
