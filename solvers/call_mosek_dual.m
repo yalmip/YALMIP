@@ -52,8 +52,12 @@ end
 
 try
     x = res.sol.itr.y;
-catch    
-    x = nan(length(model.c),1);    
+catch   
+    if isequal(model.options.mosek.MSK_IPAR_OPTIMIZER,'MSK_OPTIMIZER_FREE_SIMPLEX')
+        x = res.sol.bas.y;
+    else
+        x = nan(length(model.c),1);    
+    end
 end
 
 if model.options.saveduals & ~isempty(x)
