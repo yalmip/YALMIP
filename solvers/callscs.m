@@ -73,7 +73,7 @@ if model.options.savedebug
     save scsdebug data cones params
 end
 
-if model.options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
+if model.options.showprogress;showprogress(['Calling ' model.solver.tag],model.options.showprogress);end
 t = tic;
 problem = 0;  
 switch  model.solver.tag
