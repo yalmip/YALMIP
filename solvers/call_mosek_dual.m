@@ -104,6 +104,9 @@ function problem = MosekYALMIPError(res)
 if res.rcode == 2001
     problem = 1;
     return
+elseif res.rcode == 1305
+    problem = -4;
+    return
 elseif res.rcode == 10007
     problem = 16;
     return

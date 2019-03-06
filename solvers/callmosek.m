@@ -83,17 +83,22 @@ function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(mode
 
 [model,output] = normalizeExponentialCone(model);
 if output.problem
-    error('Failed in normalizing exponential cone operators')
-end
-
-if nnz(model.Q)==0 && isempty(model.integer_variables) && isempty(model.x0)
-    % Standard cone problem which we can model by sending our standard dual
-    % and then recover solution via Moseks dual
-    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_dual(model);    
+    problem = output.problem;
+    x = [];
+    D_struc = [];
+    r = [];
+    res = [];
+    solvertime = 0;
+    prob = [];
 else
-    % Integer conic program 
-    % Quadratic objective
-    % Exponential cones
-    [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
+    if nnz(model.Q)==0 && isempty(model.integer_variables) && isempty(model.x0)
+        % Standard cone problem which we can model by sending our standard dual
+        % and then recover solution via Moseks dual
+        [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_dual(model);
+    else
+        % Integer conic program
+        % Quadratic objective
+        % Exponential cones
+        [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
+    end
 end
-
