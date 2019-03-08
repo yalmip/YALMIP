@@ -388,7 +388,7 @@ function [pass,sol,result] = feasible(ops)
 t = sdpvar(1,1);
 Y = sdpvar(2,2);
 F = [Y<=t*eye(2), Y>=[1 0.2;0.2 1]];
-sol = solvesdp(F,t,ops);
+sol = optimize(F,t,ops);
 pass = ismember(sol.problem,[0 3 4 5]);
 if pass
     result = resultstring(t,1.2);
@@ -401,7 +401,7 @@ end
 function [pass,sol,result] = infeasible(ops)
 t = sdpvar(1,1);
 F = [t>=0, t<=-10];
-sol = solvesdp(F,t,ops);
+sol = optimize(F,t,ops);
 pass = ~(sol.problem==0);
 result = 'N/A';
 
@@ -413,7 +413,7 @@ L = [1.9034 1.1501];
 Y = sdpvar(2,2);
 F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
 F = F+[L*Y*L'<=1];
-sol = solvesdp(F,-logdet(Y),ops);
+sol = optimize(F,-logdet(Y),ops);
 Y = double(Y);
 pass = ismember(sol.problem,[0 3 4 5]);
 if pass
@@ -430,7 +430,7 @@ L = [1.9034 1.1501];
 Y = sdpvar(2,2);
 F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
 F = F+[L*Y*L'<=1];
-sol = solvesdp(F,-logdet(Y),ops);
+sol = optimize(F,-logdet(Y),ops);
 Y = double(Y);
 pass = ismember(sol.problem,[0 3 4 5]);
 if pass
@@ -447,7 +447,7 @@ z = sdpvar(1,1);
 X = [[x 1 2];[1 y 3];[2 3 100]];
 
 F = [X>=0,x>=10,y>=0,z>=0, x<=1000, y<=1000,z<=1000];
-sol = solvesdp(F,x+y+z,ops);
+sol = optimize(F,x+y+z,ops);
 x   = double(x);
 y   = double(y);
 z   = double(z);
@@ -469,7 +469,7 @@ z = sdpvar(1,1);
 X = [[x 2];[2 z]];
 
 F = [X>=0, x>=0,z>=0,x<=10,z<=10];
-sol = solvesdp(F,x+z,ops);
+sol = optimize(F,x+z,ops);
 x   = double(x);
 z   = double(z);
 
@@ -506,7 +506,7 @@ for i = 1:n
 end
 
 F = F+[M>=0];
-sol = solvesdp(F,t,ops);
+sol = optimize(F,t,ops);
 
 t   = double(t);
 tau = double(t);
@@ -526,7 +526,7 @@ a = [0;1];
 b = [1;1];
 F = norm(x-a)<=1;
 F = F+[norm(x-b) <= 1];
-sol = solvesdp(F,sum(x),ops);
+sol = optimize(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 
 x = double(x);
@@ -549,7 +549,7 @@ F = norm(x-a)<=1;
 F = F+[norm(x-b)<=1];
 F = F+[x(1)==0.35];
 F = F+[z(2:3)==[5;6]];
-sol = solvesdp(F,sum(x),ops);
+sol = optimize(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 
 x = double(x);
@@ -577,7 +577,7 @@ F = F+[z(1,end)>=5];
 F = F+[z(2,end)<=100];
 F = F+[z(2)==5];
 
-sol = solvesdp(F,sum(x),ops);
+sol = optimize(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 
 x = double(x);
@@ -605,7 +605,7 @@ F = (U<=1)+(U>=-1);
 F = F+(Y(N)>=-1);  
 F = F+(Y(N)<=1); 
 F = F+([Y;U]<=t)+([Y;U]>=-t);
-sol = solvesdp(F,sum(t),ops);
+sol = optimize(F,sum(t),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 if pass
     result = resultstring(sum(t),12.66666);
@@ -625,7 +625,7 @@ Y = H*x+S*U;
 F = (U<=1)+(U>=-1);
 F = F+(Y(N)>=-1);  
 F = F+(Y(N)<=1); 
-sol = solvesdp(F,Y'*Y+U'*U,ops);
+sol = optimize(F,Y'*Y+U'*U,ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 if pass
     result = resultstring(Y'*Y+U'*U,26.35248);
@@ -647,7 +647,7 @@ F = (U<=1)+(U>=-1);
 F = F+(Y(N)>=-1);  
 F = F+(Y(N)<=1); 
 F = F + (U>=0);
-sol = solvesdp(F,Y'*Y+U'*U,ops);
+sol = optimize(F,Y'*Y+U'*U,ops);
 pass = ismember(sol.problem,[1]); 
 result = 'N/A';
 
@@ -657,7 +657,7 @@ function [pass,sol,result] = infeasiblesdp(ops)
 A = magic(6);
 A = A*A';
 P = sdpvar(6,6);
-sol = solvesdp((A'*P+P*A <= -P) + (P>=eye(6)),trace(P),ops); 
+sol = optimize((A'*P+P*A <= -P) + (P>=eye(6)),trace(P),ops); 
 pass = (sol.problem==1);
 result = 'N/A';
 
@@ -668,7 +668,7 @@ P = magic(n);
 Z = sdpvar(n,n,'toeplitz');
 t = sdpvar(n,n,'full');
 F = (P-Z<=t)+(P-Z>=-t);
-sol = solvesdp(F,sum(sum(t)),ops);
+sol = optimize(F,sum(sum(t)),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 result = 'N/A';
 if pass
@@ -685,7 +685,7 @@ P = magic(n);
 Z = sdpvar(n,n,'toeplitz');
 t = sdpvar(n,n,'full');
 resid = P-Z;resid = resid(:);
-sol = solvesdp([],resid'*resid,ops);
+sol = optimize([],resid'*resid,ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 result = 'N/A';
 if pass
@@ -741,7 +741,7 @@ A = [-1 2;-3 -4];
 P = sdpvar(2,2);
 alpha = sdpvar(1,1);
 F = (P>=eye(2))+(A'*P+P*A <= -2*alpha*P)+(alpha >= 0);
-sol = solvesdp([F,P(:) <= 100],-alpha,ops);
+sol = optimize([F,P(:) <= 100],-alpha,ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
 result = 'N/A';
 if pass
@@ -784,7 +784,7 @@ F = (x >= 1) + (P <= 20) + (A <= 100);
 % Objective
 D = max((D1+D4+D6),(D1+D4+D7),(D2+D4+D6),(D2+D4+D7),(D2+D5+D7),(D3+D5+D6),(D3+D7));
 
-sol = solvesdp(F,D,ops);
+sol = optimize(F,D,ops);
 
 pass = ismember(sol.problem,[0 3 4 5]); 
 result = 'N/A';

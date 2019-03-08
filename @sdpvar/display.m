@@ -64,20 +64,25 @@ switch(X.typeflag)
 
             nvars = length(depends(X));
             if nvars == 1
-                classification = [classification ', ' num2str(nvars) ' variable'];
+                classification = [classification ', ' num2str(nvars) ' variable)'];
             else
-                classification = [classification ', ' num2str(nvars) ' variables'];
+                classification = [classification ', ' num2str(nvars) ' variables)'];
             end
 
             if any(ismember(depends(X),yalmip('parvariables')))
                 classification = [classification ', parametric'];
             end
             if ~isnan(value(X))
-                classification = [classification ', current value : ' num2str(value(X))];
+                classification = [classification '\nCurrent value: ' num2str(value(X))];
             end
-            classification = [classification ')'];
-
-            disp([classification]);
+            
+            B = getbase(X);
+            [ii,jj,ss1] = find(real(getbase(B)));
+            [ii,jj,ss2] = find(imag(getbase(B)));
+            ss = [ss1;ss2];
+            DynamicalRange = [num2str( min(abs(ss))) ' to ' num2str( max(abs(ss)))];
+            classification = [classification '\nCoeffiecient range: ' DynamicalRange];                      
+            fprintf([classification '\n']);  
         else
 
             vars = depends(X);
@@ -142,9 +147,9 @@ switch(X.typeflag)
             xvars = depends(X);
             nvars = length(xvars);
             if nvars == 1
-                info = [info ', ' num2str(nvars) ' variable'];
+                info = [info ', ' num2str(nvars) ' variable)'];
             else
-                info = [info ', ' num2str(nvars) ' variables'];
+                info = [info ', ' num2str(nvars) ' variables)'];
             end
             
             n = X.dim(1);
@@ -156,7 +161,7 @@ switch(X.typeflag)
                     doubleX = double(X);
                     try
                     eigX = eig(doubleX);
-                    info = [info ', eigenvalues between [' num2str(min(eigX)) ',' num2str(max(eigX)) ']'];               
+                    info = [info '\nEigenvalues between [' num2str(min(eigX)) ',' num2str(max(eigX)) ']'];               
                     catch
                     end
                 end
@@ -165,14 +170,19 @@ switch(X.typeflag)
                 if ~any(any(isnan(value(x))))
                     doubleX = value(X);
                     try                       
-                        info = [info ', values in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) ']'];
+                        info = [info '\nValues in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) ']'];
                     catch
                     end
                 end
             end
-          
-            info = [info ')'];
-            disp([classification num2str(n) 'x' num2str(m) info]);
+            
+            B = getbase(X);
+            [ii,jj,ss1] = find(real(getbase(B)));
+            [ii,jj,ss2] = find(imag(getbase(B)));
+            ss = [ss1;ss2];
+            DynamicalRange = [num2str( min(abs(ss))) ' to ' num2str( max(abs(ss)))];
+            info = [info '\nCoeffiecient range: ' DynamicalRange];                      
+            fprintf([classification num2str(n) 'x' num2str(m) info '\n']);
         end;
     case 1
         disp('Relational object');

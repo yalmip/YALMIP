@@ -14,7 +14,11 @@ switch class(varargin{1})
                 y = [y;exp(xi)];
             else
                 if isreal(xi)
-                    y = [y;InstantiateElementWise(mfilename,xi)];
+                    if i>1
+                        y = [y;InstantiateElementWise(mfilename,xi)];
+                    else
+                        y = InstantiateElementWise(mfilename,xi);
+                    end
                 else
                     re = real(xi);
                     im = imag(xi);

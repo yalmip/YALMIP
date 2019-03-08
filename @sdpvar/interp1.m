@@ -13,6 +13,10 @@ switch class(varargin{3})
             varargin{5} = [];
         end        
         
+        if isa(varargin{2},'function_handle')
+            varargin{2} = varargin{2}(varargin{1});
+        end
+        
         if numel(varargin{3}) > 1
             d = size(varargin{3});
             
@@ -21,6 +25,13 @@ switch class(varargin{3})
                 varargout{1} = interp1(varargin{1},varargin{2},reshape(varargin{3},[],1),varargin{4},varargin{5});
                 varargout{1} = reshape(varargout{1},d);
                 return
+            end
+            
+            if any(any(isnan(varargin{1})))
+                error('Interpolation grid contains NaNs');
+            end
+            if any(any(isnan(varargin{2})))
+                error('Interpolation data contains NaNs');
             end
                      
             % If only one data sequence, place in row vector
@@ -73,6 +84,52 @@ switch class(varargin{3})
         % Arguments xi yi x method -> x xi yi method
         varargout{1} = yalmip('define','interp1_internal',varargin{[3 1 2 4 5]});   
      
+    case 'double'
+        if isa(varargin{1},'double') && isa(varargin{2},'sdpvar')             
+            % User is trying to do nonlinear programming where the knot
+            % function values in an interpolant are free variables
+            zi = varargin{3};
+            [n,m] = size(zi);
+            if n*m == 1
+                varargout{1} = yalmip('define','interp1_nonlinear',varargin{1},varargin{2},varargin{3},varargin{4});
+            else
+                out = [];
+                zi = reshape(zi,1,n*m);
+                for i = 1:n*m
+                    Y.type = '()';
+                    Y.subs{1} = 1;
+                    Y.subs{2} = i;
+                    zij = subsref(zi,Y);
+                    out = [out  yalmip('define','interp1_nonlinear',varargin{1},varargin{2},zij,varargin{4})];
+                end
+                varargout{1} = reshape(out,n,m);
+            end
+
+                            
+        elseif isa(varargin{1},'sdpvar') && isa(varargin{2},'sdpvar') 
+            % User is trying to do nonlinear programming where the knot
+            % function values and locations in an interpolant are free variables
+            
+            zi = varargin{3};
+            [n,m] = size(zi);
+            if n*m == 1
+                varargout{1} = yalmip('define','interp1_nonlinear',[varargin{1},varargin{2}],[],varargin{3},varargin{4});
+            else
+                out = [];
+                zi = reshape(zi,1,n*m);
+                for i = 1:n*m
+                    Y.type = '()';
+                    Y.subs{1} = 1;
+                    Y.subs{2} = i;
+                    zij = subsref(zi,Y);
+                    out = [out   yalmip('define','interp1_nonlinear',[varargin{1},varargin{2}],[],zij,varargin{4})];
+                end
+                varargout{1} = reshape(out,n,m);
+            end            
+        else
+            error('SDPVAR/INTERP1 called with strange arguments!');    
+        end
+        
     otherwise
         error('SDPVAR/INTERP1 called with strange argument!');
 end

@@ -1,4 +1,4 @@
-function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower)
+function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions)
 
 if all(relaxed_p.lb==relaxed_p.ub)
     x = relaxed_p.lb;
@@ -11,17 +11,40 @@ if all(relaxed_p.lb==relaxed_p.ub)
     return
 end
 
+if ~(relaxed_p.all_integers && all(relaxed_p.c == fix(relaxed_p.c)) && nnz(relaxed_p.Q)==0)
+     % Objective contains floating-point numbers, so add some margin
+     % if we add an  upper bound cut
+     upper = upper + 1e-4;
+end
+
 p = relaxed_p;
 p.solver.tag = p.solver.lower.tag;
 
+if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0) && ~any(p.variabletype)
+    if p.all_integers && all(p.c == fix(p.c))
+        % All integer objective coefficients and all integer
+        % variables, we must find a solution which is at least
+        % 1 better than current upper bound
+        p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
+        p.K.l=p.K.l+1;       
+    else
+       p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
+       p.K.l=p.K.l+1;
+    end
+end
+
+% Exclusion cuts for negated binaries based on some optimal solutions
+if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)   
+    for i = 1:min(size(allSolutions,2),10);
+        [b,a] = exclusionCut(allSolutions(:,end-i+1),-1);
+        p.F_struc = [p.F_struc(1:p.K.f,:);b a;p.F_struc(1+p.K.f:end,:)];
+        p.K.l=p.K.l+1;
+    end    
+end
+
 removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
-
-%     if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0)
-%         p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
-%         p.K.l=p.K.l+1;
-%     end
-   
+ 
     if ~isempty(p.F_struc)
         if ~isequal(p.K.l,0) & p.options.bnb.ineq2eq
             affected = find(any(p.F_struc(:,1+find(removethese)),2));
@@ -87,21 +110,66 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
              remove_these = zero_row(zero_row_pos);
              p.F_struc(p.K.f + remove_these,:) = [];
              p.K.l = p.K.l - length(remove_these);
+             zero_row_neg = find(lhs < -p.options.bnb.feastol);
+             if ~isempty(zero_row_neg)
+                output.problem = 1;    
+                output.Primal = p.lb; 
+             end
          end
     end
-     if p.K.q> 0
-         top = p.K.f + p.K.l+1;
-         for i = 1:length(p.K.q)
-             if ~any(p.F_struc(top,:))
-                 i
-             end
-             %nnz(Ff(2:end,:))
-              %   1
-             %end
-         end
-     end
-             
     
+%     if relaxed_p.K.q(1) > 0
+%         top = 1 + p.K.f + p.K.l;
+%         dels = zeros(sum(p.K.q),1);
+%         deli = zeros(length(p.K.q),1);
+%         for j = 1:length(p.K.q)
+%             m = p.K.q(j);
+%             M = p.F_struc(top:top+1,:);
+%             if nnz(M)==4
+%                 if all(M(:,1)==0)
+%                     [ii,jj,s] = find(M(1,:));
+%                     if all(s==1)
+%                         [ii2,jj2,s2] = find(M(2,:));
+%                         if isequal(s2,[1 -1]) && isequal(ii,ii2) && isequal(jj,jj2)
+%                            if any(isinf(p.ub(jj-1)))
+%                                deli(j)=1;
+%                                dels(top:top+p.K.q(j)-1)=1;
+%                            end
+%                         end
+%                     end
+%                 end
+%             end
+%             top = top + p.K.q(j);
+%         end
+%         if any(deli)
+%              p.F_struc(find(dels),:)=[];
+%              p.K.q(find(deli))=[];
+%              if length(p.K.q) == 0
+%                  p.K.q = 0;
+%              end
+%         end
+%     end
+    
+    if p.K.s(1) > 0
+        top = 1 + p.K.f + p.K.l + sum(p.K.q);
+        for j = 1:length(p.K.s)
+            X = p.F_struc(top:top + p.K.s(j)^2-1,:); 
+            X = reshape(any(X,2),p.K.s(j),p.K.s(j));
+            e = find(~any(X,2));
+            if any(e)
+                Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
+                for k = 1:length(e);
+                    Z(:,e(k))=1;
+                    Z(e(k),:)=1;
+                end            
+                m = find(Z(:));
+                p.F_struc(top + m - 1,:)=[];
+                p.K.s(j) = p.K.s(j) - length(e);
+            end
+            top = top + p.K.s(j)^2;
+        end
+    end
+                          
     % Derive bounds from this model, and if we fix more variables, apply
     % recursively  
     if isempty(p.F_struc)
@@ -116,15 +184,15 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         dummy = p;
         dummy.lb = newlb;
         dummy.ub = newub;
-        output = bnb_solvelower(lowersolver,dummy,upper,lower);        
+        output = bnb_solvelower(lowersolver,dummy,inf,lower,x_min,aggresiveprune,[]);        
     else
         if any(p.lb>p.ub+0.1)
             output.problem = 1;
             output.Primal = zeros(length(p.lb),1);
         else
             p.solver.version = p.solver.lower.version;
-            p.solver.subversion = p.solver.lower.subversion;
-            output = feval(lowersolver,p);
+            p.solver.subversion = p.solver.lower.subversion;                                                                          
+            output = feval(lowersolver,p);                       
         end
     end
     x=relaxed_p.c*0;

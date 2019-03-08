@@ -42,7 +42,7 @@ for i = 1:length(all_f)
         if nnz(Bi) == 0
             if nnz(bi)==0 & nnz(Q_xx{i})==0
                 % Basically constant + w > 0
-                if  (di+e'*ci) - norm(T*ci,1) <= 0
+                if  (di+e'*ci) - norm(T*ci,1) < 0
                     error('Problem is trivially infeasible');
                     feasible = 0;
                     return

@@ -18,6 +18,9 @@ else
         end
     else
         index = varargin{2};
+        if length(index) > 1
+            error('Dimension argument must be a positive integer scalar within indexing range.');
+        end
     end
     if index > length(X.dim)
         return

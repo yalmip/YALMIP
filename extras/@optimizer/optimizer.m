@@ -82,7 +82,7 @@ if isa(x,'cell')
       end
       sizeOrigIn{i} = size(x{i});
       z = x{i}(:);
-      mask{i} = uniqueRows(z);      
+      mask{i} = uniqueNonZeroRows(z);      
       xvec = [xvec;z(mask{i})];
   end
   x = xvec;
@@ -95,7 +95,7 @@ else
     end
     sizeOrigIn{1} = size(x);
     x = x(:);
-    mask{1} = uniqueRows(x);
+    mask{1} = uniqueNonZeroRows(x);
     x = x(mask{1});
 end
 nIn = length(x);
@@ -121,7 +121,7 @@ if isa(u,'cell')
     end
     u = uvec;
 else
-    if is(u,'complex')
+    if (isa(u,'sdpvar') || isa(u,'ndsdpvar')) && is(u,'complex')
         complexOutput(1) = 1;
         u = [real(u);imag(u)];
     else
@@ -211,13 +211,20 @@ end
 
 % Try to set up an optimal way to compute the output
 base = getbase(u);
-if is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2)==1) & all(base(:,1)==0)
-    % This is just a vecotr of variables
+if isempty(u) || (is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2)==1) & all(base(:,1)==0))
+    % This is just a vector of variables
     z = [];
     map = [];
     uvec = u(:);
+    % Setup to do fast getvariables(uvec(i))
+    U = getbase(uvec);
+    Uvar = getvariables(uvec);
+    U = U(:,2:end);
+    [ii,jj,ss] = find(U');
     for i = 1:length(uvec)
-        var = getvariables(uvec(i));
+        %var = getvariables(uvec(i)); Slow
+        %var = Uvar(find(U(i,:)));
+        var = Uvar(ii(i));
         mapIndex = find(var == model.used_variables);
         if ~isempty(mapIndex)
             map = [map;mapIndex];
@@ -241,13 +248,16 @@ else
     end        
 end
 
-if isempty(map) | min(size(map))==0
+if ~isempty(u) && (isempty(map) | min(size(map))==0)
     error('The requested decision variable (argument 4) is not in model');
 end
 
 model.getsolvertime = 0;
 
 model.solver.callhandle = str2func(model.solver.call);
+
+model.options = pruneOptions(model.options);
+model.hashCache = gen_rand_hash(0,size(model.monomtable,2),1);
 
 sys.recover = aux2;
 sys.model = model;
@@ -367,7 +377,7 @@ sys.model.K.f = sys.model.K.f-prod(sys.dimin);
 sys = class(sys,'optimizer');
 sys = optimizer_precalc(sys);
 
-function i = uniqueRows(x);
+function i = uniqueNonZeroRows(x);
 B = getbase(x);
 % Quick check for trivially unique rows, typical 99% case
 [n,m] = size(B);
@@ -377,9 +387,11 @@ if n == m-1 && nnz(B)==n
         return
     end
 end
-if  length(unique(B*randn(size(B,2),1))) == n
+if  length(unique(B*randn(size(B,2),1))) == n && nnz(B*randn(size(B,2),1)) == size(B,1)
     i = 1:n;
     return
 end
-[temp,i,j] = unique(B,'rows');
+[temp,i] = unique(B*randn(size(B,2),1));
+z = find(~any(B,2));
+i = setdiff(i,z);
 i = i(:);

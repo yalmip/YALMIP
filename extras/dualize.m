@@ -416,6 +416,19 @@ AXbset = is(F,'equality');
 if any(AXbset)
     % Get the constraints
     F_AXb = F_AXb + F(find(AXbset));
+    complex = find(is(F_AXb,'complex'));
+    if ~isempty(complex)
+        F_AXb_complex = F_AXb(complex);
+        F_AXb(complex)=[]; 
+        rEQ = real(sdpvar(F_AXb_complex));
+        iEQ = imag(sdpvar(F_AXb_complex));
+        if ~isempty(rEQ) && isa(rEQ,'sdpvar')
+            F_AXb = F_AXb + (rEQ == 0);
+        end
+        if ~isempty(iEQ) && isa(iEQ,'sdpvar')
+            F_AXb = F_AXb + (iEQ == 0);
+        end
+    end
     F = F(find(~AXbset));
 end
 

@@ -9,6 +9,18 @@ if ~isempty(F)
     end
 end
 
+if nargin < 3
+    parametricVariables = [];
+end
+
+if iscell(parametricVariables)
+    newParameters = [];
+    for i = 1:length(parametricVariables)
+        newParameters = [newParameters;parametricVariables{i}(:)];
+    end
+    parametricVariables = newParameters;
+end
+
 [aux1,aux2,aux3,model] = export(F,h,sdpsettings('solver','quadprog','relax',2));
 if isempty(model)
     error('KKT system can only be derived for LPs or QPs');

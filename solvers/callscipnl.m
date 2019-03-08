@@ -90,7 +90,7 @@ solvertime = toc(solvertime);
 % Check, currently not exhaustive...
 switch exitflag
     case 0
-        if ~isempty(strfind(info.Status,'Exceed'))
+        if ~isempty(strfind(info.Status,'Exceed')) || ~isempty(strfind(info.Status,'Node Limit Reached'))
             problem = 3;
         else
             problem = 9;

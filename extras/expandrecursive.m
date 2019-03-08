@@ -166,12 +166,20 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
     % Ok, here goes the actual recursive code
     while j<=length(arguments) & ~failure
 
-        if do_not_check_nonlinearity            
-            usedvariables = find(fullbasis_transpose(:,j));
-            expressionvariables = allvariables(usedvariables);
+        if length(extendedvariables)==1
+            % Optiize for the special case that the whole model only
+            % contains 1 single nonlinear operator. If that i the case, we
+            % do not need to do recursive stuff. This can save time in some
+            % etremely large simple model
+            expressionvariables = [];
         else
-            expression = arguments(j);
-            expressionvariables = unique([depends(expression) getvariables(expression)]);
+            if do_not_check_nonlinearity            
+                usedvariables = find(fullbasis_transpose(:,j));
+                expressionvariables = allvariables(usedvariables);
+            else
+                expression = arguments(j);
+                expressionvariables = unique([depends(expression) getvariables(expression)]);
+            end
         end
         index_in_expression = find(ismembcYALMIP(expressionvariables,extendedvariables));
 

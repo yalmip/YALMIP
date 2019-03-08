@@ -39,8 +39,10 @@ if ~isequal(size(Y),size(W))
 end
 
 if max(size(Y))>1
- [Y,keptY] = unique(reshape(Y,[],1));
- W = extsubsref(W,keptY);
+    if ~isequal(Y.basis(:,2:end),speye(prod(Y.dim)))            
+        [Y,keptY] = unique(reshape(Y,[],1));
+        W = extsubsref(W,keptY);
+    end
 end
 
 if isa(W,'sdpvar')

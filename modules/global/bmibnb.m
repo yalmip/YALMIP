@@ -50,8 +50,8 @@ otherwise
 end
 
 % CPLEX handles options insanely slow, so we remove all default values in
-% case cplex will be used
-p.options = prunecplexoptions(p.options);
+% solver options
+p.options = pruneOptions(p.options);
 
 timing.total = tic;
 timing.uppersolve = 0;

@@ -14,6 +14,14 @@ switch class(varargin{4})
             end
         end
         
+        if any(any(isnan(varargin{1}))) ||  any(any(isnan(varargin{2})))
+            error('Interpolation grid contains NaNs');
+        end
+        if any(any(isnan(varargin{3})))
+            error('Interpolation data contains NaNs');
+        end
+        
+        
         % Reorder arguments to make sure sdpvar is first argument.
         % Use internal version of interp2 to deal with this
         % Arguments xi yi zi xv yv method -> [xv;yv] xi yi zi method

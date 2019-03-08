@@ -1,4 +1,4 @@
-function yalmiptable(superheader,header,data,formats)
+function yalmiptable(superheader,header,data,formats,post)
 %TABLE Internal function to display tables
 
 [nheadersy,nheadersx] = size(header);
@@ -22,7 +22,7 @@ for j = 1:nheadersx
     headersizes(1,j) = length(header{j});
 end
 
-if nargin<4
+if nargin<4 || isempty(formats)
     for i = 1:ndatax
         formats{i}.header.just = 'right';
         formats{i}.data.just = 'right';
@@ -56,6 +56,12 @@ for i = 1:length(DataLine)
 end
 disp(char(repmat(double('+'),1,length(HeaderLine))))
 
+if nargin == 5 && ~isempty(post)
+    for i = 1:length(post)
+        disp(['| ' post{i} repmat(' ',1,length(HeaderLine)-length(post{i})-3) '|']);        
+    end
+    disp(char(repmat(double('+'),1,length(HeaderLine))))
+end
 
 
 function x= truncstring(x,n)

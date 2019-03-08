@@ -15,7 +15,11 @@ if length(X.dim)==2
         case 2
             Y = X*ones(X.dim(2),1);
         otherwise
-            Y = X;
+            if isa(I,'double') && (I>=1) && (I == ceil(I))
+                Y = X;
+            else
+                error('Dimension argument must be a positive integer scalar within indexing range.')
+            end
     end
     return
 end

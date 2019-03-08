@@ -31,7 +31,7 @@ function varargout = binmodel(varargin)
 %
 %  F = binmodel([a^3*x+b*y + a*b*x >= 3, -2 <=[x y] <=2]);
 %
-% See also BINARY, BINVAR, SOLVESDP
+% See also BINARY, BINVAR, OPTIMIZE
 
 if isa(varargin{1},'lmi') || isa(varargin{1},'constraint')
     varargout{1} = binmodel_constraint(varargin{:});
@@ -210,7 +210,7 @@ if ~isempty(polynomial)
             % simple case, just binary terms
             [ii,jj] = find(the_monom);
             x = recover(jj);
-            F = [F, x >= z_polynomial(i), length(x)-1+z_polynomial(i) >= sum(x), 0 <= z_polynomial(i) <= 1];
+            F = [F, x >= z_polynomial(i), length(x)-1+z_polynomial(i) >= sum(x), binary(z_polynomial(i))];
         end
     end
 else

@@ -34,7 +34,7 @@ if ops.verbose
     disp(['*Computing ' num2str(length(x)) ' primal bounds (required for dual bounds)']);
 end
 
-z = recover(unique([depends(c);depends(b)]));
+z = recover(unique([depends(c) depends(b)]));
 xz = [x;z];
 nz = length(z);
 nTOT = n + length(z);

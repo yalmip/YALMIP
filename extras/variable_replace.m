@@ -18,21 +18,29 @@ end
 if all(variabletype(Xvariables) == 0) %| all(sum(mt(any(mt(getvariables(X),getvariables(Y)),2),:),2)==1)
     % Simple linear replacement
     v = 1;
-    v1 = [];
-    v2 = [];
-    i1 = [];
-    i2 = [];
-    for i = 1:length(Xvariables)
-        XisinY = find(Xvariables(i) == Yvariables);
-        if ~isempty(XisinY)
-         %   v = [v;W(XisinY)];
-            v1 = [v1 XisinY];
-            i1 = [i1 i];
-        else
-         %   v = [v;recover(Xvariables(i))];
-            v2 = [v2 Xvariables(i)];
-            i2 = [i2 i];
+    if 0
+        v1 = [];
+        v2 = [];
+        i1 = [];
+        i2 = [];
+        for i = 1:length(Xvariables)
+            XisinY = find(Xvariables(i) == Yvariables);
+            if ~isempty(XisinY)
+                %   v = [v;W(XisinY)];
+                v1 = [v1 XisinY];
+                i1 = [i1 i];
+            else
+                %   v = [v;recover(Xvariables(i))];
+                v2 = [v2 Xvariables(i)];
+                i2 = [i2 i];
+            end
         end
+    else
+        [aa,bb] = ismember(Xvariables,Yvariables);
+        i1 = find(aa);
+        v1 = bb(i1);
+        i2 = find(~aa);
+        v2 = Xvariables(i2);
     end
     v = sparse(i1,ones(length(i1),1),W(v1),length(Xvariables),1);
     v = v + sparse(i2,ones(length(i2),1),recover(v2),length(Xvariables),1);
@@ -92,8 +100,16 @@ catch
 end
 
 
-function Yvariables = getvariablesSORTED(Y);
-Y = Y(:);
-for i = 1:length(Y)
-    Yvariables(i) = getvariables(Y(i));
+function Yvariables = getvariablesSORTED(Y)
+B = getbase(Y);
+if any(B(:,1))
+  error
 end
+B = B(:,2:end);
+if ~(all(sum(B,2)==1) && all(sum(B,2)==1))
+ 	error
+ end
+v = getvariables(Y);
+[i,j,k] = find(B);
+Yvariables = v(i);
+

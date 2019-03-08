@@ -330,7 +330,12 @@ elseif isequal(subs.type,'{}')
                 self.lastsolution = output.Primal;
             end
             x = self.instatiatedvalues;
-            x(ismember(self.orginal_usedvariables,self.model.used_variables)) = output.Primal;
+            if isempty(output.Primal)
+                v = find(ismember(self.orginal_usedvariables,self.model.used_variables));
+                x(v) = nan(length(v),1);
+            else
+                x(ismember(self.orginal_usedvariables,self.model.used_variables)) = output.Primal;
+            end
             output.Primal = x;
             
         else

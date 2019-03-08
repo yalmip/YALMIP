@@ -47,6 +47,22 @@ monomvalue = prod(aux,2);
 removethese = model.removethese;
 keepingthese = model.keepingthese;
 
+% Look for constraints which evaluate to inf + a'*x + b >= 0
+infinite_monoms = removethese(isinf(monomvalue(removethese)));
+if ~isempty(infinite_monoms)
+    if model.K.l > 0
+        A = model.F_struc(model.K.f + 1:model.K.f + model.K.l,1 + infinite_monoms);
+        redundant = find(all(A,2));
+        model.F_struc(model.K.f + redundant,:)=[];
+        model.K.l = model.K.l - length(redundant);
+    end
+    % If that infinite variable is used nowhere else, simply zero it so we
+    % don't get any inf*0 expressions as these leads to nan
+    if ~any(model.F_struc(:,1+infinite_monoms))
+        monomvalue(infinite_monoms)=0;
+    end
+end
+
 value = monomvalue(removethese);
 monomgain = monomvalue(keepingthese);
 
@@ -83,7 +99,7 @@ if model.K.l > 0
         end
     end
     % Find constraints f(x) <= inf and remove these
-    candidates = find(isinf(model.F_struc(model.K.f + (1:model.K.l),1)) & (model.F_struc(model.K.f + (1:model.K.l),1))>0)
+    candidates = find(isinf(model.F_struc(model.K.f + (1:model.K.l),1)) & (model.F_struc(model.K.f + (1:model.K.l),1))>0);
     if ~isempty(candidates)                       
         model.F_struc(model.K.f + candidates,:) = [];
         model.K.l = model.K.l - length(candidates);        
@@ -178,11 +194,10 @@ newmonomtable(removethese,:) = [];
 
 if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
-    alreadyAdded = zeros(1,size(newmonomtable,1));      
-    %[ii,jj,kk] = unique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1),'rows','stable');
-    [ii,jj,kk,skipped] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
-    S = sparse(kk,1:length(kk),1);
-   % skipped = setdiff(1:length(kk),jj);
+    alreadyAdded = zeros(1,size(newmonomtable,1));         
+    [ii,jj,kk,skipped] = stableunique(newmonomtable*model.hashCache(1:size(newmonomtable,2)));   
+    %[ii,jj,kk,skipped] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
+    S = sparse(kk,1:length(kk),1);   
     model.precalc.S = S;
     model.precalc.skipped = skipped;
     model.precalc.newmonomtable = newmonomtable;
@@ -192,11 +207,9 @@ else
     skipped = model.precalc.skipped;
 end
 model.c = S*model.c;
-%model.F_struc2 = [model.F_struc(:,1) (S*model.F_struc(:,2:end)')'];
 if ~isempty(model.F_struc)
-    model.F_struc = model.F_struc*model.precalc.blkOneS;%blkdiag(1,S');
+    model.F_struc = model.F_struc*model.precalc.blkOneS;
 end
-%norm(model.F_struc-model.F_struc2)
 
 model.lb(skipped) = [];
 model.ub(skipped) = [];
@@ -224,7 +237,7 @@ model.x0 = zeros(length(model.c),1);
 
 if nnz(model.Q) > 0
     if  model.solver.objective.quadratic.convex == 0 &  model.solver.objective.quadratic.nonconvex == 0
-        error('The objective instantiates as a quadratic after fixing parameters, but this is not directly supported by the solver. YALMIP will not reformulate models if they structurally change in call to optimizer. A typical trick to circumvent this is to define a new set of variable e, use the quadratic function e''e, and add an equality constraint e = something. The SOCP formulation can then be done a-priori by YALMIP.');
+        error('The objective instantiates as a quadratic after fixing parameters, but this is not directly supported by the solver. YALMIP will not reformulate models if they structurally change in call to optimizer. A typical trick to circumvent this is to define a new set of variable e, use the quadratic function e''e, and add an equality constraint e = something. The SOCP formulation can then be done a-priori by YALMIP.Alternatively, use a formulation using norm or cone');
     end
 end
 
@@ -248,6 +261,14 @@ end
 if ~isempty(model.aux_variables)
    temp=ismember(keptvariablesIndex,model.aux_variables);
    model.aux_variables = find(temp);  
+end
+if ~isempty(model.K.sos)
+    if ~isempty(model.K.sos.variables)
+        for i = 1:length(model.K.sos.variables)
+            temp=ismember(keptvariablesIndex,model.K.sos.variables{i});
+            model.K.sos.variables{i} = find(temp);            
+        end
+    end
 end
 
 model.used_variables = model.used_variables(keptvariablesIndex);

@@ -1,7 +1,7 @@
 function feasible = checkfeasiblefast(p,x,tol)
 
 feasible = 0;
-if ~(all(x < p.ub+tol) & all(x > p.lb-tol));
+if ~(all(x < p.ub+tol) && all(x > p.lb-tol));
     return
 end
 
@@ -32,12 +32,13 @@ if ~isempty(p.F_struc)
     end
 
     if p.K.s(1)>0
-        top = 1+p.K.f+p.K.l+p.K.q;
+        top = 1+p.K.f+p.K.l+sum(p.K.q);
         for i = 1:length(p.K.s)
             n = p.K.s(i);
             X = reshape(vecres(top:top+n^2-1),n,n);top = top+n^2;
-            X = (X+X')/2;
-            if min(real(eig(X))) < -tol
+            X = (X+X')/2 + tol*eye(n);
+            [~,fail] = chol(X);
+            if fail%min(real(eig(X))) < -tol
                 return
             end
         end

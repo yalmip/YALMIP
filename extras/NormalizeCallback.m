@@ -1,7 +1,8 @@
 function F = NormalizeCallback(varargin)
 
-z_normalizing = varargin{end};
-for i = 3:nargin-1
+doAssignInitials = varargin{end};
+z_normalizing = varargin{end-1};
+for i = 3:nargin-2
     if isa(varargin{i},'sdpvar')
         X = varargin{i};
         break
@@ -11,11 +12,13 @@ n = length(X);
 if isequal(getbase(X),[spalloc(n,1,0) speye(n)])
     F = lmi([]);
 else
-    dX = value(X);
-    if ~all(isnan(dX))
-        assign(z_normalizing,dX);
+    if doAssignInitials
+        dX = value(X);
+        if ~all(isnan(dX))
+            assign(z_normalizing,dX);
+        end
     end
-    try       
+    try        
         F = X == z_normalizing;
     catch
         disp('Report bug in NORMALIZECALLBACK');

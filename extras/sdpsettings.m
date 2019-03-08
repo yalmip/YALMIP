@@ -279,6 +279,11 @@ else
 
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
+    
+    options.default.cplex = options.cplex;
+    options.default.gurobi = options.gurobi;
+    options.default.mosek = options.mosek;   
+    options.default.osqp = options.osqp;   
 end
 
 names = lower(Names);
@@ -296,7 +301,7 @@ while i <= nargin
             error(sprintf('Expected argument %d to be a string property name.', i));
         end
 
-        lowArg = lower(arg);
+        lowArg = strtrim(lower(arg));
 
         j = strmatch(lowArg,names);
         if isempty(j)                       % if no matches
@@ -356,15 +361,15 @@ end
 
 
 
-function cNames = recursivefieldnames(options,append);
+function cNames = recursivefieldnames(options,append)
 
 if nargin == 1
     append = '';
 end
 
 cNames = fieldnames(options);
-for i = 1:length(cNames)
-    eval(['temporaryOptions = options.' cNames{i} ';']);
+for i = 1:length(cNames)    
+    temporaryOptions = getfield(options,cNames{i});
     if isa(temporaryOptions,'struct')
         cNames = [cNames;recursivefieldnames(temporaryOptions,[cNames{i}])];
     end
@@ -469,25 +474,22 @@ bmibnb.presolvescheme = [];
 bmibnb.strengthscheme = [1 2 1 3 1 4 1 6 1 5 1 4 1 6 1 4 1];
 
 function bnb = setup_bnb_options
+bnb.solver = '';
+bnb.maxiter = inf;
+bnb.maxtime = 3600;
+bnb.inttol = 1e-6;
+bnb.feastol = 1e-6;
+bnb.gaptol = 1e-6;
+bnb.prunetol = 1e-6;
+bnb.weight = [];
+bnb.presolve = 0;
+bnb.ineq2eq = 0;
+bnb.plot = 0;
+bnb.rounding = {'ceil','floor','round','shifted round','fix'};
+bnb.uppersolver = 'rounder';
 bnb.branchrule = 'max';
 bnb.method = 'depthbest';
-bnb.verbose = 1;
-bnb.solver = '';
-bnb.uppersolver = 'rounder';
-bnb.presolve = 0;
-bnb.inttol = 1e-4;
-bnb.feastol = 1e-7;
-bnb.gaptol = 1e-4;
-bnb.weight = [];
-bnb.nodetight = 0;
-bnb.nodefix = 0;
-bnb.ineq2eq = 0;
-bnb.plotbounds = 0;
-bnb.rounding = {'ceil','floor','round','shifted round','fix'};
 bnb.round = 1;
-bnb.maxiter = 300;
-bnb.prunetol = 1e-4;
-bnb.multiple = 0;
 bnb.profile = 0;
 
 function chance = setup_chance_options
@@ -496,18 +498,21 @@ chance.N = 100;
 
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
-cutsdp.maxiter = 100;
+cutsdp.maxiter = inf;
+cutsdp.maxtime = 3600;
 cutsdp.cutlimit = inf;
-cutsdp.feastol = -1e-8;
-cutsdp.recoverdual = 0;
-cutsdp.variablebound = inf;
+cutsdp.feastol = 1e-6;
+cutsdp.gaptol = 1e-6;
+cutsdp.twophase = 1;
 cutsdp.nodefix = 0;
 cutsdp.nodetight = 0;
-cutsdp.activationcut = 1;
+cutsdp.activationcut = 0;
+cutsdp.sdppump = 1;
 cutsdp.maxprojections = 3;
 cutsdp.projectionthreshold = .1;
+cutsdp.adjustsolvertol = 0;
 cutsdp.switchtosparse = 1000;
-cutsdp.resolver = [];
+cutsdp.plot = 0;
 function frlib = setup_frlib_options
 frlib.approximation = 'd';
 frlib.reduce = 'auto';
@@ -617,13 +622,10 @@ end
 
 function cplex = setup_cplex_options
 try
-    v = version;
-    if ~isempty(strfind(v,'2016')) && ~isempty(strfind(v,'2017'))
-        cplex = cplexoptimset;
-    else
-        cplex = cplexoptimset('cplex');
-        cplex.output.clonelog = 0;
-    end
+
+    cplex = cplexoptimset('cplex');
+	cplex.output.clonelog = 0;
+
 catch
     try
         % cplex has p-compiled somehow in a manner in which

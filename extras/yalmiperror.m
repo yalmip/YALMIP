@@ -6,6 +6,8 @@ function error_string = yalmiperror(errorcode,solver)
 %
 %   The complete set of error codes are
 %
+%   -12 Solver license cannot be located
+%   -11 Solver license expired
 %   -10 NaN in model data
 %    -9 Specified solver name not recognized
 %    -8 Problem does not satisfy geometric programming rules
@@ -38,6 +40,8 @@ function error_string = yalmiperror(errorcode,solver)
 %    18 Missing non-negativity bounds in GP formulation
 %    19 Convexity requirements not met
 %    20 Solver complains about bad data
+%    21 Failed to initialize bisection space (typically means infeasibility)
+%    22 Ill-posed problem according to solver
 %
 %   See also OPTIMIZE
 
@@ -53,6 +57,10 @@ else
 end
 
 switch errorcode
+case -12
+  error_string = ['Solver license cannot be located ' solver];          
+case -11 
+  error_string = ['Solver license expired ' solver];          
 case -10
   error_string = ['NaN in model data ' solver];          
 case -9
@@ -114,7 +122,12 @@ case -3
  case 19
   error_string = ['Convexity requirements not met ' solver ];           
 case 20
-  error_string = ['Solver complains about bad data ' solver ];              
+  error_string = ['Solver complains about bad data ' solver ];
+case 21
+  error_string = ['Failed to initialize bisection space (probably infeasible)' solver ];              
+case 22
+  error_string = ['Ill-posed problem according to solver ' solver ];              
+    
  otherwise
 end
 

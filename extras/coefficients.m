@@ -164,11 +164,12 @@ function p_base_parametric = parameterizedbase(p,z, params,ParametricIndicies,ex
 % Check for linear parameterization
 parametric_basis = exponent_p(:,ParametricIndicies);
 %if all(sum(parametric_basis,2)==0)
-if all(all(parametric_basis==0))
+if nnz(parametric_basis)==0%all(all(parametric_basis==0))
     p_base_parametric = full(p_base(:));
     return
 end
-if all(ismember(parametric_basis,[0 1])) & all(sum(parametric_basis,2)<=1)%all(sum(parametric_basis,2)<=1)
+[i,j,s] = find(parametric_basis);
+if all(s == 1) & all(sum(parametric_basis,2)<=1)%all(sum(parametric_basis,2)<=1)
     p_base_parametric = full(p_base(:));
     n = length(p_base_parametric);
     ii = [];

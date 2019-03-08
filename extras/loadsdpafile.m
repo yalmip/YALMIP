@@ -15,8 +15,26 @@ if ~exist(filename)
 end
     
 % Load using SeDuMi
-try
+try    
     [At,b,c,K] = fromsdpa(filename);
+    fid = fopen(filename, 'r');
+    % Ugly code to find the integer data...
+    tline = fgetl(fid);
+    found = 0;
+    integers = [];
+    while ischar(tline) && ~found
+        if isequal(tline,'*INTEGERS*') || isequal(tline,'*INTEGER')
+            found = 1;
+        end
+        tline = fgetl(fid);
+    end
+    if found        
+        while ischar(tline)
+            integers = [integers str2num(tline(2:end))];
+            tline = fgetl(fid);
+        end
+    end  
+    fclose(fid);
 catch
     error('LOADSDPAFILE currently requires SeDuMi to be installed');
 end
@@ -25,6 +43,9 @@ nvars = length(b);
 x = sdpvar(nvars,1);
 
 F = ([]);
+if ~isempty(integers)
+    F = [F, integer(x(integers))];
+end
 top = 1;
 if isfield(K,'l')
     if K.l(1)>0

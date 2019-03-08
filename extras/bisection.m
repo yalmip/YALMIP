@@ -11,14 +11,16 @@ function diagnostic = bisection(varargin)
 %    It is assumed that the problem is quasi-convex in the scalar simple
 %    variable t. 
 %
-%    Lower and upper bounds are automatically detected.
-%    Default tolerance 1e-5.
+%    Lower and upper bounds are automatically derived
+%    (you are adviced not to add simple bounds on the t-variable)
+%
+%    Default bisection tolerance 1e-5.
 %
 %    The algorithm simply solves a series of feasibility problems where the
-%    parameter t is fixed, and hones in on optimal value using bisection
+%    parameter t is fixed, and hones in on an optimal value using bisection
 %
 %    It is recommended to explicitly set a solver. Otherwise YALMIP will
-%    have to try to figure ou a suitable solver for the feasibility
+%    have to try to figure out a suitable solver for the feasibility
 %    problems
 
 solvertime = tic;

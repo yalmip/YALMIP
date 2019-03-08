@@ -62,6 +62,8 @@ switch result.status
         problem = 4;
     case 'INF_OR_UNBD'
         problem = 12;
+    case 'INTERRUPTED';
+        problem = 16;
     otherwise
         problem = -1;
 end

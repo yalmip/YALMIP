@@ -14,6 +14,7 @@ function [pres,dres] = check(F)
 %  Element-wise constraint F(x)>=0 : min(min(F))
 %  Equality constraint F==0        : -max(max(abs(F)))
 %  Second order cone t>=||x||      : t-||x||
+%  Exponential cone constraint     : x(3) - exp(x(1)/x(2))*x(2)
 %  Integrality constraint on x     : max(abs(x-round(x)))
 %  Sum-of-square constraint        : Minus value of largest (absolute value) coefficient 
 %                                   in the polynomial p-v'*v
@@ -117,6 +118,8 @@ for j = 1:nlmi
         case 8
             res(j,1) = -full(max(max(abs(F0-round(F0)))));
             res(j,1) = min(res(j,1),-(any(F0>1) | any(F0<0)));
+        case 21
+            res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
         case 54
             res(j,1) = inf;
             for k = 1:size(F0,2)
@@ -218,15 +221,18 @@ else
         keep(5) = 0;
     end
     
-    if all(isnan(resdual))
-        keep(4) = 0;  
-    end
-    
     header = {header{:,find(keep)}};
     temp = {data{:,find(keep)}};
     data = reshape(temp,length(temp)/nnz(keep),nnz(keep));
-    
-    yalmiptable('',header,data)
+
+    post{1} = 'A primal-dual optimal solution would show non-negative residuals.';
+    post{end+1} = 'In practice, many solvers converge to slightly infeasible';
+    post{end+1} = 'solutions, which may cause some residuals to be negative.';
+    post{end+1} = 'It is up to the user to judge the importance and impact of';
+    post{end+1} = 'slightly negative residuals (i.e. infeasibilities)';
+    post{end+1} = 'https://yalmip.github.io/command/check/';
+    post{end+1} = 'https://yalmip.github.io/faq/solutionviolated/';
+    yalmiptable('',header,data,[],post);
     disp(' ');
 end
 

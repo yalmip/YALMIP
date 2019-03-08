@@ -1,3 +1,4 @@
+
 function [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model,xevaled)
 
 global latest_xevaled
@@ -30,14 +31,10 @@ end
 
 if nnz(model.K.q) > 0
     top = 1;
+    z0 = model.F_struc*[1;xevaled];
     for i = 1:length(model.K.q)
-        z = model.F_struc(top:top+model.K.q(i)-1,:)*[1;xevaled];
-        if ~model.derivative_available
-            % fmincon appears to behave better on this
-            g = [g;-(z(1) - sqrt(z(2:end)'*z(2:end)))];
-        else
-            g = [g;-(z(1)^2 - (z(2:end)'*z(2:end)))];
-        end        
+        z = z0(top:top+model.K.q(i)-1);
+        g = [g;-(z(1) - sqrt(z(2:end)'*z(2:end)))];
         top = top + model.K.q(i);
     end
 end
@@ -115,24 +112,47 @@ end
 
 function conederiv = computeConeDeriv(model,z,dzdx)
 conederiv = [];
-z = z(:);
+z = sparse(z(:));
 if any(model.K.q)
     top = 1 + model.K.f + model.K.l;  
     for i = 1:length(model.K.q)
         d = model.F_struc(top,1);
-        c = model.F_struc(top,2:end)';
+       % c = model.F_struc(top,2:end)';
         b = model.F_struc(top+1:top+model.K.q(i)-1,1);
-        A = model.F_struc(top+1:top+model.K.q(i)-1,2:end);
+       % A = model.F_struc(top+1:top+model.K.q(i)-1,2:end);
+        cA = model.F_struc(top:top+model.K.q(i)-1,2:end);
+        c = cA(1,:)';
+        A = cA(2:end,:);
         
         if nargin == 2
             % No inner derivative
-            
-            conederiv = [conederiv;(2*A(:,model.linearindicies)'*(A(:,model.linearindicies)*z(model.linearindicies)+b)-2*c(model.linearindicies)*(c(model.linearindicies)'*z(model.linearindicies)+d))'];
-        else
+            if length(model.linearindicies)==length(model.c)
+                e = A*z + b;
+                smoothed = sqrt(10^-10 + e'*e);
+                temp = -c+(A'*(b + A*z))/smoothed;
+                conederiv = [conederiv temp];
+            else
+                A = A(:,model.linearindicies);
+                c = c(model.linearindicies);
+                % -c'*x - d + ||Ax+b||>=0
+                e = A*z(model.linearindicies) + b;
+                smoothed = sqrt(10^-10 + e'*e);
+                temp = (-c'+(A'*(b + A*z(model.linearindicies)))'/smoothed);
+                conederiv = [conederiv temp'];
+            end
+           % conederiv = [conederiv;(2*A(:,model.linearindicies)'*(A(:,model.linearindicies)*z(model.linearindicies)+b)-2*c(model.linearindicies)*(c(model.linearindicies)'*z(model.linearindicies)+d))'];
+        else                       
+            % -c'*x - d + ||Ax+b||>=0
+            e = A*z + b;
+            smoothed = sqrt(10^-10 + e'*e);
+            % conederiv = [conederiv;-c'+(dzdx'*A'*b + dzdx'*A'*A*z(model.linearindicies))'/smoothed]; 
+            aux = z'*(A'*A-c*c')*dzdx+(b'*A-d*c')*dzdx;
+            conederiv = [conederiv ((-dzdx'*c+aux'/smoothed)')'];             
             % inner derivative
-            aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
-            conederiv = [conederiv;aux];
+            % aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
+            % conederiv = [conederiv;aux];                                    
         end
         top = top + model.K.q(i);
     end
 end
+conederiv = conederiv';

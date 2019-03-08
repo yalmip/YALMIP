@@ -10,7 +10,6 @@ global LUbounds
 global ALREADY_MODELLED
 global MARKER_VARIABLES
 global DUDE_ITS_A_GP
-global ALREADY_MODELLED
 global ALREADY_MODELLED_INDEX
 global REMOVE_THESE_IN_THE_END
 global OPERATOR_IN_POLYNOM
@@ -43,7 +42,7 @@ boundsAlreadySet = 0;
 if ~isempty(F)
     meta = find(is(F,'meta'));
     if ~isempty(meta)
-        LUbounds=setupBounds(F,options,extendedvariables);
+        LUbounds=setupBounds(F,options,extendedvariables);        
         boundsAlreadySet = 1;
         F = expandmeta(F);
     end

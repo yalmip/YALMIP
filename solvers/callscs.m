@@ -1,40 +1,32 @@
 function output = callscs(model)
-
-% Retrieve needed data
-options = model.options;
-F_struc = model.F_struc;
-c       = model.c;
-K       = model.K;
-ub      = model.ub;
-lb      = model.lb;
-
+originalModel = model; 
 % *********************************************
 % Bounded variables converted to constraints
 % N.B. Only happens when caller is BNB
 % *********************************************
-if ~isempty(ub)
-    [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
+if ~isempty(model.ub)
+    [model.F_struc,model.K] = addStructureBounds(model.F_struc,model.K,model.ub,model.lb);
 end
 
-data.A = -F_struc(:,2:end);
-data.b = full(F_struc(:,1));
-data.c = full(c);
-cones = [];
-cones.f = K.f;
-cones.l = K.l;
-cones.q = K.q;
-cones.s = K.s;
-
-% Now add exponential cone information
-[data,cones,output] = addExponentialCone(data,cones,model);
+% Write nonlinear functions using exponential cone operators, if possible
+[model,output] = normalizeExponentialCone(model);
 if output.problem
     return
 end
 
-if options.showprogress;showprogress(['Calling ' model.solver.tag],options.showprogress);end
+% Map to SCS format
+data.A = -model.F_struc(:,2:end);
+data.b = full(model.F_struc(:,1));
+data.c = full(model.c);
+cones = [];
+cones.f = model.K.f;
+cones.l = model.K.l;
+cones.q = model.K.q;
+cones.s = model.K.s;
+cones.ep = model.K.e;
 
-params = options.scs;
-params.verbose = options.verbose;
+params = model.options.scs;
+params.verbose = model.options.verbose;
 
 if params.eliminateequalities
     tempmodel.F_struc = [data.b -data.A];
@@ -77,10 +69,11 @@ if ~isempty(cones.s) && any(cones.s)
     data.b = [data.b;expb];
 end
 
-if options.savedebug
+if model.options.savedebug
     save scsdebug data cones params
 end
 
+if model.options.showprogress;showprogress(['Calling ' model.solver.tag],model.options.showprogress);end
 t = tic;
 problem = 0;  
 switch  model.solver.tag
@@ -93,7 +86,7 @@ solvertime = toc(t);
 
 % Internal format. Only recover the original variables
 Primal = H*x_s+xsol;
-Primal = Primal(1:length(model.c));
+Primal = Primal(1:length(originalModel.c));
 if ~isempty(model.evalMap)
     % No support for duals when exponential cones yet
     Dual = [];
@@ -134,7 +127,7 @@ end
 infostr = yalmiperror(problem,model.solver.tag);
 
 % Save ALL data sent to solver
-if options.savesolverinput
+if model.options.savesolverinput
     solverinput.data = data;
     solverinput.cones = cones;
     solverinput.params = params;  
@@ -143,7 +136,7 @@ else
 end
 
 % Save ALL data from the solution?
-if options.savesolveroutput
+if model.options.savesolveroutput
     solveroutput.x = x_s;
     solveroutput.y = y_s;
     solveroutput.s = s;
