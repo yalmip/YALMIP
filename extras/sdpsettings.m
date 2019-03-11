@@ -495,6 +495,7 @@ bnb.profile = 0;
 function chance = setup_chance_options
 chance.method = 'markov';
 chance.N = 100;
+chance.bootstrap = 'yes';
 
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
