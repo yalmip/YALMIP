@@ -46,7 +46,7 @@ switch class(varargin{1})
 
         operator = struct('convexity','convex','monotonicity','none','definiteness','positive','model','callback');
         operator.range = [0 inf];
-        operator.domain = [0 inf];    
+        operator.domain = [-inf inf];    
         operator.derivative = @derivative;
         operator.convexhull = @convexhull;
         operator.bounds = @bounds;

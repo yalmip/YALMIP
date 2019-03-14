@@ -153,9 +153,11 @@ for uncertaintyGroup = 1:length(randomVariables)
                             eliminatedConstraints(ic)=1;
                         otherwise
                             switch options.chance.method
+                                case 'dro'                                     
+                                    newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'chebyshev'
                                     newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
-                                case 'moment'
+                                case {'moment','momentchebyshev'}
                                     newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'markov'
                                     newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
