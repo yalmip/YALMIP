@@ -63,7 +63,7 @@ end
 % Make sure we actually can solve the lower problem
 solvertime = tic;
 [sol, flag] = P{lower};
-
+working_sol = [];
 diagnostic.solvertime = diagnostic.solvertime + toc(solvertime);
 if flag == 1    
     % This was infeasible, hernce we can use it as an upper bound    
@@ -96,7 +96,7 @@ if flag == 1
         fprintf([' (ok).']);
     end
 elseif flag == 0    
-   
+   working_sol = sol;
 else
 	diagnostic.problem = flag;
 	diagnostic.info = yalmiperror(diagnostic.problem,'BISECTION');
@@ -152,7 +152,6 @@ iter = 1;
 if options.verbose
     disp('Iteration  Lower bound    Test           Upper bound    Gap          Solver status at test');
 end
-working_sol = [];
 while upper - lower > options.bisection.absgaptol
     test = (upper + lower)/2;
     solvertime = tic;
