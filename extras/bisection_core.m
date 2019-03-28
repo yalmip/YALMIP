@@ -115,6 +115,9 @@ if isinf(upper)
     [sol, flag] = P{upper};
     i = 1;
     while ~flag
+        % This was feasible, so we can use it as new lower bound        
+        lower = upper;working_sol = sol;optimal = upper;
+        % Increase upper bound       
         upper = upper + 2^i;i = i+1;
         try                         
             solvertime = tic;
