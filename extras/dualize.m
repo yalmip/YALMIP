@@ -335,7 +335,8 @@ isVecSOCP = is(F,'vecsocp');
 if nnz(isSDP) > 0
     SDPindicies = find(isSDP)';
     for i = 1:length(SDPindicies)%find(isSDP)'
-        Fi = sdpvar(F(SDPindicies(i)));
+        Fi = lmi2sdpvar(F,SDPindicies(i));
+       % Fi = sdpvar(F(SDPindicies(i)));
         ns(i) = size(Fi,1);
         ms(i) = ns(i);
         isc(i) = is(Fi,'complex');
@@ -359,7 +360,9 @@ prei = 1;
 for i = 1:length(F)
     if isSDP(i)
         % Semidefinite dual-form cone
-        Fi = sdpvar(F(i));
+        %Fi = sdpvar(F(i));
+        % MUch faster low-level special function
+        Fi = lmi2sdpvar(F,i);
         n  = size(Fi,1);
         %      S  = sdpvar(n,n);
         S  = Slacks{prei};prei = prei + 1;
@@ -563,8 +566,9 @@ for i = 1:length(F_AXb)
         F_structemp  = spalloc(n*m,1+nvars,nnz(data));
         F_structemp(:,[1 1+mapper(:)'])= data;
     end
-    vecF1 = [vecF1;F_structemp];
+    vecF1 = [vecF1 F_structemp'];
 end
+vecF1 = vecF1';
 
 %Remove trivially redundant constraints
 h = 1+rand(size(vecF1,2),1);
@@ -859,7 +863,8 @@ function implicit_positive = detect_diagonal_terms(F)
 F = F(find(is(F,'sdp')));
 implicit_positive = [];
 for i = 1:length(F)
-    Fi = sdpvar(F(i));
+    Fi = lmi2sdpvar(F,i);
+   % Fi = sdpvar(F(i));
     B = getbase(Fi);
     n = sqrt(size(B,1));
     d = 1:(n+1):n^2;
@@ -872,4 +877,5 @@ for i = 1:length(F)
         implicit_positive = [implicit_positive vars(ii)];
     end
 end
+
 
