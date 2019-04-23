@@ -81,7 +81,7 @@ AllVars_variables = getvariables(AllVars);
 %AllDeriv = [];
 AllDeriv2 = [];
 for k = 1:length(x)
-    wrt = find(ismembc(AllVars_variables,x_variables(k)));
+    wrt = find(ismembcYALMIP(AllVars_variables,x_variables(k)));
     deriv = exponent_p;
     deriv(:,wrt) = deriv(:,wrt)-1;     
     keep{k} = find(deriv(:,wrt)~=-1);
@@ -97,7 +97,7 @@ end
 top = 1;
 dfdx=[];
 for k = 1:length(x)
-    wrt = find(ismembc(AllVars_variables,x_variables(k)));    
+    wrt = find(ismembcYALMIP(AllVars_variables,x_variables(k)));    
     m = length(keep{k});
     if m>0
         poly = sum((coefficients(keep{k}(:)).*exponent_p(keep{k}(:),wrt)).*dummy(top:top+m-1),1);
