@@ -863,12 +863,20 @@ switch varargin{1}
         internal_setstate.duals_index = varargin{2};
         internal_setstate.duals_data = varargin{3};
         
+        temp1 = [];
+        temp2 = [];
         if ~isempty(internal_setstate.duals_associated_index)
             if ~isempty(intersect(internal_setstate.duals_index,internal_setstate.duals_associated_index))
                 for i = 1:length(internal_setstate.duals_index)
                     itshere = find(internal_setstate.duals_associated_index==internal_setstate.duals_index(i));
                     if ~isempty(itshere)
-                        assign(internal_setstate.duals_associated_data{itshere},internal_setstate.duals_data{i});
+                        temp1 = [temp1;internal_setstate.duals_associated_data{itshere}(:)];
+                        temp2 = [temp2;internal_setstate.duals_data{i}(:)];
+                    end
+                    if length(temp1)>1000
+                        assign(temp1,temp2);
+                        temp1 = [];
+                        temp2 = [];
                     end
                 end
             end

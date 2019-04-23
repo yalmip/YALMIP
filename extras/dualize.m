@@ -114,8 +114,8 @@ SDPset = zeros(length(F),1);
 ComplexSDPset = zeros(length(F),1);
 isSDP = is(F,'sdp');
 for i = 1:length(F)
-    if isSDP(i);
-        Fi = sdpvar(F(i));
+    if isSDP(i);        
+        Fi = lmi2sdpvar(F,i);
         if is(Fi,'shiftsdpcone')
             vars = getvariables(Fi);
             if isempty(findrows(varSDP,[vars(1) vars(end)]))
