@@ -880,6 +880,9 @@ switch varargin{1}
                     end
                 end
             end
+            if ~isempty(temp1)
+                assign(temp1,temp2);
+            end
         end
         
     case 'dual'
