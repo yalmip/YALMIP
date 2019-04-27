@@ -167,6 +167,17 @@ if pos
             end 
         end
         z = [z(1:end-1) ')'];        
+elseif strcmp(model.evalMap{pos}.fcn,'logsumexp')
+        z = ['('];                
+        for j = map.variableIndex
+            jl = find(model.linearindicies == j);
+            if isempty(jl)
+                z =  [z '(' createmonomstring(model.monomtable(j,:),model) ')^2+'];
+            else
+                z =  [z 'exp(x(' num2str(jl) '))+'];
+            end 
+        end
+        z = ['log' z(1:end-1) ')'];            
     else
         j = find(map.computes == i);
         j = map.variableIndex(j);
