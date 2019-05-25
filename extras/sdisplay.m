@@ -26,7 +26,7 @@ end
 if ~isa(pvec,'sdpvar')
     for r1=1:size(pvec,1)
         for r2=1:size(pvec,2)
-            p = pvec(r1,r2);
+            p = full(pvec(r1,r2));
             if isa(p,'double')
                 symb_pvec{r1,r2} = num2str2(p,precision);
             else
