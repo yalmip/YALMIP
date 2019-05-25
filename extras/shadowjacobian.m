@@ -6,9 +6,9 @@ if isa(f,'double')
     return
 end
 
-if ~isempty(intersect(deepdepends(f),depends(x)))    
-    % Under development   
-end
+% if ~isempty(intersect(deepdepends(f),depends(x)))    
+%     % Under development   
+% end
 
 if nargin==1
     if isa(f,'sdpvar')
