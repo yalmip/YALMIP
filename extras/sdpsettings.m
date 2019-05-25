@@ -1058,6 +1058,9 @@ try
     ipopt.max_iter = 1500;
     ipopt.max_cpu_time = 1000;
     ipopt.tol = 1e-7;
+    ipopt = rmfield(ipopt,'pardiso_order'); 
+    ipopt = rmfield(ipopt,'pardiso_redo_symbolic_fact_only_if_inertia_wrong');
+    
 catch
     ipopt.mu_strategy = 'adaptive';
     ipopt.tol = 1e-7;
