@@ -1,8 +1,6 @@
 function y = minus(X,Y)
 %MINUS (overloaded)
 
-global FACTORTRACKING
-
 % Cannot use isa here since blkvar is marked as sdpvar
 X_class = class(X);
 Y_class = class(Y);
@@ -85,8 +83,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             y.basis(1) = tmp;
             % Reset info about conic terms
             y.conicinfo = [0 0];
-            y.extra.opname='';
-            if FACTORTRACKING, y = addfactors(y,X,-Y);end
+            y.extra.opname='';            
             return
         end
 
@@ -110,8 +107,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y.extra.createTime = definecreationtime;
-        if FACTORTRACKING, y = addfactors(y,X,-Y);end
+        y.extra.createTime = definecreationtime;        
     case 2
 
         if isempty(Y)
@@ -146,8 +142,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             y.basis(1) = tmp;
             % Reset info about conic terms
             y.conicinfo = [0 0];
-            y.extra.opname='';
-            if FACTORTRACKING, y = addfactors(y,X,-Y);end
+            y.extra.opname='';            
             return
         end
 
@@ -177,8 +172,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         %     y.conicinfo(2) = max(1,y.conicinfo(2));
         % else
         y.conicinfo = [0 0];
-        y.extra.opname='';
-        if FACTORTRACKING, y = addfactors(y,X,-Y);end
+        y.extra.opname='';        
         % end
 
 
@@ -244,8 +238,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     y = full(reshape(y.basis(:,1),n_Y,m_Y));
                 else
                     y.conicinfo = [0 0];
-                    y.extra.opname='';
-                    if FACTORTRACKING, y = addfactors(y,X,-Y);end
+                    y.extra.opname='';                    
                 end
                 return
             end
@@ -292,8 +285,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
 
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y.extra.createTime = definecreationtime;
-        if FACTORTRACKING, y = addfactors(y,X,-Y);end
+        y.extra.createTime = definecreationtime;        
         if nnz(in_Y_logical & in_X_logical)>0
             y = clean(y);
         end
@@ -320,6 +312,3 @@ if X_is_spdvar
     return
  end
 end
-
-
-
