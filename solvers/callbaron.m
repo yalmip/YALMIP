@@ -158,7 +158,7 @@ if pos
         z = [z(1:end-1) ')'];
     elseif strcmp(model.evalMap{pos}.fcn,'slogfrac')                        
         j1 = find(model.linearindicies == map.variableIndex(1));
-        j2 = find(model.linearindicies == map.variableIndex(1));        
+        j2 = find(model.linearindicies == map.variableIndex(2));        
         z =  ['(log(1 + x(' num2str(j1) ')/x(' num2str(j2) ')))'];               
     elseif strcmp(model.evalMap{pos}.fcn,'entropy')
         z = ['('];                
