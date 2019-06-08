@@ -156,6 +156,10 @@ if pos
             end 
         end
         z = [z(1:end-1) ')'];
+    elseif strcmp(model.evalMap{pos}.fcn,'slogfrac')                        
+        j1 = find(model.linearindicies == map.variableIndex(1));
+        j2 = find(model.linearindicies == map.variableIndex(1));        
+        z =  ['(log(1 + x(' num2str(j1) ')/x(' num2str(j2) ')))'];               
     elseif strcmp(model.evalMap{pos}.fcn,'entropy')
         z = ['('];                
         for j = map.variableIndex
@@ -167,7 +171,7 @@ if pos
             end 
         end
         z = [z(1:end-1) ')'];        
-elseif strcmp(model.evalMap{pos}.fcn,'logsumexp')
+    elseif strcmp(model.evalMap{pos}.fcn,'logsumexp')
         z = ['('];                
         for j = map.variableIndex
             jl = find(model.linearindicies == j);
@@ -177,7 +181,7 @@ elseif strcmp(model.evalMap{pos}.fcn,'logsumexp')
                 z =  [z 'exp(x(' num2str(jl) '))+'];
             end 
         end
-        z = ['log' z(1:end-1) ')'];            
+        z = ['log' z(1:end-1) ')'];                    
     else
         j = find(map.computes == i);
         j = map.variableIndex(j);
@@ -240,5 +244,3 @@ string = string(1:end-1);
 string = strrep(string,'+-','-');
 string = strrep(string,'-1*','-');
 string = strrep(string,'+1*','+');
-
-
