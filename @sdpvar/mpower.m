@@ -28,6 +28,7 @@ if isa(d,'sdpvar')
     y = power_internal1(d,x);
     if isa(y,'sdpvar')
         y.extra.createTime = definecreationtime;
+        y.extra.opname='';
     end
     return
 end
@@ -56,6 +57,7 @@ if d==2
                     z = reshape(model.arg{1},[],1);
                     y = real(z'*z);
                     y.extra.createTime = definecreationtime;
+                     y.extra.opname='';
                     return
                 end
             end
@@ -94,6 +96,7 @@ if (ceil(d)-d>0) | (d<0)
         end
     end
     y.extra.createTime = definecreationtime;
+    y.extra.opname='';
     return
 end
 
@@ -144,6 +147,7 @@ else %Integer power of scalar
         end
     end
     y.extra.createTime = definecreationtime;
+    y.extra.opname='';
 end
 
 
