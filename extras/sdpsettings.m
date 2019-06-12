@@ -496,6 +496,7 @@ function chance = setup_chance_options
 chance.method = 'markov';
 chance.N = 100;
 chance.bootstrap = 'yes';
+chance.scenario.delta = .01;
 
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
@@ -546,6 +547,7 @@ mp.simplify  = 0;
 mp.presolve  = 0;
 mp.unbounded = 0;
 function plot = setup_plot_options
+plot.assume = 'convex';
 plot.edgecolor = 'k';
 plot.wirestyle = '-';
 plot.wirecolor = 'k';
