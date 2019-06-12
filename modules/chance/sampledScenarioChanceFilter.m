@@ -1,6 +1,5 @@
-function newConstraint =  sampledScenarioChanceFilter(b,c,distribution,One_minus_confidencelevel,w,options);
+function newConstraint =  sampledScenarioChanceFilter(b,c,distribution,gamma,w,options);
 
-gamma = 1-One_minus_confidencelevel;
 if isempty(options.chance.scenario.delta)
     N = options.chance.N;    
 else

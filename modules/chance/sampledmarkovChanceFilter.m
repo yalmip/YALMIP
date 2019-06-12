@@ -1,4 +1,4 @@
-function newConstraint =  sampledmarkovChanceFilter(b,c,distribution,confidencelevel,w,options);
+function newConstraint =  sampledmarkovChanceFilter(b,c,distribution,gamma,w,options);
 if strcmpi(func2str(distribution.name),'random') && strcmpi(distribution.parameters{1},'data')
     W = distribution.parameters{2};
     N = size(W,2);
@@ -9,4 +9,4 @@ else
     s = sdpvar(1,N);
 end
 alpha = sdpvar(1);
-newConstraint = [0 <= alpha, -b-c'*W+alpha <= s, 0 <= s, sum(s)/N <= alpha*(1-confidencelevel)];
+newConstraint = [0 <= alpha, -b-c'*W+alpha <= s, 0 <= s, sum(s)/N <= alpha*gamma];

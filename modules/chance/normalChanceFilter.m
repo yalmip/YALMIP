@@ -1,7 +1,7 @@
-function newConstraint = normalChanceFilter(b,c,distribution,confidencelevel,w,options)
+function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options)
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
-Phi_Inverse = icdf('normal',confidencelevel,0,1);
+Phi_Inverse = icdf('normal',1-gamma,0,1);
 if min(size(covariance))==1
     covariance = diag(covariance);
 end

@@ -1,4 +1,4 @@
-function newConstraint =  sampledmomentChanceFilter(b,c,distribution,confidencelevel,w,options);
+function newConstraint =  sampledmomentChanceFilter(b,c,distribution,gamma,w,options);
 theMean = [];
 theCov = [];
 if strcmpi(func2str(distribution.name),'random') && strcmpi(distribution.parameters{1},'data')
@@ -29,7 +29,7 @@ if isempty(theMean) || isempty(theCov)
 end
 d.parameters{2} = theMean;
 d.parameters{3} = theCov;
-newConstraint = momentChanceFilter(b,c,d,confidencelevel,w,options);
+newConstraint = momentChanceFilter(b,c,d,gamma,w,options);
 
 function [theMean, theCov] = extractMoments(distribution)
 switch lower(distribution.parameters{1})

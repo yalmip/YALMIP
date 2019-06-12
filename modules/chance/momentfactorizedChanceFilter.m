@@ -1,12 +1,12 @@
-function model = momentfactorizedChanceFilter(b,c,distribution,confidencelevel,w,options)
+function model = momentfactorizedChanceFilter(b,c,distribution,gamma,w,options)
 % Chance filter for distribution only specified by mean and factorized variance
 theMean    = distribution.parameters{2};
 R          = distribution.parameters{3};
 
-gamma = sqrtm(confidencelevel);
+rho = sqrtm(1-gamma);
 e = [R*c;b + c'*theMean];
-if isa(gamma,'sdpvar')
-    model =  b + c'*theMean >= gamma*norm_callback(e);
+if isa(rho,'sdpvar')
+    model =  b + c'*theMean >= rho*norm_callback(e);
 else
-    model =  b + c'*theMean >= gamma*norm(e);
+    model =  b + c'*theMean >= rho*norm(e);
 end
