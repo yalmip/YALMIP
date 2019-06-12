@@ -163,6 +163,8 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 case 'chernoff'
                                     newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
+                                case 'integer'
+                                    newConstraint =  sampledMIChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,confidencelevel,w,options);
                                 otherwise
                                     error('Chance modeling approach not recognized');
                             end
