@@ -138,9 +138,13 @@ for uncertaintyGroup = 1:length(randomVariables)
                                 printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution);
                                 eliminatedConstraints(ic)=1;
                             case 'moment'
-                                newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                if isequal(options.chance.method,'momentchebyshev')
+                                     newConstraint = momentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                else
+                                    newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                end
                                 printout(options.verbose,'moment',randomVariables{uncertaintyGroup}.distribution);
-                                eliminatedConstraints(ic)=1;
+                                eliminatedConstraints(ic)=1;                                                
                             case 'momentf'
                                 newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
@@ -159,8 +163,10 @@ for uncertaintyGroup = 1:length(randomVariables)
                                         newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                     case {'chebyshev','chebychev'}
                                         newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    case {'moment','momentchebyshev','momentchebychev'}
-                                        newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                    case {'momentchebyshev','momentchebychev'}
+                                        newConstraint = sampledmomentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                    case {'moment'}
+                                        newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);                                        
                                     case 'markov'
                                         newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                     case 'chernoff'
@@ -180,7 +186,9 @@ for uncertaintyGroup = 1:length(randomVariables)
                             case 'chebyshev'
                                 newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                             case 'moment'
-                                newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);                                                        
+                            case 'momentchebyshev'
+                                newConstraint = sampledmomentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                             case 'markov'
                                 newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                             case 'chernoff'
