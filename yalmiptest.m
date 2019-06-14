@@ -13,12 +13,13 @@ function out = yalmiptest(prefered_solver,auto)
 
 if ~exist('sedumi2pen.m')
     disp('Add /yalmip/extras etc to your path first...')
-    disp('Read the <a href="http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Tutorials.Installation">Installation notes</a>.')    
+    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')    
     return
 end
 
 if ~exist('callsedumi.m')
     disp('Still missing paths...Just do an addpath(genpath(''yalmiprootdirectory''));')
+    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')        
     return
 end
 

@@ -1,4 +1,4 @@
-function  LinearVariables = depends(x)
+function  LinearVariables = deepdepends(x)
 %DEPENDS Returns indicies to variables used in an SDPVAR object
 %
 % i = depends(x)
