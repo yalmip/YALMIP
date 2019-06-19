@@ -1,6 +1,18 @@
 function output = callfmincon(model)
 
+% Standard NONLINEAR setup
+temp = model.F_struc;
+tempK = model.K;
+tempx0 = model.x0;
 model = yalmip2nonlinearsolver(model);
+% % Try to propagate initial values now that nonlinear evaluation logic is
+% % set up. Do this if some of the intials are nan
+if any(isnan(model.x0)) & ~all(isnan(model.x0))
+    [~,~,xevaledout] = fmincon_fun(model.x0,model);
+    temp = propagatex0(xevaledout,temp,tempK);
+    model.x0 = temp(model.linearindicies);
+end
+model.x0(isnan(model.x0))=0;
 
 switch model.options.verbose
     case 0

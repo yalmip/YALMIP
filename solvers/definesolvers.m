@@ -1138,6 +1138,7 @@ solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
 solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1163,6 +1164,7 @@ solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -1427,6 +1429,7 @@ solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 solver(i) = emptysolver;
