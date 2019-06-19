@@ -36,8 +36,8 @@ end
 
 if model.K.e>0
     for i = 1:model.K.e
-        prob.cones.type = [prob.cones.type 3];
-        prob.cones.subptr = [prob.cones.subptr length(prob.cones.sub)+1];
+        prob.cones.type = [prob.cones.type(:)' 3];
+        prob.cones.subptr = [prob.cones.subptr(:)' length(prob.cones.sub)+1];
         prob.cones.sub = [prob.cones.sub(:)' top+3 top+2 top+1];        
         top = top + 3;
     end
