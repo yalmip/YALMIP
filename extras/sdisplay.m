@@ -301,9 +301,17 @@ end
 
 function s = num2str2(x,precision)
 if isinf(precision) 
-    s = sprintf('%.12g',x);
+    if isreal(x)
+        s = sprintf('%.12g',x);
+    else
+        s = sprintf('%.12g+%.12gi',real(x),imag(x));
+    end
 else  
-    s = sprintf('%.12g',round(x*10^precision)/10^precision);
+    if isreal(x)
+        s = sprintf('%.12g',round(x*10^precision)/10^precision);
+    else
+        s = sprintf('%.12g+%.12gi',round(real(x)*10^precision)/10^precision,round(imag(x)*10^precision)/10^precision);
+    end
 end
 s(s==10)=[];
 s(s==32)=[];
