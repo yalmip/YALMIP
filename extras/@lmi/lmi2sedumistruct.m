@@ -230,12 +230,7 @@ for i = 1:length(pow_con)
     
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
-    % Should always have size 4
-    if n~=4
-        error('Power cone constraint has strange dimension')
-    end
-    
+        
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
     
@@ -250,7 +245,7 @@ for i = 1:length(pow_con)
     F_struc = [F_struc F_structemp];
     
     top = top+ntimesm;
-    K.p(i) = alpha;
+    K.p(i) = n*m;
 end
 
 

@@ -624,6 +624,7 @@ solver(i).call    = 'callmosek';
 solver(i).constraint.integer = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).exponentialcone = 1;
+solver(i).constraint.inequalities.powercone = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
