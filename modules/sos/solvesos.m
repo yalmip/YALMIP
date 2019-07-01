@@ -318,7 +318,9 @@ switch sol.problem
 
                         if isa(h0,'sdpvar')
                             h{constraint} = clean(R*monoms{constraint},options.sos.clean);
-                            h{constraint} = h{constraint}(findelements(sum(h{constraint},2)),:);
+                            if isa(h{constraint},'sdpvar')
+                               h{constraint} = h{constraint}(findelements(sum(h{constraint},2)),:);                                
+                            end
                         else
                             h{constraint} = h0;
                         end
