@@ -49,12 +49,6 @@ function varargout = implies(varargin)
 X = varargin{1};
 Y = varargin{2};
 
-if nargin > 2
-    if ~isa(varargin{3},'double')
-        error('Third argument in IMPLIES should be a numerical value (tolerance)');
-    end
-end
-
 if isempty(X)
     varargout{1} = [];
 end
@@ -62,6 +56,12 @@ end
 switch class(X)
 
     case {'sdpvar','constraint','lmi'}      
+   
+        if nargin > 2
+            if ~isa(varargin{3},'double')
+                error('Third argument in IMPLIES should be a numerical value (tolerance)');
+            end
+        end
         varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
         
     case 'char'        
