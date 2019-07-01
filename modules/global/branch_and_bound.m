@@ -96,9 +96,11 @@ while go_on
     % Strenghten variable bounds a couple of runs
     % *********************************************************************
     p.changedbounds = 1;
+    time_ok = 1;
     
     for i = 1:length(options.bmibnb.strengthscheme)
-        if ~p.feasible
+        time_ok = cputime-t_start < options.bmibnb.maxtime;
+        if ~p.feasible | ~time_ok
             break
         end      
         switch options.bmibnb.strengthscheme(i)
@@ -112,7 +114,10 @@ while go_on
                 p = propagate_bounds_from_complementary(p);
             case 5
                 tstart = tic;
-                p = domain_reduction(p,upper,lower,lpsolver,x_min);
+                [p,~,~,seen_x] = domain_reduction(p,upper,lower,lpsolver,x_min);
+                for k = 1:length(seen_x);
+                   [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,seen_x{k},upper,x_min,inf,numGlobalSolutions);                 
+                end
                 timing.domainreduce = timing.domainreduce + toc(tstart);
             case 6
                 p = propagate_bounds_from_equalities(p);
@@ -121,14 +126,17 @@ while go_on
     end
 
     % *********************************************************************
-    % Detect redundant constraints
-    % *********************************************************************
-    p = remove_redundant(p);
-
-    % *********************************************************************
     % SOLVE LOWER AND UPPER
     % *********************************************************************
-    if p.feasible
+    if ~time_ok
+        info_text = 'Time-out';
+        keep_digging = 0; 
+    elseif p.feasible
+        
+        % *********************************************************************
+        % Detect redundant constraints
+        % *********************************************************************
+        p = remove_redundant(p);
 
         [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 
