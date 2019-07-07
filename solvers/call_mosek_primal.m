@@ -172,9 +172,17 @@ elseif r == 1295
     problem = -4;
     x = [];
     D_struc = [];
+elseif r == 3100
+    problem = 4;
+    x = [];
+    D_struc = [];    
 else
     % Recover solutions
+try
     sol = res.sol;
+catch
+    1
+end
     if isempty(model.integer_variables)
         x = sol.itr.xx(1:length(model.c)); % Might have added new ones                
         D_struc = (sol.itr.suc-sol.itr.slc);        
