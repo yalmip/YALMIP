@@ -41,6 +41,7 @@ noOfEquations = 0;
 pp = 1;
 posVarNames = [];
 negVarNames = [];
+intVarNames = [];
 lastline = '';
 while statusSW == 1
     [statusSW,oneLine] = getOneLine(fileIDX);
@@ -69,6 +70,16 @@ while statusSW == 1
                     [posVarNames,p,moreSW] = getListOfNames(oneLine,posVarNames,p);
                 end
             end
+        elseif strcmp('Integer',keyword)           
+            [keyword,oneLine] = strtok(oneLine);
+            if strcmp('Variables',keyword)
+                p = 0;
+                [intVarNames,p,moreSW] = getListOfNames(oneLine,intVarNames,p);
+                while moreSW == 1
+                    [statusSW,oneLine] = getOneLine(fileIDX);
+                    [intVarNames,p,moreSW] = getListOfNames(oneLine,intVarNames,p);
+                end
+            end            
         elseif strcmp('Negative',keyword)
             [keyword,oneLine] = strtok(oneLine);
             if strcmp('Variables',keyword)
@@ -257,6 +268,12 @@ if minimize
     end
 end
 
+if length(intVarNames)>0
+    for i = 1:length(intVarNames)
+        listOfEquations{end+1} = ['integer(' intVarNames{i} ')'];
+    end
+end
+
 % Convert to YALMIP syntax
 for i = 1:length(listOfEquations)
     listOfEquations{i} = strrep(listOfEquations{i},'=E=','==');
@@ -289,6 +306,7 @@ for i = 1:length(varNames)
         end
     end
 end
+
 
 if length(listOfEquations)>0
     if writetofile
@@ -360,7 +378,7 @@ while (feof(dataFID)==0) & (flowCTRL== 0)
     inputLine = fgetl(dataFID);
     %	inputLine
     len = length(inputLine);
-    if (len > 0) & (inputLine(1)~='*')
+    if (len > 0) & (inputLine(1)~='*') & ~isequal(inputLine,'$offlisting')
         p=1;
         while (p<=len) & (inputLine(p)==' ')
             p = p+1;
