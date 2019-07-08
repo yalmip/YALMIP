@@ -223,7 +223,15 @@ if minimize
             if strfind(listOfEquations{i},obj)
                 %objeq = strrep(listOfEquations{i},'=E=','==');
                 objeqL = listOfEquations{i}(1:strfind( listOfEquations{i},'=E=')-1);
-                objeqR = listOfEquations{i}(strfind( listOfEquations{i},'=E=')+3:end);
+                objeqL2 = listOfEquations{i}(1:strfind( listOfEquations{i},'=L=')-1);
+                if isempty(objeqL) & ~isempty(objeqL2)
+                    % Arki003
+                    objeqL=objeqL2;
+                    objeqR = listOfEquations{i}(strfind( listOfEquations{i},'=L=')+3:end);
+                else
+                    objeqR = listOfEquations{i}(strfind( listOfEquations{i},'=E=')+3:end);
+                end
+                
                 objeqR = strrep(objeqR,';','');
 
                 % put objective on left side
