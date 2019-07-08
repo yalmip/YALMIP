@@ -332,24 +332,7 @@ end
 lb = p.lb;
 ub = p.ub;
 if p.feasible
-    
-    % *******************************
-    % Bounded domain?
-    % *******************************
-    if ~isempty(p.branch_variables)
-        if any(isinf(p.lb(p.branch_variables))) | any(isinf(p.ub(p.branch_variables)))
-            bad = find(isinf(p.lb(p.branch_variables)) | isinf(p.ub(p.branch_variables)));
-            if ~all(ismember(bad,p.complementary))
-                output = yalmip_default_output;
-                output.Primal  = x_min;
-                output.problem = -6;
-                output.infostr = yalmiperror(-6);
-                output.solved_nodes = 0;
-                return
-            end
-        end
-    end
-
+        
     % *******************************
     % Save time & memory
     % *******************************

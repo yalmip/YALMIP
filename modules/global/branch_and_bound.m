@@ -71,6 +71,22 @@ if options.bmibnb.verbose>0
     if p.options.bmibnb.lpreduce
         disp(['* LP solver        : ' p.solver.lpsolver.tag]);
     end
+    k = nnz(isinf(p.lb(p.branch_variables)));
+    if k>0   
+        if k == 1
+            disp(['* Warning: ' num2str(k) ' branch variable is unbounded from below']);
+        else
+            disp(['* Warning: ' num2str(k) ' branch variables are unbounded from below']);
+        end
+    end
+    k = nnz(isinf(p.ub(p.branch_variables)));
+    if k>0
+        if k == 1
+            disp(['* Warning: ' num2str(k) ' branch variable is unbounded from above']);
+        else
+            disp(['* Warning: ' num2str(k) ' branch variables are unbounded from above']);
+        end
+    end    
     disp(' Node       Upper      Gap(%)       Lower    Open');
 end
 
@@ -610,26 +626,20 @@ end
 % *************************************************************************
 function bounds = partition(p,options,spliton,x_min)
 x = x_min;
-if isinf(p.lb(spliton))
-    %bounds = [p.lb(spliton) x_min(spliton) p.ub(spliton)]
-    %return
-    p.lb(spliton) = -1e6;
-end
-if isinf(p.ub(spliton))
-    %bounds = [p.lb(spliton) x_min(spliton) p.ub(spliton)]
-    %return
-    p.ub(spliton) = 1e6;
-end
 
 switch options.bmibnb.branchrule
     case 'omega'
-        if ~isempty(x_min)
-            U = p.ub(spliton);
-            L = p.lb(spliton);
+        U = p.ub(spliton);
+        L = p.lb(spliton);
+        if isinf(L) | isinf(U)
+            Ltemp = max(min(-1,x(spliton)-1),L);
+            Utemp = min(max(1,x(spliton)+1),U);
+            bounds = [L (Ltemp + Utemp)/2 U];             
+        elseif ~isempty(x_min)
             x = x(spliton);
-            bounds = [p.lb(spliton) 0.5*max(p.lb(spliton),min(x_min(spliton),p.ub(spliton)))+0.5*(p.lb(spliton)+p.ub(spliton))/2 p.ub(spliton)];
+            bounds = [L 0.5*max(L,min(x_min(spliton),U))+0.5*(L+U)/2 U];            
         else
-            bounds = [p.lb(spliton) (p.lb(spliton)+p.ub(spliton))/2 p.ub(spliton)];
+            bounds = [L (L+U)/2 U];
         end
     case 'bisect'
         bounds = [p.lb(spliton) (p.lb(spliton)+p.ub(spliton))/2 p.ub(spliton)];
