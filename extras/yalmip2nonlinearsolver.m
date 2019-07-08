@@ -71,7 +71,8 @@ if ~isempty(ub) && ~isempty(lb)
     nonlinearequality = find(lb(nonlinearindicies) == ub(nonlinearindicies));
     if ~isempty(nonlinearequality)
         for i = 1:length(nonlinearequality)
-            model.Anonlineq = [model.Anonlineq;eyev(length(c),nonlinearindicies(nonlinearequality(i)))'];
+          %  model.Anonlineq = [model.Anonlineq;eyev(length(c),nonlinearindicies(nonlinearequality(i)))'];
+            model.Anonlineq = [model.Anonlineq;sparse(1,nonlinearindicies(nonlinearequality(i)),1,1,length(c))];
             model.bnonlineq = [model.bnonlineq;lb(nonlinearindicies(nonlinearequality(i)))];
         end
     end
