@@ -42,6 +42,7 @@ pp = 1;
 posVarNames = [];
 negVarNames = [];
 intVarNames = [];
+binVarNames = [];
 lastline = '';
 while statusSW == 1
     [statusSW,oneLine] = getOneLine(fileIDX);
@@ -80,6 +81,16 @@ while statusSW == 1
                     [intVarNames,p,moreSW] = getListOfNames(oneLine,intVarNames,p);
                 end
             end            
+        elseif strcmp('Binary',keyword)           
+            [keyword,oneLine] = strtok(oneLine);
+            if strcmp('Variables',keyword)
+                p = 0;
+                [binVarNames,p,moreSW] = getListOfNames(oneLine,binVarNames,p);
+                while moreSW == 1
+                    [statusSW,oneLine] = getOneLine(fileIDX);
+                    [binVarNames,p,moreSW] = getListOfNames(oneLine,binVarNames,p);
+                end
+            end              
         elseif strcmp('Negative',keyword)
             [keyword,oneLine] = strtok(oneLine);
             if strcmp('Variables',keyword)
@@ -271,6 +282,12 @@ end
 if length(intVarNames)>0
     for i = 1:length(intVarNames)
         listOfEquations{end+1} = ['integer(' intVarNames{i} ')'];
+    end
+end
+
+if length(binVarNames)>0
+    for i = 1:length(binVarNames)
+        listOfEquations{end+1} = ['binary(' binVarNames{i} ')'];
     end
 end
 
