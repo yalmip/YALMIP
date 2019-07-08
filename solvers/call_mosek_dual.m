@@ -57,7 +57,7 @@ end
 try
     x = res.sol.itr.y;
 catch   
-    if isequal(model.options.mosek.MSK_IPAR_OPTIMIZER,'MSK_OPTIMIZER_FREE_SIMPLEX')
+    if ~isempty(model.options.mosek) & isequal(model.options.mosek.MSK_IPAR_OPTIMIZER,'MSK_OPTIMIZER_FREE_SIMPLEX')
         x = res.sol.bas.y;
     else
         x = nan(length(model.c),1);    
