@@ -54,6 +54,53 @@ L = log(sum(exp(xL)));
 U = log(sum(exp(xU)));
 
 function [Ax, Ay, b] = convexhull(xL,xU)
-Ax = [];
-Ay = [];
-b = [];
+% Ax*x + Ay*y < b
+% Use lower cut from center point
+c = (xL + xU)/2;
+df = exp(c)./sum(exp(c));
+Ax = df';
+Ay = -1;
+b = -(log(sum(exp(c)))-df'*c);
+
+% Add simple Fourier-Motzkins projections of disaggregated model
+% log(sum(q)) upper bounded by y <= k*sum(q)+c, 
+%                              q =(exp x)), 
+%                              qi <= alpha*xi + gammai,
+%  (y-c)/k <= sum(q), replace sum with sum of upper bounds
+qL = sum(exp(xL));
+qU = sum(exp(xU));
+q = sum(exp(xL + linspace(0,1,3).*(xU-xL)),1);
+% Pick one point in the middle. However, middle is not good as it adds
+% nothing if xU is large. Without much though, pick point where gradient is
+% average of gradient at xL and XU
+qM = 2*(qU.*qL)./(qU + qL);%sum(exp(xL*.1 + 0.9*xU));
+cL = log(qL) - (1/qL)*qL;
+kL = (1/qL);
+cU = log(qU) - (1/qU)*qU;
+kU = (1/qU);
+cM = log(qM) - (1/qM)*qM;
+kM = (1/qM);
+c = log(q) - (1./q).*q;
+k = 1./q;
+
+gamma = exp(xL) - (xL./(xU-xL)).*(exp(xU)-exp(xL));
+alpha = (exp(xU)-exp(xL))./(xU-xL);
+
+%Ax = [Ax;-kL*alpha';-kM*alpha';-kU*alpha'];
+Ax = [Ax;-(k.*alpha)'];
+Ay = [Ay;ones(length(q),1)];
+%Ay = [Ay;1;1;1];
+%b = [b;cL + kL*sum(gamma);cM + kM*sum(gamma);cU + kU*sum(gamma)];
+b = [b;(c+k*sum(gamma))'];
+
+% Add a cut based on sum(x) <= prod x when x >= n^(1/(n-1))
+n=length(xL);
+shift = -min(xL)+log(n^(1/(n-1)));
+Ay = [Ay;1];
+Ax = [Ax;-ones(1,n)];
+b = [b;log(exp(-shift)) + n*(shift)];
+
+
+%Ax = [];
+%Ay = [];
+%b = [];
