@@ -22,7 +22,7 @@ if p.options.bmibnb.roottight & p.feasible
                 p_cut.c(p.bilinears(i,1)) = 0;
             end
         end
-        if all(eig(p_cut.Q)>=0)
+        if size(p_cut.Q,1)<=1e3 & all(eig(p_cut.Q)>=0)
             [u,s,v] = svd(full(p_cut.Q));
             % f + c'*x + x'*Q*x <= U
             % c'*x + x'*R*R*x <= U - f - c'*x
@@ -51,7 +51,7 @@ if p.options.bmibnb.roottight & p.feasible
     c = p.c;
     Q = p.Q;
     mt = p.monomtable;
-    p.monomtable = eye(length(c));
+    p.monomtable = speye(length(c));
     i = 1;
 
     % Add an upper bound cut?
