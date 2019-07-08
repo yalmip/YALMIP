@@ -56,6 +56,20 @@ switch p.options.bmibnb.localstart
         error('Unknown local starting point option');
 end
 
+% Find x(a)*x(b) where x(a) or x(b) is fixed, and remove from Q
+[a,b,kk] = find(triu(2*p_upper.Q));
+for i = 1:length(a)
+    if p.lb(a(i)) == p.ub(a(i))
+        p_upper.c(b(i)) = p_upper.c(b(i)) + p.lb(a(i))*kk(i);
+        p_upper.Q(a(i),b(i))=0;
+        p_upper.Q(b(i),a(i))=0;
+    elseif p.lb(b(i)) == p.ub(b(i))
+        p_upper.c(a(i)) = p_upper.c(a(i)) + p.lb(b(i))*kk(i);
+        p_upper.Q(a(i),b(i))=0;
+        p_upper.Q(b(i),a(i))=0;
+    end
+end
+
 % Save time
 p_upper.options.saveduals = 0;
 
