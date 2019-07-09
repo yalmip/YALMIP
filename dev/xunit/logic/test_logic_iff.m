@@ -114,8 +114,3 @@ mbg_asserttolequal(double(y),1, 1e-3);
 mbg_asserttolequal(double(z),10, 1e-3)
 mbg_asserttolequal(double(x),-3, 1e-3)
 
-
-
-binvar d1 d2 x
-solvesdp([iff(x >= 3, [d1+d2 == 2]),-5<x<5],-x,sdpsettings('debug',1))
-
