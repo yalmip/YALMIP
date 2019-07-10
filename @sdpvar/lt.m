@@ -9,7 +9,6 @@ if isa(Y,'blkvar')
     Y = sdpvar(Y);
 end
 
-error
 fh = findobj( 'Type', 'Figure', 'Name', 'Kittens don''t like <!' );
 if isempty(fh)
     figure('Name','Kittens don''t like >!');
