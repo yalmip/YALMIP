@@ -5,6 +5,7 @@ changed = 0;
 
 % Are there really any non-quadratic terms?
 already_done = 0;
+model.bilinearizations = [];
 while any(model.variabletype > 2)
     % Bugger...
     changed = 1;
@@ -27,6 +28,19 @@ while any(model.variabletype > 2)
     else
         model = bilinearize_recursive(model,polynomials,powers);
     end
+end
+if ~isempty(model.bilinearizations)
+    model.bilinearizations = unique(model.bilinearizations,'rows');    
+    n = length(model.c);
+    m = size(model.bilinearizations,1);
+    % w <= x    
+    Q1 = sparse(1:m,1 + model.bilinearizations(:,1),-1,m,n+1)+sparse(1:m,1 + model.bilinearizations(:,2),1,m,n+1);
+    % w <= y    
+    Q2 = sparse(1:m,1 + model.bilinearizations(:,1),-1,m,n+1)+sparse(1:m,1 + model.bilinearizations(:,3),1,m,n+1);
+    % w >= x + y -1 
+    Q3 = sparse(1:m,1 + model.bilinearizations(:,1),1,m,n+1)+sparse(1:m,1 + model.bilinearizations(:,2),-1,m,n+1) + sparse(1:m,1 + model.bilinearizations(:,3),-1,m,n+1) +  sparse(1:m,1 ,1,m,n+1);
+    model.F_struc = [model.F_struc;Q1;Q2;Q3];
+    model.K.l = model.K.l  + size(Q1,1) + size(Q2,1) + size(Q3,1);
 end
 
 function   model = eliminate_sigmonial(model,polynomial,powers);
@@ -68,6 +82,7 @@ function   model = bilinearize_recursive(model,polynomial,powers);
 % Silly bug
 if isempty(model.F_struc)
     model.F_struc = zeros(0,length(model.c) + 1);
+    model.K.l = 1;
 end
 % variable^power
 if nnz(powers) == 1
@@ -94,14 +109,26 @@ end
 model.monomtable(polynomial,:) = 0;
 model.monomtable(polynomial,index1) = model.monomtable(polynomial,index1) + 1;
 model.monomtable(polynomial,index2) = model.monomtable(polynomial,index2) + 1;
+if all(ismember(find(powers_1),model.binary_variables))
+    model.binary_variables =  unique([model.binary_variables index1]);
+    if nnz(powers_1) == 2 && sum(powers_1)==2
+        k = find(powers_1);        
+        model.bilinearizations = [model.bilinearizations;index1 k];        
+    end  
+end
+if all(ismember(find(powers_2),model.binary_variables))
+    model.binary_variables =  unique([model.binary_variables index2]);    
+    if nnz(powers_2) == 2 && sum(powers_2)==2
+        k = find(powers_2);        
+        model.bilinearizations = [model.bilinearizations;index2 k];        
+    end    
+end
 
 if index1 == index2
     model.variabletype(polynomial) = 2;
 else
     model.variabletype(polynomial) = 1;
 end
-%model = convert_polynomial_to_quadratic(model);
-
 
 
 function [model,index] = findoraddmonomial(model,powers);
@@ -149,7 +176,13 @@ if sum(powers) == 1
     if length(powers)<size(model.monomtable,2)
         powers(size(model.monomtable,2)) = 0;
     end
-    index = findrows(model.monomtable,powers);
+    hash = (1:size(model.monomtable,2))';
+    Zhash = model.monomtable*hash;
+    powerhash = powers*hash;
+    index = find(Zhash == powerhash & model.variabletype(:) == 0);
+    if length(index)>1    
+        index = findrows(model.monomtable,powers);
+    end
     return
 end
 
@@ -161,12 +194,29 @@ if ~isempty(model.high_monom_model)
     if length(powers)>size(model.high_monom_model,2)+1
         model.high_monom_model(1,end+1) = 0;
     end
-    Z = model.high_monom_model(:,2:end);
-    index = findrows(Z,powers);
-    if ~isempty(index)
-        index = model.high_monom_model(index,1);
-        return
-    end
+     Z = model.high_monom_model(:,2:end);
+     if size(Z,2) < length(powers)
+         Z(1,length(powers)) = 0;
+     end
+     %hash = (1:size(Z,2))';
+     hash = 1 + ceil(10000*rand(1,length(powers)))';
+     Zhash = Z*hash;
+     powerhash = powers*hash;
+     q = find(Zhash == powerhash);
+     if ~isempty(q)
+         if length(q)==1 && isequal(Z(q,:),powers)
+            index = q;
+            index = model.high_monom_model(index,1);
+            return
+         elseif length(q)>1             
+            index = q(findrows(Z(q,:),powers));
+            if ~isempty(index)
+                index = model.high_monom_model(index,1);
+                return
+            end
+         end
+     end
+  %  end
 end
 % OK, we could not find a linear model of this monomial. We thus create a
 % linear variable, and add the constraint. Note that it is assumed that the
@@ -174,10 +224,14 @@ end
 [model,index_nonlinear] = findoraddmonomial(model,powers);
 model.monomtable(end+1,end+1) = 1;
 model.variabletype(end+1) = 0;
-model.F_struc = [zeros(1,size(model.F_struc,2));model.F_struc];
-model.K.f = model.K.f + 1;
-model.F_struc(1,end+1) = 1;
-model.F_struc(1,1+index_nonlinear) = -1;
+if ~all(ismember(find(powers),model.binary_variables))
+    model.F_struc = [zeros(1,size(model.F_struc,2));model.F_struc];
+    model.K.f = model.K.f + 1;
+    model.F_struc(1,end+1) = 1;
+    model.F_struc(1,1+index_nonlinear) = -1;
+else
+    model.F_struc(1,end+1) = 0;
+end
 model.c(end+1) = 0;
 model.Q(end+1,end+1) = 0;
 model.high_monom_model = blockthem(model.high_monom_model,[length(model.c) powers]);;
