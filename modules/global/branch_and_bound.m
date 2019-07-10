@@ -12,7 +12,7 @@ lowersolver = p.solver.lowersolver.call; % For relaxed lower bound problem
 uppersolver = p.solver.uppersolver.call; % Local nonlinear upper bound
 lpsolver    = p.solver.lpsolver.call;    % LP solver for bound propagation
 
-% *************************************************************************f
+% *************************************************************************
 % GLOBAL PROBLEM DATA (these variables are the same in all nodes)
 % *************************************************************************
 c       = p.c;
@@ -157,11 +157,11 @@ while go_on
             p.upper = upper;
             timing.domainreduce = timing.domainreduce + toc(tstart);
         else
-            volBefore = geomean([-p.lb(p.branch_variables)+p.ub(p.branch_variables)]);
+            [volBefore,openVariables] = branchVolume(p);
             propagators{j}.time(end+1) = tic;
             p = feval(propagators{j}.fun,p);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
-            volAfter = geomean([-p.lb(p.branch_variables)+p.ub(p.branch_variables)]);
+            volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;                 
         end        
     end
@@ -835,9 +835,23 @@ if nargin == 1
     d = p.ub(p.branch_variables)-p.lb(p.branch_variables);
     openVariables = find(d~=0);
     d = d(openVariables);
-    V = geomean(d);
+    if any(d<0)
+        % This is infeasible!
+        V = 0;
+    else
+        V = geomean(d);
+    end
 else
-    d = p.ub(p.branch_variables)-p.lb(p.branch_variables);
-    d = d(openVariables);    
-    V = geomean(d);
+    if ~p.feasible
+        V = 0;
+    else
+        d = p.ub(p.branch_variables)-p.lb(p.branch_variables);
+        d = d(openVariables); 
+        if any(d<0)
+            % This has been propagated to infeasibility
+            V = 0;
+        else
+            V = geomean(d);
+        end
+    end        
 end
