@@ -86,5 +86,7 @@ if ~isinf(upper)
             end
         end
     end
-    
+    if any(p.lb > p.ub + 1e-7)
+        p.feasible = 0;
+    end
 end
