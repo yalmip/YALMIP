@@ -101,6 +101,9 @@ else
 end
 
 j = 1;
+% Relax integrality
+p_test.binary_variables = [];
+p_test.integer_variables = [];
 while feasible & j<=length(jj)
     i = p_test.linears(jj(j));
     if abs(p.ub(i)-p.lb(i)>p.options.bmibnb.vartol) & improvethese(i)    
@@ -111,7 +114,7 @@ while feasible & j<=length(jj)
             if output.problem == 0
                 seen_x{end+1} = output.Primal;
                 if p_test.lb(i) < output.Primal(i)-1e-5
-                    p_test.lb(i) = output.Primal(i);
+                    p_test.lb(i) = output.Primal(i);                    
                     p_test = updateonenonlinearbound(p_test,i);
                 end
             end
@@ -134,6 +137,10 @@ while feasible & j<=length(jj)
         end
     end
     j = j + 1;
+    p_test.lb(p.integer_variables) = ceil(p_test.lb(p.integer_variables)-1e-7);
+    p_test.ub(p.integer_variables) = floor(p_test.ub(p.integer_variables)+1e-7);
+    p_test.lb(p.binary_variables) = ceil(p_test.lb(p.binary_variables)-1e-7);
+    p_test.ub(p.binary_variables) = floor(p_test.ub(p.binary_variables)+1e-7);
 end
 p_test = clean_bounds(p_test);
 p.lb = p_test.lb;
