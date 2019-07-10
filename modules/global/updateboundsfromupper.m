@@ -1,4 +1,7 @@
-function  p = updateboundsfromupper(p,upper,ppoly);
+function  p = updateboundsfromupper(p,upper,ppoly)
+if nargin == 1
+    upper = p.upper;
+end
 if ~isinf(upper)
     LU = [p.lb p.ub];
     if nnz(p.c.*(p.ub-p.lb)) == 1 & nnz(p.Q)==0

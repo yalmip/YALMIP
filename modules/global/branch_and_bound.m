@@ -108,8 +108,18 @@ lower_hist = [];
 upper_hist = [];
 p.branchwidth = [];
 
-pseudo_costgain=[];
-pseudo_variable=[];
+% Create a default propagator structure
+propagator.fun = [];
+propagator.time = [];
+propagator.reduction = [];
+% Define all available bound propagation strageies
+propagators{1} = propagator;propagators{1}.fun = @updatebounds_recursive_evaluation;
+propagators{2} = propagator;propagators{2}.fun = @updateboundsfromupper;
+propagators{3} = propagator;propagators{3}.fun = @propagatequadratics;
+propagators{4} = propagator;propagators{4}.fun = @propagate_bounds_from_complementary;
+propagators{5} = propagator;propagators{5}.fun = @domain_reduction;
+propagators{6} = propagator;propagators{6}.fun = @propagate_bounds_from_equalities;
+propagators{7} = propagator;propagators{7}.fun = @propagate_bounds_from_combinatorics;
 
 while go_on
 
@@ -124,31 +134,36 @@ while go_on
     p.changedbounds = 1;
     time_ok = 1;
     
+    p.upper = upper;
     for i = 1:length(options.bmibnb.strengthscheme)
         time_ok = cputime-t_start < options.bmibnb.maxtime;
         if ~p.feasible | ~time_ok
             break
-        end      
-        switch options.bmibnb.strengthscheme(i)
-            case 1
-                p = updatebounds_recursive_evaluation(p);
-            case 2
-                p = updateboundsfromupper(p,upper,p.originalModel);
-            case 3
-                p = propagatequadratics(p);
-            case 4
-                p = propagate_bounds_from_complementary(p);
-            case 5
-                tstart = tic;
-                [p,~,~,seen_x] = domain_reduction(p,upper,lower,lpsolver,x_min);
-                for k = 1:length(seen_x);
-                   [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,seen_x{k},upper,x_min,inf,numGlobalSolutions);                 
-                end
-                timing.domainreduce = timing.domainreduce + toc(tstart);
-            case 6
-                p = propagate_bounds_from_equalities(p);
-            otherwise
         end
+        j = options.bmibnb.strengthscheme(i); 
+        if j == 5
+            % Special case, clean up to remove
+            [volBefore,openVariables] = branchVolume(p);
+            propagators{j}.time(end+1) = tic;
+            tstart = tic;
+            [p,~,~,seen_x] = domain_reduction(p,upper,lower,lpsolver,x_min);
+            volAfter = branchVolume(p,openVariables);
+            propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;            
+            X = [seen_x{:}];
+            X = unique(X','rows')';
+            for k = 1:size(X,2)
+                [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);
+            end
+            p.upper = upper;
+            timing.domainreduce = timing.domainreduce + toc(tstart);
+        else
+            volBefore = geomean([-p.lb(p.branch_variables)+p.ub(p.branch_variables)]);
+            propagators{j}.time(end+1) = tic;
+            p = feval(propagators{j}.fun,p);
+            propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
+            volAfter = geomean([-p.lb(p.branch_variables)+p.ub(p.branch_variables)]);
+            propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;                 
+        end        
     end
 
     % *********************************************************************
@@ -217,13 +232,7 @@ while go_on
                     info_text = 'Numerical problems in lower bound solver';
                 end
                 x = output.Primal;
-
-                if ~isempty(p.branchwidth)
-                    if ~isempty(p.lower)
-                        pseudo_costgain = [pseudo_costgain (cost-p.lower)/p.branchwidth];
-                        pseudo_variable = [pseudo_variable p.spliton];
-                    end
-                end
+                
                 % UPDATE THE LOWER BOUND
                 if isnan(lower)
                     lower = cost;
@@ -819,3 +828,16 @@ end
 p.lb = p_bilinear.lb(1:length(p.c));
 p.ub = p_bilinear.ub(1:length(p.c));
 p.bilinears = [];
+
+function [V,openVariables] = branchVolume(p,openVariables)
+
+if nargin == 1
+    d = p.ub(p.branch_variables)-p.lb(p.branch_variables);
+    openVariables = find(d~=0);
+    d = d(openVariables);
+    V = geomean(d);
+else
+    d = p.ub(p.branch_variables)-p.lb(p.branch_variables);
+    d = d(openVariables);    
+    V = geomean(d);
+end
