@@ -81,7 +81,7 @@ model = convert_polynomial_to_quadratic(model);
 function   model = bilinearize_recursive(model,polynomial,powers);
 % Silly bug
 if isempty(model.F_struc)
-    model.F_struc = zeros(0,length(model.c) + 1);
+    model.F_struc = zeros(1,length(model.c) + 1);
     model.K.l = 1;
 end
 % variable^power
