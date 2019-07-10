@@ -26,6 +26,16 @@ options = p.options;
 % *************************************************************************
 p_upper = cleanuppermodel(p);
 p_upper = compile_nonlinear_table(p_upper);
+% Precomputed list of bilinear expressions, used in when evaluating value
+% which is done in heuristics code
+Bilinears = find(p_upper.variabletype==1);
+BilinearsList = zeros(length(p_upper.c),2);
+for i = Bilinears
+    vars = find(p_upper.monomtable(i,:));
+    BilinearsList(i,:) = vars(:)';
+end
+p_upper.Bilinears = Bilinears;
+p_upper.BilinearsList = BilinearsList;
 
 % *************************************************************************
 % Active constraints in main model
