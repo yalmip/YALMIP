@@ -1,4 +1,4 @@
-function  p = updateboundsfromupper(p,upper,ppoly)
+function  p = updateboundsfromupper(p,upper)
 if nargin == 1
     upper = p.upper;
 end

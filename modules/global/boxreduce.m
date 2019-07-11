@@ -21,10 +21,8 @@ if options.bmibnb.lpreduce
     
     not_decreasing = find(span_after >= 0.8*span_before);
     improvethese(not_decreasing) = max(0,improvethese(not_decreasing)-1);
-    
-    
+        
     iterations = 0;    
-%    while (diag_after/(1e-18+diag_before) < .75) & feasible & iterations < 4
     while any(improvethese) & feasible & iterations < 8                
         span_before = span_after;        
         [pcut,feasible,lower,seen_x] = lpbmitighten(pcut,lower,upper,lpsolver,xmin,improvethese,seen_x);
@@ -32,9 +30,7 @@ if options.bmibnb.lpreduce
         span_after = pcut.ub - pcut.lb;
         improvethese(find(abs(span_after) <=  p.options.bmibnb.vartol)) = 0;    
         not_decreasing = find(span_after >= 0.95*span_before);
-        improvethese(not_decreasing) = max(0,improvethese(not_decreasing)-1);
-        %diag_before = diag_after;
-        %diag_after = sum(pcut.ub(p.branch_variables)-pcut.lb(p.branch_variables));
+        improvethese(not_decreasing) = max(0,improvethese(not_decreasing)-1);       
         iterations = iterations + 1;
     end
 
