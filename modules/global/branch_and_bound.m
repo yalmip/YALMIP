@@ -26,16 +26,8 @@ options = p.options;
 % *************************************************************************
 p_upper = cleanuppermodel(p);
 p_upper = compile_nonlinear_table(p_upper);
-% Precomputed list of bilinear expressions, used in when evaluating value
-% which is done in heuristics code
-Bilinears = find(p_upper.variabletype==1);
-BilinearsList = zeros(length(p_upper.c),2);
-for i = Bilinears
-    vars = find(p_upper.monomtable(i,:));
-    BilinearsList(i,:) = vars(:)';
-end
-p_upper.Bilinears = Bilinears;
-p_upper.BilinearsList = BilinearsList;
+p_upper = compile_bilinearslist(p_upper);
+p_upper = compile_quadraticslist(p_upper);
 
 % *************************************************************************
 % Active constraints in main model
@@ -147,6 +139,7 @@ while go_on
             propagators{j}.time(end+1) = tic;
             tstart = tic;
             [p,~,~,seen_x] = domain_reduction(p,upper,lower,lpsolver,x_min);
+            propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;            
             X = [seen_x{:}];
@@ -712,12 +705,11 @@ end
 % Basically nothing coded yet. Just check feasibility...
 % *************************************************************************
 function [upper,x_min,cost,info_text,numglobals] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numglobals)
-%load dummy;U = [x(1) x(2) x(4);0 x(3) x(5);0 0 x(6)];P=U'*U;i = find(triu(ones(length(A))-eye(length(A))));-log(det(U'*U))+trace(A*U'*U)+2*sum(invsathub(P(i),lambda))
+
 x(p_upper.binary_variables) = round(x(p_upper.binary_variables));
 x(p_upper.integer_variables) = round(x(p_upper.integer_variables));
 
 z = apply_recursive_evaluation(p_upper,x(1:length(p_upper.c)));
-%z = evaluate_nonlinear(p_upper,x);
 
 relaxed_residual = constraint_residuals(p_upper,z);
 

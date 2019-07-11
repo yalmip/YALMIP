@@ -218,24 +218,8 @@ model.frecursivederivativeprecompute = precomputeDerivative(model,requested);
 
 % Precomputed list of bilinear expressions, used in
 % apply_recursive_differentiation
-Bilinears = find(model.variabletype==1);
-BilinearsList = zeros(length(model.c),2);
-for i = Bilinears
-    vars = find(model.monomtable(i,:));
-    BilinearsList(i,:) = vars(:)';
-end
-model.Bilinears = Bilinears;
-model.BilinearsList = BilinearsList;
-% Precomputed list of quadratic expressions, used in
-% apply_recursive_differentiation
-Quadratics = find(model.variabletype==2);
-QuadraticsList = zeros(length(model.c),2);
-for i = Quadratics
-    vars = find(model.monomtable(i,:));
-    QuadraticsList(i,:) = vars(:)';
-end
-model.Quadratics = Quadratics;
-model.QuadraticsList = QuadraticsList;
+model = compile_bilinearslist(model);
+model = compile_quadraticslist(model);
 
 model.binary_variables  = find(ismember(linearindicies,model.binary_variables));
 model.integer_variables  = find(ismember(linearindicies,model.integer_variables));
