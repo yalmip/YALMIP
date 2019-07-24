@@ -103,6 +103,7 @@ p.branchwidth = [];
 propagator.fun = [];
 propagator.time = [];
 propagator.reduction = [];
+propagator.worked = [];
 % Define all available bound propagation strageies
 propagators{1} = propagator;propagators{1}.fun = @updatebounds_recursive_evaluation;
 propagators{2} = propagator;propagators{2}.fun = @updateboundsfromupper;
@@ -134,6 +135,7 @@ while go_on
         j = options.bmibnb.strengthscheme(i); 
         if j == 5
             % Special case, clean up to remove
+            LU=[p.lb p.ub];
             [volBefore,openVariables] = branchVolume(p);
             propagators{j}.time(end+1) = tic;
             tstart = tic;
@@ -148,13 +150,16 @@ while go_on
             end
             p.upper = upper;
             timing.domainreduce = timing.domainreduce + toc(tstart);
+            propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
         else
+            LU=[p.lb p.ub];
             [volBefore,openVariables] = branchVolume(p);
             propagators{j}.time(end+1) = tic;
             p = feval(propagators{j}.fun,p);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
-            propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;                 
+            propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
+            propagators{j}.worked  = [propagators{j}.worked [LU(:,1)~=p.lb | LU(:,2)~=p.ub]];                         
         end        
     end
 
