@@ -537,7 +537,7 @@ else
 end
 
 % Now we estimate the error for all rounds until now:
-dimacsTot = computedimacs(beq0, f, Aeq, xTot, -yTot, [], K);
+dimacsTot = computedimacs(beq0, f, Aeq, xTot, -yTot, [zeros(K.f,1); zTot], K);
 allDimacsTot(nbIter,:) = dimacsTot;
 
 if highPrecisionSupported
