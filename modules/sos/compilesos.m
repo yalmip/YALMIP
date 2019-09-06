@@ -211,10 +211,10 @@ if options.verbose>0 & ~isempty(F_parametric)
     nEQ = 0;
     nLMI = sum(full(is(F_parametric,'lmi')) &  full(~is(F_parametric,'element-wise'))); %FULL due to bug in ML 7.0.1
     for i = 1:length(F_parametric)
-        if is(F_parametric,'element-wise')
+        if is(F_parametric(i),'element-wise')
             nLP = nLP + prod(size(F_parametric(i)));
         end
-        if is(F_parametric,'equality')
+        if is(F_parametric(i),'equality')
             nEQ = nEQ + prod(size(F_parametric(i)));
         end
     end
