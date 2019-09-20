@@ -184,6 +184,12 @@ for i = 1:size(W,1)
     end
 end
 
+for i = 1:length(global_names)
+    if length(global_names{i}) == 0
+        global_names{i} = ['internal(' num2str(global_LinearVariables(i)) ')'];
+    end
+end
+
 for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)
         p = pvec(pi,pj);
