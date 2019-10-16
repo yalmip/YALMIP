@@ -173,7 +173,7 @@ switch varargin{1}
                                                                          
             for i = correct_operator                
                 if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
-                    if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                    if isequaln(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
                             varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
                         else
@@ -338,7 +338,7 @@ switch varargin{1}
                                                                          
             for i = correct_operator                
              %   if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
-                    if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                    if isequaln(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
                             varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
                         else
