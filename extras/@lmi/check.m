@@ -171,7 +171,7 @@ for j = 1:nlmi
             case 2
                 resdual(j,1) = min(min(dual));
             case 3
-                resdual(j,1) = -max(max(abs(dual)));
+                resdual(j,1) = 0;
             case 4
                 resdual(j,1) = dual(1)-norm(dual(2:end));
             case 5
