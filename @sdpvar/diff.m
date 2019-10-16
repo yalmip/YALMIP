@@ -21,6 +21,9 @@ switch nargin
     case 2       
         % Note that MATLAB diff(randn(2,4),2) will cause a diff in two
         % different directions. 
+        if isa(varargin{2},'sdpvar')
+            error('I think you meant to use the JACOBIAN operator');
+        end
         if n == 1
             if varargin{2}==1 || isempty(varargin{2})
                 Y = differ(X);
@@ -38,6 +41,9 @@ switch nargin
         end
         
     case 3
+        if isa(varargin{2},'sdpvar')
+            error('I think you meant to use the JACOBIAN operator');
+        end
         if X.dim(varargin{3})-varargin{2} <=0
             dim = X.dim;
             dim(varargin{3}) = 0;
