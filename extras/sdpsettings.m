@@ -1189,6 +1189,7 @@ scs.normalize = 1;
 scs.scale = 5;
 scs.cg_rate = 2;
 scs.eliminateequalities = 0;
+scs.gpu = false;
 
 function dsdp = setup_dsdp_options
 try
