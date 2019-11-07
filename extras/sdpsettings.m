@@ -423,6 +423,7 @@ options.allownonconvex = 1;
 options.shift = 0;
 options.dimacs = 0;
 options.beeponproblem = [-5 -4 -3 -2 -1];
+options.mosektaskfile = '';
 
 function bisection = setup_bisection_options
 bisection.absgaptol = 1e-5;
