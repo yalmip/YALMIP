@@ -52,6 +52,10 @@ if model.options.savedebug
     save mosekdebug prob param
 end
 
+if model.options.mosektaskfile
+    mosekopt(sprintf('min write(%s) echo(0)', model.options.mosektaskfile), prob, param);
+end
+
 [r,res,solvertime] = doCall(prob,param,model.options);
 
 try
