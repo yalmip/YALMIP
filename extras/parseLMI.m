@@ -6,14 +6,14 @@ function sdpvarExpr = parseLMI(X)
 % TypeofConstraint = 1;
 
 % Check for obsolete notation .<, .>, =
-single_equality = strfind(X,'=');
-if isempty(strfind(X,'>=')) & isempty(strfind(X,'<=')) & (rem(length(single_equality),2) == 1) % There is a single =    
+single_equality = findstr(X,'=');
+if isempty(findstr(X,'>=')) & isempty(findstr(X,'<=')) & (rem(length(single_equality),2) == 1) % There is a single =    
     error('Obsolete constraint =, use == in equalities.');
     %X = strrep(X,'=','==');
     %X = strrep(X,'====','=='); % Whoops, == replaced with =====!
 end
 
-if ~isempty(strfind(X,'.<'))
+if ~isempty(findstr(X,'.<'))
     disp(' ');
     disp('Warning: Obsolete constraint .<, use < in equalities.');
     disp('If you have a Hermitian matrix which you want to')
@@ -23,7 +23,7 @@ if ~isempty(strfind(X,'.<'))
     X = strrep(X,'.<','<');
 end
 
-if ~isempty(strfind(X,'.>'))
+if ~isempty(findstr(X,'.>'))
     disp(' ');
     disp('Warning: Obsolete constraint .>, use > in equalities.');
     disp('If you have a Hermitian matrix which you want to')
@@ -34,7 +34,7 @@ if ~isempty(strfind(X,'.>'))
 end
 
 % Any norm? If not, we're done!
-if isempty(strfind(X,'||'))
+if isempty(findstr(X,'||'))
     sdpvarExpr = X;
     return
 end
@@ -45,7 +45,7 @@ delimiters = {'.<','.>','<.','>.','<','>','==',''};
 delindex = 0;indtodel = [];
 while isempty(indtodel) & (delindex<=7)
     delindex = delindex+1;
-    indtodel = strfind(X,delimiters{delindex});
+    indtodel = findstr(X,delimiters{delindex});
 end
 
 switch delindex
@@ -80,8 +80,8 @@ if REVERSE
 end
 
 % Search for a norm expression
-ind_norm_Right = strfind(RightHand,'||');
-ind_norm_Left  = strfind(LeftHand,'||');
+ind_norm_Right = findstr(RightHand,'||');
+ind_norm_Left  = findstr(LeftHand,'||');
 
 % Any norm at all, if not, we're done!
 if isempty(ind_norm_Right) & isempty(ind_norm_Left)

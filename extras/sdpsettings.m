@@ -300,12 +300,12 @@ while i <= nargin
 
         lowArg = strtrim(lower(arg));
 
-        j = find(strcmp(lowArg,names));
+        j = strmatch(lowArg,names);
         if isempty(j)                       % if no matches
             error(sprintf('Unrecognized property name ''%s''.', arg));
         elseif length(j) > 1                % if more than one match
             % Check for any exact matches (in case any names are subsets of others)
-            k = find(strcmp(lowArg,names,'exact'));
+            k = strmatch(lowArg,names,'exact');
             if (length(k) == 1)
                 j = k;
             else
