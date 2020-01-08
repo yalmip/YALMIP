@@ -40,7 +40,7 @@ solvertime = tic;
 try
     [x_s,y_s,info] = sedumi(-F_struc(:,2:end),-c,F_struc(:,1),K,pars);
 catch
-    if findstr(lasterr,'Out of memory')
+    if strfind(lasterr,'Out of memory')
         error(lasterr)
     end
     try

@@ -200,7 +200,7 @@ if isempty(solvers)
         diagnostic.info = yalmiperror(-3,'YALMIP');
         diagnostic.problem = -3;
     end
-    if warningon & options.warning & isempty(findstr(diagnostic.info,'No problems detected'))
+    if warningon & options.warning & isempty(strfind(diagnostic.info,'No problems detected'))
         disp(['Warning: ' diagnostic.info]);
     end
     return
@@ -364,7 +364,7 @@ if strcmpi(solver.tag,'bnb')
     end 
 end
 
-if findstr(lower(solver.tag),'sparsecolo')
+if strfind(lower(solver.tag),'sparsecolo')
     temp_options = options;
     temp_options.solver = options.sparsecolo.SDPsolver;
     tempProblemClass = ProblemClass;   
@@ -378,7 +378,7 @@ if findstr(lower(solver.tag),'sparsecolo')
     solver.sdpsolver = localsolver;
 end
 
-if findstr(lower(solver.tag),'frlib')
+if strfind(lower(solver.tag),'frlib')
     temp_options = options;
     temp_options.solver = options.frlib.solver;
     tempProblemClass = ProblemClass;   
@@ -462,7 +462,7 @@ end
 % *************************************************************************
 %% DID WE SELECT THE VSDP SOLVER? Define a solver for VSDP to use
 % *************************************************************************
-if findstr(solver.tag,'VSDP')
+if strfind(solver.tag,'VSDP')
     temp_options = options;
     temp_options.solver = options.vsdp.solver;
     tempProblemClass = ProblemClass;
