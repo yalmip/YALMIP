@@ -93,7 +93,7 @@ if nargin<3
         return % User cancelled
     else
         % Did the user change the extension
-        if isempty(findstr(filename,'.'))
+        if isempty(strfind(filename,'.'))
             filename = [pathname filename '.mod'];
         else
             filename = [pathname filename];

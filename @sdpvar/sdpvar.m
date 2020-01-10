@@ -110,8 +110,8 @@ if ischar(varargin{1})
             varnames = varargin;
             for k = 1:n
                 varcmd{k}='(1,1)';
-                lp=findstr(varargin{k},'(');
-                rp=findstr(varargin{k},')');
+                lp=strfind(varargin{k},'(');
+                rp=strfind(varargin{k},')');
                 if isempty(lp) && isempty(rp)
                     if ~isvarname(varargin{k})
                         error('Not a valid variable name.')
