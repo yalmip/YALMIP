@@ -1,4 +1,7 @@
-function test_misc_complexsdp2
+function tests = test_misc_complexsdp2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 if 0
 h = [1 2 3 4]+sqrt(-1)*[4 3 2 1];
@@ -20,5 +23,5 @@ R2 = dual(F2(1));
 cg2 = trace(R2*double(F2(1)));
 end
 % mbg_asserttrue(norm(R1-R2) < 1e-4)
-assertTrue(1==1)
+assert(1==1)
 %mbg_asserttrue(cg2 < 1e-7)
