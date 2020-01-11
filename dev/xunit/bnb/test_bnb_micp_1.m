@@ -15,7 +15,7 @@ ops = sdpsettings('solver','bnb','verbose',2);
 
 F = (-t <= P-Z <= t);
 obj = sum(sum(t));
-sol = solvesdp(F,obj,ops);
+sol = optimize(F,obj,ops);
 mbg_asserttolequal(sol.problem,0);
 mbg_asserttolequal(double(obj), 66.18236738983525, 1e-4);
 
