@@ -11,9 +11,12 @@ switch class(varargin{1})
 
     case 'char'
 
+        X = varargin{3};
+        F = (-1+1e-9 <= X <= 1-1e-9);
         operator = struct('convexity','none','monotonicity','decreasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
-
+        operator.inverse = @(x)(erfc(x));
+ 
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
@@ -23,5 +26,13 @@ switch class(varargin{1})
 end
 
 function [L,U] = bounds(xL,xU)
-L = erfcinv(xU);
-U = erfcinv(xL);
+if xL<=-1
+    U = inf
+else
+    U = erfcinv(xL);
+end
+if xU>=1
+    L = -inf;
+else
+    L = erfcinv(xU);
+end

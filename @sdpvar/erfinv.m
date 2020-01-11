@@ -16,7 +16,8 @@ switch class(varargin{1})
 
         operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
-
+        operator.inverse = @(x)(erf(x));
+        
         varargout{1} = F;
         varargout{2} = operator;
         varargout{3} = X;
