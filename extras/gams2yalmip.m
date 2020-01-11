@@ -419,7 +419,7 @@ while (feof(dataFID)==0) & (flowCTRL== 0)
             end
             % Kojima 11/06/04; to meet MATLAB 5.2
             %            temp = strfind(inputLine,';');
-            temp = findstr(inputLine,';');
+            temp = strfind(inputLine,';');
             if isempty(temp) == 0
                 flowCTRL=1;
             end

@@ -76,8 +76,8 @@ if ischar(varargin{1})
             varnames = varargin;
             for k = 1:n
                 varcmd{k}='(1,1)';
-                lp=findstr(varargin{k},'(');
-                rp=findstr(varargin{k},')');
+                lp=strfind(varargin{k},'(');
+                rp=strfind(varargin{k},')');
                 if isempty(lp) & isempty(rp)
                     if ~isvarname(varargin{k})
                         error('Not a valid variable name.')
@@ -186,7 +186,7 @@ switch nargin
                     error('Fourth argument should be ''complex'' or ''real''')
                 end
             end
-            index_cmrl = strmatch(varargin{4},{'real','complex'});
+            index_cmrl = strmatch_octavesafe(varargin{4},{'real','complex'});
             if isempty(index_cmrl)
                 error('Fourth argument should be ''complex'' or ''real''. See help above')
             end
@@ -205,11 +205,11 @@ switch nargin
                 index_type = 4;
             end
         else
-            if ~isempty(strmatch(varargin{3},{'complex','real'}))
+            if ~isempty(strmatch_octavesafe(varargin{3},{'complex','real'}))
                 % User had third argument as complex or real
                 error(['Third argument should be ''symmetric'', ''full'', ''toeplitz''... Maybe you meant sdpvar(n,n,''full'',''' varargin{3} ''')'])
             end
-            index_type = strmatch(varargin{3},{'toeplitz','hankel','symmetric','full','rhankel','skew','hermitian'});
+            index_type = strmatch_octavesafe(varargin{3},{'toeplitz','hankel','symmetric','full','rhankel','skew','hermitian'});
         end
 
         if isempty(index_type)

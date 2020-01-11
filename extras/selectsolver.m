@@ -19,7 +19,7 @@ end
 % Maybe the user is stubborn and wants to pick solver
 % ***************************************************
 forced_choice = 0;
-if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
+if length(options.solver)>0 & isempty(strfind(options.solver,'*'))
     
     if strfind(options.solver,'+')
         forced_choice = 1;
@@ -29,7 +29,7 @@ if length(options.solver)>0 & isempty(findstr(options.solver,'*'))
     temp = expandSolverName(solvers);  
     
     opsolver = lower(options.solver);
-    splits = findstr(opsolver,',');
+    splits = strfind(opsolver,',');
     if isempty(splits)
         names{1} = opsolver;
     else
@@ -448,7 +448,7 @@ else
 
         % FIX : Re-use from above
         opsolver = lower(options.solver);
-        splits = findstr(opsolver,',');
+        splits = strfind(opsolver,',');
         if isempty(splits)
             names{1} = opsolver;
         else
