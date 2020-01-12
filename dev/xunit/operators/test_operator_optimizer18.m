@@ -2,7 +2,7 @@ function tests = test_operator_optimizer18
 tests = functiontests(localfunctions);
 
 function test1(dummy)
-ops = sdpsettings('solver','cplex');
+ops = sdpsettings('solver','gurobi');
 x = sdpvar(2,1);
 c = sdpvar(2,1);
 P = optimizer([c'*x <= 1],-sum(x),ops,{c},[x]);

@@ -5,7 +5,7 @@ function test1(dummy)
 % Test partial instantiation
 
 sdpvar x a y b
-ops = sdpsettings('solver','cplex');
+ops = sdpsettings('solver','gurobi');
 P = optimizer([0 <= [x y] <= 10, x + y <= 1],a^3 + (x-a)^2+5*(y-b)^2,ops,{a,b},[x y]);
 H = P{{0.5,[]}}
 [sol,infeas] = H{0.9};
