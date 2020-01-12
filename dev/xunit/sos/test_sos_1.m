@@ -1,5 +1,7 @@
-function test_sos_1
+function tests = test_sos_1
+tests = functiontests({@test1});
 
+function test1(dummy)
 yalmip('clear');
 
 ops{1} = sdpsettings('sos.cong',0,'sos.model',1,'verbose',1);
@@ -13,7 +15,7 @@ obj= -s-t
 for i = 1:length(ops)
     i
     fail = regresstest(F,obj,ops{i});
-    mbg_asserttolequal(fail,0);
+    assert(fail == 0);
 end
 
 function fail  = regresstest(F,obj,ops,pv);

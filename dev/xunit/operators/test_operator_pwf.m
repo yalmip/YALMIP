@@ -1,5 +1,7 @@
-function test_operator_pwf
+function tests = test_operator_pwf
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 % Worked 20130322
 sdpvar t
 F1 = [-1 <= t <= 0];
@@ -8,7 +10,7 @@ f1 = (t+0.5)^2-1;
 f2 = t^2;
 z = pwf(f1,F1,f2,F2);
 solvesdp([],z)
-mbg_asserttolequal(double(t),-.5, 1e-4);
+assert(abs(double(t)--.5) <= 1e-4);
 
 % Failed 20130322
 sdpvar u
@@ -31,4 +33,3 @@ solvesdp([],z+w)
 % Failed 20130322
 sdpvar u v
 solvesdp([z <= u, w <= v],u+v)
-

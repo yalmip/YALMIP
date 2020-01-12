@@ -1,4 +1,7 @@
-function test_sos_15
+function tests = test_sos_15
+tests = functiontests({@test1});
+
+function test1(dummy)
 ops{1} = sdpsettings('sos.cong',0,'sos.model',1,'verbose',0);
 ops{2} = sdpsettings('sos.cong',1,'sos.model',2,'verbose',0);
 ops{3} = sdpsettings('sos.cong',0,'sos.newton',0,'verbose',0,'sos.extlp',0);
@@ -10,7 +13,7 @@ obj = -s-t;
 for i = 1:length(ops)
     i
     fail = regresstest(F,obj,ops{i});
-    mbg_asserttolequal(fail,0);
+    assert(fail == 0);
 end
 
 

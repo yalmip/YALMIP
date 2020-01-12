@@ -1,4 +1,7 @@
-function test_robust_6
+function tests = test_robust_5
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Exact automatic
 yalmip('clear')
@@ -19,4 +22,4 @@ o1 = double(h);
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','affine'));
 solvesdp(F1,h)
 o2 = double(h);
-mbg_asserttolequal(o1-o2,0, 1e-5);
+assert(abs(o1-o2) <= 1e-5)

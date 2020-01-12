@@ -1,4 +1,7 @@
-function test_sos_sjoberg
+function tests = test_sos_sjoberg
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Regression for a problem in getexponentbase
 % that caused issues in matrix sos
@@ -27,4 +30,4 @@ HJI = [Vx*f + f'*Vx.' + h'*h, 1/gam*Vx*g;
 [sol,m,B,residuals] = solvesos( (sos(-HJI)),[],[],c);
 residual = norm(getbase(replace(-HJI-m{1}'*B{1}*m{1},c,double(c))),'inf')
 
-mbg_asserttrue(residual < 1e-8);
+assert(residual < 1e-6);

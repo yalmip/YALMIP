@@ -1,4 +1,7 @@
-function test_sos_rostalski
+function tests = test_sos_rostalski
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % This test checks that YALMIP correcly detects
 % a trivially infeasible SOS problem, when the 
@@ -30,4 +33,4 @@ end
 
 sol = solvesos((sos(p-f+s*h))+F,[],sdpsettings('sos.model',2));
 
-mbg_asserttolequal(sol.problem,2);
+assert(sol.problem == 2)

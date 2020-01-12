@@ -1,4 +1,7 @@
-function test_robust_10
+function tests = test_robust_10
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Test of Bertsime-Sim D-norm
 yalmip('clear')
 p = 1.5;
@@ -28,7 +31,7 @@ W2 = [norm(w,inf)<=1/p];
 [H,tt,y] = hull(W1,W2);
 solvesdp([uncertain(w),H,a'*w<=t],t)
 o3 = double(t);
-mbg_asserttolequal(o1-o3,0, 1e-4);
+assert(abs(o1-o3) <= 1e-4);
 
 
 % Robust optimization over original model
@@ -40,7 +43,7 @@ W2 = [norm(w,inf)<=1/p];
 solvesdp([uncertain(w),[W1,W2],a'*w<=t],t)
 
 o3 = double(t);
-mbg_asserttolequal(o1-o3,0, 1e-4);
+assert(abs(o1-o3) <= 1e-4);
 end
 
 

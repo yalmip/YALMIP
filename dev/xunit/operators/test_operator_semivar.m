@@ -1,6 +1,7 @@
-function test_operator_semivar
+function tests = test_operator_semivar
+tests = functiontests(localfunctions);
 
-
+function test1(dummy)
 A = magic(10);
 b = A(:,end);
 A = A(:,1:5);
@@ -9,12 +10,12 @@ e = b-A*(x-1);
 obj = norm(e,1);
 sol = solvesdp([1 <= x <= 2],obj);
 
-assertTrue(sol.problem == 0)
-assertElementsAlmostEqual(double(obj), 25.211, 'absolute',1e-3);
+assert(sol.problem == 0)
+assert(abs(double(obj)-25.211) <= 1e-3);
 
 % Still not working
 obj = e'*e
 sol = solvesdp([1 <= x <= 2],obj);
-assertTrue(sol.problem == 0)
-assertElementsAlmostEqual(double(obj), 133.2742,'absolute', 1e-3);
+assert(sol.problem == 0)
+assert(abs(double(obj) - 133.2742) <= 1e-3);
 

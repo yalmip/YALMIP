@@ -1,5 +1,7 @@
-function test_robust_4
+function tests = test_robust_4
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 sdpvar t1 t2
 
 A = [-1 1+t1+t2*0.1;0 -2 + 0.9*t1];
@@ -12,8 +14,8 @@ C = [A'*P + P*A <= -eye(2), P>=0, t1+t2 == 1, t1>=0, t2>=0, uncertain([t1 t2])]
 
 sol = solvesdp(C,trace(P),sdpsettings('robust.polya',1));
 
-mbg_asserttolequal(sol.problem,0,1e-5);
-mbg_asserttolequal(max([double(trace(P1)) double(trace(P2))]), 1.8203, 1e-2);
+assert(sol.problem == 0)
+assert(abs(max([double(trace(P1)) double(trace(P2))]) - 1.8203) <= 1e-2)
 
 
 return

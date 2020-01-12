@@ -1,5 +1,7 @@
-function test_operator_optimizer1
+function tests = test_operator_optimizer1
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 % Tests a regression bug that made expandmodel flawed. Basically, when
 % optmizer generates the model, it constraints the parametric variables to
 % pi. However, these constraints can not be used to tighten the model since
@@ -14,5 +16,5 @@ objective = u;
 controller = optimizer(constraints, objective,sdpsettings('verbose',1),[x;r],u);
 [u,sol]=controller{[2;3]}
 
-mbg_asserttrue(sol == 0);
-mbg_asserttolequal(u,-1,1e-4);
+assert(sol == 0);
+assert(abs(u--1) <= 1e-4);

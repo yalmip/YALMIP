@@ -1,4 +1,7 @@
-function test_dualize_sdp_12
+function tests = test_sdpvar_dualize_sdp_12
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear')
 N = 2;
@@ -14,6 +17,6 @@ o1 = double(obj);
 opts = sdpsettings('dualize',0);
 sol2 = solvesdp(F,-obj,opts);
 o2 = double(obj);
-mbg_asserttolequal(sol1.problem,0);
-mbg_asserttolequal(sol2.problem,0);
-mbg_asserttolequal(o1,o2,1e-4);
+assert(sol1.problem == 0);
+assert(sol2.problem == 0);
+assert(abs(o1 - o2) <= 1e-4);

@@ -1,4 +1,7 @@
-function test_robust_8
+function tests = test_robust_8
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 n = 3;
 r = 4;
@@ -54,10 +57,10 @@ solvesdp(F1,h)
 o5 = double(t);
 
 
-mbg_asserttolequal(o4-o5,0, 1e-4);
-mbg_asserttolequal(o3-o5,0, 1e-4);
-mbg_asserttolequal(double(o2<o1),1, 1e-4);
-mbg_asserttolequal(double(o3<o1),1, 1e-4);
+assert(abs(o4-o5) <= 1e-4);
+assert(abs(o3-o5) <= 1e-4);
+assert(o2<o1);
+assert(o3<o1);
 
 
 % Exact automatic
@@ -83,10 +86,10 @@ solvesdp(F1,h)
 o5 = double(t);
 
 
-mbg_asserttolequal(o4-o5,0, 1e-5);
-mbg_asserttolequal(o3-o5,0, 1e-5);
-mbg_asserttolequal(double(o2<o1),1, 1e-5);
-mbg_asserttolequal(double(o3<o1),1, 1e-5);
+assert(abs(o4-o5) <= 1e-5);
+assert(abs(o3-o5) <= 1e-5);
+assert(o2<o1);
+assert(o3<o1);
 
 
 % Exact automatic
@@ -111,7 +114,7 @@ o4 = double(t);
 solvesdp(F1,h)
 o5 = double(t);
 
-mbg_asserttolequal(o4-o5,0, 1e-5);
-mbg_asserttolequal(o3-o5,0, 1e-5);
-mbg_asserttolequal(double(o2<o1),1, 1e-5);
-mbg_asserttolequal(double(o3<o1),1, 1e-5);
+assert(abs(o4-o5) <= 1e-5);
+assert(abs(o3-o5) <= 1e-5);
+assert(o2<o1);
+assert(o3<o1);

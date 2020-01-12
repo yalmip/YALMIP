@@ -1,5 +1,7 @@
-function test_gp_lakshminarayanan
+function tests = test_gp_lakshminarayanan
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 % Architectural parameters
 beta = 4.03 * 10 ^ -4;
 alpha = 2.6 * 10 ^ -7;
@@ -62,7 +64,7 @@ for i = 1:5
         fprintf('\n');
     end;
 end   
-mbg_asserttolequal(norm(obj3d) + norm(obj2d) + norm(objstripMP) + norm(objstrip1P),1.742617616580068e+002,1e-2);
+assert(abs(norm(obj3d) + norm(obj2d) + norm(objstripMP) + norm(objstrip1P)-1.742617616580068e+002) <= 1e-2);
 
 function [obj_val, ti_val, tj_val, tk_val] = f3D( alpha, beta, tau, Procs, Ni, Nj, Nk)
 % Computes the optimal tile sizes given architectural parameters and domain sizes.

@@ -1,4 +1,7 @@
-function test_robust_11
+function tests = test_robust_11
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 ops = sdpsettings;
 yalmip('clear')
 A = [2.938 -0.7345 0.25;4 0 0;0 1 0];
@@ -68,7 +71,7 @@ for i = 1:Ns
     xk2 = [xk2 A*xk2(:,end) + B*double(U(1)) + E*ww(i)];
 end
 norm(xk1-xk2)
-mbg_asserttolequal(norm(xk1-xk2),0, 1e-3);
+assert(norm(xk1-xk2) <= 1e-3);
 
 
 
