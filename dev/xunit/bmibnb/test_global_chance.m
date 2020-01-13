@@ -1,4 +1,7 @@
-function test_global_chance
+function tests = test_global_chance
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from chance.gms
 % Created 28-Jul-2007 17:29:58 using YALMIP R20070725
 
@@ -24,7 +27,7 @@ F=[F,0<=x4];
 F=[F,0<=x5];
 
 % Solve problem
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objvar),29.8944, 1e-2);
+assert(sol.problem==0)
+assert(abs(value(objvar)-29.8944) <= 1e-2) 

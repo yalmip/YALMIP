@@ -13,10 +13,10 @@ t = sdpvar(1,1);
 e = Z(:)-P(:);
 F = (Z >= 0);
 F = F+ (norm(e) <= t);
-sol = solvesdp(F,t)
+sol = optimize(F,t)
 assert(sol.problem == 0);
-assert(norm(Zmanual-double(Z)) < 1e-4)
+assert(norm(Zmanual-value(Z)) < 1e-4)
 
-sol = solvesdp((Z >= 0),norm(e))
+sol = optimize((Z >= 0),norm(e))
 assert(sol.problem == 0);
-assert(norm(Zmanual-double(Z)) < 1e-4)
+assert(norm(Zmanual-value(Z)) < 1e-4)

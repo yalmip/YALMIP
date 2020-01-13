@@ -10,7 +10,7 @@ y = A*x+e;
 xhat = sdpvar(6,1);
 sdpvar u v
 F = [cone(y-A*xhat,u), cone(exp(0.1*xhat.^2),v), exp(xhat) <= exp(4)];
-sol = solvesdp(F,u + v,sdpsettings('solver','fmincon'));
+sol = optimize(F,u + v,sdpsettings('solver','fmincon'));
 
 assert(sol.problem == 0);
-assert(abs(double(u+v)-5.343096e+01) <= 1e-3);
+assert(abs(value(u+v)-5.343096e+01) <= 1e-3);

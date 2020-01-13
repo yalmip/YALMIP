@@ -1,4 +1,7 @@
-function test_global_st_qpc_m1
+function tests = test_global_st_qpc_m1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_qpc-m1.gms
 % Created 21-Aug-2007 18:36:51 using YALMIP R20070810
 
@@ -29,6 +32,6 @@ F=[F,0<=x4];
 F=[F,0<=x5];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),-4.737777777742748e+002, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--4.737777777742748e+002) <= 1e-2) 

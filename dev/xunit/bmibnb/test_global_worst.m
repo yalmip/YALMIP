@@ -1,4 +1,7 @@
-function test_global_worst
+function tests = test_global_worst
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from worst.gms
 % Created 21-Aug-2007 18:27:04 using YALMIP R20070810
 
@@ -95,6 +98,6 @@ F=[F,0.0368<=x34<=0.0768];
 F=[F,0.0368<=x35<=0.0768];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.lpreduce',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),  2.066828163087343e+007, 1e3);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.lpreduce',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-2.066828163087343e+007) <= 1e3)

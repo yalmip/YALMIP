@@ -41,4 +41,4 @@ constr = [ ...
 sol  = optimize(constr,obj)
 
 assert(sol.problem == 0);
-assert(abs(double(obj)-42.39654132455499) <= 1e-3);
+assert(abs(value(obj)-42.39654132455499) <= 1e-3);

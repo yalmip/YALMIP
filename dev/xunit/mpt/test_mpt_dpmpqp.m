@@ -39,15 +39,15 @@ end
 
 assign(x{k},[1;0.5])
 assert(diagnost{1}.problem == 0);
-assert(abs(double(J{k}) - 3.82456140350877) <= 1e-5);
+assert(abs(value(J{k}) - 3.82456140350877) <= 1e-5);
 
 assign(x{k},[0.5;1])
-assert(abs(double(J{k}) - 1.6140350) <= 1e-5);
+assert(abs(value(J{k}) - 1.6140350) <= 1e-5);
 
 assign(x{k},[0;1.9])
-assert(abs(double(J{k}) - 8.755) <= 1e-5);
+assert(abs(value(J{k}) - 8.755) <= 1e-5);
 
 assign(x{k},[-0.1;-1.85])
-assert(abs(double(J{k}) - 6.61825) <= 1e-5);
+assert(abs(value(J{k}) - 6.61825) <= 1e-5);
 
 

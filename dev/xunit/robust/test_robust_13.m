@@ -10,7 +10,7 @@ sdpvar x w(2,1)
 F = [x+sum(w) <= 1, [1 x;x 2] >= 0]
 W = [w'*w <= 1/2, uncertain(w)]
 objective = (x+1)'*(x+1) + x*norm(w,1);
-sol = solvesdp(F + W,objective)
+sol = optimize(F + W,objective)
 assert(sol.problem == -2);
 
 
@@ -20,11 +20,11 @@ sdpvar x w(2,1)
 F = [x + norm(w,1) <= 1]
 W = [w'*w <= 1/2, uncertain(w)]
 objective = x;
-sol = solvesdp(F + W,-x)
+sol = optimize(F + W,-x)
 assert(sol.problem == 0);
-assert(abs(double(x)--0.41421) <= 1e-3);
+assert(abs(value(x)--0.41421) <= 1e-3);
 
-sol = solvesdp(F + W,-x,sdpsettings('robust.auxreduce','projection'))
+sol = optimize(F + W,-x,sdpsettings('robust.auxreduce','projection'))
 assert(sol.problem == 0);
-assert(abs(double(x)) <= 1e-3);
+assert(abs(value(x)) <= 1e-3);
 

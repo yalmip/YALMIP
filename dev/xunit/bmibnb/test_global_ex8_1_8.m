@@ -1,4 +1,7 @@
-function test_global_ex8_1_8
+function tests = test_global_ex8_1_8
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from ex8_1_8.gms
 % Created 28-Jul-2007 17:52:19 using YALMIP R20070725
 
@@ -31,6 +34,6 @@ F=[F,1e-005<=x5<=16];
 F=[F,1e-005<=x6<=16];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objective),-0.3888, 1e-3);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--0.3888) <= 1e-3)

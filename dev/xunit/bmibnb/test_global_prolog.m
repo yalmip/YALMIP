@@ -1,3 +1,7 @@
+function tests = test_global_prolog
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from prolog.gms
 % Created 07-Jul-2019 11:28:30 using YALMIP R20190425
 
@@ -75,6 +79,6 @@ F=[F,0<=x20];
 F=[F,0<=x21];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_assertfalse(sol.problem)
-mbg_asserttolequal(double(objective), 0, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem == 0)
+assert(abs(value(objective)-0) <= 1e-2)

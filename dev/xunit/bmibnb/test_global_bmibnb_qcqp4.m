@@ -1,4 +1,7 @@
-function qcqp3
+function tests = test_global_bmibnb_qcqp4
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 x1 = sdpvar(1,1);
 x2 = sdpvar(1,1);
@@ -45,6 +48,6 @@ F = (10>=x>=0);
 F = F + (e>=0);
 F = F + (obj == t);
 
-sol = solvesdp(F,t,sdpsettings('solver','bmibnb'))
+sol = optimize(F,t,sdpsettings('solver','bmibnb'))
 
-mbg_asserttolequal(double(t),-36, 1e-6);
+assert(abs(value(t)--36) <= 1e-6)

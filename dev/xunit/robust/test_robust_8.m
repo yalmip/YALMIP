@@ -37,24 +37,24 @@ end
 objective = norm(A*x + b + C*w,1);
 model = [uncertain(w), A1*w(1:m/2)<=b1, A2*w(m/2+1:m)<=b2];
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','none'));
-solvesdp(F1,h)
-o1 = double(t);
+optimize(F1,h)
+o1 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','affine'));
-solvesdp(F1,h)
-o2 = double(t);
+optimize(F1,h)
+o2 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','projection','robust.lplp','enumeration'));
-solvesdp(F1,h)
-o3 = double(t);
+optimize(F1,h)
+o3 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','projection','robust.lplp','duality'));
-solvesdp(F1,h)
-o4 = double(t);
+optimize(F1,h)
+o4 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','enumeration'));
-solvesdp(F1,h)
-o5 = double(t);
+optimize(F1,h)
+o5 = value(t);
 
 
 assert(abs(o4-o5) <= 1e-4);
@@ -66,24 +66,24 @@ assert(o3<o1);
 % Exact automatic
 model = [uncertain(w), norm(w,1) <= 1];
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','none'));
-solvesdp(F1,h)
-o1 = double(t);
+optimize(F1,h)
+o1 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','affine'));
-solvesdp(F1,h)
-o2 = double(t);
+optimize(F1,h)
+o2 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','projection','robust.lplp','enumeration'));
-solvesdp(F1,h)
-o3 = double(t);
+optimize(F1,h)
+o3 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','projection','robust.lplp','duality'));
-solvesdp(F1,h)
-o4 = double(t);
+optimize(F1,h)
+o4 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','enumeration'));
-solvesdp(F1,h)
-o5 = double(t);
+optimize(F1,h)
+o5 = value(t);
 
 
 assert(abs(o4-o5) <= 1e-5);
@@ -95,24 +95,24 @@ assert(o3<o1);
 % Exact automatic
 model = [uncertain(w), norm(w,1)+norm(w,1) <= 1];
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','none'));
-solvesdp(F1,h)
-o1 = double(t);
+optimize(F1,h)
+o1 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','affine'));
-solvesdp(F1,h)
-o2 = double(t);
+optimize(F1,h)
+o2 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','projection','robust.lplp','enumeration'));
-solvesdp(F1,h)
-o3 = double(t);
+optimize(F1,h)
+o3 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','projection','robust.lplp','duality'));
-solvesdp(F1,h)
-o4 = double(t);
+optimize(F1,h)
+o4 = value(t);
 
 [F1,h] = robustify([model,objective <= t],t,sdpsettings('robust.auxreduce','enumeration'));
-solvesdp(F1,h)
-o5 = double(t);
+optimize(F1,h)
+o5 = value(t);
 
 assert(abs(o4-o5) <= 1e-5);
 assert(abs(o3-o5) <= 1e-5);

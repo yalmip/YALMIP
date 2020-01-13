@@ -19,36 +19,36 @@ F = (-t <= P-Z <= t);
 obj = sum(sum(t));
 sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 66.18236738983525) <=  1e-4);
+assert(abs(value(obj) - 66.18236738983525) <=  1e-4);
 
 F = ([]);
 obj = norm(e,1);
-sol = solvesdp(F,obj,ops);
+sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 66.18236738983525) <= 1e-4);
+assert(abs(value(obj) - 66.18236738983525) <= 1e-4);
 
 obj = e'*e;
 F = ([]);
-sol = solvesdp(F,obj,ops);
+sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 3.352603490492911e+002) <= 1e-4);
+assert(abs(value(obj) - 3.352603490492911e+002) <= 1e-4);
 
 t = sdpvar(1,1);
 obj = t;
 F = (cone(e,t));
-sol = solvesdp(F,obj,ops);
+sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 18.31011603130778) <= 1e-4);
+assert(abs(value(obj) - 18.31011603130778) <= 1e-4);
 
 t = sdpvar(1,1);
 obj = norm(e);
 F = ([]);
-sol = solvesdp(F,obj,ops);
+sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 18.31011603130778) <= 1e-4);
+assert(abs(value(obj) - 18.31011603130778) <= 1e-4);
 
 obj = t;
 F = ([t e';e eye(length(e))]>=0);
-sol = solvesdp(F,obj,ops);
+sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 3.352603420494530e+002) <= 1e-4);
+assert(abs(value(obj) - 3.352603420494530e+002) <= 1e-4);

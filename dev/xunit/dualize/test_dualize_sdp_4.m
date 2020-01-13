@@ -11,12 +11,12 @@ F = (A'*P+P*A <= -eye(3));
 F = F + (P >= 0) + (P(3,3)>=0) + (t-y >= 7) + (P(2,2)>=4)+(P(1,1:2)>=t) + (t>=0);
 obj = trace(P);
 
-sol1  = solvesdp(F,obj);
-obj1 = double(obj);
+sol1  = optimize(F,obj);
+obj1 = value(obj);
 p1   = checkset(F);
 
-sol2 = solvesdp(F,obj,sdpsettings('dualize',1));
-obj2 = double(obj);
+sol2 = optimize(F,obj,sdpsettings('dualize',1));
+obj2 = value(obj);
 p2   = checkset(F);
 
 assert(sol1.problem == 0);

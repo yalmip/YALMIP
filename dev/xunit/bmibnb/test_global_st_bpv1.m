@@ -1,4 +1,7 @@
-function test_global_st_bpv1
+function tests = test_global_st_bpv1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_bpv1.gms
 % Created 17-Mar-2008 10:59:26 using YALMIP R20070810
 
@@ -26,6 +29,6 @@ F=[F,0<=x3<=10];
 F=[F,0<=x4<=10];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), 10, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-10) <= 1e-2) 

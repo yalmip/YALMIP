@@ -18,7 +18,7 @@ F = (kyp(A,B,P,blkdiag(C'*C,-t)) <= 0)
 
 [Fp,objp,free] = primalize(F,-obj);
 
-sol = solvesdp(Fp,objp,sdpsettings('removeequalities',1))
+sol = optimize(Fp,objp,sdpsettings('removeequalities',1))
 
 assert(sol.problem == 0)
-assert(abs(double(obj) - 3.38842085719774) <= 1e-5)
+assert(abs(value(obj) - 3.38842085719774) <= 1e-5)

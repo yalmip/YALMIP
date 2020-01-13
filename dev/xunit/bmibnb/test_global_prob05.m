@@ -1,4 +1,7 @@
-function test_global_prob05
+function tests = test_global_prob05
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from prob05.gms
 % Created 24-Jul-2007 13:49:10 using YALMIP R20070523
 
@@ -20,6 +23,6 @@ F=[F,0.001<=x1<=1];
 F=[F,0.001<=x2<=1];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),0.7418 , 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-0.7418) <= 1e-1)

@@ -30,7 +30,7 @@ constr = [...
 ];
 constr=[constr, lambda >= 0, b >=0, s>=0, v>=0, c>=0];
 % find the optimal eigenvalue
-sol = solvesdp(constr,obj,sdpsettings('solver','mosek,gpposy,fmincon-geometric'));
+sol = optimize(constr,obj,sdpsettings('solver','mosek,gpposy,fmincon-geometric'));
 obj
 assert(sol.problem == 0);
-assert(abs(double(obj) - 0.80406738656616) <= 1e-4);
+assert(abs(value(obj) - 0.80406738656616) <= 1e-4);

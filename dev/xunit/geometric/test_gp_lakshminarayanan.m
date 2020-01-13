@@ -158,16 +158,16 @@ obj = T;
 
 %%%%%  Solve the optimization problem 
 
-solvesdp(F,obj, sdpsettings('verbose',1,'solver','bnb','debug',1));
+optimize(F,obj, sdpsettings('verbose',1,'solver','bnb','debug',1));
 
 %%%%% Print the solutions 
 
 
 % Return values
-obj_val = double(obj);
-ti_val = double(ti);
-tj_val = double(tj);
-tk_val = double(tk);
+obj_val = value(obj);
+ti_val = value(ti);
+tj_val = value(tj);
+tk_val = value(tk);
 
 
 function [obj_val, ti_val, tj_val] = f2D_SemiOblique_PerPlane( alpha, beta, tau, Procs, Ni, Nj, Nk)
@@ -251,15 +251,15 @@ obj = T;
 
 %%%%%  Solve the optimization problem 
 
-solvesdp(F,obj, sdpsettings('verbose',1,'solver','bnb'));
+optimize(F,obj, sdpsettings('verbose',1,'solver','bnb'));
 
 %%%%% Print the solutions 
 
 
 % Return values
-obj_val = double(obj);
-ti_val = double(ti);
-tj_val = double(tj);
+obj_val = value(obj);
+ti_val = value(ti);
+tj_val = value(tj);
 
 
 function [obj_val, ti_val] = fStrip_MP(alpha, beta, tau, Procs, Ni, Nj, Nk)
@@ -337,16 +337,16 @@ obj = T;
 
 %%%%%  Solve the optimization problem 
 
-solvesdp(F,obj, sdpsettings('verbose',1,'solver','bnb'));
+optimize(F,obj, sdpsettings('verbose',1,'solver','bnb'));
 
 %%%%% Print the solutions 
 
-%fprintf('Objective : %g \n', double(obj));
-%fprintf('ti : %g \n', double(ti));
+%fprintf('Objective : %g \n', value(obj));
+%fprintf('ti : %g \n', value(ti));
 
 % Return values
-obj_val = double(obj);
-ti_val = double(ti);
+obj_val = value(obj);
+ti_val = value(ti);
 
 
 

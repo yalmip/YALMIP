@@ -5,14 +5,14 @@ function test1(dummy)
 
 sdpvar x y
 obj = abs(1+abs(x-5));
-sol = solvesdp([],obj)
+sol = optimize([],obj)
 
 assert(sol.problem == 0)
-assert(abs(double(obj) - 1) <= 1e-4);
+assert(abs(value(obj) - 1) <= 1e-4);
 
 sdpvar x y
 F = (abs(1+abs(x-5)) + abs(y)<=10) 
 obj = -x
-sol = solvesdp(F,obj)
-assert(abs(double(obj)--14) <= 1e-4);
+sol = optimize(F,obj)
+assert(abs(value(obj)--14) <= 1e-4);
 

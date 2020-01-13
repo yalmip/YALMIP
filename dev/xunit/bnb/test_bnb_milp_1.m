@@ -20,5 +20,5 @@ ops = sdpsettings('solver','bnb');
 obj = sum(bound);
 sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 6.168422746718130e+002) <= 1e-5);
+assert(abs(value(obj) - 6.168422746718130e+002) <= 1e-5);
 

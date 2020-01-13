@@ -28,6 +28,6 @@ HJI = [Vx*f + f'*Vx.' + h'*h, 1/gam*Vx*g;
        1/gam*g'*Vx.' -1]
    
 [sol,m,B,residuals] = solvesos( (sos(-HJI)),[],[],c);
-residual = norm(getbase(replace(-HJI-m{1}'*B{1}*m{1},c,double(c))),'inf')
+residual = norm(getbase(replace(-HJI-m{1}'*B{1}*m{1},c,value(c))),'inf')
 
 assert(residual < 1e-6);

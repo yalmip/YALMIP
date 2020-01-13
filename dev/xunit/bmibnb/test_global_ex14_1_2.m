@@ -1,4 +1,7 @@
-function ex14_1_2
+function tests = test_global_ex14_1_2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear')
 sdpvar x1 x2 x3 x4 x5 x6 objvar
@@ -17,9 +20,9 @@ F = F + ( (-9.615e-7*sqr(x2)) - 4.4975e-7*x2 - 0.193*sqr(x3) - 0.000410621754172
 F = F + (0.0001 <= [x1 x2 x3 x4 x5] <= 100);
 F = F + (0.0001*ones(1,5) <= [x1 x2 x3 x4 x5] <= 100);
 
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb'));
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double([objvar ]),0, 1e-2);
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+assert(sol.problem == 0)
+assert(value(objvar) <= 1e-2)
 
 function y = sqr(x)
 y = x*x;

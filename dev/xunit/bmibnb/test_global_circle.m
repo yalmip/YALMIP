@@ -1,4 +1,7 @@
-function test_global_circle
+function tests = test_global_circle
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from circle.gms
 % Created 17-Mar-2008 11:05:04 using YALMIP R20070810
 
@@ -25,6 +28,6 @@ F=[F,sqr(5.501896021-x1)+sqr(4.918207429-x2)-sqr(objvar)<=0];
 F=[F,0<=objvar];
 
 % Solve problem
-sol = solvesdp(F+(recover(depends(F))<=100),objvar,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.absgaptol',1e-3,'bmibnb.relgaptol',1e-3))
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objvar),4.5742, 1e-2);
+sol = optimize(F+(recover(depends(F))<=100),objvar,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.absgaptol',1e-3,'bmibnb.relgaptol',1e-3))
+assert(sol.problem==0)
+assert(abs(value(objvar)-4.5742) <= 1e-2)

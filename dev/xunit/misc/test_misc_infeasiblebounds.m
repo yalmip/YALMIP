@@ -7,10 +7,10 @@ sdpvar a x
 
 F = [ 0 <= x <= 1; a >= 0; a == -0.5 ];
 
-sol = solvesdp(F, x^3,sdpsettings('solver','bmibnb'))
+sol = optimize(F, x^3,sdpsettings('solver','bmibnb'))
 assert(sol.problem == 1);
 
-sol = solvesdp(F, x^3,sdpsettings('solver','bnb'))
+sol = optimize(F, x^3,sdpsettings('solver','bnb'))
 assert(sol.problem == 1);
 
 

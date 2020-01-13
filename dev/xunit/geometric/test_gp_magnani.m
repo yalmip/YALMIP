@@ -16,13 +16,13 @@ F=F+(y^2<=4);
 F = [F, x>=0, y>=0];
 sol = optimize(F,obj);
 assert(sol.problem == 0);
-assert(abs(double(obj)-1)<=1e-4);
-assert(all(abs(double([x y t]) - [1 1 1]) <= 1e-4));
+assert(abs(value(obj)-1)<=1e-4);
+assert(all(abs(value([x y t]) - [1 1 1]) <= 1e-4));
 
 sol = optimize(F,1/obj);
 assert(sol.problem == 0);
-assert(abs(double(obj)-32) <= 1e-3);
-assert(all(abs(double([x y t]) - [2 2 1]) <= 1e-4));
+assert(abs(value(obj)-32) <= 1e-3);
+assert(all(abs(value([x y t]) - [2 2 1]) <= 1e-4));
 
 function test2(dummy)
 
@@ -39,10 +39,10 @@ F=F+(y^2.5<=4);
 F = [F, x>=0];
 sol = optimize(F,obj);
 assert(sol.problem == 0);
-assert(abs(double(obj)-1)<=1e-4);
-assert(all(abs(double([x y t]) - [1 1 1]) <= 1e-4));
+assert(abs(value(obj)-1)<=1e-4);
+assert(all(abs(value([x y t]) - [1 1 1]) <= 1e-4));
 
-sol = solvesdp(F,1/obj);
+sol = optimize(F,1/obj);
 assert(sol.problem == 0);
-assert(abs(double(obj)-16) <= 1e-3);
-assert(all(abs(double([x y t]) - [1.74110112659225   1.74110112659225   1.00000000000000]) <=  1e-4));
+assert(abs(value(obj)-16) <= 1e-3);
+assert(all(abs(value([x y t]) - [1.74110112659225   1.74110112659225   1.00000000000000]) <=  1e-4));

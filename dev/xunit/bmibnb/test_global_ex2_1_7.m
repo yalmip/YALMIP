@@ -1,11 +1,14 @@
-function test_global_ex2_1_7
+function tests = test_global_ex2_1_7
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from ex2_1_7.gms
 % Created 28-Jul-2007 18:43:40 using YALMIP R20070725
 
-% Setup a clean YALMIP environment 
-yalmip('clear') 
+% Setup a clean YALMIP environment
+yalmip('clear')
 
-% Define all variables 
+% Define all variables
 x1 = sdpvar(1);
 x2 = sdpvar(1);
 x3 = sdpvar(1);
@@ -28,7 +31,7 @@ x19 = sdpvar(1);
 x20 = sdpvar(1);
 objvar = sdpvar(1);
 
-% Define constraints 
+% Define constraints
 F = ([]);
 F=[F,0.5*(sqr(x1-2)+2*sqr(x2-2)+3*sqr(x3-2)+4*sqr(x4-2)+5*sqr(x5-2)+6*sqr(x6-2)+7*sqr(x7-2)+8*sqr(x8-2)+9*sqr(x9-2)+10*sqr(x10-2)+11*sqr(x11-2)+12*sqr(x12-2)+13*sqr(x13-2)+14*sqr(x14-2)+15*sqr(x15-2)+16*sqr(x16-2)+17*sqr(x17-2)+18*sqr(x18-2)+19*sqr(x19-2)+20*sqr(x20-2))+objvar==0];
 F=[F,-3*x1+7*x2-5*x4+x5+x6+2*x8-x9-x10-9*x11+3*x12+5*x13+x16+7*x17-7*x18-4*x19-6*x20<=-5];
@@ -63,7 +66,7 @@ F=[F,0<=x19];
 F=[F,0<=x20];
 
 % Solve problem
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objvar),-4150.4, 40);
+assert(sol.problem==0)
+assert(abs(value(objvar)--4150.4) <= 40)

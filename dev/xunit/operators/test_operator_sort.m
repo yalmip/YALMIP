@@ -9,17 +9,17 @@ z = sdpvar(4,1);
 
 w = randn(4,1);
 
-sol = solvesdp((-100 <= x <= 100)+(z == y),norm(x-w,1));
+sol = optimize((-100 <= x <= 100)+(z == y),norm(x-w,1));
 
 assert(sol.problem == 0);
-assert(norm(sort(w)-double(z)) <= 1e-4);
+assert(norm(sort(w)-value(z)) <= 1e-4);
 
 A = ones(20,5);
 b = (1:20)';
 x = sdpvar(5,1);
 e = b-A*x;
 F = (mean(x) == median(x)) + (-100 <= x <= 100);
-sol = solvesdp(F,norm(e,1));
+sol = optimize(F,norm(e,1));
 assert(sol.problem == 0);
-assert(abs(mean(double(x))-median(double(x)))<1e-4);
-assert(abs(norm(double(e),1)-100)<1e-4);
+assert(abs(mean(value(x))-median(value(x)))<1e-4);
+assert(abs(norm(value(e),1)-100)<1e-4);

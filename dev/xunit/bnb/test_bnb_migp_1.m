@@ -39,5 +39,5 @@ ops = sdpsettings('solver','bnb','verbose',1);
 sol = optimize(F+(integer(x)),D,ops);
 
 assert(sol.problem == 0);
-assert(all(abs(double(x) - [ 2     3     3     3     2     3     3]') <= 1e-3));
-assert(abs(double(D)-(8+1/3)) <= 1e-3);
+assert(all(abs(value(x) - [ 2     3     3     3     2     3     3]') <= 1e-3));
+assert(abs(value(D)-(8+1/3)) <= 1e-3);

@@ -13,7 +13,7 @@ F = [F, t>=0];
 sol = optimize(F,obj);
 
 assert(sol.problem == 0);
-assert(all(abs(double(t)-[2 0.5   1.4142]) <= 1e-3));
+assert(all(abs(value(t)-[2 0.5   1.4142]) <= 1e-3));
 
 function test3(dummy)
 sdpvar h w d
@@ -27,8 +27,8 @@ F = [F, [h w] >=0];
 sol = optimize(F,-(h*w*d))
 
 assert(sol.problem == 0);
-assert(abs(double(h*w*d) - 0.19245008957514) <= 1e-5);
-assert(all(abs(double([h w d]) - [ 0.28867519677435   0.57735039354827   1.15470006291485]) <= 1e-2));
+assert(abs(value(h*w*d) - 0.19245008957514) <= 1e-5);
+assert(all(abs(value([h w d]) - [ 0.28867519677435   0.57735039354827   1.15470006291485]) <= 1e-2));
 
 function test4(dummy)
 
@@ -42,8 +42,8 @@ F = [F, [t1 t2 t3] >= 0];
 sol = optimize(F,obj);
 
 assert(sol.problem == 0);
-assert(all(abs(double([t1 t2 t3]) - [ 1.10978618937192   1.10978618937162   1.57815225707513]) <=  1e-5));
-assert(abs(double(obj) - 1.344555694227871e+002) <= 1e-3);
+assert(all(abs(value([t1 t2 t3]) - [ 1.10978618937192   1.10978618937162   1.57815225707513]) <=  1e-5));
+assert(abs(value(obj) - 1.344555694227871e+002) <= 1e-3);
 
 function test5(dummy)
 
@@ -59,8 +59,8 @@ F = [F, [t1 t2 t3] >= 0];
 sol = optimize(F,obj);
 
 assert(sol.problem == 0);
-assert(abs(double(obj) - 2.359439050512407e+002) <= 1e-3);
-assert(all(abs(double([t1 t2 t3]) - [0.76467168678701   1.23304260692267   4.24155022707061]) <=  1e-3));
+assert(abs(value(obj) - 2.359439050512407e+002) <= 1e-3);
+assert(all(abs(value([t1 t2 t3]) - [0.76467168678701   1.23304260692267   4.24155022707061]) <=  1e-3));
 
 function test6(dummy)
 
@@ -70,7 +70,7 @@ obj = (1+q)^2.5,
 sol = optimize(F,obj,sdpsettings('debug',1,'solver','fmincon-geometric'));
 
 assert(sol.problem == 0);
-assert(abs(double(obj) - 1) <= 1e-5);
+assert(abs(value(obj) - 1) <= 1e-5);
 
 function test7(dummy)
 sdpvar x y;

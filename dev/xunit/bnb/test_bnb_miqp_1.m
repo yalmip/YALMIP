@@ -20,5 +20,5 @@ ops = sdpsettings('solver','bnb');
 obj = residuals'*residuals;
 sol = optimize((residuals <= 50),obj,ops);
 assert(sol.problem == 0);
-assert(abs(double(obj) - 1.605058709613011e+003) <= 1e-5);
+assert(abs(value(obj) - 1.605058709613011e+003) <= 1e-5);
 

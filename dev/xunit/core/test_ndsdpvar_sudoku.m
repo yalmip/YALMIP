@@ -31,11 +31,11 @@ for i = 1:p^2
     end
 end
 
-sol = solvesdp(F);
+sol = optimize(F);
 
 Z = 0;
 for i = 1:p^2
-      Z = Z  + i*double(A(:,:,i));
+      Z = Z  + i*value(A(:,:,i));
 end
 assert(sol.problem == 0);
 assert(norm(sort(Z(:,1)) - (1:p^2)') <= 1e-4);

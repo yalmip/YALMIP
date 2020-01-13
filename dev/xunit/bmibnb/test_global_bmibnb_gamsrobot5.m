@@ -1,4 +1,7 @@
-function gamsrobot5
+function tests = test_global_bmibnb_gamsrobot5
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 x1 = sdpvar(1,1);
 x2 = sdpvar(1,1);
@@ -20,6 +23,6 @@ F = F + (x5^2 + x6^2 == 1);
 F = F + (x7^2 + x8^2 == 1);
 obj = sum(x);
 
-sol = solvesdp(F,obj,sdpsettings('solver','bmibnb'))
+sol = optimize(F,obj,sdpsettings('solver','bmibnb'))
 
-mbg_asserttolequal(double(obj),-3.5295, 1e-4);
+assert(abs(value(obj)--3.5295) <= 1e-4)

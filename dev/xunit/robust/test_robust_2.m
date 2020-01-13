@@ -25,7 +25,7 @@ F = F + (-0.1 <= alpha <= 0.1);
 
 sol = solverobust(F,-trace(Y),[],alpha)
 
-K = double(L)*inv(double(Y));
+K = value(L)*inv(value(Y));
 
 assert(sol.problem == 0)
 assert(norm(K -   [-1.3674   -2.9158   -2.6670]) <= 1e-2)
@@ -48,6 +48,6 @@ F = F + (-0.1 <= alpha <= 0.1);
 sol = solverobust(F,-trace(Y),[],alpha)
 
 assert(sol.problem == 0)
-Y0 = double(Y0);
-Y1 = double(Y1);
+Y0 = value(Y0);
+Y1 = value(Y1);
 assert(abs(max([trace(Y0-0.1*trace(Y1)) trace(Y0+0.1*trace(Y1))])-2.3319) <= 1e-3)

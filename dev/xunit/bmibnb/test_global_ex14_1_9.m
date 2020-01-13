@@ -1,4 +1,7 @@
-function ex14_1_9
+function tests = test_global_ex14_1_9
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Setup a clean YALMIP environment 
 yalmip('clear') 
@@ -17,6 +20,6 @@ F=[F,(-4510067.11409396*x1*exp(-7548.11926028431/x1))-0.00335570469798658*x1+202
 F=[F,100<=x1<=1000];
 
 
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1));
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objective), 0, 1e-3);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-0) <= 1e-3)

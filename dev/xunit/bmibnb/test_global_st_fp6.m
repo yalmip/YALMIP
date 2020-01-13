@@ -1,4 +1,7 @@
-function test_global_st_fp6
+function tests = test_global_st_fp6
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_fp6.gms
 % Created 24-Jul-2007 14:16:08 using YALMIP R20070523
 
@@ -39,6 +42,6 @@ F=[F,0<=x9<=1];
 F=[F,0<=x10<=1];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),  -39, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--39) <= 1e-2) 

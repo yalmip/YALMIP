@@ -1,4 +1,7 @@
-function test_mpt_paramcost_1
+function tests = test_mpt_paramcost_1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 B = [-1  1  1  1  0  0  0  0  0  0;
       1  0  0  0  1 -1  1  0  0  0;
@@ -17,8 +20,8 @@ F = (0 <= t <= 1) + (B*x == b) + (0 <= x <= 10)
 [SOL, DIAGNOSTIC,Z,HPWF,ZPWF] = solvemp(F,(t*c+(1-t)*d)'*x,sdpsettings('debug',1),t)
 
 assign(t,0.38);
-cost = double(HPWF);
+cost = value(HPWF);
 
-mbg_asserttolequal(cost,43.8,0.0001);
+assert(abs(cost-43.8) <= 1e-3)
 
 

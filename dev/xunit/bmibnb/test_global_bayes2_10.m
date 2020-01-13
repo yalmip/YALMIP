@@ -1,4 +1,7 @@
-function test_global_bayes2_10
+function tests = test_global_bayes2_10
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from bayes2_10.gms
 % Created 02-Aug-2007 09:51:12 using YALMIP R20070725
 
@@ -263,5 +266,5 @@ F=[F,0<=x85<=1000];
 F=[F,0<=x86<=1000];
 
 % Solve problem
-sol.problem=1;% = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem == 1)
+sol.problem=1;% = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem == 1)

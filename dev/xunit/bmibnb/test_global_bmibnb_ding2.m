@@ -1,5 +1,8 @@
-function test_global_bmibnb_ding2
-%J Glob Optim (2007) 38:421ÿ436
+function tests = test_global_bmibnb_ding2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
+%J Glob Optim (2007) 38:421ï¿½436
 %DOI 10.1007/s10898-006-9091-3
 %ORIGINAL ARTICLE
 %Accelerating convergence of cutting plane algorithms
@@ -17,7 +20,7 @@ b1 = [10;10;10;10];
 b2 = b1;
 obj = x'*C*y;
 F = [x>=0,y>=0,A1*x==b1,A2*y==b2];
-sol = solvesdp(F,obj,sdpsettings('solver','bmibnb','bmibnb.upper','none'))
+sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.upper','none'))
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(obj),-4, 1e-4);
+assert(sol.problem==0)
+assert(abs(value(obj)--4) <= 1e-4)

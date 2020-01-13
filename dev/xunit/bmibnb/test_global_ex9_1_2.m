@@ -1,4 +1,7 @@
-function test_global_ex9_1_2
+function tests = test_global_ex9_1_2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from ex9_1_2.gms
 % Created 11-Mar-2008 15:58:16 using YALMIP R20070810
 
@@ -43,6 +46,6 @@ F=[F,0<=x10];
 F=[F,0<=x11];
 
 % Solve problem
-sol = solvesdp(F+(recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), -16, 1e-2);
+sol = optimize(F+(recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--16) <= 1e-2)

@@ -12,7 +12,7 @@ P2 = polytope((-0.5 <= x-x2 <= 0.5));
 P3 = polytope((-0.5 <= x-x3 <= 0.5));
 P4 = polytope((-0.5 <= x-x4 <= 0.5));
 F = ismember(x,[P1 P2 P3 P4]);
-sol = solvesdp(F,-sum(x))
+sol = optimize(F,-sum(x))
 
 assert(sol.problem == 0)
-assert(norm(double(x)-[2.5;2.5]) <= 1e-4);
+assert(norm(value(x)-[2.5;2.5]) <= 1e-4);

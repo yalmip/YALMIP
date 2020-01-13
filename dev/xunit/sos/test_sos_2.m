@@ -26,13 +26,13 @@ end
 
 ops.sos.model = 1;
 solvesos(F,obj,ops,pv);
-obj1 = double(obj);
+obj1 = value(obj);
 p1s = checkset(F(find(is(F,'sos'))));
 p1e = checkset(F(find(~is(F,'sos'))));
 
 ops.sos.model = 2;
 solvesos(F,obj,ops,pv);
-obj2 = double(obj);
+obj2 = value(obj);
 p2s = checkset(F(find(is(F,'sos'))));
 p2e = checkset(F(find(~is(F,'sos'))));
 

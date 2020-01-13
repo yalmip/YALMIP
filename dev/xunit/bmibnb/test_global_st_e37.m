@@ -1,4 +1,7 @@
-function test_global_st_e37
+function tests = test_global_st_e37
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_e37.gms
 % Created 06-Aug-2007 09:45:53 using YALMIP R20070725
 
@@ -23,5 +26,5 @@ F=[F,1==x4];
 F=[F,1==x5];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.maxiter',1));
-mbg_asserttrue(sol.problem == 3)
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.maxiter',1));
+assert(sol.problem == 3)

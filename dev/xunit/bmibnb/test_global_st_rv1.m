@@ -1,4 +1,7 @@
-function test_global_st_rv1
+function tests = test_global_st_rv1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_rv1.gms
 % Created 06-Aug-2007 09:18:22 using YALMIP R20070725
 
@@ -39,6 +42,6 @@ F=[F,0<=x9];
 F=[F,0<=x10];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), -59.9439, 1e-1);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--59.9439) <= 1e-1) 

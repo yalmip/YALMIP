@@ -7,4 +7,4 @@ y = sdpvar(1);
 z = sdpvar(3,1);
 
 optimize([z>=1, rcone(z,x,y)],x+y);
-assert(abs(double(x*y)-1.5) <= 1e-4);
+assert(abs(value(x*y)-1.5) <= 1e-4);

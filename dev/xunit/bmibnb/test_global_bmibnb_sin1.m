@@ -1,8 +1,11 @@
-function sin1
+function tests = test_global_bmibnb_sin1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 sdpvar x
 obj = sin(10*x)+abs(x)
-sol = solvesdp((-pi <= x <= pi),obj,sdpsettings('solver','bmibnb'));
+sol = optimize((-pi <= x <= pi),obj,sdpsettings('solver','bmibnb'));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(obj),-0.84792, 1e-4);
+assert(sol.problem==0)
+assert(abs(value(obj)--0.84792) <= 1e-4)

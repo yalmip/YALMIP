@@ -11,7 +11,7 @@ y = A*x+e;
 xhat = sdpvar(6,1);
 sdpvar u v
 F = [-10 <= xhat <= 10, cone(y-A*xhat,u), cone(exp(0.1*xhat.^2),v), exp(xhat) <= exp(4)];
-sol = solvesdp(F,u + v,sdpsettings('solver','bmibnb'));
+sol = optimize(F,u + v,sdpsettings('solver','bmibnb'));
 
 assert(sol.problem == 0);
-assert(abs(double(u+v)-5.343096e+01) <= 0.5);
+assert(abs(value(u+v)-5.343096e+01) <= 0.5);

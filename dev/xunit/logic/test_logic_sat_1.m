@@ -5,7 +5,7 @@ function test1(dummy)
 
 binvar aa ba ca da ea fa % NOTE a b c ... generates error when run as function !
 F = (true((aa & ba & ca) | (da & ea & fa)));
-sol = solvesdp(F);
+sol = optimize(F);
 assert(sol.problem == 0);
-assert( all(double([aa ba ca])== [1 1 1])  | all(double([da ea fa])== [1 1 1]) )
+assert( all(value([aa ba ca])== [1 1 1])  | all(value([da ea fa])== [1 1 1]) )
 

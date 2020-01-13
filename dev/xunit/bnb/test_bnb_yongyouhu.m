@@ -54,5 +54,5 @@ obj=cc*X;
 sol = optimize(F,obj)
 
 assert(sol.problem==0);
-assert(abs(double(obj) - 3100) <= 1e-5);
+assert(abs(value(obj) - 3100) <= 1e-5);
 

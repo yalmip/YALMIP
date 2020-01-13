@@ -36,10 +36,10 @@ try
 catch
 end
 assign(x,3);
-assert(norm(double(Y^x) - Y^3) <= 1e-5)
+assert(norm(value(Y^x) - Y^3) <= 1e-5)
 assign(x,1);
-assert(norm(double(Y^-1) - Y^-1) <= 1e-5)
+assert(norm(value(Y^-1) - Y^-1) <= 1e-5)
 
 Y = [1 2;3 4];
 assign(x,2);
-assert(norm(double(Y^x) - Y^2) <= 1e-5)
+assert(norm(value(Y^x) - Y^2) <= 1e-5)

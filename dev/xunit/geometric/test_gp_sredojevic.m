@@ -9,8 +9,8 @@ obj = x+y/x;
 sol = optimize(css,obj)
 
 assert(sol.problem == 0);
-assert(abs(double(obj)-2.04124145231932)<=1e-4);
-assert(all(abs(double([x y])-[ 1.22474487139159   1.00000000000000])<=1e-4));
+assert(abs(value(obj)-2.04124145231932)<=1e-4);
+assert(all(abs(value([x y])-[ 1.22474487139159   1.00000000000000])<=1e-4));
 
 function test2(dummy)
 sdpvar x y z
@@ -20,6 +20,6 @@ obj = x+y/x;
 sol = optimize(css,obj)
 
 assert(sol.problem == 0);
-assert(abs(double(obj)-2.04124145231932)<=1e-4);
-assert(all(abs(double([x y])-[ 1.22474487139159   1.00000000000000])<=1e-4));
+assert(abs(value(obj)-2.04124145231932)<=1e-4);
+assert(all(abs(value([x y])-[ 1.22474487139159   1.00000000000000])<=1e-4));
 

@@ -1,4 +1,7 @@
-function test_global_sample
+function tests = test_global_sample
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from sample.gms
 % Created 28-Jul-2007 18:39:24 using YALMIP R20070725
 
@@ -24,7 +27,7 @@ F=[F,100<=x3<=200000];
 F=[F,100<=x4<=100000];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objective),726.6783, 1e-2);
+assert(sol.problem==0)
+assert(abs(value(objective)-726.6783) <= 1e-2) 

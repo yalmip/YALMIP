@@ -1,4 +1,7 @@
-function test_global_mathopt2
+function tests = test_global_mathopt2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from mathopt2.gms
 % Created 24-Jul-2007 13:39:10 using YALMIP R20070523
 
@@ -20,6 +23,6 @@ F=[F,x1+x2<=1];
 F=[F,-x1+x2<=2];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),0 , 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-0) <= 1e-2)

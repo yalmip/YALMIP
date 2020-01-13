@@ -1,4 +1,7 @@
-function ex14_1_5
+function tests = test_global_ex14_1_5
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear')
 sdpvar x1 x2 x3 x4 x5 x6 objvar; 
@@ -13,7 +16,7 @@ F = F + ( x1*x2*x3*x4*x5 - x6 <= 1);
 F = F + ( - x1*x2*x3*x4*x5 - x6 <= -1);
 F = F + ( -2 <= [x1 x2 x3 x4 x5 ] <= 2);
 
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon'));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon'));
 
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double([x1 x2 x3  x4 x5 ]), [1 1 1 1 1], 1e-5);
+assert(sol.problem == 0)
+assert(norm(value([x1 x2 x3  x4 x5 ])-[1 1 1 1 1]) <= 1e-5)

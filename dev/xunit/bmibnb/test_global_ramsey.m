@@ -1,11 +1,14 @@
-function test_global_ramsey
+function tests = test_global_ramsey
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from ramsey.gms
 % Created 22-Aug-2007 09:42:37 using YALMIP R20070810
 
-% Setup a clean YALMIP environment 
-yalmip('clear') 
+% Setup a clean YALMIP environment
+yalmip('clear')
 
-% Define all variables 
+% Define all variables
 x1 = sdpvar(1);
 x2 = sdpvar(1);
 x3 = sdpvar(1);
@@ -40,10 +43,10 @@ x31 = sdpvar(1);
 x32 = sdpvar(1);
 x33 = sdpvar(1);
 
-% Define objective function 
+% Define objective function
 objective = -(0.95*log(x12)+0.9025*log(x13)+0.857375*log(x14)+0.81450625*log(x15)+0.7737809375*log(x16)+0.735091890625*log(x17)+0.69833729609375*log(x18)+0.663420431289062*log(x19)+0.630249409724609*log(x20)+0.598736939238379*log(x21)+11.3760018455292*log(x22))-0-(0);
 
-% Define constraints 
+% Define constraints
 F = ([]);
 F=[F,0.759835685651593*x1^0.25-x12-x23==0];
 F=[F,0.77686866556676*x2^0.25-x13-x24==0];
@@ -102,6 +105,6 @@ F=[F,0.05<=x32<=0.17589];
 F=[F,0.05<=x33<=0.20228];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),-2.487467848213407 , 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--2.487467848213407) <= 1e-2)

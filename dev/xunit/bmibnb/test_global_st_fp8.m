@@ -1,4 +1,7 @@
-function test_global_st_fp8
+function tests = test_global_st_fp8
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_fp8.gms
 % Created 06-Aug-2007 09:42:05 using YALMIP R20070725
 
@@ -82,6 +85,6 @@ F=[F,0<=x23];
 F=[F,0<=x24];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), 15639, 10);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)- 15639) <= 10)

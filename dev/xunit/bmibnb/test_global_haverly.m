@@ -1,4 +1,7 @@
-function test_global_haverly
+function tests = test_global_haverly
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from haverly.gms
 % Created 17-Mar-2008 16:35:51 using YALMIP R20070810
 
@@ -47,6 +50,6 @@ F=[F,0<=x11];
 F=[F,0<=x12];
 
 % Solve problem
-sol = solvesdp([F,recover(depends(F))<=1000],objective,sdpsettings('solver','bmibnb','allownonconvex',1))
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), -133.333, 1e-2);
+sol = optimize([F,recover(depends(F))<=1000],objective,sdpsettings('solver','bmibnb','allownonconvex',1))
+assert(sol.problem==0)
+assert(abs(value(objective)--133.333) <= 1e-2) 

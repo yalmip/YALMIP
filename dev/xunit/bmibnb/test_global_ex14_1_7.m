@@ -1,4 +1,7 @@
-function ex14_1_6
+function tests = test_global_ex14_1_7
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear')
 
@@ -45,4 +48,4 @@ F = F + ( x1*x3 - x2*x4 == 0);
 
 F = F + (0 <= [x1 x2 x3 x4 x5 x6 x7 x8 x9] <= 10);
 
-solvesdp(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','none','allownon',1,'bmibnb.maxiter',10))
+optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','none','allownon',1,'bmibnb.maxiter',10))

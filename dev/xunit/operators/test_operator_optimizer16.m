@@ -13,7 +13,7 @@ s1 = P{2};
 a = 2;
 p = x^4+(x-a)^2 + a^2;
 solvesos(sos(p-t),-t)
-s2 = double(t);
+s2 = value(t);
 assert(abs(s1-s2) <= 1e-4);
 
 sdpvar x
