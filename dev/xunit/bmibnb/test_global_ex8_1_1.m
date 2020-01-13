@@ -22,4 +22,5 @@ F=[F,-1<=x2<=1];
 
 % Solve problem
 sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-assert(false)
+assert(sol. problem == 0)
+assert(abs(value(objective)--2.0218) <= 1e-2)
