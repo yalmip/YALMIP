@@ -22,7 +22,7 @@ if p.options.bmibnb.roottight & p.feasible
                 p_cut.c(p.bilinears(i,1)) = 0;
             end
         end
-        if size(p_cut.Q,1)<=1e3 & all(eig(p_cut.Q)>=0)
+        if nnz(p_cut.Q)>0 & size(p_cut.Q,1)<=1e3 & all(eig(p_cut.Q)>=0)
             [u,s,v] = svd(full(p_cut.Q));
             % f + c'*x + x'*Q*x <= U
             % c'*x + x'*R*R*x <= U - f - c'*x
