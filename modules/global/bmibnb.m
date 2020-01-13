@@ -182,6 +182,9 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
     p = updatemonomialbounds(p);    
     p = update_eval_bounds(p);    
     [upper,p.x0,info_text,numglobals,timing] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing);
+    if ~isinf(upper)
+        p = updateboundsfromupper(p,upper);
+    end
     p.counter.uppersolved = p.counter.uppersolved + 1;
     if numglobals > 0
         x_min = p.x0;
