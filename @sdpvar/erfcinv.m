@@ -16,7 +16,8 @@ switch class(varargin{1})
         operator = struct('convexity','none','monotonicity','decreasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
         operator.inverse = @(x)(erfc(x));
- 
+        operator.derivative = @(x)-1./(exp(-((erfcinv(x))).^2)*2/sqrt(pi))
+        
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
