@@ -147,10 +147,15 @@ while go_on
             X = unique(X','rows')';
             for k = 1:size(X,2)
                 [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);
-            end
-            p.upper = upper;
+            end            
             timing.domainreduce = timing.domainreduce + toc(tstart);
             propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
+            if upper < p.upper 
+                p.upper = upper;
+                p = updateboundsfromupper(p,upper);
+            else
+                p.upper = upper;
+            end
         else
             LU=[p.lb p.ub];
             [volBefore,openVariables] = branchVolume(p);
@@ -267,6 +272,9 @@ while go_on
                                     p.counter.uppersolved = p.counter.uppersolved + 1;
                                 end
                             end
+                        end
+                        if upper < p.upper                           
+                            p = updateboundsfromupper(p,upper);
                         end
                     end
                 else
