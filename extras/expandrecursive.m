@@ -100,7 +100,7 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
                     method = properties.model;
                 end
             elseif failure
-                cause = ['Expected ' 'goal_vexity' ' function in '  where ' at level ' num2str(level)];
+                cause = ['Expected ' goal_vexity ' function in '  where ' at level ' num2str(level)];
             end
         end
     else
