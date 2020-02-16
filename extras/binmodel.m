@@ -284,4 +284,4 @@ end
 % The internal function merges the original constraints into Cut
 % remove them completely, and then add the original noncomplicating again
 Cut = Cut - F;
-Fnew = [Fnew,Cut];
+Fnew = [Fnew:'Linearized',Cut:'Cuts'];
