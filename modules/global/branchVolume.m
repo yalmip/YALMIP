@@ -20,7 +20,7 @@ else
             % This has been propagated to infeasibility
             V = 0;
         else
-            V = geomean(d);
+            V = (prod(d))^(1/length(d));
         end
     end        
 end
