@@ -8,7 +8,7 @@ if nargin == 1
         % This is infeasible!
         V = 0;
     else
-        V = geomean(d);
+        V = (prod(d))^(1/length(d));
     end
 else
     if ~p.feasible
