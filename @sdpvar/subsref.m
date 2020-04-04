@@ -205,9 +205,44 @@ else
     
     if length(ind1) > 1
         try
-            Z = X.basis.';
-            Z = Z(:,ind1);
-            Z = Z.';
+            % row-based subsref for sparse objects can be very slow and
+            % take a lot of memory, transposing a big sparse array as in
+            %   Z = X.basis.';
+            %   Z = Z(:,ind1);
+            %   Z = Z.';
+            % can also be quite slow for very large matrices, so we use
+            % some custom code
+            [ix,jx,sx] = find(X.basis);
+            if length(ix) == length(unique(ix))
+                % We never have two elements on the same row of X.basis
+                [isNnz,loc] = ismember(ind1(:),ix);
+                sel = loc(isNnz);
+                ix = find(isNnz);
+                jx = jx(sel);
+                sx = sx(sel);
+                Z = sparse(ix,jx,sx,numel(ind1),mx);
+            else
+                % We can have seveal elements on a given row of X.basis
+                if numel(ind1) == length(unique(ind1))
+                    % Every row of X.basis is selected at most once
+                    [keep,loc] = ismember(ix,ind1(:));
+                    ix = loc(keep);
+                    jx = jx(keep);
+                    sx = sx(keep);
+                    Z = sparse(ix,jx,sx,numel(ind1),mx);
+                else
+                    % Complicated case, we use more generica code
+                    Z = sparse(1:numel(ind1),ind1,1,numel(ind1),size(X,1))*X.basis;
+                end
+            end
+            
+            if false
+                % For checking purpose
+                Z0 = X.basis.';
+                Z0 = Z0(:,ind1);
+                Z0 = Z0.';
+                assert(isequal(Z, Z0));
+            end
         catch
             Z = X.basis(ind1,:);    
         end
