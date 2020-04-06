@@ -10,6 +10,7 @@ sol = solverobust(F,-x,[],[w;t1;t2]);
 assert(abs(value(x) - 1/2) <= 1e-5);
 assert(sol.problem == 0);
 
+function test2(dummy)
 sdpvar x w t
 F = (x+sum(w) <= 10)
 W = (-1/2 <= w <= 1/2)

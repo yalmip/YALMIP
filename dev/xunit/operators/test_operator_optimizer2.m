@@ -13,6 +13,7 @@ P = optimizer([-1 <= y <= 1,x <= 10+z*x],x^2,[],[y;z],x)
 
 assert(err == 0);
 
+function test2(dummy)
 yalmip('clear')
 sdpvar x
 sdpvar y

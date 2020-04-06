@@ -14,6 +14,7 @@ sol = optimize((-100 <= x <= 100)+(z == y),norm(x-w,1));
 assert(sol.problem == 0);
 assert(norm(sort(w)-value(z)) <= 1e-4);
 
+function test2(dummy)
 A = ones(20,5);
 b = (1:20)';
 x = sdpvar(5,1);

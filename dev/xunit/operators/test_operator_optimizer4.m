@@ -8,6 +8,7 @@ P = optimizer([x <= u,y <= z], -x-y,[],[u;z],[x;y]);
 sol = optimize([],(P{[u;z]}-[7;2])'*(P{[u;z]}-[7;2]));
 assert(sol.problem == 0)
 
+function test2(dummy
 yalmip('clear')
 sdpvar x y u z 
 P = optimizer([x <= u,y <= z], -x-y,[],[u;z],[x;y]);

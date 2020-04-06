@@ -22,6 +22,7 @@ P0 = M{{A0,Q0}};
 optimize([A0'*P+P*A0 <= -eye(3), P>=0],trace(Q0*P));
 assert(abs(trace(Q0*P0)-trace(Q0*value(P))) <= 1e-3)
 
+function test2(dummy)
 % Test a case where an SDP constraint boils down to a semidefinite constant
 sdpvar x y
 P = optimizer([[y*x y;y 1] >=0, [x 1;1 2]>=0],x,sdpsettings('solver','+mosek'),y,x);

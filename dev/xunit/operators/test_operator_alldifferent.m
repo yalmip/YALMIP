@@ -9,6 +9,7 @@ sol = optimize((1<=x<=n) + (alldifferent(x)),sum(x))
 assert(sol.problem == 0)
 assert(norm(sort(value(x))-(1:n)') <= 1e-4);
 
+function test2(dummy)
 x = intvar(1,4);
 F = (1 <= x <= 4) + (alldifferent(x))
 F = F + (0.5 <= x(4) <= 1.5)

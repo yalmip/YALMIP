@@ -42,6 +42,7 @@ H = P{[a == 5, b == 5]};
 sol = H{[c == 6]}
 assert(norm(sol-[4+1/3 5/3]) <= 1e-3);
 
+function test2(dummy)
 sdpvar x a b c y
 P = optimizer([0 <= [x y] <= 10, x + y <= c],(x-b*a)^2+5*(y-b)^2,ops,{a,c,b},[y x]);
 sol = P{{4,5,6}}
@@ -50,6 +51,7 @@ H = P{{[],5,[]}};
 [sol,infeas] = H{{4,6}}
 assert(norm(sol-[1.8333 3.1667]) <= 1e-3);
 
+function test3(dummy)
 sdpvar x a b c y
 P = optimizer([0 <= [x y] <= 10, x + y <= c],(x-b*a)^2+c*(y-b)^2,ops,{a,c,b},[y x]);
 sol = P{{4,5,6}}

@@ -10,6 +10,7 @@ Z = reshape(magic(4),2,4,2);
 U = P{Z};
 assert(norm(Z(:)-U(:))<1e-7);
 
+function test2(dummy)
 % Test nD parameter in cells
 X = sdpvar(2,4,2);
 Y1 = sdpvar(2,4,2);
@@ -19,6 +20,7 @@ Z = reshape(magic(4),2,4,2);
 U = P{{Z,Z}};
 assert(norm(Z(:)-U(:))<1e-8);
 
+function test3(dummy)
 % Test nD outputs in cells
 X = sdpvar(2,4,2);
 Y1 = sdpvar(2,4,2);

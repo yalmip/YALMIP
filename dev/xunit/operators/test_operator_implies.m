@@ -11,19 +11,29 @@ assert(sol.problem == 0)
 assert(abs(value(x)-1) <= 1e-4);
 assert(value(u)>4.999);
 
+function test2(dummy)
+
+% Binary variable implies LP constriants
+sdpvar y u
+binvar x
 sol = optimize([-10<=u<=10,-6 <= y <= 6,implies(x,[u>=3+2*x, y >= u])],-x);
 assert(sol.problem == 0)
 assert(abs(value(x)-1) <= 1e-4);
 assert(value(u)>4.999);
 assert(value(y-u)>-0.0001);
 
+function test3(dummy)
+
+% Binary variable implies LP constriants
+sdpvar y u
+binvar x
 sol = optimize([-10<=u<=10,-4 <= y <= 4,implies(x,[u>=3+2*x, y >= u])],-x);
 assert(sol.problem == 0)
 assert(abs(value(x)-0) <= 1e-4);
 assert(value(u)>=-10);
 assert(value(y)>=-4);
 
-
+function test4(dummy)
 binvar x
 sdpvar u y
 sol = optimize([-10<=u<=10,-4 <= y <= 4,implies(x,[u==3+2*x])],-x);
@@ -31,6 +41,7 @@ assert(sol.problem == 0)
 assert(abs(value(x)-1) <= 1e-4);
 assert(abs(value(u)-5) <= 1e-4);
 
+function test5(dummy)
 binvar x
 sdpvar u y
 sol = optimize([-10<=u<=10,-4 <= y <= 4,implies(x,[u==3+2*x, y >= 2])],-x);
@@ -39,6 +50,7 @@ assert(abs(value(x)-1) <= 1e-4);
 assert(abs(value(u)-5) <= 1e-4);
 assert(value(y)>=2);
 
+function test6(dummy)
 binvar x
 sdpvar u y
 sol = optimize([-10<=u<=10,-4 <= y <= 4,implies(1-x, u==0.3),implies(x,[u==3+2*x, y >= 6])],-x);
@@ -46,24 +58,29 @@ assert(sol.problem == 0)
 assert(abs(value(x)-0) <= 1e-4);
 assert(abs(value(u)-0.3) <= 1e-4);
 
-
+function test7(dummy)
 sdpvar x u
 sol = optimize([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x),implies(x<=0,u==-2*x)],x);
 assert(sol.problem == 0)
 assert(abs(value(x)--1) <= 1e-4);
 assert(abs(value(u)-2) <= 1e-4);
 
-
+function test8(dummy)
+sdpvar x u
 sol = optimize([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x),implies(x<=0,u==-2*x)],-x);
 assert(sol.problem == 0)
 assert(abs(value(x)-1) <= 1e-4);
 assert(abs(value(u)--1) <= 1e-4);
 
+function test9(dummy)
+sdpvar x u
 sol = optimize([-.5<=u<=.5,-1<=x<=1,implies(x>=0,u==-x),implies(x<=0,u==-2*x)],-x);
 assert(sol.problem == 0)
 assert(abs(value(x)-.5) <= 1e-4);
 assert(abs(value(u)--.5) <= 1e-4);
 
+function test10(dummy)
+sdpvar x u
 ops = sdpsettings('quadprog.Algorithm','interior-point-convex');
 x = sdpvar(2,1);
 sol = optimize([-10<=u<=10,-1<=x<=1,implies(x>=0,u==-x(1)),implies(x<=0,u==-2*x(1))],(x+.1)'*(x+.1),ops)

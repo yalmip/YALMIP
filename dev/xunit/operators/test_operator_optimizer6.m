@@ -11,6 +11,7 @@ U = reshape(1:6,2,3);
 Z = P{U};
 assert(norm(U-Z)<= 1e-10);
 
+function test2(dummy)
 X = sdpvar(2,3,2,'full','complex');
 Y = sdpvar(2,3,'full','complex');
 obj = sum(sum(abs(real(X(:,:,1))-real(Y)))) + sum(sum(abs(imag(X(:,:,1))-imag(Y))));
@@ -27,6 +28,7 @@ assert(norm(U-Z(:,:,1)) <= 1e-5);
 assert(norm(2*real(U)-imag(Z(:,:,2))) <= 1e-5);
 assert(norm(2*imag(U)-real(Z(:,:,2))) <= 1e-5);
 
+function test3(dummy)
 X = sdpvar(2,3,'full','complex');
 Y = sdpvar(2,3,'full');
 P = optimizer([],sum(sum(abs(real(X)-Y))) + 2*sum(sum(abs(imag(X)-Y))),[],X,Y);
@@ -34,6 +36,7 @@ U = reshape(1:6,2,3) + sqrt(-1)*reshape(7:12,2,3);
 Z = P{U};
 assert(norm(Z(:,:,1)-reshape(7:12,2,3))<1e-7);
 
+function test4(dummy)
 X1 = sdpvar(2,3,'full','complex');
 X2 = sdpvar(2,3,'full');
 Y = sdpvar(2,3,'full');
