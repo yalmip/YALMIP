@@ -16,7 +16,6 @@ solvesos(sos(p-t),-t)
 s2 = value(t);
 assert(abs(s1-s2) <= 1e-4);
 
-function test2(dummy)
 sdpvar x
 sdpvar a t
 p = x^4+(x-a)^2 + a^2;

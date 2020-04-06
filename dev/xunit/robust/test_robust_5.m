@@ -74,6 +74,7 @@ t = sdpvar(1);
 A = [1 1;-1 0;0 -2;-1 -1;0 -1/2];
 b = [.1;.1;.1;.1;.1];
 c = randn(2,1);
+ops = sdpsettings('robust.auxreduce','enumeration');
 optimize([x+max(x+c'*[w1;w2],norm([x*w1 + A*[w1;w2]],1))+norm([x - A*[w1;w2]],1)<=t,uncertain([w1;w2]),A*[w1;w2] <= b],t,ops);
 o1 = value(t);
 
@@ -93,6 +94,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w+1,1) <= 30]
 W = [uncertain(w),norm(w+.5,1) + norm(w,1)<=3];
+ops = sdpsettings('robust.auxreduce','enumeration');
 optimize([C,W],-x,ops);
 assert(abs(value(x) - 27) <= 1e-5)
 
