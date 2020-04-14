@@ -5,8 +5,11 @@ function [base,v] = coefficients(p,x,vin)
 %   of a scalar polynomial p(x) = c'*v(x)
 %
 %   c = COEFFICIENTS(p,x) extracts the all coefficents
-%   of a matrix polynomial.
-
+%   of a matrix polynomial, in a long list
+%
+%   [c,v] = COEFFICIENTS(p,x) extracts the all coefficents
+%   of a matrix polynomial with a common basis, vectorized c
+%
 %
 %   INPUT
 %    p : SDPVAR object
@@ -23,6 +26,13 @@ function [base,v] = coefficients(p,x,vin)
 %    sdisplay([c v]) 
 %
 %   See also SDPVAR
+
+if nargin==2 && nargout == 2 && numel(p)>1
+    % Slow, but matrix case now fully supported at least
+    v = monolist(x,degree(p));
+    base = fullcoefficients(p,x,v);
+    return
+end
 
 if isa(p,'double')
     base = p(:);
@@ -225,3 +235,11 @@ else
     end
     p_base_parametric = stackcell(sdpvar(1,1),xx)';
 end
+
+function c = fullcoefficients(p,x,v)
+c = [];
+for i = 1:length(p)
+	[ci,vi] = coefficients(p(i),x,v);
+	c = [c;ci(:)'];
+end
+    
