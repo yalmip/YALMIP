@@ -132,18 +132,26 @@ end
 if isequal(v,vin)
     return
 else
-    for i = 1:length(v)
-        if isa(v(i),'double')
-            si(i) = 0;
-        else
-            si(i) = getvariables(v(i));
+    if isequal(getbase(v), [1 spalloc(1,length(v)-1,0);spalloc(length(v)-1,1,0) speye(length(v)-1)])
+        si = [0 getvariables(v)];
+    else
+        for i = 1:length(v)
+            if isa(v(i),'double')
+                si(i) = 0;
+            else
+                si(i) = getvariables(v(i));
+            end
         end
     end
-    for i = 1:length(vin)
-        if isa(vin(i),'double')
-            vi(i) = 0;
-        else
-            vi(i) = getvariables(vin(i));
+    if isequal(getbase(vin), [1 spalloc(1,length(vin)-1,0);spalloc(length(vin)-1,1,0) speye(length(vin)-1)])
+        vi = [0 getvariables(vin)];
+    else
+        for i = 1:length(vin)
+            if isa(vin(i),'double')
+                vi(i) = 0;
+            else
+                vi(i) = getvariables(vin(i));
+            end
         end
     end
 
