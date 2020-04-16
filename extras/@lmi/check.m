@@ -238,6 +238,12 @@ end
 
 function res = logicSatisfaction(clause);
 
+if isequal(clause{1},'ismember')
+    if isa(clause{2},'sdpvar') &  isa(clause{3},'double')
+        res = -min(sum(abs(value(clause{2}) - clause{3}),1))
+        return
+    end
+end
 a = clause{2};
 b = clause{3};
 if isa(a,'sdpvar')
