@@ -44,18 +44,8 @@ if output.cplexstatus == 4 | output.cplexstatus == 119
     end
 end
 
-% Inconstency in early version of CPLEX
-dots = find(interfacedata.solver.subversion == '.');
-if length(dots)>1
-    interfacedata.solver.subversion(dots(2:end))=[];
-end
-if str2num(interfacedata.solver.subversion)>=12.3
-    the_sign = 1;
-else
-    the_sign = -1;
-end
 if ~isempty(lambda)
-    D_struc = [the_sign*lambda.eqlin;the_sign*lambda.ineqlin];
+    D_struc = [lambda.eqlin;lambda.ineqlin];
 else
     D_struc = [];    
 end
