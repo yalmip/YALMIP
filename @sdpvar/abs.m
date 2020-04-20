@@ -22,9 +22,17 @@ switch class(varargin{1})
             for i = 1:size(x,1)
                 temp = [];
                 for j = 1:size(x,2)
-                    temp = [temp norm(extsubsref(x,i,j))];
+                    if isempty(temp)
+                        temp = norm(extsubsref(x,i,j));
+                    else
+                        temp = [temp norm(extsubsref(x,i,j))];
+                    end
                 end
-                y = [y;temp];
+                if isempty(y)
+                    y = temp;
+                else
+                    y = [y;temp];
+                end
             end
             varargout{1} = y;
         end
