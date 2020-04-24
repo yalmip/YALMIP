@@ -29,7 +29,7 @@ qdr_con = find(type_of_constraint == 4);
 mqdr_con = find(type_of_constraint == 54);
 rlo_con = find(type_of_constraint == 5);
 pow_con = find(type_of_constraint == 20);
-exp_con = find(type_of_constraint == 21);
+exp_con = find(type_of_constraint == 21 | type_of_constraint == 22);
 sos2_con = find(type_of_constraint == 50);
 sos1_con = find(type_of_constraint == 51);
 cmp_con = find(type_of_constraint == 55);
@@ -213,7 +213,9 @@ for i = 1:length(exp_con)
     % We allocate the structure blockwise...
     F_structemp  = spalloc(1+nvars,ntimesm,0);
     % Add these rows only
-    F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
+    E = F.clauses{constraints}.data;
+    E = reshape(E,[],1);
+    F_structemp([1 1+lmi_variables(:)'],:)= getbase(E).';
     
     %alpha = F_structemp(1,end);
     %F_structemp(:,end)=[];
@@ -221,7 +223,7 @@ for i = 1:length(exp_con)
     F_struc = [F_struc F_structemp];
     
     top = top+ntimesm;
-    K.e = K.e + 1;
+    K.e = K.e + m;
 end
 
 % Power cone constraints
