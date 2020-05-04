@@ -515,7 +515,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         if (output.problem == 12 || output.problem == 2) && ~isinf(p.lower)
             output.problem = 1;
         end
-       
+               
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -587,6 +587,8 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         end
     end
     
+    
+    
     if output.problem==0 | output.problem==3 | output.problem==4
         cost = computecost(f,c,Q,x,p);
         
@@ -628,6 +630,10 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
             feasible = 1;
             cost = lower;
             x = p.lb + (p.ub-p.lb)*(1/pi);
+            unbounded = find(isinf(p.ub) & isinf(p.lb));
+            if ~isempty(unbounded)
+                x(unbounded) = 0;
+            end            
         case 0
             if can_use_ceil_lower
                 lower = ceil(lower-1e-8);
@@ -858,6 +864,7 @@ if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  C
 %% BRANCH VARIABLE
 % **********************************
 function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p)
+save debug
 all_variables = [integer_variables(:);binary_variables(:)];
 
 if ~isempty(p.sosvariables) && isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')

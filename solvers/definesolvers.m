@@ -683,6 +683,21 @@ solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'MOSEK';
+solver(i).version = 'GEOMETRIC-PRE9';
+solver(i).checkfor= {'mosekopt,mskgpopt'};
+solver(i).call    = 'callmosek';
+solver(i).objective.sigmonial = 1;
+solver(i).objective.quadratic.nonnegative = 1;
+solver(i).constraint.inequalities.elementwise.sigmonial = 1;
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.equalities.quadratic = 1;
+solver(i).constraint.equalities.polynomial = 1;
+solver(i).constraint.equalities.sigmonial = 1;
+solver(i).constraint.equalities.multiterm  = 0;
+i = i+1;
+
 solver(i) = qpsolver;
 solver(i).tag     = 'CPLEX';
 solver(i).version = 'CPLEXMEX';

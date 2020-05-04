@@ -76,6 +76,7 @@ for i = 1:1:length(F)
                             [u,s,v]=svd(full(Qred));
                             r=find(diag(s)>1e-12);
                             R=(u(:,r)*sqrt(s(r,r)))';
+                            R(abs(R)<eps)=0;
                             p=0;
                         else
                             % Try to detect rotated SOCP (x-d)'*A*(x-d)+k<= C*y*z
