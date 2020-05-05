@@ -67,6 +67,7 @@ end
 % The reason is that REPLACE has to be called
 % for every SOS. Instead, precalc on one vector
 p=[];
+p_dim = [];
 ParVar=[];
 soscount=1;
 for j = 1:nlmi
@@ -75,15 +76,23 @@ for j = 1:nlmi
         [v,ParVari] = sosd(pi);
         if isempty(v)
             p=[p;0];
+            p_dim = [p_dim size(pi,1)];
         else
-            p=[p;pi];
+            p=[p;reshape(pi,[],1)];
+            p_dim = [p_dim size(pi,1)];
             ParVar=unique([ParVar(:);ParVari(:)]);
         end
     end
 end
 if ~isempty(ParVar)
     ParVar = recover(ParVar);
-    p = replace(p,ParVar,double(ParVar));
+    pp = replace(p,ParVar,double(ParVar));
+    top = 1;
+    clear p
+    for j = 1:length(p_dim)
+        p{j} = reshape(pp(top:top+p_dim(j)^2-1),p_dim(j),p_dim(j));
+        top = top + p_dim(j)^2;
+    end
 end 
 
 for j = 1:nlmi
@@ -126,30 +135,15 @@ for j = 1:nlmi
                 res(j,1) = min(res(j,1),full(F0(1,k)-norm(F0(2:end,k))));
             end                
         case 11
-            if 0
-                p = F.clauses{j}.data;          
-                [v,ParVar] = sosd(p);
-                if ~isempty(ParVar)
-                    ParVar = recover(ParVar);
-                    p = replace(p,ParVar,double(ParVar));
-                end
-                if isempty(v)
-                    res(j,1)=nan;
-                else
-                    h = p-v'*v;
-                    res(j,1) = full(max(max(abs(getbase(h)))));
-                end
+                 
+            [v,ParVar] = sosd(F.clauses{j}.data);
+            if isempty(v)
+                res(j,1)=nan;
             else
-                %p = F.clauses{j}.data;          
-                [v,ParVar] = sosd(F.clauses{j}.data);
-                if isempty(v)
-                    res(j,1)=nan;
-                else
-                    h = p(soscount)-v'*v;
-                    res(j,1) = full(max(max(abs(getbase(h)))));
-                end
-                soscount=soscount+1;
+                h = p{soscount}-v'*v;
+                res(j,1) = full(max(max(abs(getbase(h)))));
             end
+            soscount=soscount+1;
             
             case 56
                  res(j,1) = logicSatisfaction(F.clauses{j}.data);
