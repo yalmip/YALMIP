@@ -32,13 +32,8 @@ if problem == 0
         end  
         solvertime = toc(solvertime);
     else
-        solvertime = tic;
-        switch model.solver.version
-            case 'GEOMETRIC-PRE9'
-                res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');     
-            otherwise
-                res = mskgpopt_local(prob,'minimize');     
-        end
+        solvertime = tic;        
+        res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');            
         solvertime = toc(solvertime);
     end
     sol = res.sol;
@@ -61,7 +56,3 @@ if problem == 0
             problem = -1;
     end
 end
-
-
-function res = mskgpopt_local(prob,echostr)
-prob

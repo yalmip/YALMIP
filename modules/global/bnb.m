@@ -864,7 +864,6 @@ if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  C
 %% BRANCH VARIABLE
 % **********************************
 function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p)
-save debug
 all_variables = [integer_variables(:);binary_variables(:)];
 
 if ~isempty(p.sosvariables) && isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')
