@@ -23,6 +23,21 @@ if ~exist('callsedumi.m')
     return
 end
 
+% SDPT3 has a function called constraint.m which causes issues
+detected = which('constraint.m','-all');
+if isa(detected,'cell') 
+    if length(detected)>1
+        disp('You seem to have some other toolbox with a function called constraint.m');
+        disp('Delete that toolbox, or delete the function/class, or change path so that YALMIP is on top.');
+        for i = 1:length(detected)
+            if isempty(strfind(detected{i},'extras\@constraint'))
+                detected{i}
+            end
+        end
+        return
+    end
+end
+
 detected = which('yalmip.m','-all');
 % Will not work in Octave as Octave only reports first item found?
 if isa(detected,'cell') 
