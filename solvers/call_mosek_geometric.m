@@ -24,16 +24,11 @@ if problem == 0
     showprogress('Calling MOSEK',model.options.showprogress);    
     if model.options.verbose == 0  
         solvertime = tic;
-        switch model.solver.version
-            case 'GEOMETRIC-PRE9'
-                res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize echo(0)');
-            otherwise
-                res = mskgpopt_local(prob,'minimize echo(0)');                
-        end  
+        res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize echo(0)');
         solvertime = toc(solvertime);
     else
-        solvertime = tic;        
-        res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');            
+        solvertime = tic;
+    	res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');     
         solvertime = toc(solvertime);
     end
     sol = res.sol;
