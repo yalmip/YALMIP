@@ -24,15 +24,13 @@ if ~exist('callsedumi.m')
 end
 
 % SDPT3 has a function called constraint.m which causes issues
-detected = which('constraint.m','-all');
+detected = which('constraint.m');
 if isa(detected,'cell') 
-    if length(detected)>1
-        disp('You seem to have some other toolbox with a function called constraint.m');
-        disp('Delete that toolbox, or delete the function/class, or change path so that YALMIP is on top.');
-        for i = 1:length(detected)
-            if isempty(strfind(detected{i},'extras\@constraint'))
-                detected{i}
-            end
+    if length(detected)>0              
+        if isempty(strfind(detected{1},'extras\@constraint'))
+            disp('You seem to have some other toolbox with a function called constraint.m');
+            disp('Delete that toolbox, or delete the function/class, or change path so that YALMIP is on top.');
+            detected{1}            
         end
         return
     end
