@@ -198,7 +198,7 @@ end
 if nargin < 18
     % first call
     if options.verbose >= 1
-        disp('Refiner 1.0 - Iterative meta-solver');
+        disp('Refiner 1.1 - Iterative meta-solver');
         if options.verbose == 1
             disp(' ');
             disp('iter-             iteration    global');
