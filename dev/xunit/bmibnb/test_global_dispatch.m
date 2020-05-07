@@ -1,4 +1,7 @@
-function test_global_dispatch
+function tests = test_global_dispatch
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from dispatch.gms
 % Created 28-Jul-2007 17:34:32 using YALMIP R20070725
 
@@ -22,7 +25,7 @@ F=[F,37.5<=x2<=150];
 F=[F,45<=x3<=180];
 
 % Solve problem
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objvar), 3.1553e+003, 32);
+assert(sol.problem==0)
+assert(abs(value(objvar)-3.1553e+003) <= 32)

@@ -100,7 +100,7 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
                     method = properties.model;
                 end
             elseif failure
-                cause = ['Expected ' 'goal_vexity' ' function in '  where ' at level ' num2str(level)];
+                cause = ['Expected ' goal_vexity ' function in '  where ' at level ' num2str(level)];
             end
         end
     else
@@ -146,6 +146,7 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
 
     % Small pre-processing to speed-up large-scale problems (subsref sloooow)
     % with only linear arguments (such as norm(Ax-b) problems)
+    full_basis_data_created = 0;
     if isa(arguments,'sdpvar')
         argvars = getvariables(arguments);
         if max(argvars)>length(variabletype)
@@ -153,10 +154,13 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
         end
         do_not_check_nonlinearity = ~any(variabletype(argvars));
         if do_not_check_nonlinearity
-            allvariables = argvars;
-            fullbasis = getbase(arguments);
-            fullbasis = fullbasis(:,2:end);
-            fullbasis_transpose = fullbasis';
+            allvariables = argvars;     
+            % This is slow for massive problems, so fix by only creating if
+            % actually needed later
+         %   full_basis_data_created = 1;
+         %   fullbasis = getbase(arguments);
+         %   fullbasis = fullbasis(:,2:end);
+         %   fullbasis_transpose = fullbasis';
         end
     else
         do_not_check_nonlinearity = 0;
@@ -173,7 +177,13 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
             % etremely large simple model
             expressionvariables = [];
         else
-            if do_not_check_nonlinearity            
+            if do_not_check_nonlinearity 
+                if full_basis_data_created == 0
+                    fullbasis = getbase(arguments);
+                    fullbasis = fullbasis(:,2:end);
+                    fullbasis_transpose = fullbasis';
+                    full_basis_data_created = 1;
+                end
                 usedvariables = find(fullbasis_transpose(:,j));
                 expressionvariables = allvariables(usedvariables);
             else
@@ -186,7 +196,13 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
         if ~isempty(index_in_expression)
             for i = index_in_expression
                 if ~milpalreadydone(expressionvariables(i))
-                    if do_not_check_nonlinearity                       
+                    if do_not_check_nonlinearity  
+                        if full_basis_data_created == 0
+                            fullbasis = getbase(arguments);
+                            fullbasis = fullbasis(:,2:end);
+                            fullbasis_transpose = fullbasis';
+                            full_basis_data_created = 1;
+                        end
                         basis = fullbasis(j,usedvariables((i)));
                     else
                         basis = getbasematrix(expression,expressionvariables(i));

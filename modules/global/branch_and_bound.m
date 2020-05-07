@@ -12,7 +12,7 @@ lowersolver = p.solver.lowersolver.call; % For relaxed lower bound problem
 uppersolver = p.solver.uppersolver.call; % Local nonlinear upper bound
 lpsolver    = p.solver.lpsolver.call;    % LP solver for bound propagation
 
-% *************************************************************************f
+% *************************************************************************
 % GLOBAL PROBLEM DATA (these variables are the same in all nodes)
 % *************************************************************************
 c       = p.c;
@@ -26,6 +26,8 @@ options = p.options;
 % *************************************************************************
 p_upper = cleanuppermodel(p);
 p_upper = compile_nonlinear_table(p_upper);
+p_upper = compile_bilinearslist(p_upper);
+p_upper = compile_quadraticslist(p_upper);
 
 % *************************************************************************
 % Active constraints in main model
@@ -71,19 +73,45 @@ if options.bmibnb.verbose>0
     if p.options.bmibnb.lpreduce
         disp(['* LP solver        : ' p.solver.lpsolver.tag]);
     end
+    k = nnz(isinf(p.lb(p.branch_variables)));
+    if k>0   
+        if k == 1
+            disp(['* Warning: ' num2str(k) ' branch variable is unbounded from below']);
+        else
+            disp(['* Warning: ' num2str(k) ' branch variables are unbounded from below']);
+        end
+    end
+    k = nnz(isinf(p.ub(p.branch_variables)));
+    if k>0
+        if k == 1
+            disp(['* Warning: ' num2str(k) ' branch variable is unbounded from above']);
+        else
+            disp(['* Warning: ' num2str(k) ' branch variables are unbounded from above']);
+        end
+    end    
     disp(' Node       Upper      Gap(%)       Lower    Open');
 end
 
 t_start = cputime;
 go_on  = 1;
 
-reduction_result = [];
 lower_hist = [];
 upper_hist = [];
 p.branchwidth = [];
 
-pseudo_costgain=[];
-pseudo_variable=[];
+% Create a default propagator structure
+propagator.fun = [];
+propagator.time = [];
+propagator.reduction = [];
+propagator.worked = [];
+% Define all available bound propagation strageies
+propagators{1} = propagator;propagators{1}.fun = @updatebounds_recursive_evaluation;
+propagators{2} = propagator;propagators{2}.fun = @updateboundsfromupper;
+propagators{3} = propagator;propagators{3}.fun = @propagatequadratics;
+propagators{4} = propagator;propagators{4}.fun = @propagate_bounds_from_complementary;
+propagators{5} = propagator;propagators{5}.fun = @domain_reduction;
+propagators{6} = propagator;propagators{6}.fun = @propagate_bounds_from_equalities;
+propagators{7} = propagator;propagators{7}.fun = @propagate_bounds_from_combinatorics;
 
 while go_on
 
@@ -96,39 +124,62 @@ while go_on
     % Strenghten variable bounds a couple of runs
     % *********************************************************************
     p.changedbounds = 1;
+    time_ok = 1;
     
+    p.upper = upper;
     for i = 1:length(options.bmibnb.strengthscheme)
-        if ~p.feasible
+        time_ok = cputime-t_start < options.bmibnb.maxtime;
+        if ~p.feasible | ~time_ok
             break
-        end      
-        switch options.bmibnb.strengthscheme(i)
-            case 1
-                p = updatebounds_recursive_evaluation(p);
-            case 2
-                p = updateboundsfromupper(p,upper,p.originalModel);
-            case 3
-                p = propagatequadratics(p);
-            case 4
-                p = propagate_bounds_from_complementary(p);
-            case 5
-                tstart = tic;
-                p = domain_reduction(p,upper,lower,lpsolver,x_min);
-                timing.domainreduce = timing.domainreduce + toc(tstart);
-            case 6
-                p = propagate_bounds_from_equalities(p);
-            otherwise
         end
+        j = options.bmibnb.strengthscheme(i); 
+        if j == 5
+            % Special case, clean up to remove
+            LU=[p.lb p.ub];
+            [volBefore,openVariables] = branchVolume(p);
+            propagators{j}.time(end+1) = tic;
+            tstart = tic;
+            [p,~,~,seen_x] = domain_reduction(p,upper,lower,lpsolver,x_min);
+            propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
+            volAfter = branchVolume(p,openVariables);
+            propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;            
+            X = [seen_x{:}];
+            X = unique(X','rows')';
+            for k = 1:size(X,2)
+                [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);
+            end            
+            timing.domainreduce = timing.domainreduce + toc(tstart);
+            propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
+            if upper < p.upper 
+                p.upper = upper;
+                p = updateboundsfromupper(p,upper);
+            else
+                p.upper = upper;
+            end
+        else
+            LU=[p.lb p.ub];
+            [volBefore,openVariables] = branchVolume(p);
+            propagators{j}.time(end+1) = tic;
+            p = feval(propagators{j}.fun,p);
+            propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
+            volAfter = branchVolume(p,openVariables);
+            propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
+            propagators{j}.worked  = [propagators{j}.worked [LU(:,1)~=p.lb | LU(:,2)~=p.ub]];                         
+        end        
     end
-
-    % *********************************************************************
-    % Detect redundant constraints
-    % *********************************************************************
-    p = remove_redundant(p);
 
     % *********************************************************************
     % SOLVE LOWER AND UPPER
     % *********************************************************************
-    if p.feasible
+    if ~time_ok
+        info_text = 'Time-out';
+        keep_digging = 0; 
+    elseif p.feasible
+        
+        % *********************************************************************
+        % Detect redundant constraints
+        % *********************************************************************
+        p = remove_redundant(p);
 
         [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 
@@ -183,13 +234,7 @@ while go_on
                     info_text = 'Numerical problems in lower bound solver';
                 end
                 x = output.Primal;
-
-                if ~isempty(p.branchwidth)
-                    if ~isempty(p.lower)
-                        pseudo_costgain = [pseudo_costgain (cost-p.lower)/p.branchwidth];
-                        pseudo_variable = [pseudo_variable p.spliton];
-                    end
-                end
+                
                 % UPDATE THE LOWER BOUND
                 if isnan(lower)
                     lower = cost;
@@ -227,6 +272,9 @@ while go_on
                                     p.counter.uppersolved = p.counter.uppersolved + 1;
                                 end
                             end
+                        end
+                        if upper < p.upper                           
+                            p = updateboundsfromupper(p,upper);
                         end
                     end
                 else
@@ -602,26 +650,20 @@ end
 % *************************************************************************
 function bounds = partition(p,options,spliton,x_min)
 x = x_min;
-if isinf(p.lb(spliton))
-    %bounds = [p.lb(spliton) x_min(spliton) p.ub(spliton)]
-    %return
-    p.lb(spliton) = -1e6;
-end
-if isinf(p.ub(spliton))
-    %bounds = [p.lb(spliton) x_min(spliton) p.ub(spliton)]
-    %return
-    p.ub(spliton) = 1e6;
-end
 
 switch options.bmibnb.branchrule
     case 'omega'
-        if ~isempty(x_min)
-            U = p.ub(spliton);
-            L = p.lb(spliton);
+        U = p.ub(spliton);
+        L = p.lb(spliton);
+        if isinf(L) | isinf(U)
+            Ltemp = max(min(-1,x(spliton)-1),L);
+            Utemp = min(max(1,x(spliton)+1),U);
+            bounds = [L (Ltemp + Utemp)/2 U];             
+        elseif ~isempty(x_min)
             x = x(spliton);
-            bounds = [p.lb(spliton) 0.5*max(p.lb(spliton),min(x_min(spliton),p.ub(spliton)))+0.5*(p.lb(spliton)+p.ub(spliton))/2 p.ub(spliton)];
+            bounds = [L 0.5*max(L,min(x_min(spliton),U))+0.5*(L+U)/2 U];            
         else
-            bounds = [p.lb(spliton) (p.lb(spliton)+p.ub(spliton))/2 p.ub(spliton)];
+            bounds = [L (L+U)/2 U];
         end
     case 'bisect'
         bounds = [p.lb(spliton) (p.lb(spliton)+p.ub(spliton))/2 p.ub(spliton)];
@@ -669,125 +711,3 @@ else
     p.feasible = 1;
     p.branchwidth = node.branchwidth;
 end
-
-% *************************************************************************
-% Heuristics from relaxed
-% Basically nothing coded yet. Just check feasibility...
-% *************************************************************************
-function [upper,x_min,cost,info_text,numglobals] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numglobals)
-%load dummy;U = [x(1) x(2) x(4);0 x(3) x(5);0 0 x(6)];P=U'*U;i = find(triu(ones(length(A))-eye(length(A))));-log(det(U'*U))+trace(A*U'*U)+2*sum(invsathub(P(i),lambda))
-x(p_upper.binary_variables) = round(x(p_upper.binary_variables));
-x(p_upper.integer_variables) = round(x(p_upper.integer_variables));
-
-z = apply_recursive_evaluation(p_upper,x(1:length(p_upper.c)));
-%z = evaluate_nonlinear(p_upper,x);
-
-relaxed_residual = constraint_residuals(p_upper,z);
-
-eq_ok = all(relaxed_residual(1:p_upper.K.f)>=-p_upper.options.bmibnb.eqtol);
-iq_ok = all(relaxed_residual(1+p_upper.K.f:end)>=p_upper.options.bmibnb.pdtol);
-
-relaxed_feasible = eq_ok & iq_ok;
-info_text = '';
-if relaxed_feasible
-    this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
-    if (this_upper < (1-1e-5)*upper) & (this_upper < upper - 1e-5)
-        x_min = x;
-        upper = this_upper;
-        info_text = 'Improved solution';
-        cost = cost-1e-10; % Otherwise we'll fathome!
-        numglobals = numglobals + 1;
-    end
-end
-
-% *************************************************************************
-% Detect redundant constraints
-% *************************************************************************
-function p = remove_redundant(p);
-
-if isempty(p.F_struc)
-    return
-end
-
-b = p.F_struc(1+p.K.f:p.K.l+p.K.f,1);
-A = -p.F_struc(1+p.K.f:p.K.l+p.K.f,2:end);
-
-redundant = find(((A>0).*A*(p.ub-p.lb) - (b-A*p.lb) <-1e-2));
-
-if length(redundant)>1
-    p.InequalityConstraintState(redundant) = inf;
-end
-
-if p.options.bmibnb.lpreduce
-    b = p.lpcuts(:,1);
-    A = -p.lpcuts(:,2:end);
-    redundant = find(((A>0).*A*(p.ub-p.lb) - (b-A*p.lb) <-1e-2));
-    if length(redundant)>1
-        p.lpcuts(redundant,:) = [];
-        p.cutState(redundant) = [];
-    end
-end
-
-if p.K.f > 0
-    b = p.F_struc(1:p.K.f,1);
-    A = -p.F_struc(1:p.K.f,2:end);
-    s1 = ((A>0).*A*(p.ub-p.lb) - (b-A*p.lb) <1e-6);
-    s2 = ((-A>0).*(-A)*(p.ub-p.lb) - ((-b)-(-A)*p.lb) <1e-6);
-    redundant = find(s1 & s2);
-    if length(redundant)>1
-        p.EqualityConstraintState(redundant) = inf;
-    end
-end
-
-% *************************************************************************
-% Clean the upper bound model
-% Remove cut constraints, and
-% possibly unused variables not used
-% *************************************************************************
-function p = cleanuppermodel(p);
-
-% We might have created a bilinear model from an original polynomial model.
-% We should use the original model when we solve the upper bound problem.
-p_bilinear = p;
-p = p.originalModel;
-
-% Remove cuts
-p.F_struc(p.K.f+p.KCut.l,:)=[];
-p.K.l = p.K.l - length(p.KCut.l);
-n_start = length(p.c);
-
-% Quadratic mode, and quadratic aware solver?
-bilinear_variables = find(p.variabletype == 1 | p.variabletype == 2);
-if ~isempty(bilinear_variables)
-    used_in_c = find(p.c);
-    quadraticterms = used_in_c(find(ismember(used_in_c,bilinear_variables)));
-    if ~isempty(quadraticterms) & p.solver.uppersolver.objective.quadratic.nonconvex
-        usedinquadratic = zeros(1,length(p.c));
-        for i = 1:length(quadraticterms)
-            Qij = p.c(quadraticterms(i));
-            power_index = find(p.monomtable(quadraticterms(i),:));
-            if length(power_index) == 1
-                p.Q(power_index,power_index) = Qij;
-            else
-                p.Q(power_index(1),power_index(2)) = Qij/2;
-                p.Q(power_index(2),power_index(1)) = Qij/2;
-            end
-            p.c(quadraticterms(i)) = 0;
-        end
-    end
-end
-
-% Remove SDP cuts
-if length(p.KCut.s)>0
-    starts = p.K.f+p.K.l + [1 1+cumsum((p.K.s).^2)];
-    remove_these = [];
-    for i = 1:length(p.KCut.s)
-        j = p.KCut.s(i);
-        remove_these = [remove_these;(starts(j):starts(j+1)-1)'];
-    end
-    p.F_struc(remove_these,:)=[];
-    p.K.s(p.KCut.s) = [];
-end
-p.lb = p_bilinear.lb(1:length(p.c));
-p.ub = p_bilinear.ub(1:length(p.c));
-p.bilinears = [];

@@ -1,4 +1,7 @@
-function test_global_st_e04
+function tests = test_global_st_e04
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_e04.gms
 % Created 21-Aug-2007 18:41:57 using YALMIP R20070810
 
@@ -24,6 +27,6 @@ F=[F,0<=x3<=5371];
 F=[F,-459.67<=x4<=80];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),  5.194866244203778e+003, 1e-1);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-5.194866244203778e+003) <= 1e-1) 

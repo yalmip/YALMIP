@@ -438,7 +438,7 @@ if interfacedata.options.saveyalmipmodel
     diagnostic.yalmipmodel = interfacedata;
 end
 
-if options.warning & warningon & isempty(findstr(diagnostic.info,'No problems detected'))
+if options.warning & warningon & isempty(strfind(diagnostic.info,'No problems detected'))
     disp(['Warning: ' output.infostr]);
 end
 

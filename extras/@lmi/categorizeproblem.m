@@ -145,7 +145,7 @@ for i = 1:Counter
     
     % Any discrete variables used
     if any_discrete_variables
-        Fvar = getvariables(Fi.data);
+        Fvar = depends(Fi.data);
         int_data = int_data | any(ismembcYALMIP(Fvar,integer_variables));
         bin_data = bin_data | any(ismembcYALMIP(Fvar,binary_variables));
         par_data = par_data | any(ismembcYALMIP(Fvar,parametric_variables));
@@ -182,7 +182,7 @@ for i = 1:Counter
                 problem.constraint.inequalities.rotatedsecondordercone.linear = 1;
             case 20
                 problem.constraint.inequalities.powercone = 1;
-            case 21
+            case {21,22}
                 problem.exponentialcone = 1;
             case 50
                 problem.constraint.sos2 = 1;
@@ -218,6 +218,8 @@ for i = 1:Counter
                 types = variabletype(getvariables(Fi.data));
                 if ~any(types)
                     deg = 1;
+                elseif any(types == 3)
+                    deg = NaN;
                 elseif any(types==1) || any(types==2)
                     deg = 2;
                 else

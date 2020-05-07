@@ -1,4 +1,7 @@
-function test_ndsdpvar_sudoku
+function tests = test_ndsdpvar_sudoku
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 S = [0,0,1,9,0,0,0,0,8;6,0,0,0,8,5,0,3,0;0,0,7,0,6,0,1,0,0;...
      0,3,4,0,9,0,0,0,0;0,0,0,5,0,4,0,0,0;0,0,0,0,1,0,4,2,0;...
@@ -28,12 +31,12 @@ for i = 1:p^2
     end
 end
 
-sol = solvesdp(F);
+sol = optimize(F);
 
 Z = 0;
 for i = 1:p^2
-      Z = Z  + i*double(A(:,:,i));
+      Z = Z  + i*value(A(:,:,i));
 end
-assertTrue(sol.problem == 0);
-assertElementsAlmostEqual(norm(sort(Z(:,1)) - (1:p^2)'),0, 'absolute',1e-4);
+assert(sol.problem == 0);
+assert(norm(sort(Z(:,1)) - (1:p^2)') <= 1e-4);
 

@@ -1,4 +1,7 @@
-function test_global_ex3_1_1
+function tests = test_global_ex3_1_1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from ex3_1_1.gms
 % Created 28-Jul-2007 18:58:50 using YALMIP R20070725
 
@@ -36,7 +39,7 @@ F=[F,10<=x7<=1000];
 F=[F,10<=x8<=1000];
 
 % Solve problem
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('bmibnb.upper','fmincon','solver','bmibnb','allownonconvex',1));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objvar), 7049.248, 1e-1);
+assert(sol.problem==0)
+assert(abs(value(objvar)- 7049.248) <=  .1)

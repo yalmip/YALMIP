@@ -1,4 +1,7 @@
-function test_robust_2
+function tests = test_robust_2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear')
 
@@ -22,11 +25,10 @@ F = F + (-0.1 <= alpha <= 0.1);
 
 sol = solverobust(F,-trace(Y),[],alpha)
 
-K = double(L)*inv(double(Y));
+K = value(L)*inv(value(Y));
 
-mbg_asserttolequal(sol.problem, 0, 1e-5);
-mbg_asserttolequal(norm(K -   [-1.3674   -2.9158   -2.6670]), 0, 1e-2);
-
+assert(sol.problem == 0)
+assert(norm(K -   [-1.3674   -2.9158   -2.6670]) <= 1e-2)
 
 alpha = sdpvar(1)
 A = double2sdpvar(Anominal);
@@ -45,7 +47,7 @@ F = F + ([-A*Y-B*L + (-A*Y-B*L)' Y L';Y inv(Q) zeros(3,1);L zeros(1,3) inv(R)] >
 F = F + (-0.1 <= alpha <= 0.1);
 sol = solverobust(F,-trace(Y),[],alpha)
 
-mbg_asserttolequal(sol.problem, 0, 1e-5);
-Y0 = double(Y0);
-Y1 = double(Y1);
-mbg_asserttolequal(max([trace(Y0-0.1*trace(Y1)) trace(Y0+0.1*trace(Y1))]),2.3319, 1e-3);
+assert(sol.problem == 0)
+Y0 = value(Y0);
+Y1 = value(Y1);
+assert(abs(max([trace(Y0-0.1*trace(Y1)) trace(Y0+0.1*trace(Y1))])-2.3319) <= 1e-3)

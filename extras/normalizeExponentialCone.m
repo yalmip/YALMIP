@@ -233,7 +233,7 @@ if ~isempty(model.evalMap)
     % Put back the SDP cone in place
     if model.K.s(1)>0
         if size(sdpData,2) < size(model.F_struc,2)
-            sdpDAta(end,size(model.F_struc,2)) = 0;
+            sdpData(end,size(model.F_struc,2)) = 0;
         end
         model.F_struc = [model.F_struc;sdpData];
     end

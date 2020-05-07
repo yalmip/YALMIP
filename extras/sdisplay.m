@@ -26,7 +26,7 @@ end
 if ~isa(pvec,'sdpvar')
     for r1=1:size(pvec,1)
         for r2=1:size(pvec,2)
-            p = pvec(r1,r2);
+            p = full(pvec(r1,r2));
             if isa(p,'double')
                 symb_pvec{r1,r2} = num2str2(p,precision);
             else
@@ -184,6 +184,12 @@ for i = 1:size(W,1)
     end
 end
 
+for i = 1:length(global_names)
+    if length(global_names{i}) == 0
+        global_names{i} = ['internal(' num2str(global_LinearVariables(i)) ')'];
+    end
+end
+
 for pi = 1:size(pvec,1)
     for pj = 1:size(pvec,2)
         p = pvec(pi,pj);
@@ -301,9 +307,17 @@ end
 
 function s = num2str2(x,precision)
 if isinf(precision) 
-    s = sprintf('%.12g',x);
+    if isreal(x)
+        s = sprintf('%.12g',x);
+    else
+        s = sprintf('%.12g+%.12gi',real(x),imag(x));
+    end
 else  
-    s = sprintf('%.12g',round(x*10^precision)/10^precision);
+    if isreal(x)
+        s = sprintf('%.12g',round(x*10^precision)/10^precision);
+    else
+        s = sprintf('%.12g+%.12gi',round(real(x)*10^precision)/10^precision,round(imag(x)*10^precision)/10^precision);
+    end
 end
 s(s==10)=[];
 s(s==32)=[];

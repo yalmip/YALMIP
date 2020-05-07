@@ -8,7 +8,7 @@ obj = trace(X)+trace(Y)+5*sum(t);
 F = (sum(X) == 6+pi*t(1)) + (diag(Y) == -2+exp(1)*t(2))
 F = F + (Y>=0) + (X>=0);
 
-sol = solvesdp(F,obj,sdpsettings('dualize',1));
+sol = optimize(F,obj,sdpsettings('dualize',1));
 
 mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(t),[-1.90985931710276; 0.73575888234282], 1e-5);
+mbg_asserttolequal(value(t),[-1.90985931710276; 0.73575888234282], 1e-5);

@@ -1,5 +1,7 @@
-function test_bnb_miqp_1
+function tests = test_bnb_miqp_1
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 rand('seed',1234);
 
 a = [1 2 3 4 5 6]';
@@ -16,7 +18,7 @@ ops = sdpsettings('solver','bnb');
 
 % Test QP
 obj = residuals'*residuals;
-sol = solvesdp((residuals < = 50),obj,ops);
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(obj), 1.605058709613011e+003, 1e-5);
+sol = optimize((residuals <= 50),obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 1.605058709613011e+003) <= 1e-5);
 

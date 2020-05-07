@@ -28,6 +28,10 @@ if ~isempty(p.evalMap)
                [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);               
             end
             if ~isempty(b)
+                removeThese = find(any(isnan([Ax Ay b]),2));
+                Ax(removeThese,:) = [];
+                Ay(removeThese,:) = [];
+                b(removeThese) = [];
                 if isempty(K)
                     % Compatibility with old code
                     K.f = 0;

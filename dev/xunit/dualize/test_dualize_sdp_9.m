@@ -1,4 +1,7 @@
-function test_dualize_sdp_9
+function tests = test_sdpvar_dualize_sdp_9
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 A = randn(3,3);A = -A*A';
 P = sdpvar(3,3);
@@ -8,16 +11,16 @@ F = (A'*P+P*A <= -eye(3));
 F = F + (2*P >= A*A') + (P(3,3)>=0) + (P>=0) + (t+y >= 7) + (t+y >= 7) + (P(2,2)>=4)+(P(1,1:2)>=t) + (t>=12)+(t>=-12);
 obj = trace(P)+y+t;
 
-sol1  = solvesdp(F,obj);
-obj1 = double(obj);
+sol1  = optimize(F,obj);
+obj1 = value(obj);
 p1   = checkset(F);
 
-sol2 = solvesdp(F,obj,sdpsettings('dualize',1));
-obj2 = double(obj);
+sol2 = optimize(F,obj,sdpsettings('dualize',1));
+obj2 = value(obj);
 p2   = checkset(F);
 
-mbg_asserttolequal(sol1.problem,0);
-mbg_asserttolequal(sol2.problem,0);
-mbg_asserttolequal(obj1,obj2, 1e-4);
-mbg_asserttolequal(min(p1),0, 1e-4);
-mbg_asserttolequal(min(p2),0, 1e-4);
+assert(sol1.problem == 0);
+assert(sol2.problem == 0);
+assert(abs(obj1 - obj2) <= 1e-4);
+assert(abs(min(p1))<= 1e-4)
+assert(abs(min(p2))<= 1e-4)

@@ -1,5 +1,7 @@
-function test_bnb_micp_1
+function tests = test_bnb_micp_1
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 randn('seed',123456);
 n = 5;
 %  65.63177408018771   6.95052852960134 -58.66230788287043 -70.86445052912004  58.37564024957875
@@ -15,39 +17,38 @@ ops = sdpsettings('solver','bnb','verbose',2);
 
 F = (-t <= P-Z <= t);
 obj = sum(sum(t));
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 66.18236738983525, 1e-4);
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 66.18236738983525) <=  1e-4);
 
 F = ([]);
 obj = norm(e,1);
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 66.18236738983525, 1e-4);
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 66.18236738983525) <= 1e-4);
 
 obj = e'*e;
 F = ([]);
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 3.352603490492911e+002, 1e-4);
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 3.352603490492911e+002) <= 1e-4);
 
 t = sdpvar(1,1);
 obj = t;
 F = (cone(e,t));
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 18.31011603130778, 1e-4);
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 18.31011603130778) <= 1e-4);
 
 t = sdpvar(1,1);
 obj = norm(e);
 F = ([]);
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 18.31011603130778, 1e-4);
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 18.31011603130778) <= 1e-4);
 
 obj = t;
 F = ([t e';e eye(length(e))]>=0);
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 3.352603420494530e+002, 1e-4);
-
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 3.352603420494530e+002) <= 1e-4);

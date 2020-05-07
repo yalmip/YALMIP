@@ -15,6 +15,6 @@ F1 = full(sol{1}.Fi{1});
 sol = solvemp(F, cost, [], [x2; x1], x3); 
 F2 = full(sol{1}.Fi{1});
 
-mbg_asserttolequal(F1,fliplr(F2),1e-5);
+assert(norm(F1-fliplr(F2)) <= 1e-5)
 
 

@@ -1,4 +1,7 @@
-function ex14_1_4
+function tests = test_global_ex14_1_4
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear');
 sdpvar x1 x2 x3 objvar
@@ -13,6 +16,6 @@ F = F + (5.4365636*x1 - 0.920422529629637*exp(2*x1) - 0.865255957591193*x2 - x3 
 
 F = F + (x1>= 0.25) + (x1<= 1)+(6.28 >= x2 >= 1.5);
 
-sol = solvesdp(F,x3,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1,'bmibnb.absgaptol',1e-8,'bmibnb.relgaptol',1e-8));
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double([objvar ]),0, 1e-4);
+sol = optimize(F,x3,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1,'bmibnb.absgaptol',1e-8,'bmibnb.relgaptol',1e-8));
+assert(sol.problem == 0)
+assert(abs(value(objvar)) <= 1e-4)

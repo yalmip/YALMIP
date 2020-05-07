@@ -1,4 +1,7 @@
-function test_mpt_norm_repeated
+function tests = test_mpt_norm_repeated
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % As simple as it gets...
 yalmip('clear')
@@ -16,11 +19,11 @@ F = F +  (-2<=u0<=2);
 obj = norm(x0,1);
 [sol,dgn,VV,JJ] = solvemp(F, obj, [], x0)
 
-mbg_asserttrue(length(sol) == 4);
-mbg_asserttrue(dgn.problem == 0);
+assert(length(sol) == 4)
+assert(dgn.problem == 0)
 
 assign(x0,[1;1])
-mbg_asserttolequal(double(JJ),2,1e-5);
+assert(abs(value(JJ)-2) <= 1e-5)
 
 yalmip('clear')
 sdpvar u0 u1
@@ -43,7 +46,7 @@ F = F +  (-2<=x2<=2);
 F = F +  (-2<=u0<=2);
 obj = norm(x0,1)+norm(x1,1);
 sol = solvemp(F, obj, [], x0)
-mbg_asserttrue(length(sol) == 6);
+assert(length(sol) == 6);
 
 yalmip('clear')
 sdpvar u0 u1
@@ -65,4 +68,4 @@ F = F +  (-2<=x2<=2);
 F = F +  (-2<=u0<=2);
 obj = norm(x0,1)+norm(x1,1);
 sol = solvemp(F, obj, [], x0)
-mbg_asserttrue(length(sol) == 6);
+assert(length(sol) == 6)

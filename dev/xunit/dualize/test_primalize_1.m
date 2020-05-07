@@ -1,4 +1,7 @@
-function test_primalize_1
+function tests = test_sdpvar_primalize_1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 n = 10;
 randn('seed',123456789);
@@ -15,7 +18,7 @@ F = (kyp(A,B,P,blkdiag(C'*C,-t)) <= 0)
 
 [Fp,objp,free] = primalize(F,-obj);
 
-sol = solvesdp(Fp,objp,sdpsettings('removeequalities',1))
+sol = optimize(Fp,objp,sdpsettings('removeequalities',1))
 
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj),3.38842085719774, 1e-5);
+assert(sol.problem == 0)
+assert(abs(value(obj) - 3.38842085719774) <= 1e-5)

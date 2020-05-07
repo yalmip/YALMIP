@@ -1,13 +1,16 @@
-function test_isconvex
+function tests = test_isconvex
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 sdpvar x y
-assertTrue(isconvex(x+y));
-assertTrue(isconvex(x+y^2));
-assertTrue(isconvex(exp(x+y)));
-assertTrue(isconvex(max(x,exp(x+y))));
-assertTrue(~isconvex(-exp(x+y)));
-assertTrue(~isconvex(-max(x,exp(x+y))));
-assertTrue(isnan(isconvex(max(x,min(x,-x)))));
+assert(isconvex(x+y));
+assert(isconvex(x+y^2));
+assert(isconvex(exp(x+y)));
+assert(isconvex(max(x,exp(x+y))));
+assert(~isconvex(-exp(x+y)));
+assert(~isconvex(-max(x,exp(x+y))));
+assert(isnan(isconvex(max(x,min(x,-x)))));
 
 
 

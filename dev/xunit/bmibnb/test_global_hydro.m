@@ -1,4 +1,7 @@
-function test_global_hydro
+function tests = test_global_hydro
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from hydro.gms
 % Created 24-Jul-2007 13:32:20 using YALMIP R20070523
 
@@ -100,6 +103,6 @@ F=[F,60000<=x30<=120000];
 F=[F,60000<=x31<=120000];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),4.3669e+006 , 1e4);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-4.3669e+006) <= 1e4)

@@ -1,4 +1,7 @@
-function test_sos_peyrl
+function tests = test_sos_peyrl
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 sdpvar x1 x2 x3 x4;
 x = [x1;x2;x3;x4];
@@ -103,5 +106,5 @@ F = F + (A11>=0) + (A12>=0) + (A21>=0) + (A31>=0) + (B11>=0) + ...
 parametric=recover(setdiff(depends(F),depends(x)));
 [sol,v,Q,residual,model]=solvesos(F,[],sdpsettings('sos.post',1,'sedumi.free',0),parametric);
 
-mbg_asserttrue(sol.problem==0 | sol.problem == 4);
-mbg_asserttrue(norm(residual) < 1e-5);
+assert(sol.problem==0 | sol.problem == 4);
+assert(norm(residual) < 1e-5);

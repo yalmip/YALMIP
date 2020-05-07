@@ -13,13 +13,27 @@ function out = yalmiptest(prefered_solver,auto)
 
 if ~exist('sedumi2pen.m')
     disp('Add /yalmip/extras etc to your path first...')
-    disp('Read the <a href="http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Tutorials.Installation">Installation notes</a>.')    
+    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')    
     return
 end
 
 if ~exist('callsedumi.m')
     disp('Still missing paths...Just do an addpath(genpath(''yalmiprootdirectory''));')
+    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')        
     return
+end
+
+% SDPT3 has a function called constraint.m which causes issues
+detected = which('constraint.m');
+if isa(detected,'cell') 
+    if length(detected)>0              
+        if isempty(strfind(detected{1},'extras\@constraint'))
+            disp('You seem to have some other toolbox with a function called constraint.m');
+            disp('Delete that toolbox, or delete the function/class, or change path so that YALMIP is on top.');
+            detected{1}            
+        end
+        return
+    end
 end
 
 detected = which('yalmip.m','-all');

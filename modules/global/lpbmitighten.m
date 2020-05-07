@@ -1,4 +1,4 @@
-function [p,feasible,lower] = lpbmitighten(p,lower,upper,lpsolver,xmin,improvethese)
+function [p,feasible,lower,seen_x] = lpbmitighten(p,lower,upper,lpsolver,xmin,improvethese,seen_x)
 
 if nargin<6
     improvethese = ones(length(p.lb),1);
@@ -101,16 +101,20 @@ else
 end
 
 j = 1;
+% Relax integrality
+p_test.binary_variables = [];
+p_test.integer_variables = [];
 while feasible & j<=length(jj)
     i = p_test.linears(jj(j));
     if abs(p.ub(i)-p.lb(i)>p.options.bmibnb.vartol) & improvethese(i)    
         p_test.c = eyev(length(p_test.c),i);        
-        output = feval(lpsolver,removenonlinearity(p_test));
+        output = feval(lpsolver,removenonlinearity(p_test));        
         p.counter.lpsolved = p.counter.lpsolved + 1;
         if output.problem == 0 | output.problem == 2 | output.problem == 12
             if output.problem == 0
+                seen_x{end+1} = output.Primal;
                 if p_test.lb(i) < output.Primal(i)-1e-5
-                    p_test.lb(i) = output.Primal(i);
+                    p_test.lb(i) = output.Primal(i);                    
                     p_test = updateonenonlinearbound(p_test,i);
                 end
             end
@@ -118,6 +122,7 @@ while feasible & j<=length(jj)
             output = feval(lpsolver,removenonlinearity(p_test));   
             p.counter.lpsolved = p.counter.lpsolved + 1;
             if output.problem == 0
+                seen_x{end+1} = output.Primal;
                 if p_test.ub(i) > output.Primal(i)+1e-5
                     p_test.ub(i) = output.Primal(i);
                     p_test = updateonenonlinearbound(p_test,i);
@@ -132,6 +137,10 @@ while feasible & j<=length(jj)
         end
     end
     j = j + 1;
+    p_test.lb(p.integer_variables) = ceil(p_test.lb(p.integer_variables)-1e-7);
+    p_test.ub(p.integer_variables) = floor(p_test.ub(p.integer_variables)+1e-7);
+    p_test.lb(p.binary_variables) = ceil(p_test.lb(p.binary_variables)-1e-7);
+    p_test.ub(p.binary_variables) = floor(p_test.ub(p.binary_variables)+1e-7);
 end
 p_test = clean_bounds(p_test);
 p.lb = p_test.lb;

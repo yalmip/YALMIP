@@ -1,5 +1,7 @@
-function test_bnb_yongyouhu
+function tests = test_bnb_yongyouhu
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 
 Loc_n=4;
 Sen_n=3;
@@ -49,9 +51,8 @@ cc(3*Sen_n+1:end)=Z;
 
 obj=cc*X;
 
-sol = solvesdp(F,obj)
-obj
+sol = optimize(F,obj)
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(obj), 3100, 1e-5);
+assert(sol.problem==0);
+assert(abs(value(obj) - 3100) <= 1e-5);
 

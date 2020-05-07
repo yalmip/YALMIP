@@ -17,13 +17,22 @@ if isa(Y,'constraint')
     Y = lmi(Y,[],[],1);
 end
 
-% % Special case something implies binary == 1
-% if isa(Y,'lmi') && length(Y)==1 & isa(Y,'equality') 
-%     y = sdpvar(Y);
-%     if isa(y,'binary') && getbase(y)==[1 -1] | getbase(y)==[-1 1]
-%         
-%     end
-% end
+% % Special case x == 1 (or x = 0) implies something
+% Avoids introducing a glue binary for the equality
+% Fixes #690
+if isa(X,'lmi') && length(X)==1 && is(X,'equality')
+    x = sdpvar(X);
+    if is(x,'binary')
+        B = getbase(x);
+        if isequal(B,[1 -1]) || isequal(B,[-1 1])
+            varargout{1} = implies_internal(recover(depends(x)),Y);
+            return
+        elseif isequal(B,[0 -1]) || isequal(B,[0 1])
+            varargout{1} = implies_internal(1-recover(depends(x)),Y);
+            return
+        end        
+    end
+end
 
 if isa(X,'sdpvar') & isa(Y,'sdpvar')
     varargout{1} = (Y >= X);

@@ -1,4 +1,7 @@
-function qcqp5
+function tests = test_global_bmibnb_qcqp5
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 x1 = sdpvar(1,1);
 x2 = sdpvar(1,1);
@@ -46,6 +49,6 @@ F = F + (e>=0);
 
 f = sdpvar(F(find(is(F,'linear'))));
 F = F + cut(triu(f*f') >= 0);
-sol = solvesdp(F,obj,sdpsettings('solver','bmibnb','bmibnb.lpreduce',0))
+sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.lpreduce',0))
 
-mbg_asserttolequal(double(obj),-36, 1e-6);
+assert(abs(value(obj)--36) <= 1e-6)

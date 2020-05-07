@@ -1,4 +1,7 @@
-function  p = updateboundsfromupper(p,upper,ppoly);
+function  p = updateboundsfromupper(p,upper)
+if nargin == 1
+    upper = p.upper;
+end
 if ~isinf(upper)
     LU = [p.lb p.ub];
     if nnz(p.c.*(p.ub-p.lb)) == 1 & nnz(p.Q)==0
@@ -11,9 +14,31 @@ if ~isinf(upper)
             % We are maximizing x(i), since an lower bound is -UPPER
             % this means x(i) has to be > -UPPER in optimal solution
             p.lb(i) = max([p.lb(i) -upper/abs(p.c(i))]);
-        end
-            
+        end            
     end
+    if nnz(p.Q)==0
+        i = find(p.c);        
+            for j = i(:)'
+                ii = setdiff(i,j);
+                if ~isempty(ii)                     
+                    if p.c(j) > 0
+                        obound = upper - p.f;
+                        ii_pos = ii(find(p.c(ii) > 0));
+                        ii_neg = ii(find(p.c(ii) < 0));
+                        obound = obound-sum(p.c(ii_pos).*p.lb(ii_pos));                                                
+                        obound = obound-sum(p.c(ii_neg).*p.ub(ii_neg));  
+                        p.ub(j) = min(p.ub(j),obound/p.c(j));
+                    else
+                        obound = p.f - upper;
+                        ii_pos = ii(find(p.c(ii) > 0));
+                        ii_neg = ii(find(p.c(ii) < 0));
+                        obound = obound+sum(p.c(ii_pos).*p.lb(ii_pos));                                                
+                        obound = obound+sum(p.c(ii_neg).*p.ub(ii_neg));  
+                        p.lb(j) = max(p.lb(j),obound/-p.c(j));
+                    end
+                end
+            end        
+    end        
     if ~isempty(p.bilinears) & nnz(p.Q)==0
         quad_v = find(p.bilinears(:,2) == p.bilinears(:,3));
         quad_x = p.bilinears(quad_v,2);
@@ -83,5 +108,7 @@ if ~isinf(upper)
             end
         end
     end
-    
+    if any(p.lb > p.ub + 1e-7)
+        p.feasible = 0;
+    end
 end

@@ -35,29 +35,27 @@ if ~all(isinf(interfacedata.ub))
 end
 
 x = sdpvar(length(c),1);
-[dummy, L, U] = boundingbox(A*x <= b);
+[dummy, L, U,sols,vals] = boundingbox(A*x <= b,[],[],interfacedata.f + interfacedata.c'*x + x'*interfacedata.Q'*x);
 
 % Formulation here assumes maximization...
 Q = -2*interfacedata.Q;
 c = -interfacedata.c;
 
-x = sdpvar(n,1); 
-%bounds(x,L,U);
 yalmip('setbounds',getvariables(x),L,U);
 
 y = sdpvar(length(b),1);  % Duals 
 dy = binvar(length(b),1); % indicater dual ==0 
 ds = binvar(length(b),1); % indicater slack==0 
-s = b-A*x; % slack 
+s = b-A*x;                % slack 
 
 % Derive bounds on primal slack
 [M,m] = derivebounds(s);
 
 % Let us try to derive bounds on the dual variables
-F = [A'*y == Q*x + c, s>=0, y>=0];%KKT 
-F = [F, s <= ds.*M];   % Big M, we know upper bound on s 
-F = [F, dy+ds <= 1];  % Complementary slackness 
-F = [F, 0 <= sum(dy) <= n];
+F = [A'*y == Q*x + c, s>=0, y>=0]; % KKT 
+F = [F, s <= ds.*M];               % Big M, we know upper bound on s 
+F = [F, dy+ds <= 1];               % Complementary slackness 
+F = [F, 0 <= sum(dy) <= n];        % No need to force more than n active
 
 % Find dis-joint constraints (silly way...)
 for i = 1:length(b)
@@ -69,37 +67,16 @@ for i = 1:length(b)
     end
 end
 
-[a1,a2,a3,model] = export(F,-y(i),sdpsettings('relax',1,'verbose',0),0,0,0);
-solvertime = clock;
-for i = 1:length(b)
-    if isempty(S{i})
-        model_ = model;
-        model_.c  = model_.c*0;
-        model_.c(n+i)  = -1;
-        sol = feval(model.solver.call,model_);
-    else
-        k = length(S{i});
-        Aeq = sparse(1:k,n+S{i},1,k,n+3*length(b));
-        beq = zeros(k,1);
-        model_ = model;
-        model_.F_struc = [beq Aeq;model.F_struc];
-        model_.K.f = model.K.f+k;
-        model_.c  = model_.c*0;
-        model_.c(n+i)  = -1;
-        sol = feval(model.solver.call,model_);
-    end
-    if sol.problem == 0
-        My(i,1) =  sol.Primal(n+i);
-    else
-        My(i,1) =  1e3;
-    end
+if ~isempty(vals)
+    F = [F, -0.5*(c'*x+b'*y) <= min([vals{:}])];
 end
 
+solvertime = clock;
+My = derivedualbounds(F,y,b,S,n);
 F = F + (y <= dy.*My);
 
 obj = -0.5*(c'*x+b'*y); % ==cost in optimal points 
 sol = solvesdp(F,obj,sdpsettings('verbose',interfacedata.options.verbose));
-
 
 % **********************************
 %% CREATE SOLUTION
@@ -118,3 +95,31 @@ else
     output.solveroutput =[];
 end
 output.solvertime = etime(clock,solvertime);
+
+function My = derivedualbounds(F,y,b,S,n)
+
+[a1,a2,a3,model] = export(F,-y(1),sdpsettings('relax',1,'verbose',0),0,0,0);
+for i = 1:length(b)
+    if isempty(S{i})
+        model_ = model;
+        model_.c  = model_.c*0;
+        model_.c(n+i)  = -1;
+        sol = feval(model.solver.call,model_);
+    else
+        k = length(S{i});
+        Aeq = sparse(1:k,n+S{i},1,k,n+3*length(b));
+        beq = zeros(k,1);
+        model_ = model;
+        model_.F_struc = [beq Aeq;model.F_struc];
+        model_.K.f = model.K.f+k;
+        model_.c  = model_.c*0;
+        model_.c(n+i)  = -1;
+        sol = feval(model.solver.call,model_);
+    end
+    if sol.problem == 0
+        My(i,1) =  sol.Primal(n+i); 
+        model.ub(n+i) = My(i,1);
+    else
+        My(i,1) =  1e3;
+    end
+end

@@ -1,4 +1,7 @@
-function ex14_1_6
+function tests = test_global_ex14_1_6
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 sdpvar x1 x2 x3 x4 x5 x6 x7 x8 x9 objvar; 
 
@@ -40,9 +43,9 @@ F = F + ( (-sqr(x7)) - sqr(x8) - x9 <= -1);
 
 F = F + ( -1 <= [x1 x2 x3 x4 x5 x6 x7 x8] <= 1);
 
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon'))
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double([objvar ]),0, 1e-5);
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon'))
+assert(sol.problem == 0)
+assert(value(objvar) <= 1e-5)
 
 function y = sqr(x)
 y = x*x;

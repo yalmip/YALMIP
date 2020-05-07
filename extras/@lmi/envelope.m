@@ -7,6 +7,8 @@ function [E,P] = envelope(C,x)
 % x: Optional: The linear variables of interest (projection onto these will be performed)
 % E: Constraint object representing the envelope approximation
 % P: Optional: Polyhedral object representing E (MPT Toolbox object)
+%              (requires a second argument with variables to project
+%              envelope to)
 %
 % Examples
 %
@@ -22,11 +24,17 @@ function [E,P] = envelope(C,x)
 %   plot(E)
 %   xx = (-1:0.01:1);hold on;plot(xx,xx+sin(pi*xx),xx,4-xx.^2)
 %
-% Alternatively, we can create a model which adds the outer approximation
-% cuts for the envelopes of the nonlinear variables, but keep the nonlinear
-% variables, and then plot the projection of the outer approximation,
-% keeping in mind that we now have to relax the nonlinear variables (this
-% is the model which thus would be used in a branch&bound scheme)
+% A polyhedral object in MPT format representing E can be obtained as a
+% second output.
+%
+%   [E,P] = envelope([-1 <= x <= 1,x+sin(pi*x) <= u <= 4-x^2],[x;u]);
+%
+% Alternatively, to avoid an expensive projection,  we can create a model
+% which adds the outer approximation cuts for the envelopes of the
+% nonlinear variables, but keep the nonlinear variables, and then plot the
+% projection of the outer approximation, keeping in mind that we now have
+% to relax the nonlinear variables (this is the model which thus would be
+% used in a branch&bound scheme) 
 %   E = envelope([-1 <= x <= 1,x+sin(pi*x) <= u <= 4-x^2]);
 %   plot(E,[x;u],[],[],sdpsettings('relax',1))
 %   xx = (-1:0.01:1);hold on;plot(xx,xx+sin(pi*xx),xx,4-xx.^2)

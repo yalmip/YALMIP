@@ -1,4 +1,7 @@
-function test_mpt_oneshotmpqp
+function tests = test_mpt_oneshotmpqp
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 yalmip('clear')
 
@@ -34,11 +37,11 @@ end
 [sol{k},diagnost{k},Uz{k},J{k},Optimizer{k}] = solvemp(F,obj,[],x{k},u{k});
 assign(x{k},[1;0.5])
 
-mbg_asserttrue(diagnost{1}.problem == 0);
-mbg_asserttolequal(double(J{k}),3.82456140350877,1e-5);
-mbg_asserttolequal(double(Optimizer{k}),-0.99122807017544,1e-5);
+assert(diagnost{1}.problem == 0);
+assert(abs(value(J{k})-3.82456140350877) <= 1e-5)
+assert(abs(value(Optimizer{k})--0.99122807017544) <= 1e-5)
 assign(x{k},[0;1.7])
-mbg_asserttolequal(double(Optimizer{k}),1,1e-5);
-mbg_asserttolequal(double(J{k}),6.19300000000000,1e-5);
+assert(abs(value(Optimizer{k})-1) <= 1e-5)
+assert(abs(value(J{k})-6.19300000000000) <= 1e-5)
 
 

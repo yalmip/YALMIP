@@ -1,4 +1,7 @@
-function algebraicmpc
+function tests = test_global_bmibnb_mpc1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Test bilinearization functionality 
 N = 2;
@@ -27,10 +30,10 @@ uk = [];
 cost = 0;
 ops =sdpsettings('solver','bmibnb','bmibnb.lpreduce',0,'bmibnb.maxiter',10,'debug',1,'bmibnb.upper','fmincon','bmibnb.root',1);
           
-sol = solvesdp(F+(-10 <= x{1} <= 10) + (x{1} == xk(:,end)),obj,ops)
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 48.8272, 1e-3);
+sol = optimize(F+(-10 <= x{1} <= 10) + (x{1} == xk(:,end)),obj,ops)
+assert(sol.problem == 0)
+assert(abs(value(obj)- 48.8272) <= 1e-3);
 
 P1 = optimizer(F+(-10 <= x{1} <= 10) ,obj,ops,x{1},u{1})
-mbg_asserttolequal(P1{xk},-0.3307, 1e-3);
+assert(abs(P1{xk}--0.3307) <= 1e-3)
 

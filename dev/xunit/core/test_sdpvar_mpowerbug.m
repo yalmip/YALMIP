@@ -1,5 +1,7 @@
-function test_sdpvar_mpowerbug
+function tests = test_sdpvar_mpowerbug
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 yalmip('clear')
 sdpvar x y
 x = x^2;
@@ -10,5 +12,5 @@ p2 = x^2;
 
 % This crashed in R20120806
 p3 = (x+y)*(x+y)
-assertTrue(true);
+assert(true);
 

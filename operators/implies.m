@@ -56,6 +56,12 @@ end
 switch class(X)
 
     case {'sdpvar','constraint','lmi'}      
+   
+        if nargin > 2
+            if ~isa(varargin{3},'double')
+                error('Third argument in IMPLIES should be a numerical value (tolerance)');
+            end
+        end
         varargout{1} = setupMeta(lmi([]), mfilename,varargin{:});
         
     case 'char'        

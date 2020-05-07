@@ -1,4 +1,7 @@
-function mpt_pwa_3
+function tests = test_mpt_pwa_3d_dp
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Prediction horizon
 N = 4;
@@ -60,4 +63,4 @@ end
 mpsol{1} = mpt_removeOverlaps(mpsol{1})
 
 
-mbg_asserttolequal(length(mpsol{1}.Pn),182);
+assert(length(mpsol{1}.Pn) == 182)

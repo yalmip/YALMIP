@@ -1,4 +1,7 @@
-function test_mpt_pwa_sincos_dp
+function tests = test_mpt_pwa_sincos_dp
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Prediction horizon
 N = 2;
 
@@ -58,4 +61,4 @@ end
 
 fun1 = mpt_mpsol2pu(mpsol{1});
 result =  fun1.join().compare(new.optimizer.join(), 'obj');
-assertTrue(result == 0);
+assert(result == 0)

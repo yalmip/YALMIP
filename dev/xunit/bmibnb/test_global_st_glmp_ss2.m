@@ -1,4 +1,7 @@
-function test_global_st_glmp_ss2
+function tests = test_global_st_glmp_ss2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_glmp_ss2.gms
 % Created 06-Aug-2007 09:39:34 using YALMIP R20070725
 
@@ -29,6 +32,6 @@ F=[F,0<=x1<=7];
 F=[F,0<=x2<=6];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), 3, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-3) <= 1e-2)

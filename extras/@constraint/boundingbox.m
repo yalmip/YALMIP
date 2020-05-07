@@ -1,4 +1,4 @@
-function varargout = boundingbox(F,ops,x)
+function varargout = boundingbox(F,ops,x,fun_eval)
 %BOUNDINGBOX Computes bounding box of a constraint
 %
 % If only one output is requested, only the symbolic model is returned
@@ -23,9 +23,11 @@ if nargin < 2
 end
 
 if nargin < 3
-    [B,L,U] = boundingbox(lmi(F),ops);
+    [B,L,U,sols,vals] = boundingbox(lmi(F),ops);
+elseif nargin < 4
+    [B,L,U,sols,vals] = boundingbox(lmi(F),ops,x);
 else
-    [B,L,U] = boundingbox(lmi(F),ops,x);
+    [B,L,U,sols,vals] = boundingbox(lmi(F),ops,x,fun_eval);
 end
 switch nargout
     case 0
@@ -39,5 +41,11 @@ switch nargout
         varargout{1} = B;
         varargout{2} = L;
         varargout{3} = U;
+    case 5
+        varargout{1} = B;
+        varargout{2} = L;
+        varargout{3} = U; 
+        varargout{4} = sols; 
+        varargout{5} = vals; 
     otherwise
 end

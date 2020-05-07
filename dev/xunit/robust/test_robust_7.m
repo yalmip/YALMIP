@@ -1,4 +1,7 @@
-function test_robust_7
+function tests = test_robust_7
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 ops = sdpsettings;
 yalmip('clear')
 A = [2.938 -0.7345 0.25;4 0 0;0 1 0];
@@ -40,8 +43,8 @@ xk1 = [0;0;0];
 ww = (-1+2*rand(Ns,1))
 
 for i = 1:Ns
-    solvesdp([Frobust, x == xk1(:,end)],h,ops);    
-    xk1 = [xk1 A*xk1(:,end) + B*double(U(1)) + E*ww(i)];
+    optimize([Frobust, x == xk1(:,end)],h,ops);    
+    xk1 = [xk1 A*xk1(:,end) + B*value(U(1)) + E*ww(i)];
 end
 xk1
 
@@ -65,11 +68,11 @@ objective = norm(Y-1,1) + norm(U,1)*0.01;
 xk2 = [0;0;0];
 ops = sdpsettings;
 for i = 1:Ns
-    solvesdp([Frobust, x == xk2(:,end)],h,ops);
-    xk2 = [xk2 A*xk2(:,end) + B*double(U(1)) + E*ww(i)];
+    optimize([Frobust, x == xk2(:,end)],h,ops);
+    xk2 = [xk2 A*xk2(:,end) + B*value(U(1)) + E*ww(i)];
 end
 norm(xk1-xk2)
-mbg_asserttolequal(norm(xk1-xk2),0, 1e-3);
+assert(norm(xk1-xk2) <= 1e-3)
 
 
 

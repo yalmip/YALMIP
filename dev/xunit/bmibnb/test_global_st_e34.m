@@ -1,4 +1,7 @@
-function test_global_st_e34
+function tests = test_global_st_e34
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_e34.gms
 % Created 06-Aug-2007 09:45:55 using YALMIP R20070725
 
@@ -30,6 +33,6 @@ F=[F,0<=x5<=0.028];
 F=[F,0<=x6<=0.0134];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), 0.01562, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-0.01562) <= 1e-2) 

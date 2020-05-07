@@ -1,6 +1,8 @@
-function test_operator_optimizer_18
+function tests = test_operator_optimizer18
+tests = functiontests(localfunctions);
 
-ops = sdpsettings('solver','cplex');
+function test1(dummy)
+ops = sdpsettings('solver','gurobi');
 x = sdpvar(2,1);
 c = sdpvar(2,1);
 P = optimizer([c'*x <= 1],-sum(x),ops,{c},[x]);
@@ -10,4 +12,4 @@ for i = 1:500
     S = [S,P{c == ci,'nosolve'}];
 end
 sol = S{[]};
-mbg_asserttolequal(sol,[.7;.7],2e-1);
+assert(norm(sol - [.7;.7]) <= 2e-1);

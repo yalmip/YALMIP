@@ -28,7 +28,7 @@ n = [varargin{1:d}];
 
 if nargin > d
     type = varargin{d+1};
-    if n(1)~=n(2) & ~isempty(strmatch(type,'symmetric'))
+    if n(1)~=n(2) & ~isempty(strmatch_octavesafe(type,'symmetric'))
         error('non-square matrix cannot be symmetric');
     end
 else

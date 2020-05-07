@@ -1,5 +1,7 @@
-function test_gp_lakshminarayanan
+function tests = test_gp_lakshminarayanan
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 % Architectural parameters
 beta = 4.03 * 10 ^ -4;
 alpha = 2.6 * 10 ^ -7;
@@ -62,7 +64,7 @@ for i = 1:5
         fprintf('\n');
     end;
 end   
-mbg_asserttolequal(norm(obj3d) + norm(obj2d) + norm(objstripMP) + norm(objstrip1P),1.742617616580068e+002,1e-2);
+assert(abs(norm(obj3d) + norm(obj2d) + norm(objstripMP) + norm(objstrip1P)-1.742617616580068e+002) <= 1e-2);
 
 function [obj_val, ti_val, tj_val, tk_val] = f3D( alpha, beta, tau, Procs, Ni, Nj, Nk)
 % Computes the optimal tile sizes given architectural parameters and domain sizes.
@@ -156,16 +158,16 @@ obj = T;
 
 %%%%%  Solve the optimization problem 
 
-solvesdp(F,obj, sdpsettings('verbose',1,'solver','bnb','debug',1));
+optimize(F,obj, sdpsettings('verbose',1,'solver','bnb','debug',1));
 
 %%%%% Print the solutions 
 
 
 % Return values
-obj_val = double(obj);
-ti_val = double(ti);
-tj_val = double(tj);
-tk_val = double(tk);
+obj_val = value(obj);
+ti_val = value(ti);
+tj_val = value(tj);
+tk_val = value(tk);
 
 
 function [obj_val, ti_val, tj_val] = f2D_SemiOblique_PerPlane( alpha, beta, tau, Procs, Ni, Nj, Nk)
@@ -249,15 +251,15 @@ obj = T;
 
 %%%%%  Solve the optimization problem 
 
-solvesdp(F,obj, sdpsettings('verbose',1,'solver','bnb'));
+optimize(F,obj, sdpsettings('verbose',1,'solver','bnb'));
 
 %%%%% Print the solutions 
 
 
 % Return values
-obj_val = double(obj);
-ti_val = double(ti);
-tj_val = double(tj);
+obj_val = value(obj);
+ti_val = value(ti);
+tj_val = value(tj);
 
 
 function [obj_val, ti_val] = fStrip_MP(alpha, beta, tau, Procs, Ni, Nj, Nk)
@@ -335,16 +337,16 @@ obj = T;
 
 %%%%%  Solve the optimization problem 
 
-solvesdp(F,obj, sdpsettings('verbose',1,'solver','bnb'));
+optimize(F,obj, sdpsettings('verbose',1,'solver','bnb'));
 
 %%%%% Print the solutions 
 
-%fprintf('Objective : %g \n', double(obj));
-%fprintf('ti : %g \n', double(ti));
+%fprintf('Objective : %g \n', value(obj));
+%fprintf('ti : %g \n', value(ti));
 
 % Return values
-obj_val = double(obj);
-ti_val = double(ti);
+obj_val = value(obj);
+ti_val = value(ti);
 
 
 

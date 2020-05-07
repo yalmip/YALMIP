@@ -1,5 +1,7 @@
-function test_operator_optimizer2
+function tests = test_operator_optimizer2
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 % Tests issue #39
 
 yalmip('clear')
@@ -9,8 +11,9 @@ sdpvar y
 P = optimizer([-1 <= y <= 1,x <= 10+z*x],x^2,[],[y;z],x)
 [~,err] = P{[0;5]};
 
-mbg_asserttrue(err == 0);
+assert(err == 0);
 
+function test2(dummy)
 yalmip('clear')
 sdpvar x
 sdpvar y
@@ -18,4 +21,4 @@ sdpvar z
 P = optimizer([-1 <= y <= 1,x <= 10+z*x],x^2,[],[y;z],x)
 [~,err] = P{[0;5]};
 
-mbg_asserttrue(err == 0);
+assert(err == 0);

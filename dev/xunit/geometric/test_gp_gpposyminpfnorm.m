@@ -1,5 +1,7 @@
-function test_gp_gpposyminpfnorm
+function tests = test_gp_gpposyminpfnorm
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 sdpvar lambda b(4,1) s(3,1) v(4,1) c(2,1)
 
 % constants
@@ -28,7 +30,7 @@ constr = [...
 ];
 constr=[constr, lambda >= 0, b >=0, s>=0, v>=0, c>=0];
 % find the optimal eigenvalue
-sol = solvesdp(constr,obj,sdpsettings('solver','mosek,gpposy,fmincon-geometric'));
+sol = optimize(constr,obj,sdpsettings('solver','mosek,gpposy,fmincon-geometric'));
 obj
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 0.80406738656616,1e-4);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 0.80406738656616) <= 1e-4);

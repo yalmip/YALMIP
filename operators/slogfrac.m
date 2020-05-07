@@ -35,10 +35,10 @@ switch class(varargin{1})
         X = varargin{3};
         Y = X(2);
         X = X(1);             
-        F = [];%X > sqrt(eps), Y > sqrt(eps)];
+        F = [];
         operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-        operator.range = [0 inf];
-        operator.domain = [1e-6 inf];
+        operator.range = [-inf inf];
+        operator.domain = [-inf inf];
         operator.bounds = @bounds;        
         operator.derivative = @(x) ([1./(x(1)+x(2)+sqrt(eps));1./(x(1)+x(2)+sqrt(eps))-(x(2)+sqrt(eps)).^-1]);
         varargout{1} = F;
@@ -48,4 +48,23 @@ switch class(varargin{1})
     otherwise
         error('SDPVAR/SLOGFRAC called with CHAR argument?');
 end
+
+function [L,U] = bounds(xL,xU)
+
+% Derive bounds on x1/x2
+z = [xL(1)./xL(2) xU(1)./xL(2) xL(1)./xU(2) xU(1)./xU(2)];
+fL = min(z);
+fU = max(z);
+
+if fL <= -1
+    L = -inf;
+else
+    L = log(1 + fL);
+end
+if fU <= -1
+    U = -inf;
+else
+    U = log(1 + fU);
+end
+
 

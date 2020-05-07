@@ -1,4 +1,7 @@
-function test_global_nemhaus
+function tests = test_global_nemhaus
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from nemhaus.gms
 % Created 24-Jul-2007 13:45:26 using YALMIP R20070523
 
@@ -29,6 +32,6 @@ F=[F,0<=x5];
 F=[F,0<=x6];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),31 , 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-31) <= 1e-2)

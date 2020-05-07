@@ -21,4 +21,4 @@ elseif all(M==1)
 else
     rhs = M.*(1-X);
 end
-F = [f -f] <= [rhs -lhs];
+F = [f <= rhs, -f <= -lhs];

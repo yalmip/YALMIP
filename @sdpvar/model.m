@@ -98,8 +98,15 @@ end
 % Normalize the callback expression and check for some obsoleted stuff
 if ~isempty(properties)
     if isequal(properties{1}.model,'callback')
-        F_normalizing = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);
+        [F_normalizing,normalizer] = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);
         F = F + F_normalizing;
+        if ~isempty(normalizer)
+            if ~isempty(properties{1}.domain)
+                if ~isinf(properties{1}.domain(1))
+                    F = [F, normalizer >= properties{1}.domain(1)];
+                end  
+            end
+        end
     end
     if length(extstruct.computes)>1
         for i = 1:length(properties)

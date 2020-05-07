@@ -1,4 +1,7 @@
-function test_global_st_e20
+function tests = test_global_st_e20
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_e20.gms
 % Created 22-Aug-2007 09:36:44 using YALMIP R20070810
 
@@ -31,6 +34,6 @@ F=[F,1e-005<=x5<=16];
 F=[F,1e-005<=x6<=16];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),-0.388781907395925 , 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--0.388781907395925) <= 1e-2)

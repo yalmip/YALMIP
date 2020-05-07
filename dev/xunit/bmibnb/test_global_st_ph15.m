@@ -1,4 +1,7 @@
-function test_global_st_ph15
+function tests = test_global_st_ph15
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from st_ph15.gms
 % Created 06-Aug-2007 09:31:22 using YALMIP R20070725
 
@@ -26,6 +29,6 @@ F=[F,0<=x3];
 F=[F,0<=x4];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective), -392.7037, 1);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)--392.7037) <= 1)

@@ -1,4 +1,7 @@
-function test_global_trig
+function tests = test_global_trig
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from trig.gms
 % Created 28-Jul-2007 18:14:21 using YALMIP R20070725
 
@@ -16,7 +19,7 @@ F=[F,5*sin(x1)-x1<=0];
 F=[F,-2<=x1<=5];
 
 % Solve problem
-sol = solvesdp(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
 
-mbg_asserttrue(sol.problem==0);
-mbg_asserttolequal(double(objvar),-3.7625, 1e-2);
+assert(sol.problem==0)
+assert(abs(value(objvar)--3.7625) <= 1e-2) 

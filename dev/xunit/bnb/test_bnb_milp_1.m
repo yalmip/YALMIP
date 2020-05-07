@@ -1,5 +1,7 @@
-function test_bnb_milp_1
+function tests = test_bnb_milp_1
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 rand('seed',1234);
 
 a = [1 2 3 4 5 6]';
@@ -16,7 +18,7 @@ ops = sdpsettings('solver','bnb');
 
 % Test QP
 obj = sum(bound);
-sol = solvesdp(F,obj,ops);
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(obj), 6.168422746718130e+002, 1e-5);
+sol = optimize(F,obj,ops);
+assert(sol.problem == 0);
+assert(abs(value(obj) - 6.168422746718130e+002) <= 1e-5);
 

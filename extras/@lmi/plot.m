@@ -139,6 +139,12 @@ if ~isempty(internalmodel.integer_variables)
     error('PLOT can currently not display sets involving integer variables');
 end
 
+% Clean up in case we are plotting a relaxed set and solver has support for
+% evaluation, but we don't intend to use that
+if internalmodel.solver.evaluation==0
+    internalmodel.evalMap = [];
+end
+
 % Use common function for lmi/plot and optimizer/plot
 if nargout == 0
     plotInternalModel(internalmodel,x,n,localindex,color,opts);

@@ -1,5 +1,7 @@
-function test_gp_gpposybeam
+function tests = test_gp_gpposybeam
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 N = 8;
 w = sdpvar(N,1);
 h = sdpvar(N,1);
@@ -36,9 +38,7 @@ constr = [ ...
 ];
 
 % solve GP and compute the optimal volume
-sol  = solvesdp(constr,obj)
-obj
+sol  = optimize(constr,obj)
 
-mbg_asserttolequal(sol.problem,0);
-
-mbg_asserttolequal(double(obj),42.39654132455499,1e-3);
+assert(sol.problem == 0);
+assert(abs(value(obj)-42.39654132455499) <= 1e-3);

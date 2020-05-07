@@ -1,31 +1,21 @@
-function y = pcone(z,x,y,alpha)
-%PCONE Defines a power cone x^alpha y ^(1-alpha) > |z|
+function y = pcone(z,x,alpha)
+%PCONE Defines a power cone x(1)^alpha x(2)^(1-alpha) > |z|
 %
 % Input
-%    z,y,x   : sclar SDPVAR objects.
+%    z,x     : SDPVAR objects.
 %    alpha   : scalar double 0<=alpha<=1
 %
 % Example
-%    F = pcone(z,x,y,alpha)
+%    F = pcone(z,x,alpha)
 %
 % An alternative syntax with only one argument is also possible
-%    F = pcone(z)
+%    F = pcone(Z) # where Z = [x;z;alpha]
 %
 %
-% See also CONE
-
-if numel(z)>1
-    error('x must be a scalar')
-end
-if numel(x)>1
-    error('x must be a scalar')
-end
-if numel(y)>1
-    error('y must be a scalar')
-end
+% See also @sdpvar/CONE, @sdpvar/EXPCONE
 
 try
-    y = [x;y;z;alpha];
+    y = [reshape(x,[],1);reshape(z,[],1);reshape(alpha,[],1)];
     y.typeflag = 20;
     y = lmi(y);
 catch

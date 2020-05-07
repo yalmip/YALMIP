@@ -1,6 +1,9 @@
-function test_regress_weird1
+function tests = test_regress_weird1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 sdpvar x
-sol = solvesdp((-pi <= x <= pi),2^sin(x),sdpsettings('solver','bmibnb'))
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(x), -pi/2, 1e-3);
+sol = optimize((-pi <= x <= pi),2^sin(x),sdpsettings('solver','bmibnb'))
+assert(sol.problem == 0)
+assert(abs(value(x)--pi/2) <= 1e-3)

@@ -1,5 +1,7 @@
-function test_bnb_migp_1
+function tests = test_bnb_migp_1
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 x = sdpvar(7,1);
 
 % Data
@@ -34,8 +36,8 @@ D = max([(D1+D4+D6),(D1+D4+D7),(D2+D4+D6),(D2+D4+D7),(D2+D5+D7),(D3+D5+D6),(D3+D
 
 % Solve integer problem
 ops = sdpsettings('solver','bnb','verbose',1);
-sol = solvesdp(F+(integer(x)),D,ops);
+sol = optimize(F+(integer(x)),D,ops);
 
-mbg_asserttolequal(sol.problem,0);
-mbg_asserttolequal(double(x),[ 2     3     3     3     2     3     3]', 1e-3);
-mbg_asserttolequal(double(D),8+1/3, 1e-3);
+assert(sol.problem == 0);
+assert(all(abs(value(x) - [ 2     3     3     3     2     3     3]') <= 1e-3));
+assert(abs(value(D)-(8+1/3)) <= 1e-3);

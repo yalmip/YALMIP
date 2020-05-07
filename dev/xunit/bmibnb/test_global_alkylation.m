@@ -1,4 +1,7 @@
-function test_global_alkylation
+function tests = test_global_abel
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from alkylation.gms
 % Created 02-Aug-2007 09:48:12 using YALMIP R20070725
 
@@ -45,6 +48,6 @@ F=[F,0.01<=x9<=4];
 F=[F,145<=x10<=162];
 
 % Solve problem
-%sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1))
-%mbg_asserttrue(sol.problem == 0);
-%mbg_asserttolequal(double(objective),  -1.768806963716253e+003, 1e-1);
+%sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1))
+%assert(sol.problem == 0)
+%assert(abs(value(objective)-  -1.768806963716253e+003) <= 1e-1) 

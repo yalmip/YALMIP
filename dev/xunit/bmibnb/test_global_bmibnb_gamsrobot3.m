@@ -1,4 +1,7 @@
-function gamsrobot3
+function tests = test_global_bmibnb_gamsrobot3
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 Q = 100*eye(10);
 c = [48, 42, 48, 45, 44, 41, 47, 42, 45, 46]';
@@ -14,6 +17,6 @@ p = c'*x-0.5*x'*Q*x;
 F = (0<=x<=1)+(A*x<=b);
 obj = p;
 
-sol = solvesdp(F,obj,sdpsettings('solver','bmibnb'))
+sol = optimize(F,obj,sdpsettings('solver','bmibnb'))
 
-mbg_asserttolequal(double(obj),-39, 1e-7);
+assert(abs(value(obj)--39) <= 1e-7)

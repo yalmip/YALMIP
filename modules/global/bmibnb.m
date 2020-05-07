@@ -182,6 +182,9 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
     p = updatemonomialbounds(p);    
     p = update_eval_bounds(p);    
     [upper,p.x0,info_text,numglobals,timing] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing);
+    if ~isinf(upper)
+        p = updateboundsfromupper(p,upper);
+    end
     p.counter.uppersolved = p.counter.uppersolved + 1;
     if numglobals > 0
         x_min = p.x0;
@@ -332,24 +335,7 @@ end
 lb = p.lb;
 ub = p.ub;
 if p.feasible
-    
-    % *******************************
-    % Bounded domain?
-    % *******************************
-    if ~isempty(p.branch_variables)
-        if any(isinf(p.lb(p.branch_variables))) | any(isinf(p.ub(p.branch_variables)))
-            bad = find(isinf(p.lb(p.branch_variables)) | isinf(p.ub(p.branch_variables)));
-            if ~all(ismember(bad,p.complementary))
-                output = yalmip_default_output;
-                output.Primal  = x_min;
-                output.problem = -6;
-                output.infostr = yalmiperror(-6);
-                output.solved_nodes = 0;
-                return
-            end
-        end
-    end
-
+        
     % *******************************
     % Save time & memory
     % *******************************

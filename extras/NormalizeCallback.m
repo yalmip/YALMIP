@@ -1,5 +1,6 @@
-function F = NormalizeCallback(varargin)
+function [F,z_normalizing] = NormalizeCallback(varargin)
 
+X = [];
 doAssignInitials = varargin{end};
 z_normalizing = varargin{end-1};
 for i = 3:nargin-2

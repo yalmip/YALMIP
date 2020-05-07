@@ -1,4 +1,7 @@
-function test_global_wall
+function tests = test_global_wall
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from wall.gms
 % Created 21-Aug-2007 17:09:27 using YALMIP R20070810
 
@@ -24,6 +27,6 @@ F=[F,objvar-x2+1E-7*x3-1E-5*x5==0];
 F=[F,2*objvar-2*x2+1E-7*x3-0.01*x4-1E-5*x5+0.01*x6==0];
 
 % Solve problem
-sol = solvesdp(F + [-10000 <= recover(F) <= 10000],objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objvar),-1 , 1e-2);
+sol = optimize(F + [-10000 <= recover(F) <= 10000],objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objvar)--1) <= 1e-2)

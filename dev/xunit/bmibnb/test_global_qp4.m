@@ -1,4 +1,7 @@
-function test_global_qp4
+function tests = test_global_qp4
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from qp4.gms
 % Created 22-Aug-2007 09:43:33 using YALMIP R20070810
 
@@ -174,6 +177,6 @@ F=[F,0<=x50];
 F=[F,0<=x51];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-mbg_asserttrue(sol.problem==0)
-mbg_asserttolequal(double(objective),8.093153908183049e-004 , 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+assert(sol.problem==0)
+assert(abs(value(objective)-8.093153908183049e-004) <= 1e-2)

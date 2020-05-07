@@ -1,4 +1,7 @@
-function test_global_abel
+function tests = test_global_global_abel
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 % Model generated from abel.gms
 % Created 02-Aug-2007 09:43:51 using YALMIP R20070725
 
@@ -60,5 +63,5 @@ F=[F,387.9==x1];
 F=[F,85.3==x9];
 
 % Solve problem
-sol = solvesdp(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'quadprog.Algorithm','interior-point-convex'));
-mbg_asserttolequal(double(objective),2.251945831860312e+002, 1e-2);
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'quadprog.Algorithm','interior-point-convex'));
+assert(abs(value(objective)-2.251945831860312e+002) <= 1e-2) 

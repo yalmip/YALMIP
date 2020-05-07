@@ -80,7 +80,11 @@ switch  model.solver.tag
     case 'scs-direct'
          [x_s,y_s,s,info] = scs_direct(data,cones,params);
     otherwise
-        [x_s,y_s,s,info] = scs_indirect(data,cones,params);
+        if params.gpu == true
+            [x_s,y_s,s,info] = scs_gpu(data,cones,params);
+        else
+            [x_s,y_s,s,info] = scs_indirect(data,cones,params);
+        end
 end
 solvertime = toc(t);
 

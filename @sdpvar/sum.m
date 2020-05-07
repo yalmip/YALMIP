@@ -9,6 +9,11 @@ if length(X.dim)==2
         Y = ones(1,max(X.dim))*reshape(X,[],1);
         return
     end
+    if isequal(sort(I), [1 2]) || isequal(I, 'all')
+        % special case if we sum all elements
+        Y = ones(1,X.dim(1))*X*ones(X.dim(2),1);
+        return
+    end
     switch I
         case 1
             Y = ones(1,X.dim(1))*X;

@@ -6,10 +6,10 @@ function sys = optimizer(Constraints,Objective,options,x,u)
 %   x, returning the optimal value of the expression u.
 %
 %   OPTIMIZER works most efficiently if the varying data x enters the
-%   optmization problem affinely. For the general cae, much more logic has
+%   optmization problem affinely. For the general case, much more logic has
 %   to be applied when instantiating the numerical data for a parametric
 %   value, and when compiling the model, it is harder fpr YALMIP to
-%   understand what kind of model it will be once th parameters are fixed.
+%   understand what kind of model it will be once the parameters are fixed.
 %
 %   By default, display is turned off (since optimizer is used in
 %   situations where many problems are solved repeatedly. To turn on
