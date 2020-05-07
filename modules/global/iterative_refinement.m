@@ -19,7 +19,7 @@ function output = iterative_refinement(model)
 %
 % Note : In order to take achieve precisions of more than 15 digits, this
 % solver requires the high precision library GEM to be in matlab's path.
-% This library can be downloaded from https://gem-library.github.com/gem
+% This library can be downloaded from https://gem-library.github.com
 % Best results will be obtained by specifying the problem to be solved in
 % terms of gem or sgem variables.
 %
