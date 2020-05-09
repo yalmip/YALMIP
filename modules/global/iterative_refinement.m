@@ -15,13 +15,14 @@ function output = iterative_refinement(model)
 % refiner.refinedual         - Whether the dual should be refined [true|false (true)]
 % refiner.solveprimalfirst   - Whether the first iteration is done in primal or dual form [true|false (false)]
 % refiner.primalinprimalform - Whether the primal refinements should be solved in primal or dual form [true|false (false)]
-% refiner.dualinprimalform   - Whether the primal refinements should be solved in primal or dual form [true|false (false)]
+% refiner.dualinprimalform   - Whether the dual refinements should be solved in primal or dual form [true|false (false)]
 %
 % Note : In order to take achieve precisions of more than 15 digits, this
 % solver requires the high precision library GEM to be in matlab's path.
-% This library can be downloaded from https://gem-library.github.com
-% Best results will be obtained by specifying the problem to be solved in
-% terms of gem or sgem variables.
+% The GEM library is freely available at https://gem-library.github.com
+% When expecting more than 15 digits of precision, problems with
+% non-integer coefficients should be specified in terms of gem or sgem
+% variables.
 %
 % Examples:
 %   1. Solving a linear program without the high precision library
@@ -146,8 +147,8 @@ function [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, L
 %
 % x can be a combination of scalars as specified by K.f, K.l (a la sedumi).
 %
-% For better results, the above parameters should be provided as gem/sgem
-% objects.
+% When coefficients are not integers, giving the above parameters as
+% gem/sgem objects provides the full precision information to the solver.
 %
 % l should not be given explicitly. If specified, it sets a lower bound on
 % the bounded variables (as specified by K.l).
@@ -169,7 +170,7 @@ function [fval x y z info] = refiner(Aeq, beq, f, K, options, l, fd, ld, beqd, L
 % info provides information about the solving process
 
 % Written by Jean-Daniel Bancal on 28 January 2016
-% last modified according to gihub
+% last modified according to github
 
 
 %% Parameters setting
