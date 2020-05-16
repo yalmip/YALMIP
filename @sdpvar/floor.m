@@ -20,7 +20,14 @@ switch class(varargin{1})
         t = varargin{2};
         X = varargin{3};
         
-        F = ([X-1 <= t <= X]) + (integer(t));
+        F = [X-1 <= t <= X, integer(t)];
+        [M,m] = derivebounds(X);                
+        if ~isinf(m)
+            F = [F, floor(m) <= t];
+        end
+        if ~isinf(M)
+            F = [F, t <= floor(M)];
+        end
         
         varargout{1} = F;
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
