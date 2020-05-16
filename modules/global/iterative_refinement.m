@@ -19,7 +19,7 @@ function output = iterative_refinement(model)
 %
 % Note : In order to take achieve precisions of more than 15 digits, this
 % solver requires the high precision library GEM to be in matlab's path.
-% This library can be downloaded from https://github.com/jdbancal/gem/releases
+% This library can be downloaded from https://gem-library.github.com
 % Best results will be obtained by specifying the problem to be solved in
 % terms of gem or sgem variables.
 %
@@ -33,7 +33,7 @@ function output = iterative_refinement(model)
 %
 %   2. Solving the same program with the high precision library
 %   (provides a solution with any desired precision, here 200 digits)
-%     gemWorkingPrecision(220);
+%     gem.workingPrecision(220);
 %     A = gemify(A);
 %     b = gemify(b);
 %     optimize([A*x>=b], sum(x), sdpsettings('solver','refiner','verbose',1,'refiner.precdigits',200))
@@ -198,7 +198,7 @@ end
 if nargin < 18
     % first call
     if options.verbose >= 1
-        disp('Refiner 1.0 - Iterative meta-solver');
+        disp('Refiner 1.1 - Iterative meta-solver');
         if options.verbose == 1
             disp(' ');
             disp('iter-             iteration    global');
@@ -309,11 +309,11 @@ end
 % We make sure the gem default precision is larger than the required
 % precision...
 if highPrecisionSupported
-    if gemWorkingPrecision < -log10(precision)+20
+    if gem.workingPrecision < -log10(precision)+20
         if verbose >= 1
-            warning(['Precision of the GEM library is low (', num2str(gemWorkingPrecision), ' digits), increasing it to ', num2str(-log10(precision)+20), ' digits.']);
+            warning(['Precision of the GEM library is low (', num2str(gem.workingPrecision), ' digits), increasing it to ', num2str(-log10(precision)+20), ' digits.']);
         end
-        gemWorkingPrecision(-log10(precision)+20);
+        gem.workingPrecision(-log10(precision)+20);
     end
 end
 
@@ -537,7 +537,7 @@ else
 end
 
 % Now we estimate the error for all rounds until now:
-dimacsTot = computedimacs(beq0, f, Aeq, xTot, -yTot, [], K);
+dimacsTot = computedimacs(beq0, f, Aeq, xTot, -yTot, [zeros(K.f,1); zTot], K);
 allDimacsTot(nbIter,:) = dimacsTot;
 
 if highPrecisionSupported

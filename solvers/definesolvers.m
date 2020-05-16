@@ -1865,7 +1865,7 @@ i = i+1;
 
 solver(i) = lpsolver;
 solver(i).tag     = 'REFINER';
-solver(i).version = '1.0';
+solver(i).version = '1.1';
 solver(i).checkfor= {'iterative_refinement'};
 solver(i).call    = 'iterative_refinement';
 solver(i).supportshighprec = 1;
