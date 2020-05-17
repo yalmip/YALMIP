@@ -180,7 +180,7 @@ for pi = 1:size(pvec,1)
                 v1 = find(extVariables==LinearVariables(i));
                 if ~isempty(v1)
                     e = yalmip('extstruct',extVariables(v1));
-                    inner = amplexpr(e.arg{1},depends(e.arg{1}),binvars,integervars);
+                    inner = amplexpr(e.arg{1},vars,binvars,integervars);
                     names{i} = [e.fcn '(' inner{1} ')'];   
                     names{i} = strrep(names{i},'mpower_internal','');
                 end
