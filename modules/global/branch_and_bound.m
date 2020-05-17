@@ -174,6 +174,7 @@ while go_on
     if ~time_ok
         info_text = 'Time-out';
         keep_digging = 0; 
+        cost = inf;
     elseif p.feasible
         
         % *********************************************************************
@@ -301,6 +302,8 @@ while go_on
     end
     if isempty(stack)
         if isinf(cost) && (cost > 0)
+            lower = upper;
+        elseif cost > upper
             lower = upper;
         else
             lower = cost;
