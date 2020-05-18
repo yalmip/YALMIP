@@ -48,6 +48,12 @@ switch class(varargin{1})
         n = intvar(1,1);
         F = [t == x - y*n, d1+d2 == 1];
         F = [F,x>=m*(1-d1), x<=M*(1-d2),(x/y)-d1 <= n <= (x/y)+d2];
+        if ~isinf(m) && isa(y,'double')
+            F = [F, fix(m/y) <= n];
+        end
+        if ~isinf(M) && isa(y,'double')
+            F = [F, n <= fix(M/y)];
+        end
 
         varargout{1} = F;
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

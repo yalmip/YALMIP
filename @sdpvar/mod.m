@@ -45,10 +45,10 @@ switch class(varargin{1})
         n = intvar(1,1);
         [M,m] = derivebounds(x);        
         F_floor = [(x/y) - 1 <= n <= (x/y)];
-        if ~isinf(m)
+        if ~isinf(m) && isa(y,'double')
             F_floor = [F_floor, floor(m/y) <= n];
         end
-        if ~isinf(M)
+        if ~isinf(M) && isa(y,'double')
             F_floor = [F_floor, n <= floor(M/y)];
         end
         F = [t == x - y*n, F_floor];
