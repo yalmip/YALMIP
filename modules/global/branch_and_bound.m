@@ -128,6 +128,7 @@ while go_on
     
     p.upper = upper;
     for i = 1:length(options.bmibnb.strengthscheme)
+        p = adjustMaxTime(p,p.options.bmibnb.maxtime,cputime-t_start);
         time_ok = cputime-t_start < options.bmibnb.maxtime;
         if ~p.feasible | ~time_ok
             break
@@ -181,7 +182,7 @@ while go_on
         % Detect redundant constraints
         % *********************************************************************
         p = remove_redundant(p);
-
+        p = adjustMaxTime(p,p.options.bmibnb.maxtime,cputime-t_start);
         [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 
         if output.problem == -1
