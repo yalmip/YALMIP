@@ -15,6 +15,9 @@ if ~isempty(p.evalMap)
             % generate one if we are in a a region where convexity is known
             if isempty(p.evalMap{i}.properties.convexhull)
                 p.evalMap{i}.properties.convexhull = createConvexHullMethod(p.evalMap{i},xL,xU);
+                remove_auto_generated_convexhull = 1;
+            else
+                remove_auto_generated_convexhull = 0;
             end
             if ~isempty(p.evalMap{i}.properties.convexhull)
                 % A convex hull generator function is available!
@@ -28,7 +31,10 @@ if ~isempty(p.evalMap)
                         % use the sample-based instead
                         [Ax,Ay,b,K,p] = convexhullSampled(xL,xU,p,i);
                     end
-                end              
+                end    
+                if remove_auto_generated_convexhull
+                    p.evalMap{i}.properties.convexhull = [];
+                end
             else               
                [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);               
             end
@@ -151,7 +157,7 @@ else
     f = [];
 end
 
-function [Ax,Ay,b] = createConvexHullMethodConvex(xL,xU,f,df);
+function [Ax,Ay,b] = createConvexHullMethodConvex(xL,xU,f,df)
 xM = (xL+xU)/2;
 fL = f(xL);
 fM = f(xM);
@@ -161,7 +167,7 @@ dfM = df(xM);
 dfU = df(xU);
 [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 
-function [Ax,Ay,b] = createConvexHullMethodConcave(xL,xU,f,df);
+function [Ax,Ay,b] = createConvexHullMethodConcave(xL,xU,f,df)
 xM = (xL+xU)/2;
 fL = f(xL);
 fM = f(xM);

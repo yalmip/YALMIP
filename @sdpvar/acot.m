@@ -11,8 +11,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-        operator.convexhull = [];
+        operator = struct('convexity',@convexity,'monotonicity','none','definiteness','none','model','callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x)(-(1 + x.^2).^-1);
 
@@ -26,9 +25,21 @@ end
 
 function [L,U] = bounds(xL,xU)
 if xL<=0 & xU >=0
-    L = -inf;
-    U = inf;
-else
+    L = -pi/2;
+    U = pi/2;
+elseif xL>=0
     L = acot(xU);
     U = acot(xL);
+else
+    L = acot(xU);
+    U = acot(xL);    
+end
+
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'convex';
+elseif xU <= 0
+    vexity = 'concave';
+else
+    vexity = 'none';
 end

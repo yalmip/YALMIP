@@ -13,7 +13,7 @@ switch class(varargin{1})
 
         X = varargin{3};
         F = (-1+1e-9 <= X <= 1-1e-9);
-        operator = struct('convexity','convex','monotonicity','decreasing','definiteness','none','model','callback');
+        operator = struct('convexity',@convexity,'monotonicity','decreasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
         operator.inverse = @(x)(erfc(x));
         operator.derivative = @(x)-1./(exp(-((erfcinv(x))).^2)*2/sqrt(pi));
@@ -36,4 +36,13 @@ if xU>=1
     L = -inf;
 else
     L = erfcinv(xU);
+end
+
+function vexity = convexity(xL,xU)
+if xL >= 1 
+    vexity = 'concave';
+elseif xU <= 1
+    vexity = 'convex';
+else
+    vexity = 'none';
 end

@@ -8,8 +8,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
-        operator.convexhull = @convexhull;
+        operator = struct('convexity',@convexity,'monotonicity','increasing','definiteness','none','model','callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x)((1+x.^2).^-1);
         operator.inverse = @(x)(tan(x));
@@ -27,20 +26,11 @@ function [L,U] = bounds(xL,xU)
 L = atan(xL);
 U = atan(xU);
 
-function [Ax, Ay, b] = convexhull(xL,xU)
-fL = atan(xL);
-fU = atan(xU);
-dfL = 1/(1+xL^2);
-dfU = 1/(1+xU^2);
-if xL >= 0
-    % Concave region
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'concave';
 elseif xU <= 0
-    % Convex region
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
+    vexity = 'convex';
 else
-    % Changes convexity. We're lazy and let YALMIP sample instead
-    Ax = [];
-    Ay = [];
-    b = [];
+    vexity = 'none';
 end

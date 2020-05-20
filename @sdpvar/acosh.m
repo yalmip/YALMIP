@@ -32,3 +32,11 @@ else
     U = inf;
 end
 
+function vexity = convexity(xL,xU)
+if xL >= 1
+    vexity = 'concave';
+elseif xU <= -1
+    vexity = 'concave';
+else
+    vexity = 'none';
+end

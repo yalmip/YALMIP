@@ -8,8 +8,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
-        operator.convexhull = [];
+        operator = struct('convexity',@convexity,'monotonicity','increasing','definiteness','none','model','callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x)((1 - x.^2).^-0.5);
         operator.range = [-pi/2 pi/2];
@@ -26,3 +25,12 @@ end
 function [L,U] = bounds(xL,xU)
 L = asin(xL);
 U = asin(xU);
+
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'convex';
+elseif xU <= 0
+    vexity = 'concave';
+else
+    vexity = 'none';
+end

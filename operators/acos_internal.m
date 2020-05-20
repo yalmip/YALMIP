@@ -12,8 +12,7 @@ switch class(varargin{1})
         
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','decreasing','definiteness','none','model','callback');
-        operator.convexhull = [];
+        operator = struct('convexity',@convexity,'monotonicity','decreasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
         operator.derivative = @derivative;
         operator.range = [-pi/2 pi/2];
@@ -32,7 +31,15 @@ L = real(acos(xU));
 U = real(acos(xL));
 
 function df = derivative(x)
-
 df = (-(1 - x.^2).^-0.5);
 df(x>1) = 0;
 df(x<1) = 0;
+
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'concave';
+elseif xU <= 0
+    vexity = 'convex';
+else
+    vexity = 'none';
+end
