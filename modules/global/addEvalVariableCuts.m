@@ -11,6 +11,11 @@ if ~isempty(p.evalMap)
         
         % Generate a convex hull polytope
         if xL<xU
+            % If there is no convex hull method available, we might
+            % generate one if we are in a a region where convexity is known
+            if isempty(p.evalMap{i}.properties.convexhull)
+                p.evalMap{i}.properties.convexhull = createConvexHullMethod(p.evalMap{i},xL,xU);
+            end
             if ~isempty(p.evalMap{i}.properties.convexhull)
                 % A convex hull generator function is available!
                 % Might be able to reuse hull from last run node
@@ -123,3 +128,45 @@ end
 K = [];
 
 p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
+
+function f = createConvexHullMethod(p,xL,xU)
+
+if ~isa(p.properties.derivative,'function_handle')
+    f = [];
+end
+
+if isa(p.properties.convexity,'function_handle')
+    vexity = p.properties.convexity(xL,xU);
+else
+    vexity = p.properties.convexity;
+end
+
+if isequal(vexity,'convex')
+    f0 = @(x)eval([p.fcn '(x)']);
+    f = @(xL,xU)createConvexHullMethodConvex(xL,xU,f0,p.properties.derivative);
+elseif isequal(vexity,'concave')
+    f0 = @(x)eval([p.fcn '(x)']);
+    f = @(xL,xU)createConvexHullMethodConcave(xL,xU,f0,p.properties.derivative);
+else
+    f = [];
+end
+
+function [Ax,Ay,b] = createConvexHullMethodConvex(xL,xU,f,df);
+xM = (xL+xU)/2;
+fL = f(xL);
+fM = f(xM);
+fU = f(xU);
+dfL = df(xL);
+dfM = df(xM);
+dfU = df(xU);
+[Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+
+function [Ax,Ay,b] = createConvexHullMethodConcave(xL,xU,f,df);
+xM = (xL+xU)/2;
+fL = f(xL);
+fM = f(xM);
+fU = f(xU);
+dfL = df(xL);
+dfM = df(xM);
+dfU = df(xU);
+[Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);

@@ -11,11 +11,10 @@ switch class(varargin{1})
         
     case 'char'
         
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
+        operator = struct('convexity',@convexity,'monotonicity','none','definiteness','none','model','callback');
         operator.bounds     = @bounds;
         operator.derivative = @(x)(-sin(x));
-        operator.range = [-1 1];
-        operator.convexhull = @convexhull;
+        operator.range = [-1 1];        
  
         varargout{1} = [];
         varargout{2} = operator;
@@ -47,24 +46,14 @@ else
     end
 end
 
-function [Ax, Ay, b] = convexhull(xL,xU)
+function vexity = convexity(xL,xU)
 % Convert to sin
 xL = xL + pi/2;
 xU = xU + pi/2;
 if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
-    fL = sin(xL);
-    fU = sin(xU);
-    dfL = cos(xL);
-    dfU = cos(xU);
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
+    vexity = 'concave';    
 elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
-    fL = sin(xL);
-    fU = sin(xU);
-    dfL = cos(xL);
-    dfU = cos(xU);
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
+    vexity = 'convex';   
 else
-    [Ax,Ay,b] = convexhullGeneral(xL,xU,@sin);
+    vexity = 'none';
 end
-% Back to cos
-b=b-Ax*pi/2;  

@@ -114,9 +114,11 @@ if ~isempty(properties)
         end
     end
     for i = 1:length(properties)
-        if ~any(strcmpi(properties{i}.convexity,{'convex','concave','none'}))
-            disp('More cleaning, strange convextiy returned...Report bug in model.m')
-            error('More cleaning, strange convextiy returned...Report bug in model.m')
+        if ~isa(properties{i}.convexity,'function_handle')
+            if ~any(strcmpi(properties{i}.convexity,{'convex','concave','none'}))
+                disp('More cleaning, strange convextiy returned...Report bug in model.m')
+                error('More cleaning, strange convextiy returned...Report bug in model.m')
+            end
         end
     end
 end

@@ -13,13 +13,12 @@ switch class(varargin{1})
     case 'char'
 
         % General operator
-        operator = struct('convexity','none',...
-            'monotonicity','none',...
+        operator = struct('monotonicity','none',...
             'definiteness','none',...
             'model','callback');
 
-        operator.bounds     = @bounds;
-        operator.convexhull = @convexhull;
+        operator.convexity  = @convexity;
+        operator.bounds     = @bounds;     
         operator.derivative = @(x)(cos(x));
         operator.range = [-1 1];
         operator.domain = [-inf inf];     
@@ -30,6 +29,16 @@ switch class(varargin{1})
 
     otherwise
         error('SDPVAR/SIN called with CHAR argument?');
+end
+
+function vexity = convexity(xL,xU)
+
+if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
+    vexity = 'concave';    
+elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
+    vexity = 'convex';   
+else
+    vexity = 'none';
 end
 
 function [L,U] = bounds(xL,xU)
@@ -51,27 +60,3 @@ else
         L = -1;
     end
 end
-
-function [Ax, Ay, b] = convexhull(xL,xU)
-if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
-    xM = (xL+xU)/2;
-    fL = sin(xL);
-    fM = sin(xM);
-    fU = sin(xU);
-    dfL = cos(xL);
-    dfM = cos(xM);
-    dfU = cos(xU);
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
-    fL = sin(xL);
-    fU = sin(xU);
-    dfL = cos(xL);
-    dfU = cos(xU);
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
-else
-    [Ax,Ay,b] = convexhullGeneral(xL,xU,@sin);
-end
-
-
-
-
