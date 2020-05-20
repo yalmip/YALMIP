@@ -23,35 +23,38 @@ function options = sdpsettings(varargin)
 %   GENERAL
 %
 %    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|refiner|none ('')]
-%    verbose            - Display-level [0|1|2|...(0)] (0-silent, 1-normal, >1-loud)
-%    usex0              - Use the current values obtained from double as initial iterate if solver supports that [0|1 (0)]
+%    verbose            - Display-level [0|1|2|...(0)] (0 silent, 1 normal, >1 increasingly louder)
+%    usex0              - Use the current values obtained from VALUE as initial iterate if solver supports that [0|1 (0)]
+%    relax              - Disregard integrality constraint and/or relax nonlinear terms  [0 | 1 (both) 2 (relax integrality) 3 (relax nonlinear terms) (0)]
 %
-%    showprogress       - Show progress of YALMIP (suitable for large problems) [0|1 (0)]
-%    cachesolvers       - Check for available solvers only first time solvesdp is called [0|1 (0)]
+%    showprogress       - Show progress of YALMIP (suitable for debugging very large problems) [0|1 (0)]
 %    warning            - Shows a warning if a problems occurs when solving a problem (infeasibility, numerical problem etc.) [0|1 (1)]
 %    beeponproblem      - Beeps when certain warning/error occurs [ integers -2|-1|1|2|3|4|5|6|7|8|9|10|11]
-%    saveduals          - Dual variables are saved in YALMIP [0|1 (1)]
+%
+%    saveduals          - Dual variables are saved in YALMIP if available [0|1 (1)]
 %    saveyalmipmodel    - Keep all data sent to solver interface [0|1 (0)]
 %    savesolverinput    - Keep all data sent to solver [0|1 (0)]
 %    savesolveroutput   - Keep all data returned from solver [0|1 (0)]
+% 
 %    removeequalities   - Let YALMIP remove equality constraints [-1|0|1 (0)] (-1:with double inequalities, 0:don't, 1:by QR decomposition, 2:basis from constraints)
 %    convertconvexquad  - Convert convex quadratic constraints to second order cones [0|1 (1)]
-%    radius             - Add radius constraint on all pimal variables ||x||<radius [double >=0 (inf)]
-%    shift              - Add small perturbation to (try to) enforce strict feasibility [double >=0 (0)]
-%    relax              - Disregard integrality constraint and/or relax nonlinear terms  [0 | 1 (both) 2 (relax integrality) 3 (relax nonlinear terms) (0)]
 %    allowmilp          - Allow introduction of binary variables to model nonlinear operators [0 | 1 (0)]
 %    expand             - Expand nonlinear operators [0|1 (1)]. Should always be true except in rare debugging cases.
 %    plot               - Options when plotting sets
+%
+%    radius             - [Obsolete] Add radius constraint on all primal variables ||x||<radius [double >=0 (inf)]
+%    shift              - [Obsolete] Add small perturbation to (try to) enforce strict feasibility [double >=0 (0)]
+%    cachesolvers       - [Obsolete] Check for available solvers only first time solvesdp is called [0|1 (0)]
 %
 %   SUM-OF-SQUARES
 %
 %    sos, see help solvesos
 %
-%   BRANCH AND BOUND for mixed integer programs
+%   BRANCH AND BOUND for mixed-integer convex programs
 %
 %    options.bnb, see help bnb
 %
-%   BRANCH AND BOUND for polynomial programs
+%   BRANCH AND BOUND for general nonconvex programs
 %
 %    options.bmibnb, see help bmibnb
 %
@@ -61,7 +64,7 @@ function options = sdpsettings(varargin)
 %
 %   EXTERNAL SOLVERS
 %
-%    See solver manuals.
+%    See solver manuals or simply type ops = sdpsettings;ops.sedumi etc
 
 % Print out possible values of properties.
 if (nargin == 0) && (nargout == 0)
