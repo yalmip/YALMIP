@@ -330,6 +330,10 @@ if expectval
     error(sprintf('Expected value for property ''%s''.', arg));
 end
 
+if isa(options.verbose,'char')
+    error('Verbosity level should be an non-negative integer.');
+end
+
 
 function [solverops] = trytoset(solver)
 
