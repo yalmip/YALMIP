@@ -6,7 +6,7 @@ function output = bnb(p)
 % programs
 %
 % BNB is never called by the user directly, but is called by
-% YALMIP from SOLVESDP, by choosing the solver tag 'bnb' in sdpsettings.
+% YALMIP from OPTIMIZE, by choosing the solver tag 'bnb' in sdpsettings.
 %
 % BNB is used if no other mixed-integer solver is found, and
 % is only meant to be used for mixed-integer SDP, or maybe general

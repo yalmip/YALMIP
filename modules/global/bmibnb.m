@@ -2,7 +2,7 @@ function output = bmibnb(p)
 %BMIBNB Global solver based on branch-and-bound
 %
 % BMIBNB is never called by the user directly, but is called by YALMIP from
-% SOLVESDP, by choosing the solver tag 'bmibnb' in sdpsettings
+% OPTIMIZE, by choosing the solver tag 'bmibnb' in sdpsettings
 %
 % The behaviour of BMIBNB can be altered using the fields in the field
 % 'bmibnb' in SDPSETTINGS
