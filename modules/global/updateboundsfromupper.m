@@ -4,6 +4,7 @@ if nargin == 1
 end
 if ~isinf(upper)
     LU = [p.lb p.ub];
+    % Simple objective c_i*x(i)
     if nnz(p.c.*(p.ub-p.lb)) == 1 & nnz(p.Q)==0
         i = find(p.c.*(p.ub-p.lb));
         if p.c(i) > 0
@@ -17,28 +18,29 @@ if ~isinf(upper)
         end            
     end
     if nnz(p.Q)==0
-        i = find(p.c);        
-            for j = i(:)'
-                ii = setdiff(i,j);
-                if ~isempty(ii)                     
-                    if p.c(j) > 0
-                        obound = upper - p.f;
-                        ii_pos = ii(find(p.c(ii) > 0));
-                        ii_neg = ii(find(p.c(ii) < 0));
-                        obound = obound-sum(p.c(ii_pos).*p.lb(ii_pos));                                                
-                        obound = obound-sum(p.c(ii_neg).*p.ub(ii_neg));  
-                        p.ub(j) = min(p.ub(j),obound/p.c(j));
-                    else
-                        obound = p.f - upper;
-                        ii_pos = ii(find(p.c(ii) > 0));
-                        ii_neg = ii(find(p.c(ii) < 0));
-                        obound = obound+sum(p.c(ii_pos).*p.lb(ii_pos));                                                
-                        obound = obound+sum(p.c(ii_neg).*p.ub(ii_neg));  
-                        p.lb(j) = max(p.lb(j),obound/-p.c(j));
-                    end
+        % Very basic, simply propagate from sum c_i m_i(x) <= upper
+        i = find(p.c);
+        for j = i(:)'
+            ii = setdiff(i,j);
+            if ~isempty(ii)
+                if p.c(j) > 0
+                    obound = upper - p.f;
+                    ii_pos = ii(find(p.c(ii) > 0));
+                    ii_neg = ii(find(p.c(ii) < 0));
+                    obound = obound-sum(p.c(ii_pos).*p.lb(ii_pos));
+                    obound = obound-sum(p.c(ii_neg).*p.ub(ii_neg));
+                    p.ub(j) = min(p.ub(j),obound/p.c(j));
+                else
+                    obound = p.f - upper;
+                    ii_pos = ii(find(p.c(ii) > 0));
+                    ii_neg = ii(find(p.c(ii) < 0));
+                    obound = obound+sum(p.c(ii_pos).*p.lb(ii_pos));
+                    obound = obound+sum(p.c(ii_neg).*p.ub(ii_neg));
+                    p.lb(j) = max(p.lb(j),obound/-p.c(j));
                 end
-            end        
-    end        
+            end
+        end
+    end
     if ~isempty(p.bilinears) & nnz(p.Q)==0
         quad_v = find(p.bilinears(:,2) == p.bilinears(:,3));
         quad_x = p.bilinears(quad_v,2);
@@ -46,7 +48,7 @@ if ~isinf(upper)
         i = find(p.c(quad_v)>0);
         quad_v = quad_v(i);
         quad_x = quad_x(i);
-        if ~isempty(quad_v) & ~any(isinf(p.lb(quad_x))) & ~any(isinf(p.ub(quad_x)))
+        if ~isempty(quad_v) %& ~any(isinf(p.lb(quad_x))) & ~any(isinf(p.ub(quad_x)))
             % x'*D*x + c'*x + f + h(x) < U
             D = diag(p.c(quad_v));
             if all(diag(D)>0)
@@ -57,7 +59,16 @@ if ~isinf(upper)
                 % Complete
                 % (x + D^-0.5*c/2)'*D*(x + D^-0.5*c/2) - c'*D*c/4 + f + h(x) < U
                 xc = -(D^-1)*c/2;
-                rhs = upper - p.f - (h(h<0)'*p.ub(h<0) + h(h>=0)'*p.lb(h>=0)) + xc'*D*xc;
+                %rhs = upper - p.f - (h(h<0)'*p.ub(h<0) + h(h>=0)'*p.lb(h>=0)) + xc'*D*xc;
+                rhs = upper - p.f + xc'*D*xc;
+                ix = find(h<0);
+                if ~isempty(ix)
+                    rhs = rhs - h(ix)'*p.ub(ix);
+                end
+                ix = find(h>0);
+                if ~isempty(ix)
+                    rhs = rhs + h(ix)'*p.lb(ix);
+                end
                 if rhs>0
                     D = D/rhs;
                     % (x-xc)'*D*(x-xc) <= 1

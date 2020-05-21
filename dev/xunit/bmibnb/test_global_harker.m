@@ -64,6 +64,6 @@ F=[F,0<=x19];
 F=[F,0<=x20];
 
 % Solve problem
-sol = optimize([F,recover(depends(F))<=1000],objective,sdpsettings('solver','bmibnb','allownonconvex',1))
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1))
 assert(sol.problem==0)
 assert(abs(value(objective)--986.5135) <= 1)
