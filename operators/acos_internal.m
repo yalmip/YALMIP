@@ -15,7 +15,8 @@ switch class(varargin{1})
         operator = struct('convexity',@convexity,'monotonicity','decreasing','definiteness','none','model','callback');
         operator.bounds = @bounds;
         operator.derivative = @derivative;
-        operator.range = [-pi/2 pi/2];
+        operator.inverse = @(x)cos(x);
+        operator.range = [0 pi];
         operator.domain = [-1 1];
 
         varargout{1} = [];
@@ -33,7 +34,7 @@ U = real(acos(xL));
 function df = derivative(x)
 df = (-(1 - x.^2).^-0.5);
 df(x>1) = 0;
-df(x<1) = 0;
+df(x<-1) = 0;
 
 function vexity = convexity(xL,xU)
 if xL >= 0  
