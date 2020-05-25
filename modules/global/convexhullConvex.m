@@ -1,5 +1,5 @@
 function [Ax,Ay,b,K] = convexhullConvex(varargin)
-% Two upper bounds from tangents
+% Two lower bounds from tangents
 % y > f(xL) + (x-xL)*df(xL)
 % y > f(xU) + (x-xL)*df(xU)
 % Upper bound from conneting extreme points
@@ -26,10 +26,10 @@ if all(diff(x)>0)
         Ay(1) = [];
         b(1) = [];
     end
-    if df(end)>1000
-        Ax(end)=[];
-        Ay(end) = [];
-        b(end) = [];
+    if df(end-1)>1000
+        Ax(end-1)=[];
+        Ay(end-1) = [];
+        b(end-1) = [];
     end   
     
 else
