@@ -75,23 +75,37 @@ if ~isempty(properties)
         properties{i}.name = fcn;
         properties{i} = assertProperty(properties{i},'definiteness','none');
         properties{i} = assertProperty(properties{i},'convexity','none');
-        properties{i} = assertProperty(properties{i},'monotonicity','none');
+        properties{i} = assertProperty(properties{i},'monotonicity',[]);
         properties{i} = assertProperty(properties{i},'derivative',[]);
         properties{i} = assertProperty(properties{i},'inverse',[]);
         properties{i} = assertProperty(properties{i},'models',getvariables(extstruct.var));
         properties{i} = assertProperty(properties{i},'convexhull',[]);
         properties{i} = assertProperty(properties{i},'bounds',[]);
         properties{i} = assertProperty(properties{i},'domain',[-inf inf]);
+        properties{i} = assertProperty(properties{i},'stationary',[]);
         properties{i} = assertProperty(properties{i},'replace',[]);
-        switch properties{i}.definiteness
-            case 'positive'
-                properties{i} = assertProperty(properties{i},'range',[0 inf]);
-            case 'negative'
-                properties{i} = assertProperty(properties{i},'range',[-inf 0]);
-            otherwise
-                properties{i} = assertProperty(properties{i},'range',[-inf inf]);
+        if isa(properties{i}.definiteness,'char')
+            switch properties{i}.definiteness
+                case 'positive'
+                    properties{i} = assertProperty(properties{i},'range',[0 inf]);
+                case 'negative'
+                    properties{i} = assertProperty(properties{i},'range',[-inf 0]);
+                otherwise
+                    properties{i} = assertProperty(properties{i},'range',[-inf inf]);
+            end
+        else
+            properties{i} = assertProperty(properties{i},'range',[-inf inf]);
         end
-        properties{i} = assertProperty(properties{i},'model','unspecified');              
+        properties{i} = assertProperty(properties{i},'model','unspecified');
+        if isequal(properties{i}.convexity,'nonconvex')
+            properties{i}.convex = 'none';
+        end
+        if isequal(properties{i}.definiteness,'indefinite')
+            properties{i}.definiteness = 'none';
+        end
+        if isequal(properties{i}.monotonicity,'nonmonotone')
+            properties{i}.monotonicity = 'none';
+        end
     end
 end
 

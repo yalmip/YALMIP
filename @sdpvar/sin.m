@@ -8,15 +8,13 @@ switch class(varargin{1})
 
     case 'sdpvar'
         varargout{1} = InstantiateElementWiseUnitary(mfilename,varargin{:});
-        %varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
 
         % General operator
-        operator = struct('monotonicity','none',...
-            'definiteness','none',...
-            'model','callback');
-
+        operator.model = 'callback';
+        operator.definiteness  = @definiteness;
+        operator.monotonicity  = @monotonicity;
         operator.convexity  = @convexity;
         operator.bounds     = @bounds;     
         operator.derivative = @(x)(cos(x));
@@ -31,6 +29,38 @@ switch class(varargin{1})
         error('SDPVAR/SIN called with CHAR argument?');
 end
 
+function def = definiteness(xL,xU)
+if xU-xL > pi
+    def = 'none';
+else
+    n = floor(( (xL + xU)/2/(2*pi)));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if xL >= 0 && xU <=pi
+        def = 'positive';
+    elseif (xL >= -pi && xU <= 0) || (xL >= pi && xU <= 2*pi)
+        def = 'negative';
+    else
+        def = 'none';
+    end
+end
+
+function mono = monotonicity(xL,xU)
+if xU-xL > pi
+    mono = 'none';
+else
+    n = floor(( (xL + xU)/2/(2*pi)));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if xL >= -pi/2 && xU <=pi/2 
+        mono = 'increasing';
+    elseif (xL >= -1.5*pi && xU <= -pi/2) || (xL >= pi/2 && xU <= 1.5*pi)
+        mono = 'decreasing';
+    else
+        mono = 'none';
+    end
+end
+    
 function vexity = convexity(xL,xU)
 
 if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
