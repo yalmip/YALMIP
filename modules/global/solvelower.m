@@ -17,17 +17,18 @@ if p.options.bmibnb.cut.evalvariable
     psave.evalMap = p_cut.evalMap;
 end
 if p.options.bmibnb.cut.monomial
-    p_cut = addMonomialCuts(p_cut);
+	p_cut = addMonomialCuts(p_cut);
 end
 if p.options.bmibnb.cut.multipliedequality
-    p_cut = addMultipliedEqualityCuts(p_cut);
+   	p_cut = addMultipliedEqualityCuts(p_cut);
 end
 if p.options.bmibnb.cut.convexity
-    p_cut = addConvexityCuts(p_cut);
+  	p_cut = addConvexityCuts(p_cut);
 end
 if p.options.bmibnb.cut.complementarity
-    p_cut = addComplementarityCuts(p_cut);
+  	p_cut = addComplementarityCuts(p_cut);
 end
+
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -40,11 +41,13 @@ else
     
     if p.solver.lowersolver.objective.quadratic.convex
         % Setup quadratic
-        [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p);
-        
-        if nonconvexQuadratic(p_cut.Q);
-            p_cut.Q = p.Q;
-            p_cut.c = p.c;
+        [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p,0);
+        if nonconvexQuadratic(p_cut.Q)
+            [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p,1);
+            if nonconvexQuadratic(p_cut.Q)
+                p_cut.Q = p.Q;
+                p_cut.c = p.c;
+            end
         end
     end
     
@@ -151,7 +154,7 @@ else
             p_cut.monomials = [];
             p_cut.evaluation_scheme = [];
             
-            tstart = tic;                                             
+            tstart = tic;     
             output = feval(lowersolver,removenonlinearity(p_cut));
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
@@ -223,7 +226,7 @@ else
                 end
             else
                 try
-                    tstart = tic;
+                    tstart = tic;                    
                     output = feval(lowersolver,removenonlinearity(p_cut));
                     psave.counter.lowersolved = psave.counter.lowersolved + 1;
                     timing.lowersolve = timing.lowersolve + toc(tstart);
