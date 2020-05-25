@@ -3,8 +3,8 @@ if p.K.f + p.K.l > 0
     for i = 1:p.K.l + p.K.f
         rhs = p.F_struc(i,1);
         c   = -p.F_struc(i,2:end);
-        if ~any(c(find(p.variabletype>4))) && all(p.c(find(p.variabletype==2)))
-            [Q,c] = compileQuadratic(c,p);
+        if ~any(c(find(p.variabletype>2))) && all(c(find(p.variabletype==2)))
+            [Q,c] = compileQuadratic(c,p,0);
             Q = Q(p.linears,p.linears);
             c = c(p.linears);
             [R,e] = chol(Q);
