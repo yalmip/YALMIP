@@ -52,4 +52,4 @@ F=[F,0<=x12];
 % Solve problem
 sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1))
 assert(sol.problem==0)
-assert(abs(value(objective)--133.333) <= 1e-2) 
+assert(abs(value(objective)--400) <= 1e-2) 
