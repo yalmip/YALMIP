@@ -5,8 +5,8 @@ end
 if ~isinf(upper)
     LU = [p.lb p.ub];
     % Simple objective c_i*x(i)
-    if nnz(p.c.*(p.ub-p.lb)) == 1 & nnz(p.Q)==0
-        i = find(p.c.*(p.ub-p.lb));
+    if nnz(p.c(p.ub > p.lb)) == 1 & nnz(p.Q)==0
+        i = find(p.c.*(p.ub > p.lb));
         if p.c(i) > 0
             % We are minimizing x(i), since an upper bound is UPPER
             % this means c(i)*x(i) has to be < UPPER in optimal solution
