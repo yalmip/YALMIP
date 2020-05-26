@@ -12,6 +12,9 @@ p.K.f = p.K.f - length(removeThese);
 if p.options.bmibnb.cut.bilinear
     p_cut = addBilinearVariableCuts(p);
 end
+if 1
+  	p_cut = addNormBoundCut(p_cut);
+end
 if p.options.bmibnb.cut.evalvariable
     p_cut = addEvalVariableCuts(p_cut);
     psave.evalMap = p_cut.evalMap;

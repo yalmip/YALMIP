@@ -72,6 +72,9 @@ end
 if p.options.bmibnb.cut.evalvariable
     p_test = addEvalVariableCuts(p_test);
 end
+if 1
+  	p_test = addNormBoundCut(p_test);
+end
 if p.options.bmibnb.cut.multipliedequality
     p_test = addMultipliedEqualityCuts(p_test);
 end
