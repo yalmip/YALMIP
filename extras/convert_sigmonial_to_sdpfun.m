@@ -166,12 +166,9 @@ else
         % Nasty crossing around zero
         U = inf;
         L = -inf;
-    elseif xU < 0
-        L = xU^-1;
-        U = xL^-1;
     else
-        disp('Not implemented yet')
-        error
+        L = xU^-1;
+        U = xL^-1;    
     end
 end
 
@@ -208,11 +205,8 @@ if ~isempty(Ax)
         B(1)  = 0;
     end
 end
+
 function [Ax, Ay, b] = inverse_convexhull(xL,xU)
-fL = xL^-1;
-fU = xU^-1;
-dfL = -1*xL^(-2);
-dfU = -1*xU^(-2);
 if xL<0 & xU>0
     % Nasty crossing
     Ax = [1;-1];
@@ -220,46 +214,17 @@ if xL<0 & xU>0
     b = [xU;-xL];
     return
 end
-average_derivative = (fU-fL)/(xU-xL);
-xM = (average_derivative/(-1)).^(1/(-1-1));
-if xU < 0
-    xM = -xM;
-end
-if ~(xM > xL)
-    xM = (xL + xU)/2;
-end
+fL = xL^-1;
+fU = xU^-1;
+dfL = -1*xL^(-2);
+dfU = -1*xU^(-2);
+xM = (xL + xU)/2;
 fM = xM^(-1);
-dfM = (-1)*xM^(-2);
-
+dfM = -1*xM^(-2);
 if xL >= 0
     [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
     [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-end
-
-function df = power_derivative(x,power)
-fL = xL^power;
-fU = xU^power;
-dfL = power*xL^(power-1);
-dfU = power*xU^(power-1);
-if xL<0 & xU>0
-    % Nasty crossing
-    Ax = [];
-    Ay = [];
-    b = [];
-    return
-end
-if power > 1 | power < 0
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
-else
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
-end
-if ~isempty(Ax)
-    if isinf(Ax(1))
-        Ay(1) = 0;
-        Ax(1) = -1;
-        B(1)  = 0;
-    end
 end
 
 function  f = inverse_internal2_operator(model,variable,in);
