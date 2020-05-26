@@ -7,12 +7,13 @@ switch class(varargin{1})
         x = varargin{1};
         y = acos(x);
         y(x<-1) = pi;
-        y(x>1)  = 0;
+        y(x>1)  = 0;        
         varargout{1} = y;
         
     case 'char'
 
-        operator = struct('convexity',@convexity,'monotonicity','decreasing','definiteness','none','model','callback');
+        operator = CreateBasicOperator('decreasing','callback');
+        operator.convexity = @convexity;
         operator.bounds = @bounds;
         operator.derivative = @derivative;
         operator.inverse = @(x)cos(x);

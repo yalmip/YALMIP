@@ -24,11 +24,9 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = (X >= -1+eps);
+        F = (X >= -1);
 
-        operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');
-        operator.convexhull = @convexhull;
-        operator.range = [-inf inf];
+        operator = CrateBasicOperator('concave','increasing''callback');                
         operator.domain = [-1 inf];
         operator.derivative = @(x) (1./(abs(1+x)+sqrt(eps)));
         operator.inverse = @(x)(exp(x)-1);
@@ -77,28 +75,4 @@ if all(variabletype(vars)==4)
     end    
 else
     return
-end
-
-
-function [Ax, Ay, b, K] = convexhull(xL,xU)
-K = [];
-if 1+xL <= 0
-    fL = inf;
-else
-    fL = log(1+xL);
-end
-fU = log(1+xU);
-dfL = 1/(1+xL);
-dfU = 1/(1+xU);
-xM = (xU + xL)/2;
-fM = log(1+xM);
-dfM = 1/(1+xM);
-
-[Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-remove = isinf(b) | isinf(Ax) | isnan(b);
-if any(remove)
-    remove = find(remove);
-    Ax(remove)=[];
-    b(remove)=[];
-    Ay(remove)=[];
 end

@@ -30,20 +30,14 @@ switch class(varargin{1})
                     
     case 'char'
         
+        operator = CreateBasicOperator('convex','increasing','positive','callback');
+        operator.derivative = @(x)exp(x);
+        operator.inverse = @(x)log(x);        
+        
         varargout{1} = [];
-        varargout{2} = createOperator;
+        varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
         error('SDPVAR/EXP called with CHAR argument?');
 end
-
-function operator = createOperator
-% N.B bounds and convexhull operators are automatically constructed 
-operator.model = 'callback';
-operator.convexity = 'convex';
-operator.monotonicity = 'increasing';
-operator.definiteness = 'positive';
-operator.derivative = @(x)exp(x);
-operator.inverse    = @(x)log(x);
-operator.range = [0 inf];

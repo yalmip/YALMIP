@@ -8,8 +8,8 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity',@convexity,'monotonicity','increasing','definiteness','none','model','callback');        
-        operator.bounds = @bounds;
+        operator = CreateBasicOperator('increasing','callback')
+        operator.convexity = @convexity                
         operator.derivative = @(x)((1+x.^2).^-1);
         operator.inverse = @(x)(tan(x));
         operator.range = [-pi/2 pi/2];
@@ -21,10 +21,6 @@ switch class(varargin{1})
     otherwise
         error('SDPVAR/ATAN called with CHAR argument?');
 end
-
-function [L,U] = bounds(xL,xU)
-L = atan(xL);
-U = atan(xU);
 
 function vexity = convexity(xL,xU)
 if xL >= 0  

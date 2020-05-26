@@ -17,14 +17,13 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};      
-        F = (X >= 1e-8);
+        F = (X >= 0);
 
-        operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');       
-        operator.convexhull = @convexhull;
-        operator.bounds = @bounds;
-        operator.domain = [0 inf];
+        operator = CreateBasicOperator('concave','increasing','callback');                
+        operator.bounds = @bounds;        
         operator.derivative = @(x)(1./(abs(x)+eps));
         operator.inverse = @(x)(exp(x));
+        operator.domain = [0 inf];
 
         varargout{1} = F;
         varargout{2} = operator;
@@ -48,31 +47,6 @@ if xU < 0
 else
     U = log(xU);
 end
-
-function [Ax, Ay, b, K] = convexhull(xL,xU)
-K = [];
-if xL <= 0
-    fL = inf;
-else
-    fL = log(xL);
-end
-fU = log(xU);
-dfL = 1/(xL);
-dfU = 1/(xU);
-%xM = (xU - xL)/(fU-fL);
-xM = (xL + xU)/2;
-fM = log(xM);
-dfM = 1/xM;
-
-[Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-remove = isinf(b) | isinf(Ax) | isnan(b);
-if any(remove)
-    remove = find(remove);
-    Ax(remove)=[];
-    b(remove)=[];
-    Ay(remove)=[];
-end
-
 
 function f = check_for_special_cases(x)
 f = [];
