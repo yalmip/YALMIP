@@ -31,15 +31,15 @@ else
             error('Missing bound operator');
         end
         arg{1} = xL;
-        L = feval(p.evalMap{i}.fcn,arg{1:end-1});
+        L = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
         arg{1} = xU;
-        U = feval(p.evalMap{i}.fcn,arg{1:end-1});
+        U = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
     elseif strcmpi(p.evalMap{i}.properties.monotonicity,'decreasing')
         arg = p.evalMap{i}.arg;
         arg{1} = xL;
-        U = feval(p.evalMap{i}.fcn,arg{1:end-1});
+        U = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
         arg{1} = xU;
-        L = feval(p.evalMap{i}.fcn,arg{1:end-1});
+        L = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
     else
         % To get some kind of bounds, we just sample the function
         % and pick the min and max from there. This only works for
@@ -54,15 +54,15 @@ else
             xtest = linspace(xL,xU,100);
             arg = p.evalMap{i}.arg;
             arg{1} = xtest;
-            values = feval(p.evalMap{i}.fcn,arg{1:end-1});
+            values = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
             [minval,minpos] = min(values);
             [maxval,maxpos] = max(values);
             xtestmin = linspace(xtest(max([1 minpos-5])),xtest(min([100 minpos+5])),100);
             xtestmax = linspace(xtest(max([1 maxpos-5])),xtest(min([100 maxpos+5])),100);
             arg{1} = xtestmin;
-            values1 = feval(p.evalMap{i}.fcn,arg{1:end-1});
+            values1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
             arg{1} = xtestmax;
-            values2 = feval(p.evalMap{i}.fcn,arg{1:end-1});
+            values2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
             L = min([values1 values2]);
             U = max([values1 values2]);
         end

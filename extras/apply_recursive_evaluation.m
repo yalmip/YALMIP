@@ -79,7 +79,7 @@ if isfield(p.evalMap{1},'prearg')
         if isequal(arguments{1},'log') & (arguments{1+p.evalMap{i}.argumentIndex}<=0) %#ok<AND2>
             x(p.evalVariables(i)) = -1e4;
         else
-            x(p.evalMap{i}.computes(:)) = feval(arguments{:});
+            x(p.evalMap{i}.computes(:)) = real(feval(arguments{:}));
         end
     end
 else
@@ -97,9 +97,9 @@ else
             end
         else
             if isfield(p.evalMap{i},'computes')
-                x(p.evalMap{i}.computes) = feval(arguments{:});
+                x(p.evalMap{i}.computes) = real(feval(arguments{:}));
             else
-                x(p.evalVariables(i)) = feval(arguments{:});
+                x(p.evalVariables(i)) = real(feval(arguments{:}));
             end
         end
     end
