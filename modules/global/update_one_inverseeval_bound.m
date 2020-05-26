@@ -9,13 +9,13 @@ if ~all(xL==xU)
     try
         if ~isempty(p.evalMap{i}.properties.inverse)
             if strcmpi(p.evalMap{i}.properties.monotonicity,'increasing')
-                invfiL = feval(p.evalMap{i}.properties.inverse,fL,p.evalMap{i}.arg{2:end-1});
-                invfiU = feval(p.evalMap{i}.properties.inverse,fU,p.evalMap{i}.arg{2:end-1});
+                invfiL = real(feval(p.evalMap{i}.properties.inverse,fL,p.evalMap{i}.arg{2:end-1}));
+                invfiU = real(feval(p.evalMap{i}.properties.inverse,fU,p.evalMap{i}.arg{2:end-1}));
                 p.lb(arg) = max(p.lb(arg),invfiL);
                 p.ub(arg) = min(p.ub(arg),invfiU);
             elseif strcmpi(p.evalMap{i}.properties.monotonicity,'decreasing')
-                invfiL = feval(p.evalMap{i}.properties.inverse,fU,p.evalMap{i}.arg{2:end-1});
-                invfiU = feval(p.evalMap{i}.properties.inverse,fL,p.evalMap{i}.arg{2:end-1});
+                invfiL = real(feval(p.evalMap{i}.properties.inverse,fU,p.evalMap{i}.arg{2:end-1}));
+                invfiU = real(feval(p.evalMap{i}.properties.inverse,fL,p.evalMap{i}.arg{2:end-1}));
                 p.lb(arg) = max(p.lb(arg),invfiL);
                 p.ub(arg) = min(p.ub(arg),invfiU);
             end
