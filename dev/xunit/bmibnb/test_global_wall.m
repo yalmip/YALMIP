@@ -20,13 +20,13 @@ x6 = sdpvar(1);
 
 F = ([]);
 F=[F,objvar*x2==1];
-F=[F,x3 == 4.8*objvar*x4];
+F=[F,x3 == 4.8*x4*objvar];
 F=[F,x5==0.98*x2*x6];
 F=[F,x6*x4==1];
 F=[F,objvar-x2+1E-7*x3-1E-5*x5==0];
 F=[F,2*objvar-2*x2+1E-7*x3-0.01*x4-1E-5*x5+0.01*x6==0];
 
 % Solve problem
-sol = optimize(F + [-10000 <= recover(F) <= 10000],objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
 assert(sol.problem==0)
 assert(abs(value(objvar)--1) <= 1e-2)

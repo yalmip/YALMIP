@@ -36,6 +36,6 @@ F=[F,56<=x6<=100];
 F=[F,x7<=3000];
 
 % Solve problem
-sol = optimize(F+(-5000<=recover(depends(F))<=5000),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 assert(sol.problem==0)
 assert(abs(value(objective)--4500) <= 1e-2) 

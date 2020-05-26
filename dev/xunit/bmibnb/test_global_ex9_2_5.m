@@ -38,9 +38,7 @@ F=[F,0<=x8];
 F=[F,0<=x9];
 
 % Solve problem
-x = recover(F);
 sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
-sol = optimize(F+[-100<=x<=100],objvar,sdpsettings('solver','bmibnb','allownonconvex',1))
 
 assert(sol.problem==0)
 assert(abs(value(objvar)-5) <= 1e-2)

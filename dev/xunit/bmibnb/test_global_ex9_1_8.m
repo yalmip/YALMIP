@@ -57,7 +57,6 @@ F=[F,0<=x14];
 F=[F,0<=x15];
 
 % Solve problem
-optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
-sol = optimize(F+(-100<=recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 assert(sol.problem==0)
 assert(abs(value(objective)--3.25) <= 1e-2)

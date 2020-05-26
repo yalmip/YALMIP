@@ -53,6 +53,6 @@ F=[F,0<=x13];
 F=[F,0<=x14];
 
 % Solve problem
-sol = optimize(F+(recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 assert(sol.problem==0)
 assert(abs(value(objective)--13) <= 1e-2)

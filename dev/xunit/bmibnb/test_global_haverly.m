@@ -50,6 +50,6 @@ F=[F,0<=x11];
 F=[F,0<=x12];
 
 % Solve problem
-sol = optimize([F,recover(depends(F))<=1000],objective,sdpsettings('solver','bmibnb','allownonconvex',1))
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1))
 assert(sol.problem==0)
 assert(abs(value(objective)--133.333) <= 1e-2) 

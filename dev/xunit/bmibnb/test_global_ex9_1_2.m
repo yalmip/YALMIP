@@ -46,6 +46,6 @@ F=[F,0<=x10];
 F=[F,0<=x11];
 
 % Solve problem
-sol = optimize(F+(recover(depends(F))<=100),objective,sdpsettings('solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 assert(sol.problem==0)
 assert(abs(value(objective)--16) <= 1e-2)
