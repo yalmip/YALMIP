@@ -226,12 +226,13 @@ while go_on
                 cost = inf;
                 feasible = 0;
 
-            case 2 % Unbounded (should not happen!)
-                cost = -inf;
-                x = output.Primal;
+            case {0,2,3,4} % (disregard numerical problems)
 
-            case {0,3,4} % No problems (disregard numerical problems)
-
+                % Unbounded
+                if output.problem == 2
+                    cost = -inf;
+                end
+                
                 if (output.problem == 3) | (output.problem == 4)
                     info_text = 'Numerical problems in lower bound solver';
                 end
