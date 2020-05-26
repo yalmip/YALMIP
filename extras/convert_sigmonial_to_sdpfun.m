@@ -166,6 +166,9 @@ else
         % Nasty crossing around zero
         U = inf;
         L = -inf;
+    elseif xU == 0
+        L = -inf;
+        U = xL^-1;  
     else
         L = xU^-1;
         U = xL^-1;    
