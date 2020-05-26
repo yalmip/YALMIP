@@ -48,20 +48,21 @@ x35 = sdpvar(1);
 objective = -(0-x18-x19-x20-x21-x22+30000*x23-25000*x24+30000*x25+50000*x26-25000*x27-5000*x28-15000*x29-50000*x30-(20682900));
 
 % Define constraints 
+errorf = @(x)((1 + erf(x/sqrt(2)))/2);
 F = ([]);
 F=[F,-95.54*exp(0.09167*x31)+x18==0];
 F=[F,-93.27*exp(0.33889*x32)+x19==0];
 F=[F,-95.54*exp(0.09167*x31)+x20==0];
 F=[F,-93.27*exp(0.33889*x32)+x21==0];
 F=[F,-91.03*exp(0.58889*x33)+x22==0];
-F=[F,-exp(-0.33889*x32)*(x21*erf(x2)-95*erf(x10))+x23==0];
-F=[F,-exp(-0.33889*x32)*(x21*erf(x3)-97*erf(x11))+x25==0];
-F=[F,-exp(-0.58889*x33)*(x22*erf(x6)-95*erf(x14))+x24==0];
-F=[F,-exp(-0.58889*x33)*(x22*erf(x7)-97*erf(x15))+x26==0];
-F=[F,-exp(-0.58889*x33)*(x22*erf(x8)-99*erf(x16))+x27==0];
-F=[F,-exp(-0.33889*x32)*(95*erf(-x12)-x21*erf(-x4))+x28==0];
-F=[F,-exp(-0.33889*x32)*(97*erf(-x13)-x21*erf(-x5))+x29==0];
-F=[F,-exp(-0.58889*x33)*(99*erf(-x17)-x22*erf(-x9))+x30==0];
+F=[F,-exp(-0.33889*x32)*(x21*errorf(x2)-95*errorf(x10))+x23==0];
+F=[F,-exp(-0.33889*x32)*(x21*errorf(x3)-97*errorf(x11))+x25==0];
+F=[F,-exp(-0.58889*x33)*(x22*errorf(x6)-95*errorf(x14))+x24==0];
+F=[F,-exp(-0.58889*x33)*(x22*errorf(x7)-97*errorf(x15))+x26==0];
+F=[F,-exp(-0.58889*x33)*(x22*errorf(x8)-99*errorf(x16))+x27==0];
+F=[F,-exp(-0.33889*x32)*(95*errorf(-x12)-x21*errorf(-x4))+x28==0];
+F=[F,-exp(-0.33889*x32)*(97*errorf(-x13)-x21*errorf(-x5))+x29==0];
+F=[F,-exp(-0.58889*x33)*(99*errorf(-x17)-x22*errorf(-x9))+x30==0];
 F=[F,-1.71779218689115*(log(0.0105263157894737*x21)+0.169445*sqr(x34))/x34+x2==0];
 F=[F,-1.71779218689115*(log(0.0103092783505155*x21)+0.169445*sqr(x34))/x34+x3==0];
 F=[F,-1.71779218689115*(log(0.0105263157894737*x21)+0.169445*sqr(x34))/x34+x4==0];
@@ -100,4 +101,4 @@ F=[F,0.0368<=x35<=0.0768];
 % Solve problem
 sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.lpreduce',1));
 assert(sol.problem==0)
-assert(abs(value(objective)-2.066828163087343e+007) <= 1e3)
+assert(abs(value(objective)-2.0762609e+007) <= 1e3)
