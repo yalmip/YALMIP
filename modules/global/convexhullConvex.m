@@ -15,7 +15,7 @@ x = [varargin{(1:m)}]';
 f = [varargin{(1:m)+m}]';
 df = [varargin{(1:m)+2*m}]';
 
-if all(diff(x)>0)
+if all(diff(x)>=0) | all(diff(x(~isinf(x))))>=0 % Support [0 inf inf]
     Ay = [-ones(m,1);1];
     b  = [-f + x.*df; -f(end)*x(1)/(x(end)-x(1)) +  f(1)*x(end)/(x(end)-x(1))];
     Ax  = [df;-f(end)/(x(end)-x(1)) + f(1)/(x(end)-x(1))];
