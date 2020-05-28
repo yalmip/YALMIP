@@ -23,7 +23,7 @@ Afloor = 1;
 
 F = (0.5 <= h/w <= 2) + (0.5 <= d/w <= 2);
 F = F + (2*(h*w+h*d) <= Awall) + (w*d <= Afloor);
-F = [F, [h w] >=0];
+F = [F, [h w d] >=0];
 sol = optimize(F,-(h*w*d))
 
 assert(sol.problem == 0);
