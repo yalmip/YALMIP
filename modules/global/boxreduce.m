@@ -38,7 +38,7 @@ if options.bmibnb.lpreduce
     for i = 1:length(pcut.lb)
         if (pcut.lb(i)>pcut.ub(i)) & (pcut.lb-pcut.ub < 1e-3)
             pcut.lb(i)=pcut.ub(i);
-            pcut = updatemonomialbounds(pcut);
+            pcut = propagate_bounds_from_monomials(pcut);
         end
     end
     p.lb = pcut.lb;
