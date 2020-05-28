@@ -5,7 +5,7 @@ if ~isempty(p.binary_variables)
     p.lb(p.binary_variables(local_gave_good)) = fix(x(p.binary_variables(local_gave_good)));
     p.ub(p.binary_variables(local_gave_good)) = fix(x(p.binary_variables(local_gave_good)));  
     for i = 1:3
-        p = update_eval_bounds(p);
+        p = propagate_bounds_from_evaluations(p);
         p = propagate_bounds_from_equalities(p);  
         p = update_monomial_bounds(p);
     end
@@ -16,7 +16,7 @@ if ~isempty(p_original.integer_variables)
     p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
     p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
     for i = 1:3
-        p = update_eval_bounds(p);
+        p = propagate_bounds_from_evaluations(p);
         p = propagate_bounds_from_equalities(p);
         p = update_monomial_bounds(p);
     end

@@ -111,7 +111,7 @@ end
 % Could be some nonlinear terms (although these problems are recommended to
 % be solved using BMIBNB
 p = compile_nonlinear_table(p);
-p = updatemonomialbounds(p);
+p = propagate_bounds_from_monomials(p);
 
 % % *******************************
 % %% PRE-SOLVE (nothing fancy coded)
@@ -142,7 +142,7 @@ if isempty(p.nonlinear)
 end
 
 % Silly redundancy
-p = updatemonomialbounds(p);
+p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 if p.K.l > 0
     b = p.F_struc(1+p.K.f:p.K.l+p.K.f,1);
