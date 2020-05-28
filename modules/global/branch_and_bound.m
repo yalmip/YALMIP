@@ -52,6 +52,7 @@ p.cutState(p.KCut.l,1) = 0; % Don't use to begin with
 p.depth = 0;        % depth in search tree
 p.dpos  = 0;        % used for debugging
 p.lower = NaN;
+p.spliton = [];
 lower   = NaN;
 gap     = inf;
 stack   = [];
@@ -112,9 +113,10 @@ propagators{4} = propagator;propagators{4}.fun = @propagate_bounds_from_compleme
 propagators{5} = propagator;propagators{5}.fun = @domain_reduction;
 propagators{6} = propagator;propagators{6}.fun = @propagate_bounds_from_equalities;
 propagators{7} = propagator;propagators{7}.fun = @propagate_bounds_from_combinatorics;
+propagators{8} = propagator;propagators{8}.fun = @update_sumsepquad_bounds;
 
 while go_on
-
+    
     % *********************************************************************
     % ASSUME THAT WE WON'T FATHOME
     % *********************************************************************
@@ -606,14 +608,17 @@ end
 % Strategy for deciding which variable to branch on
 % *************************************************************************
 function spliton = branchvariable(p,options,x)
-% Split if box is to narrow
+% Split if box is too narrow
 width = abs(p.ub(p.branch_variables)-p.lb(p.branch_variables));
-% if ~isempty(p.binary_variables)
-%     width_bin = min([abs(1-x(p.binary_variables)) abs(x(p.binary_variables))],[],2);
-% end
 if isempty(p.bilinears) | ~isempty(p.evalMap) | any(p.variabletype > 2)%(min(width)/max(width) < 0.1) | (size(p.bilinears,1)==0) %
-    [i,j] = max(width);%.*p.weight(p.branch_variables));
+    [i,j] = max(width);
     spliton = p.branch_variables(j);
+    if ~isempty(p.spliton) & p.spliton == spliton
+        all_candidates = find(width == width(j));
+        if length(all_candidates)>1
+            spliton = p.branch_variables(all_candidates(2));
+        end
+    end
 else
     res = x(p.bilinears(:,1))-x(p.bilinears(:,2)).*x(p.bilinears(:,3));
     [ii,jj] = sort(abs(res));
