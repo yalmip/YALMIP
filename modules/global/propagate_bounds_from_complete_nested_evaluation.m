@@ -3,7 +3,7 @@ function p = updatebounds_recursive_evaluation(p)
 if p.changedbounds
     if isempty(p.evalMap) & all(p.variabletype <= 2)
         % Bilinear/quadratic case can be done much faster
-        p = updatemonomialbounds(p);
+        p = propagate_bounds_from_monomials(p);
     else
         for i = 1:length(p.evaluation_scheme)
             switch p.evaluation_scheme{i}.group

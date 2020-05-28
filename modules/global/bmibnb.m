@@ -123,11 +123,13 @@ end
 p = compile_nonlinear_table(p);
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p);
-%p = presolve_eliminatelinearratios(p);
-p = presolve_bounds_from_quadratics(p);
-p = update_eval_bounds(p);
-p = update_monomial_bounds(p);
 
+% *************************************************************************
+% Start some bound propagation
+% *************************************************************************
+p = propagate_bounds_from_convex_quadratic_ball(p);
+p = propagate_bounds_from_evaluations(p);
+p = update_monomial_bounds(p);
 
 % *************************************************************************
 % Sort equalities in order to improve future bound propagation
@@ -138,13 +140,13 @@ p = presolve_sortrows(p);
 % Improve the bounds by performing some standard propagation
 % *************************************************************************
 p = propagate_bounds_from_equalities(p); 
-p = update_eval_bounds(p);
-p = update_sumsepquad_bounds(p);
+p = propagate_bounds_from_evaluations(p);
+p = propagate_bounds_from_separable_quadratic_equality(p);
 p = update_monomial_bounds(p);
 p = presolve_bounds_from_inequalities(p);
-p = update_eval_bounds(p);
+p = propagate_bounds_from_evaluations(p);
 p = update_monomial_bounds(p);
-p = presolve_quadratic_psdbound(p);
+p = propagate_bounds_from_convex_quadratic_ball(p);
 % *************************************************************************
 % For quadratic nonconvex programming over linear constraints, we
 % diagonalize the problem to obtain less number of bilinear terms. Not
@@ -173,17 +175,17 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
     p = build_recursive_scheme(p);
     p = compile_nonlinear_table(p);
     p = preprocess_bilinear_bounds(p);
-    p = update_eval_bounds(p);
-    p = updateboundsfromupper(p,upper);
+    p = propagate_bounds_from_evaluations(p);
+    p = propagate_bounds_from_upper(p,upper);
     p = propagate_bounds_from_complementary(p);
-    p = updatemonomialbounds(p);
+    p = propagate_bounds_from_monomials(p);
     p = propagate_bounds_from_equalities(p);
-    p = updatemonomialbounds(p);   
-    p = updatemonomialbounds(p);    
-    p = update_eval_bounds(p);    
+    p = propagate_bounds_from_monomials(p);   
+    p = propagate_bounds_from_monomials(p);    
+    p = propagate_bounds_from_evaluations(p);    
     [upper,p.x0,info_text,numglobals,timing] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing);
     if ~isinf(upper)
-        p = updateboundsfromupper(p,upper);
+        p = propagate_bounds_from_upper(p,upper);
     end
     p.counter.uppersolved = p.counter.uppersolved + 1;
     if numglobals > 0
@@ -220,7 +222,7 @@ end
 
 p.EqualityConstraintState = ones(p.K.f,1);
 p.InequalityConstraintState = ones(p.K.l,1);
-p = propagatequadratics(p);
+p = propagate_bounds_from_arbitrary_quadratics(p);
     
 
 % *************************************************************************
@@ -251,8 +253,9 @@ p.branch_variables = intersect(p.branch_variables,original_variables);
 % *************************************************************************
 % Tighten bounds (might be useful after bilinearization?)
 % *************************************************************************
+p = presolve_implied_integer(p);
 p = preprocess_bilinear_bounds(p);
-p = update_eval_bounds(p);
+p = propagate_bounds_from_evaluations(p);
 
 % *************************************************************************
 % Now reduce the branch variables by removing bilinear terms that only have
@@ -273,10 +276,10 @@ close = find(abs(p.lb - p.ub) < 1e-12);
 p.lb(close) = (p.lb(close)+p.ub(close))/2;
 p.ub(close) = p.lb(close);
 p = root_node_tighten(p,upper);
-p = updatemonomialbounds(p);
-p = update_eval_bounds(p);
+p = propagate_bounds_from_monomials(p);
+p = propagate_bounds_from_evaluations(p);
 p = propagate_bounds_from_equalities(p);
-p = updatemonomialbounds(p);
+p = propagate_bounds_from_monomials(p);
 output = yalmip_default_output;
 
 % Detect complementary constraints
@@ -527,14 +530,14 @@ while goon
     start = [p.lb;p.ub];
     i = i+1;
     % 2
-    p = updateboundsfromupper(p,upper);
+    p = propagate_bounds_from_upper(p,upper);
     % 3
     p = propagate_bounds_from_complementary(p);
-    p = updatemonomialbounds(p);  
+    p = propagate_bounds_from_monomials(p);  
     p = propagate_bounds_from_equalities(p);       
-    p = updatemonomialbounds(p);
-    p = updatemonomialbounds(p);        
-    p = update_eval_bounds(p);
+    p = propagate_bounds_from_monomials(p);
+    p = propagate_bounds_from_monomials(p);        
+    p = propagate_bounds_from_evaluations(p);
     i = i+1;
     goon = (norm(start-[p.lb;p.ub],'inf') > 1e-2) & i < 15;
     start = [p.lb;p.ub];

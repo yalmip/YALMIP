@@ -1,4 +1,5 @@
 function p = presolve_quadratic_psdbound(p)
+% Look for r >= (or ==) (x - c)^T Q (x - c)
 if p.K.f + p.K.l > 0    
     for i = 1:p.K.l + p.K.f
         rhs = p.F_struc(i,1);

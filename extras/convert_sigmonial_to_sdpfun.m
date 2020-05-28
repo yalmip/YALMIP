@@ -95,7 +95,7 @@ if any(model.variabletype > 3)
         end
     end
     
-    model = update_eval_bounds(model);
+    model = propagate_bounds_from_evaluations(model);
     for i = 1:length(model.evalMap)
         if isequal(model.evalMap{i}.fcn,'power_internal2')
             if isequal(model.evalMap{i}.arg{2},-1)

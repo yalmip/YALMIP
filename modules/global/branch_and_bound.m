@@ -106,14 +106,14 @@ propagator.time = [];
 propagator.reduction = [];
 propagator.worked = [];
 % Define all available bound propagation strageies
-propagators{1} = propagator;propagators{1}.fun = @updatebounds_recursive_evaluation;
-propagators{2} = propagator;propagators{2}.fun = @updateboundsfromupper;
-propagators{3} = propagator;propagators{3}.fun = @propagatequadratics;
+propagators{1} = propagator;propagators{1}.fun = @propagate_bounds_from_complete_nested_evaluation;
+propagators{2} = propagator;propagators{2}.fun = @propagate_bounds_from_upper;
+propagators{3} = propagator;propagators{3}.fun = @propagate_bounds_from_arbitrary_quadratics;
 propagators{4} = propagator;propagators{4}.fun = @propagate_bounds_from_complementary;
-propagators{5} = propagator;propagators{5}.fun = @domain_reduction;
+propagators{5} = propagator;propagators{5}.fun = @propagate_bounds_lp;
 propagators{6} = propagator;propagators{6}.fun = @propagate_bounds_from_equalities;
 propagators{7} = propagator;propagators{7}.fun = @propagate_bounds_from_combinatorics;
-propagators{8} = propagator;propagators{8}.fun = @update_sumsepquad_bounds;
+propagators{8} = propagator;propagators{8}.fun = @propagate_bounds_from_separable_quadratic_equality;
 
 while go_on
     
@@ -142,7 +142,7 @@ while go_on
             [volBefore,openVariables] = branchVolume(p);
             propagators{j}.time(end+1) = tic;
             tstart = tic;
-            [p,~,~,seen_x] = domain_reduction(p,upper,lower,lpsolver,x_min);
+            [p,~,~,seen_x] = propagate_bounds_lp(p,upper,lower,lpsolver,x_min);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;            
@@ -155,7 +155,7 @@ while go_on
             propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
             if upper < p.upper 
                 p.upper = upper;
-                p = updateboundsfromupper(p,upper);
+                p = propagate_bounds_from_upper(p,upper);
             else
                 p.upper = upper;
             end
@@ -279,7 +279,7 @@ while go_on
                             end
                         end
                         if upper < p.upper                           
-                            p = updateboundsfromupper(p,upper);
+                            p = propagate_bounds_from_upper(p,upper);
                         end
                     end
                 else

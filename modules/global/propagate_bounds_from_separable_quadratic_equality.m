@@ -1,5 +1,5 @@
 function p = update_sumsepquad_bounds(p);
-% Looking for case z = b+ q1(x1) + q2(x2) + ... where q quadratic
+% Looking for case z == b + q1(x1) + q2(x2) + ... where q quadratic
 
 if p.boundpropagation.sepquad
     found = 0;
