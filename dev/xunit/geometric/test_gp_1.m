@@ -42,7 +42,7 @@ F = [F, [t1 t2 t3] >= 0];
 sol = optimize(F,obj);
 
 assert(sol.problem == 0);
-assert(all(abs(value([t1 t2 t3]) - [ 1.10978618937192   1.10978618937162   1.57815225707513]) <=  1e-5));
+assert(all(abs(value([t1 t2 t3]) - [ 1.10978618937192   1.10978618937162   1.57815225707513]) <=  1e-4));
 assert(abs(value(obj) - 1.344555694227871e+002) <= 1e-3);
 
 function test5(dummy)

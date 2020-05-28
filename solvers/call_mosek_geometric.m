@@ -24,11 +24,19 @@ if problem == 0
     showprogress('Calling MOSEK',model.options.showprogress);    
     if model.options.verbose == 0  
         solvertime = tic;
-        res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize echo(0)');
+        try
+            res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize echo(0)');
+        catch
+            res = msk9_layer(prob.b,prob.A,prob.map,param,0);
+        end
         solvertime = toc(solvertime);
     else
         solvertime = tic;
-    	res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');     
+    	try
+            res = mskgpopt(prob.b,prob.A,prob.map,param,'minimize');     
+        catch
+            res = msk9_layer(prob.b,prob.A,prob.map,param,1);
+        end
         solvertime = toc(solvertime);
     end
     sol = res.sol;
@@ -46,8 +54,25 @@ if problem == 0
         case 'DUAL_INFEASIBLE'
             problem = 2;
         case 'UNKNOWN'
-            problem = 9;
+            problem = 4;
         otherwise
             problem = -1;
     end
 end
+
+function res = msk9_layer(c,A,map,param,verbosity)
+% Temporary fix until I do this in low-level format
+% Ugly indeed
+obj = 0;
+con = [];
+x = sdpvar(size(A,2),1);
+j = find(map == 0);
+obj = sum(c(j).*exp(A(j,:)*x));
+for i = 1:max(map) 
+    j = find(map == i);
+    con = [con, sum(c(j).*exp((A(j,:)*x))) <= 1];   
+end
+sol = optimize(con,obj,sdpsettings('solver','mosek','verbose',verbosity,'savesolveroutput',1));
+res = sol.solveroutput.res;
+res.sol.itr.xx = value(x);
+
