@@ -12,7 +12,7 @@ p.K.f = p.K.f - length(removeThese);
 if p.options.bmibnb.cut.bilinear
     p_cut = addBilinearVariableCuts(p);
 end
-if 1
+if p.options.bmibnb.cut.normbound
   	p_cut = addNormBoundCut(p_cut);
 end
 if p.options.bmibnb.cut.evalvariable
@@ -24,9 +24,6 @@ if p.options.bmibnb.cut.monomial
 end
 if p.options.bmibnb.cut.multipliedequality
    	p_cut = addMultipliedEqualityCuts(p_cut);
-end
-if p.options.bmibnb.cut.convexity
-  	p_cut = addConvexityCuts(p_cut);
 end
 if p.options.bmibnb.cut.complementarity
   	p_cut = addComplementarityCuts(p_cut);

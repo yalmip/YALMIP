@@ -77,7 +77,6 @@ p_cut = addNormBoundCut(p_cut);
 p_cut = addBilinearVariableCuts(p_cut);
 p_cut = addEvalVariableCuts(p_cut);
 p_cut = addMonomialCuts(p_cut);
-%p_cut = addConvexityCuts(p_cut);
 
 p_cut = mergeBoundsToModel(p_cut);
 if nargin > 1
