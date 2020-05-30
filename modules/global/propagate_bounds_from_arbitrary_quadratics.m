@@ -1,4 +1,4 @@
-function pout = propagatequadratics(p)
+function pout = propagate_bounds_from_arbitrary_quadratics(p)
 
 pout = p;
 if p.bilinears~=0

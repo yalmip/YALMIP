@@ -1,4 +1,4 @@
-function p = presolve_bounds_from_quadratics(p)
+function p = propagate_bounds_from_convex_quadratic_ball(p)
 % Any elementwise constraints?
 if p.K.l >0
     % Any quadratic terms in model?
