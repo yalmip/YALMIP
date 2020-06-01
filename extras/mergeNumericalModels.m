@@ -39,7 +39,7 @@ if isfield(p1.K,'q') & nnz(p1.K.q)>0
       p.F_struc = [p.F_struc(1:p.K.f+p.K.l,:);
                    p1.F_struc(1+p1.K.f+p1.K.l:p1.K.f+p1.K.l+sum(p1.K.q),:)
                    p.F_struc(1+p.K.f+p.K.l:end,:)];
-    p.K.q = [p.K.q p1.K.q];
+    p.K.q = [p1.K.q p.K.q];
     p.K.q = p.K.q(find(p.K.q));
 end
 
