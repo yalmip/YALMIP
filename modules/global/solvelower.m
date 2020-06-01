@@ -30,7 +30,7 @@ if p.options.bmibnb.cut.quadratic
     p_cut = addQuadraticCuts(p_cut);
 end
 if p.options.bmibnb.cut.exponential
- p_cut = addExponentialCuts(p_cut);
+    p_cut = addExponentialCuts(p_cut);
 end
 % **************************************
 % SOLVE NODE PROBLEM

@@ -45,7 +45,7 @@ end
 
 if isfield(p1.K,'e') & nnz(p1.K.e)>0
       p.F_struc = [p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
-                   p1.F_struc(1+p1.K.f+p1.K.l+sum(p.K.q):p1.K.f+p1.K.l+sum(p1.K.q)+3*p1.K.e,:)
+                   p1.F_struc(1+p1.K.f+p1.K.l+sum(p1.K.q):p1.K.f+p1.K.l+sum(p1.K.q)+3*p1.K.e,:)
                    p.F_struc(1+p.K.f+p.K.l+sum(p.K.q):end,:)];
    p.K.e = p.K.e + p1.K.e;
 end

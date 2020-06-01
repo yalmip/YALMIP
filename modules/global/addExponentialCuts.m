@@ -21,7 +21,7 @@ if length(p.evalMap) > 0
             K.q = 0;
             localModel = createNumericalModel(F_structemp,K);
             pcut = mergeNumericalModels(pcut,localModel);
-        end
-        pcut = mergeNumericalModels(p,pcut);
+        end        
     end
+    pcut = mergeNumericalModels(p,pcut);
 end
