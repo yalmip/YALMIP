@@ -18,4 +18,4 @@ F = F + (6>=x1+x2>=2);
 F = F + (1<=x3<=5) + (0<=x4<=6)+(1<=x5<=5)+(0<=x6<=10)+(x1>=0)+(x2>=0);
 sol = optimize(F,obj,sdpsettings('solver','bmibnb'))
 
-assert(abs(value(obj)--310) <= 1e-6)
+assert(abs(value(obj)--310) <= 1e-3)

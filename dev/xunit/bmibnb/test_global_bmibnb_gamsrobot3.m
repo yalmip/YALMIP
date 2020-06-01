@@ -19,4 +19,4 @@ obj = p;
 
 sol = optimize(F,obj,sdpsettings('solver','bmibnb'))
 
-assert(abs(value(obj)--39) <= 1e-7)
+assert(abs(value(obj)--39) <= 1e-3)

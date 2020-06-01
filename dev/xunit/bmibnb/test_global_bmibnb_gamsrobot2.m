@@ -15,4 +15,4 @@ obj = p;
 sol = optimize(F,obj,sdpsettings('solver','bmibnb'))
 
 assert(sol.problem == 0)
-assert(abs(value(obj)--17) <= 1e-8)
+assert(abs(value(obj)--17) <= 1e-3ed)
