@@ -22,7 +22,7 @@ for i =  p.linears
                 monom = p.bilinears(monom,1);
                 row(1+monom) = row(1+used);
                 row(1+used) = 0;
-                row(i) = row(1);
+                row(1+i) = row(1);
                 row(1)=0;
                 newRows = [newRows;row];
             end

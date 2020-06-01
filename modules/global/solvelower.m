@@ -9,8 +9,9 @@ removeThese = find(p.EqualityConstraintState==inf);
 p.F_struc(removeThese,:) = [];
 p.K.f = p.K.f - length(removeThese);
 
+p_cut = p;
 if p.options.bmibnb.cut.bilinear
-    p_cut = addBilinearVariableCuts(p);
+    p_cut = addBilinearVariableCuts(p_cut);
 end
 if p.options.bmibnb.cut.normbound
   	p_cut = addNormBoundCut(p_cut);
@@ -22,13 +23,15 @@ end
 if p.options.bmibnb.cut.monomial
 	p_cut = addMonomialCuts(p_cut);
 end
-if p.options.bmibnb.cut.multipliedequality
-   	p_cut = addMultipliedEqualityCuts(p_cut);
-end
 if p.options.bmibnb.cut.complementarity
   	p_cut = addComplementarityCuts(p_cut);
 end
-
+if p.options.bmibnb.cut.quadratic
+    p_cut = addQuadraticCuts(p_cut);
+end
+if p.options.bmibnb.cut.exponential
+ p_cut = addExponentialCuts(p_cut);
+end
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -155,6 +158,7 @@ else
             p_cut.evaluation_scheme = [];
             
             tstart = tic;     
+            p_cut = pruneUnsupportedCuts(p_cut);
             output = feval(lowersolver,removenonlinearity(p_cut));
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
@@ -241,4 +245,17 @@ else
             cost = output.Primal'*pp.Q*output.Primal + pp.c'*output.Primal + p.f;
         end
     end
+end
+
+function p = pruneUnsupportedCuts(p)
+
+if p.K.s > 0 & ~p.solver.lowersolver.constraint.inequalities.semidefinite.linear
+    % Remove SDP cuts
+    error('FIXME')
+end
+
+if p.K.e > 0 & ~p.solver.lowersolver.exponentialcone
+    % Remove EXPCONE cuts
+    p.F_struc(end-p.K.e*3+1:1:end,:) = [];    
+    p.K.e = 0;
 end

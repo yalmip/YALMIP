@@ -30,6 +30,17 @@ p_upper = compile_bilinearslist(p_upper);
 p_upper = compile_quadraticslist(p_upper);
 
 % *************************************************************************
+% Add constraints obtained from multiplying linear constraints with 
+% variables leading to bilinear constraintsm with monomials already used
+% *************************************************************************
+if p.options.bmibnb.cut.multipliedequality
+    p_cut = addMultipliedEqualityCuts(p_cut);
+end
+if p.options.bmibnb.cut.multipliedinequality
+    p = addMultipliedInequalityCuts(p);
+end
+
+% *************************************************************************
 % Active constraints in main model
 % 0   : Inactive constraint (i.e. a cut which unused)
 % 1   : Active constraint
