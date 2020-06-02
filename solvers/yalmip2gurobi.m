@@ -13,6 +13,39 @@ lb      = interfacedata.lb;
 x0      = interfacedata.x0;
 n = length(c);
 
+% Recent support for nonconvex case is treated a bit hackish now
+% All convex quadratic stuff has been converted to SOCP cones, and then all
+% the rest are just kept, with nonlinear monomials remaining in the model
+% representation. Save away nonconve info for later, and clean away
+nonconvexdata = [];
+if any(interfacedata.variabletype)
+    nonlinearMonoms = find(interfacedata.variabletype);
+    s1 = interfacedata.F_struc(1:interfacedata.K.f,1+nonlinearMonoms);
+    s2 = interfacedata.F_struc(interfacedata.K.f+1:interfacedata.K.f+interfacedata.K.l,1+nonlinearMonoms);
+    k_eq = find(any(s1,2));
+    k_ineq = find(any(s2,2));
+    if ~isempty(k_eq)
+        nonconvexdata.eq = interfacedata.F_struc(k_eq,:);
+        interfacedata.F_struc(k_eq,:) = [];
+        interfacedata.K.f = interfacedata.K.f - length(k_eq);
+    else
+        nonconvexdata.eq = [];
+    end
+    if ~isempty(k_ineq)
+        nonconvexdata.ineq = interfacedata.F_struc(interfacedata.K.f + k_ineq,:);
+        interfacedata.F_struc(interfacedata.K.f + k_ineq,:) = [];
+        interfacedata.K.l = interfacedata.K.l - length(k_ineq);
+    else
+        nonconvexdata.ineq = [];
+    end    
+    interfacedata.F_struc(:,1 + nonlinearMonoms) = [];
+    interfacedata.c(nonlinearMonoms) = [];
+    interfacedata.Q(:,nonlinearMonoms) = [];
+    interfacedata.Q(nonlinearMonoms,:) = [];
+    interfacedata.lb(nonlinearMonoms) = [];
+    interfacedata.ub(nonlinearMonoms) = [];
+end
+
 if ~isempty(ub)
     LB = lb;
     UB = ub;
@@ -113,6 +146,10 @@ model.ub = UB;
 model.objcon = full(interfacedata.f);
 model.vtype = VARTYPE;
 model.Q = sparse(Q);
+model.params = interfacedata.options.gurobi;
+if isequal(interfacedata.solver.version,'NONCONVEX')
+    model.params.nonconvex = 2;
+end
 
 if ~isequal(K.q,0)
     top = n_original + 1;
@@ -126,7 +163,59 @@ if ~isequal(K.q,0)
     end
 end
 
-model.params = interfacedata.options.gurobi;
+if ~isempty(nonconvexdata)
+    if ~isfield(model,'quadcon')
+        model.quadcon = [];
+    end
+    m = length(model.lb);
+    monomials = find(interfacedata.variabletype > 0);
+    map = [];
+    for j = 1:length(monomials)
+        s = find(interfacedata.monomtable(monomials(j),:));
+        if length(s) == 1
+            map(monomials(j),:) = [s s];
+        else
+            map(monomials(j),:) = s;
+        end
+    end
+    for i = 1:size(nonconvexdata.eq,1)
+        bi = nonconvexdata.eq(i,1);
+        row = nonconvexdata.eq(i,2:end);
+        qi = row(find(interfacedata.variabletype == 0))';
+        di = row(monomials);
+        Qi = spalloc(m,m,0);
+        for k = 1:length(monomials)
+            if di(k)
+                Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
+                Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;
+            end
+        end 
+        qi(m)=0;
+        model.quadcon(end+1).Qc = -Qi;
+        model.quadcon(end).q = -qi;
+        model.quadcon(end).rhs = bi;
+        model.quadcon(end).sense = '=';        
+    end
+    for i = 1:size(nonconvexdata.ineq,1)
+        bi = nonconvexdata.ineq(i,1);
+        row = nonconvexdata.ineq(i,2:end);
+        qi = row(find(interfacedata.variabletype == 0))';
+        di = row(monomials);
+        Qi = spalloc(m,m,0);
+        for k = 1:length(monomials)
+            if di(k)
+                Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
+                Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;
+            end
+        end 
+        qi(m)=0;
+        model.quadcon(end+1).Qc = -Qi;
+        model.quadcon(end).q = -qi;
+        model.quadcon(end).rhs = bi;
+        model.quadcon(end).sense = '<';       
+    end   
+end
+
 if interfacedata.options.verbose == 0
      model.params.outputflag = 0;
 else
