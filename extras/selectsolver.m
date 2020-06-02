@@ -86,7 +86,7 @@ end
 if ProblemClass.objective.polynomial & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        keep(i) =  solvers(i).constraint.equalities.quadratic | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex | solvers(i).objective.polynomial | solvers(i).objective.sigmonial;            
+        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.sigmonial;            
     end
     solvers = solvers(find(keep));
 end  
