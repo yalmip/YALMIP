@@ -406,6 +406,7 @@ output.Primal = recoverdata.x_equ+recoverdata.H*output.Primal;
 % OUTPUT
 % ********************************
 diagnostic.yalmipversion = yalmip('ver');
+diagnostic.matlabversion = version;
 diagnostic.yalmiptime = etime(clock,yalmiptime)-output.solvertime;
 diagnostic.solvertime = output.solvertime;
 try

@@ -158,9 +158,12 @@ while go_on
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;            
             X = [seen_x{:}];
             X = unique(X','rows')';
-            for k = 1:size(X,2)
-                [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);
+            tstart = tic;
+            for k = 1:size(X,2)                
+                [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);                                
             end                        
+            p.counter.heuristics = p.counter.heuristics + size(X,2);
+            timing.heuristics = timing.heuristics + toc(tstart);
             propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
             if upper < p.upper 
                 p.upper = upper;
@@ -225,7 +228,10 @@ while go_on
             z = evaluate_nonlinear(p,x);
             oldCount = numGlobalSolutions;
             if numGlobalSolutions < p.options.bmibnb.numglobal
-                [upper,x_min,cost,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);               
+                tstart = tic;
+                [upper,x_min,cost,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);                               
+                timing.heuristics = timing.heuristics + toc(tstart);
+                counter.heuristics = counter.heuristics + 1;
             end
         end
 
@@ -272,6 +278,8 @@ while go_on
                     oldCount = numGlobalSolutions;
                     if numGlobalSolutions < p.options.bmibnb.numglobal                        
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
+                        timing.heuristics = timing.heuristics + toc(tstart);
+                        p.counter.heuristics = p.counter.heuristics + 1;
                         if length(info_text)==0
                             info_text = info_text2;
                         elseif  length(info_text2)>0

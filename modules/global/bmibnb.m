@@ -57,6 +57,7 @@ timing.total = tic;
 timing.uppersolve = 0;
 timing.lowersolve = 0;
 timing.lpsolve = 0;
+timing.heuristics = 0;
 if ~isempty(p.F_struc)
     if any(isnan(p.F_struc) | isinf(p.F_struc))
         output = yalmip_default_output;
@@ -86,6 +87,7 @@ p.changedbounds = 1;
 p.counter.lpsolved = 0;
 p.counter.lowersolved = 0;
 p.counter.uppersolved = 0;
+p.counter.heuristics = 0;
 
 % *************************************************************************
 % Extend partially specified initials
@@ -379,6 +381,7 @@ if p.options.bmibnb.verbose
     disp(['* Timing: ' num2str(ceil(100*timing.uppersolve/timing.total)) '% spent in upper solver (' num2str(counter.uppersolved) ' problems solved)']);
     disp(['*         ' num2str(ceil(100*timing.lowersolve/timing.total)) '% spent in lower solver (' num2str(counter.lowersolved) ' problems solved)']);
     disp(['*         ' num2str(ceil(100*timing.lpsolve/timing.total)) '% spent in LP-based domain reduction (' num2str(counter.lpsolved) ' problems solved)']);
+    disp(['*         ' num2str(ceil(100*timing.heuristics/timing.total)) '% spent in upper heuristics (' num2str(counter.heuristics) ' candidates tried)']);
 end
 
 x_min = dediagonalize(p,x_min);
