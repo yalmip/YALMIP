@@ -18,7 +18,7 @@ n = length(c);
 % the rest are just kept, with nonlinear monomials remaining in the model
 % representation. Save away nonconve info for later, and clean away
 nonconvexdata = [];
-if any(interfacedata.variabletype)
+if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     nonlinearMonoms = find(interfacedata.variabletype);
     s1 = interfacedata.F_struc(1:interfacedata.K.f,1+nonlinearMonoms);
     s2 = interfacedata.F_struc(interfacedata.K.f+1:interfacedata.K.f+interfacedata.K.l,1+nonlinearMonoms);
