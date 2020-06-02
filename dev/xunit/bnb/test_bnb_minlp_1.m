@@ -11,6 +11,6 @@ b = rand(15,1)*10;
 
 obj = sum(x) + sum((x-3).^4);
 constraints = (A*x <= b) + (integer(x));
-sol = optimize(constraints,obj,sdpsettings('bnb.solver','fmincon','warning',0))
+sol = optimize(constraints,obj,sdpsettings('solver','bnb','bnb.solver','fmincon','warning',0))
 
 assert(sol.problem == 0);
