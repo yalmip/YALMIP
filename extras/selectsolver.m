@@ -256,7 +256,7 @@ end
 if ProblemClass.constraint.inequalities.elementwise.polynomial & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex | solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial;
+        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial;
     end
     solvers = solvers(find(keep));
 end  
@@ -295,9 +295,9 @@ end
 if ProblemClass.constraint.equalities.polynomial & ~forced_choice
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)    
-        indirect = solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex | solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial;
+        indirect = solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.inequalities.elementwise.polynomial;
         indirect = indirect | solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.inequalities.elementwise.polynomial;
-        direct = solvers(i).constraint.equalities.sigmonial |  solvers(i).constraint.equalities.polynomial;
+        direct = solvers(i).constraint.equalities.sigmonial | solvers(i).constraint.equalities.polynomial;
         keep(i) = direct | indirect;
     end
     solvers = solvers(find(keep));
