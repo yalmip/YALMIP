@@ -220,6 +220,10 @@ else
      model.params.outputflag = 1;
 end
 
+if isequal(interfacedata.solver.version,'NONCONVEX')
+    model.params.nonconvex = 2;
+end
+
 if ~isempty(x0)
     model.start = x0;
 end
