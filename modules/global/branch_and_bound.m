@@ -81,10 +81,8 @@ if options.bmibnb.verbose>0
     disp('* Starting YALMIP global branch & bound.');
     disp(['* Branch-variables : ' num2str(length(p.branch_variables))]);
     disp(['* Upper solver     : ' p.solver.uppersolver.tag]);
-    disp(['* Lower solver     : ' p.solver.lowersolver.tag]);
-    if p.options.bmibnb.lpreduce
-        disp(['* LP solver        : ' p.solver.lpsolver.tag]);
-    end
+    disp(['* Lower solver     : ' p.solver.lowersolver.tag]);    
+    disp(['* LP solver        : ' p.solver.lpsolver.tag]);    
     k = nnz(isinf(p.lb(p.branch_variables)));
     if k>0   
         if k == 1
@@ -154,6 +152,7 @@ while go_on
             propagators{j}.time(end+1) = tic;
             tstart = tic;
             [p,~,~,seen_x] = propagate_bounds_lp(p,upper,lower,lpsolver,x_min);
+            timing.lpsolve = timing.lpsolve + toc(tstart);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;            
@@ -161,8 +160,7 @@ while go_on
             X = unique(X','rows')';
             for k = 1:size(X,2)
                 [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);
-            end            
-            timing.domainreduce = timing.domainreduce + toc(tstart);
+            end                        
             propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
             if upper < p.upper 
                 p.upper = upper;

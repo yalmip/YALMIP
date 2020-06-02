@@ -56,7 +56,7 @@ p.options = pruneOptions(p.options);
 timing.total = tic;
 timing.uppersolve = 0;
 timing.lowersolve = 0;
-timing.domainreduce = 0;
+timing.lpsolve = 0;
 if ~isempty(p.F_struc)
     if any(isnan(p.F_struc) | isinf(p.F_struc))
         output = yalmip_default_output;
@@ -275,7 +275,7 @@ p = presolveloop(p,upper);
 close = find(abs(p.lb - p.ub) < 1e-12);
 p.lb(close) = (p.lb(close)+p.ub(close))/2;
 p.ub(close) = p.lb(close);
-p = root_node_tighten(p,upper);
+[p,timing] = root_node_tighten(p,upper,timing);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_evaluations(p);
 p = propagate_bounds_from_equalities(p);
@@ -378,7 +378,7 @@ timing.total = toc(timing.total);
 if p.options.bmibnb.verbose
     disp(['* Timing: ' num2str(ceil(100*timing.uppersolve/timing.total)) '% spent in upper solver (' num2str(counter.uppersolved) ' problems solved)']);
     disp(['*         ' num2str(ceil(100*timing.lowersolve/timing.total)) '% spent in lower solver (' num2str(counter.lowersolved) ' problems solved)']);
-    disp(['*         ' num2str(ceil(100*timing.domainreduce/timing.total)) '% spent in LP-based domain reduction (' num2str(counter.lpsolved) ' problems solved)']);
+    disp(['*         ' num2str(ceil(100*timing.lpsolve/timing.total)) '% spent in LP-based domain reduction (' num2str(counter.lpsolved) ' problems solved)']);
 end
 
 x_min = dediagonalize(p,x_min);

@@ -1,7 +1,7 @@
 % *************************************************************************
 % Tighten bounds at root
 % *************************************************************************
-function p = root_node_tighten(p,upper);
+function [p,timing] = root_node_tighten(p,upper,timing)
 p.feasible = all(p.lb<=p.ub) & p.feasible;
 if p.options.bmibnb.roottight & p.feasible
     pin = p;
@@ -42,10 +42,12 @@ if p.options.bmibnb.roottight & p.feasible
             end
         end
     end
-    if all(p.K.q == 0) & all(p.K.s == 0) & all(p.K.r == 0)
+    if all(p.K.q == 0) & all(p.K.e == 0) & all(p.K.s == 0) & all(p.K.r == 0)
         lowersolver = eval(['@' p.solver.lpcall]);
+        we_are_using_lower = 0;
     else
         lowersolver = eval(['@' p.solver.lowercall]);
+        we_are_using_lower = 1;
     end
 
     c = p.c;
@@ -66,8 +68,15 @@ if p.options.bmibnb.roottight & p.feasible
         j = p.linears(i);
         if p.lb(j) < p.ub(j) & (ismember(j,p.branch_variables) | (p.options.bmibnb.roottight == 2))
             p.c = eyev(length(p.c),j);
+            start = tic;
             output = feval(lowersolver,removenonlinearity(p));
-            p.counter.lowersolved = p.counter.lowersolved + 1;
+            if we_are_using_lower
+                p.counter.lowersolved = p.counter.lowersolved + 1;
+                timing.lowersolve = timing.lowersolve + toc(start);
+            else
+                p.counter.lpsolved = p.counter.lpsolved + 1;
+                timing.lpsolve = timing.lpsolve + toc(start);
+            end
             if (output.problem == 0) & (output.Primal(j)>p.lb(j)+1e-4)
                 p.lb(j) = output.Primal(j);
                 p = updateonenonlinearbound(p,j);
@@ -78,7 +87,13 @@ if p.options.bmibnb.roottight & p.feasible
             elseif p.lb(j) < p.ub(j) % We might have updated lb
                 p.c = -eyev(length(p.c),j);
                 output = feval(lowersolver,removenonlinearity(p));
-                p.counter.lowersolved = p.counter.lowersolved + 1;
+                if we_are_using_lower
+                    p.counter.lowersolved = p.counter.lowersolved + 1;
+                    timing.lowersolve = timing.lowersolve + toc(start);
+                else
+                    p.counter.lpsolved = p.counter.lpsolved + 1;
+                    timing.lpsolve = timing.lpsolve + toc(start);
+                end
                 if (output.problem == 0) & (output.Primal(j) < p.ub(j)-1e-4)
                     p.ub(j) = output.Primal(j);
                     if p.ub(j)<p.lb(j)
