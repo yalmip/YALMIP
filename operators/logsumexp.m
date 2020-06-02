@@ -44,7 +44,7 @@ switch class(varargin{1})
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/LOG called with CHAR argument?');
+        error('SDPVAR/LOGSUMEXP called with CHAR argument?');
 end
 
 
@@ -73,7 +73,7 @@ q = sum(exp(xL + linspace(0,1,3).*(xU-xL)),1);
 % Pick one point in the middle. However, middle is not good as it adds
 % nothing if xU is large. Without much though, pick point where gradient is
 % average of gradient at xL and XU
-qM = 2*(qU.*qL)./(qU + qL);%sum(exp(xL*.1 + 0.9*xU));
+qM = 2*(qU.*qL)./(qU + qL);
 cL = log(qL) - (1/qL)*qL;
 kL = (1/qL);
 cU = log(qU) - (1/qU)*qU;
@@ -86,11 +86,8 @@ k = 1./q;
 gamma = exp(xL) - (xL./(xU-xL)).*(exp(xU)-exp(xL));
 alpha = (exp(xU)-exp(xL))./(xU-xL);
 
-%Ax = [Ax;-kL*alpha';-kM*alpha';-kU*alpha'];
 Ax = [Ax;-(k.*alpha)'];
 Ay = [Ay;ones(length(q),1)];
-%Ay = [Ay;1;1;1];
-%b = [b;cL + kL*sum(gamma);cM + kM*sum(gamma);cU + kU*sum(gamma)];
 b = [b;(c+k*sum(gamma))'];
 
 % Add a cut based on sum(x) <= prod x when x >= n^(1/(n-1))
@@ -99,8 +96,3 @@ shift = -min(xL)+log(n^(1/(n-1)));
 Ay = [Ay;1];
 Ax = [Ax;-ones(1,n)];
 b = [b;log(exp(-shift)) + n*(shift)];
-
-
-%Ax = [];
-%Ay = [];
-%b = [];
