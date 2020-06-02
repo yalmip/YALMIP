@@ -210,7 +210,7 @@ while go_on
             output.problem = 3;
         end
         
-        % Cplex sucks...
+        % Some solvers cannot differentiate unbounded and infeasible
         if output.problem == 12
             pp = p;
             pp.c = pp.c*0;
@@ -221,23 +221,10 @@ while go_on
                 output.problem = 1;
             end
         end
-        
-        % GLPK sucks in st_e06
-        if abs(p.lb(p.linears)-p.ub(p.linears)) <= 1e-3 & output.problem==1
-            x = (p.lb+p.ub)/2;
-            z = evaluate_nonlinear(p,x);
-            oldCount = numGlobalSolutions;
-            if numGlobalSolutions < p.options.bmibnb.numglobal
-                tstart = tic;
-                [upper,x_min,cost,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);                               
-                timing.heuristics = timing.heuristics + toc(tstart);
-                counter.heuristics = counter.heuristics + 1;
-            end
-        end
-
+               
         info_text = '';
         switch output.problem
-            case {1,12} % Infeasible
+            case 1 % Infeasible
                 info_text = 'Infeasible';
                 keep_digging = 0;
                 cost = inf;
