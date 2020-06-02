@@ -34,7 +34,7 @@ p_upper = compile_quadraticslist(p_upper);
 % variables leading to bilinear constraintsm with monomials already used
 % *************************************************************************
 if p.options.bmibnb.cut.multipliedequality
-    p_cut = addMultipliedEqualityCuts(p_cut);
+    p = addMultipliedEqualityCuts(p);
 end
 if p.options.bmibnb.cut.multipliedinequality
     p = addMultipliedInequalityCuts(p);

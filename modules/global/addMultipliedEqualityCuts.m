@@ -15,7 +15,7 @@ for i =  p.linears
                     ok = 0;
                     break
                 else
-                    monom(k) = [find1 find2];
+                    monom(k) = unique([find1 find2]);
                 end
             end
             if ok
