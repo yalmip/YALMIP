@@ -147,9 +147,6 @@ model.objcon = full(interfacedata.f);
 model.vtype = VARTYPE;
 model.Q = sparse(Q);
 model.params = interfacedata.options.gurobi;
-if isequal(interfacedata.solver.version,'NONCONVEX')
-    model.params.nonconvex = 2;
-end
 
 if ~isequal(K.q,0)
     top = n_original + 1;
@@ -164,6 +161,7 @@ if ~isequal(K.q,0)
 end
 
 if ~isempty(nonconvexdata)
+    model.params.nonconvex = 2;
     if ~isfield(model,'quadcon')
         model.quadcon = [];
     end
