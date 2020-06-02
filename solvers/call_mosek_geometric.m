@@ -105,6 +105,7 @@ model.Q = spalloc(n_original+n_new_z+n_new_t,n_original+n_new_z+n_new_t,0);
 model.lb = [];
 model.ub = [];
 model.options.savesolveroutput = 1;
+model.x0 = [];
 output = callmosek(model);
 
 % The gluing back to intended problem is a bit messy
