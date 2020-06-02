@@ -647,18 +647,11 @@ else
     
     if abs(acc_res1-acc_res2)<1e-3 & ismember(v2,p.branch_variables) & ismember(v1,p.branch_variables)
         if abs(p.ub(v1)-p.lb(v1))>abs(p.ub(v2)-p.lb(v2))
-              spliton = v1;
+            spliton = v1;
         elseif abs(p.ub(v1)-p.lb(v1))<abs(p.ub(v2)-p.lb(v2))
             spliton = v2;
         else
-        % Oops, two with the same impact. To avoid that we keep pruning on
-        % a variable that doesn't influence the bounds, we flip a coin on
-        % which to branch on
-        if rand(1)>0.5
             spliton = v1;
-        else
-            spliton = v2;
-        end
         end
     else
         if (~ismember(v2,p.branch_variables) | (acc_res1>acc_res2)) & ismember(v1,p.branch_variables)
@@ -669,7 +662,7 @@ else
             [i,j] = max(width);
             spliton = p.branch_variables(j);
         end
-    end   
+    end
 end
 
 % *************************************************************************
