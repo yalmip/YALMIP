@@ -30,4 +30,4 @@ F=[F,100<=x4<=100000];
 sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 
 assert(sol.problem==0)
-assert(abs(value(objective)-726.6783) <= 1e-2) 
+assert(abs(value(objective)-726.6783) <= 1) 
