@@ -36,7 +36,7 @@ if ~isinf(upper)
                     ii_neg = ii(find(p.c(ii) < 0));
                     obound = obound+sum(p.c(ii_pos).*p.lb(ii_pos));
                     obound = obound+sum(p.c(ii_neg).*p.ub(ii_neg));
-                    p.lb(j) = max(p.lb(j),obound/-p.c(j));
+                    p.lb(j) = max(p.lb(j),obound/-p.c(j));                   
                 end
             end
         end
@@ -45,6 +45,13 @@ if ~isinf(upper)
         quad_v = find(p.bilinears(:,2) == p.bilinears(:,3));
         quad_x = p.bilinears(quad_v,2);
         quad_v = p.bilinears(quad_v,1);
+        if ~isempty(quad_v)
+            % y = x^2, x>=0, y >= L means x >= sqrt(L)
+            k = find(p.lb(quad_x)>=0 & p.lb(quad_v)>0);
+            if ~isempty(k)                   
+                p.lb(quad_x(k)) = max(p.lb(quad_x(k)),sqrt(p.lb(quad_v(k))));
+            end
+        end
         i = find(p.c(quad_v)>0);
         quad_v = quad_v(i);
         quad_x = quad_x(i);

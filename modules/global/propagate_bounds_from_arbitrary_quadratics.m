@@ -137,6 +137,20 @@ if p.bilinears~=0
         end
     end
 end
+
+if ~isequal([p.lb p.ub],[pout.lb pout.ub])
+    quad_v = find(p.bilinears(:,2) == p.bilinears(:,3));
+    quad_x = p.bilinears(quad_v,2);
+    quad_v = p.bilinears(quad_v,1);
+    if ~isempty(quad_v)
+        % y = x^2, x>=0, y >= L means x >= sqrt(L)
+        k = find(p.lb(quad_x)>=0 & p.lb(quad_v)>0);
+        if ~isempty(k)           
+            p.lb(quad_x(k)) = max(p.lb(quad_x(k)),sqrt(p.lb(quad_v(k))));
+        end
+    end
+end
+
 if ~isequal([p.lb p.ub],[pout.lb pout.ub])
     pout.changedbounds = 1;
 end
