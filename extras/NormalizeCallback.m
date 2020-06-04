@@ -1,4 +1,4 @@
-function [F,z_normalizing] = NormalizeCallback(varargin)
+function [F,z_normalizing,X] = NormalizeCallback(varargin)
 
 X = [];
 doAssignInitials = varargin{end};
@@ -11,6 +11,7 @@ for i = 3:nargin-2
 end
 n = length(X);
 if isequal(getbase(X),[spalloc(n,1,0) speye(n)])
+    z_normalizing = [];
     F = lmi([]);
 else
     if doAssignInitials

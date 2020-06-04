@@ -32,14 +32,26 @@ else
         end
         arg{1} = xL;
         L = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        if isnan(L)            
+            L = p.evalMap{i}.properties.range(1);                        
+        end
         arg{1} = xU;
         U = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        if isnan(U)            
+            U = p.evalMap{i}.properties.range(2);            
+        end
     elseif strcmpi(p.evalMap{i}.properties.monotonicity,'decreasing')
         arg = p.evalMap{i}.arg;
         arg{1} = xL;
         U = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        if isnan(U)            
+            U = p.evalMap{i}.properties.range(2);            
+        end
         arg{1} = xU;
         L = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        if isnan(L)            
+            L = p.evalMap{i}.properties.range(1);                        
+        end
     else
         % To get some kind of bounds, we just sample the function
         % and pick the min and max from there. This only works for

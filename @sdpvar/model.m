@@ -66,7 +66,8 @@ catch
     error(['Failed when trying to create a model for the "' extstruct.fcn '" operator']);
 end
 
-% Make sure all operators have these properties
+% Make sure all operators have these properties, nd that they are
+% consistently set (positive has non-negative domain etc)
 if ~isempty(properties)
     if ~iscell(properties)
         properties = {properties};
@@ -88,14 +89,19 @@ if ~isempty(properties)
             switch properties{i}.definiteness
                 case 'positive'
                     properties{i} = assertProperty(properties{i},'range',[0 inf]);
+                    properties{i}.range(1) = max(properties{i}.range(1),0);
                 case 'negative'
                     properties{i} = assertProperty(properties{i},'range',[-inf 0]);
+                    properties{i}.range(2) = min(properties{i}.range(2),0);
                 otherwise
                     properties{i} = assertProperty(properties{i},'range',[-inf inf]);
             end
         else
             properties{i} = assertProperty(properties{i},'range',[-inf inf]);
         end
+        if properties{i}.range(1) >= 0;properties{i}.definiteness ='positive';end
+        if properties{i}.range(2) <= 0;properties{i}.definiteness ='negative';end
+        
         properties{i} = assertProperty(properties{i},'model','unspecified');
         if isequal(properties{i}.convexity,'nonconvex')
             properties{i}.convex = 'none';
@@ -109,16 +115,30 @@ if ~isempty(properties)
     end
 end
 
-% Normalize the callback expression and check for some obsoleted stuff
+% Normalize the callback expression if necessary, add domain constraints, 
+% and check for some obsoleted stuff
 if ~isempty(properties)
     if isequal(properties{1}.model,'callback')
-        [F_normalizing,normalizer] = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);
+        [F_normalizing,normalizer,argument] = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);
         F = F + F_normalizing;
         if ~isempty(normalizer)
             if ~isempty(properties{1}.domain)
                 if ~isinf(properties{1}.domain(1))
                     F = [F, normalizer >= properties{1}.domain(1)];
                 end  
+                if ~isinf(properties{1}.domain(2))
+                    F = [F, normalizer <= properties{1}.domain(2)];
+                end
+            end
+        end
+        if ~isempty(argument)
+            if ~isempty(properties{1}.domain)
+                if ~isinf(properties{1}.domain(1))
+                    F = [F, argument >= properties{1}.domain(1)];
+                end  
+                if ~isinf(properties{1}.domain(2))
+                    F = [F, argument <= properties{1}.domain(2)];
+                end
             end
         end
     end
