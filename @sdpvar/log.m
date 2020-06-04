@@ -17,15 +17,14 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};      
-        F = (X >= 0);
-
+        
         operator = CreateBasicOperator('concave','increasing','callback');                
         operator.bounds = @bounds;        
         operator.derivative = @(x)(1./(abs(x)+eps));
         operator.inverse = @(x)(exp(x));
         operator.domain = [0 inf];
 
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = X;
 

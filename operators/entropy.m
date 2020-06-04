@@ -35,9 +35,9 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = (X >= 0);
+        F = [];
 
-        operator = struct('convexity','concave','monotonicity','none','definiteness','none','model','callback');
+        operator = CreateBasicOperator('concave','callback');
         operator.range = [-inf exp(-1)*length(X)];
         operator.domain = [0 inf];
         operator.bounds = @bounds;

@@ -11,7 +11,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
+        operator = CreateBasicOperator('callback');
         operator.derivative = @(x)(tan(x).*sec(x));
 
         varargout{1} = [];

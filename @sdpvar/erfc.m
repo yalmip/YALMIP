@@ -11,8 +11,8 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity',@convexity,'monotonicity','decreasing','definiteness','positive','model','callback');
-        operator.bounds = @bounds;
+        operator = CreateBasicOperator('decreasing','positive','callback');
+        operator.convexity = @convexity;        
         operator.range = [0 2];
         operator.derivative =@(x)-exp(-x.^2)*2/sqrt(pi);
         operator.inverse = @(x)(erfcinv(x));
@@ -22,12 +22,8 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ERF called with CHAR argument?');
+        error('SDPVAR/ERFC called with CHAR argument?');
 end
-
-function [L,U] = bounds(xL,xU)
-L = erfc(xU);
-U = erfc(xL);
 
 function vexity = convexity(xL,xU)
 if xL >= 0

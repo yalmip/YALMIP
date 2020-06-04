@@ -10,13 +10,12 @@ switch class(varargin{1})
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
-
-        X = varargin{3};
-        F = (-1+1e-9 <= X <= 1-1e-9);
-        operator = struct('convexity',@convexity,'monotonicity','decreasing','definiteness','none','model','callback');
-        operator.bounds = @bounds;
+            
+        operator = CreateBasicOperator('decreasing','callback');
+        operator.convexity = @convexity;        
         operator.inverse = @(x)(erfc(x));
         operator.derivative = @(x)-1./(exp(-((erfcinv(x))).^2)*2/sqrt(pi));
+        operator.domain = [-1 1];
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -24,18 +23,6 @@ switch class(varargin{1})
 
     otherwise
         error('SDPVAR/ERFCINV called with CHAR argument?');
-end
-
-function [L,U] = bounds(xL,xU)
-if xL<=-1
-    U = inf;
-else
-    U = erfcinv(xL);
-end
-if xU>=1
-    L = -inf;
-else
-    L = erfcinv(xU);
 end
 
 function vexity = convexity(xL,xU)

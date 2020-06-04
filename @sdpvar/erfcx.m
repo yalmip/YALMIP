@@ -11,8 +11,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','convex','monotonicity','decreasing','definiteness','positive','model','callback');
-        operator.bounds = @bounds;
+        operator = CreateBasicOperator('convex','decreasing','positive','callback');        
         operator.derivative = @(x)(2*x.*exp(x.^2).*erfc(x) + exp(x.^2).*(-exp(-x.^2)*2/sqrt(pi)));
 
         varargout{1} = [];
@@ -22,7 +21,3 @@ switch class(varargin{1})
     otherwise
         error('SDPVAR/ERFCX called with CHAR argument?');
 end
-
-function [L,U] = bounds(xL,xU)
-L = erfcx(xU);
-U = erfcx(xL);

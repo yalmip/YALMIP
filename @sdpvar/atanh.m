@@ -1,5 +1,5 @@
-function varargout = asinh(varargin)
-%ASINH (overloaded)
+function varargout = atanh(varargin)
+%ATANH (overloaded)
 
 switch class(varargin{1})
 
@@ -9,7 +9,8 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('increasing','callback');
-        operator.convexity = @convexity;                
+        operator.convexity = @convexity; 
+        operator.domain = [-1 1];                       
         operator.derivative = @(x)((1 + x.^2).^-0.5);
             
         varargout{1} = [];
@@ -17,14 +18,14 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ASINH called with CHAR argument?');
+        error('SDPVAR/ATANH called with CHAR argument?');
 end
 
 function vexity = convexity(xL,xU)
 if xL >= 0  
-    vexity = 'concave';
-elseif xU <= 0
     vexity = 'convex';
+elseif xU <= 0
+    vexity = 'concave';
 else
     vexity = 'none';
 end

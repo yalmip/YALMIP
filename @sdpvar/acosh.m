@@ -8,8 +8,8 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
-        operator.convexhull = [];
+        operator = CreateBasicOperator('positive','callback');   
+        operator.convexity = @convexity;
         operator.bounds = @bounds;
 
         varargout{1} = [];
