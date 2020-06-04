@@ -162,10 +162,6 @@ if ~isempty(F)
     F = tag(F,['Expansion of ' extstruct.fcn]);
 end
 
-if ~isempty(properties)
-%    properties = properties{1};
-end
-
 function properties = assertProperty(properties,checkfor,default);
 if ~isfield(properties,checkfor)
     properties = setfield(properties,checkfor,default);
