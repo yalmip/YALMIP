@@ -533,19 +533,15 @@ function p = presolveloop(p,upper)
 i = 0;
 goon = 1;
 while goon
-    start = [p.lb;p.ub];
-    i = i+1;
-    % 2
-    p = propagate_bounds_from_upper(p,upper);
-    % 3
+    start = [p.lb;p.ub];    
+    p = propagate_bounds_from_upper(p,upper);    
     p = propagate_bounds_from_complementary(p);
     p = propagate_bounds_from_monomials(p);  
     p = propagate_bounds_from_equalities(p);       
     p = propagate_bounds_from_monomials(p);
     p = propagate_bounds_from_monomials(p);        
-    p = propagate_bounds_from_evaluations(p);
+    p = propagate_bounds_from_evaluations(p);    
+    goon = (norm(start-[p.lb;p.ub],'inf') > 1e-2) & i < 8;    
     i = i+1;
-    goon = (norm(start-[p.lb;p.ub],'inf') > 1e-2) & i < 15;
-    start = [p.lb;p.ub];
 end
 
