@@ -40,10 +40,19 @@ end
 if ~isempty(p.high_monom_model)
     for i = 1:size(p.high_monom_model,1)
         j = p.high_monom_model(i,1);
+        % x(j) = x(b)^c
         [a,b,c] = find(p.high_monom_model(i,2:end));
         if length(a) == 1
-            if even(c)
-                % fix this case...
+            if  even(c)
+                p.ub(b) = min([p.ub(b) p.ub(j)^(1/c)]);
+                p.lb(b) = max([p.lb(b) -p.ub(j)^(1/c)]);
+                if p.lb(b) > 0
+                    p.lb(j) = max([p.lb(j) p.lb(b)^c]);
+                    p.lb(b) = max([p.lb(b) p.lb(j)^(1/c)]);
+                elseif p.ub(b) < 0
+                    p.lb(b) = max([p.lb(b) -p.ub(j)^(1/c)]);
+                    p.ub(b) = min([p.ub(b) -p.lb(j)^(1/c)]);
+                end
             else
                 if c>0
                     p.ub(b) = min([p.ub(b) sign(p.ub(j))*(abs(p.ub(j))^(1/c))]);
