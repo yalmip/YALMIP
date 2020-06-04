@@ -21,7 +21,7 @@ if any(p.originalModel.variabletype==3)
 %                 p.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
 %                 p.K.l = p.K.l+length(b);
             else
-                if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0
+                if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0 & ~isinf(p.lb(monom_variable)) & ~isinf(p.ub(monom_variable))
                    
                     % Tangent at x = lower bound
                     % Wrong!
@@ -42,8 +42,8 @@ if any(p.originalModel.variabletype==3)
                     end
                     
                     % Line between lower bound and tangent intersection
-                    r = zeros(1,n+1);r(1)=n-1;r(2)=-L*n;r(end)=L^n;
-                    r = roots(r);
+                    r = zeros(1,n+1);r(1)=n-1;r(2)=-L*n;r(end)=L^n;                    
+                    r = roots(r);                    
                     %r = r(min(find(r==real(r))));
                     r = max(r(imag(r)==0));
                     if r >= U
