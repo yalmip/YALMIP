@@ -35,7 +35,7 @@ if ~isempty(p.evalMap)
                 if remove_auto_generated_convexhull
                     p.evalMap{i}.properties.convexhull = [];
                 end
-            elseif ~isinf(xL) && ~isinf(xU)               
+            elseif ~(any(isinf(xL)) | any(isinf(xU)))               
                [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);               
             else
                 Ax = [];

@@ -21,10 +21,15 @@ switch class(varargin{1})
         X = varargin{3};
         F = [];
 
-        operator = CreateBasicOperator('positive','increasing','callback');        
-        operator.convexity = @convexity; 
-        operator.derivative = @(x)(1/2)*(1/sqrt(2))*exp(-(x/sqrt(2)).^2)*2/sqrt(pi);
-        operator.inverse = @(x)(sqrt(2)*erfinv(2*x-1));
+        operator = CreateBasicOperator('positive','increasing','callback');  
+        if length(X) == 1
+            operator.convexity = @convexity; 
+            operator.derivative = @(x)(1/2)*(1/sqrt(2))*exp(-(x/sqrt(2)).^2)*2/sqrt(pi);
+            operator.inverse = @(x)(sqrt(2)*erfinv(2*x-1));
+        else
+            operator.bounds = @bounds;
+        end
+        
         operator.range = [0 1];        
         varargout{1} = F;
         varargout{2} = operator;
@@ -33,6 +38,10 @@ switch class(varargin{1})
     otherwise
         error('SDPVAR/MVNCDF called with CHAR argument?');
 end
+
+function [L,U] = bounds(xL,xU)
+L = mvncdf(xL);
+U = mvncdf(xU);
 
 function vexity = convexity(xL,xU)
 if xL >= 0  
