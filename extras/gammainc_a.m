@@ -8,10 +8,9 @@ switch class(varargin{1})
   
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-        operator.convexhull = [];     
+        operator = CreateBasicOperator('decreasing','positive','callback');            
         operator.range = [0 1];
-        operator.domain = [1e-6 inf];
+        operator.domain = [0 inf];
         
         varargout{1} = [];
         varargout{2} = operator;

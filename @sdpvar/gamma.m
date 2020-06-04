@@ -9,8 +9,7 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('convex','positive','callback')               
-        operator.monotonicity = @monotonicity;
-        operator.domain = [0 inf];  
+        operator.monotonicity = @monotonicity;       
         operator.range = [gamma(1.46163214496836234126) inf];
         operator.derivative =@(x)psi(0,x).*gamma(x);  
         operator.stationary = [8.856031944108888e-01 1.46163214496836234126];
