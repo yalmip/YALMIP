@@ -625,6 +625,21 @@ if isempty(p.bilinears) | ~isempty(p.evalMap) | any(p.variabletype > 2)%(min(wid
     end
 else
     res = x(p.bilinears(:,1))-x(p.bilinears(:,2)).*x(p.bilinears(:,3));
+    if all(res == 0)
+        % Can happen if lower bound computation failed.  
+        if isempty(p.spliton)
+            spliton = p.branch_variables(1);
+            return
+        else
+            j = find(p.spliton == p.branch_variables);
+            if j == length(p.branch_variables)
+                spliton = p.branch_variables(1);
+            else
+                spliton = p.branch_variables(j+1);
+            end
+            return
+        end
+    end
     [ii,jj] = sort(abs(res));
     v1 = p.bilinears(jj(end),2);
     v2 = p.bilinears(jj(end),3);
