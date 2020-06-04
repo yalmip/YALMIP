@@ -36,10 +36,8 @@ switch class(varargin{1})
         end
 
     case 'char'
-
-        X = varargin{3};
-
-        operator = struct('convexity','convex','monotonicity','none','definiteness','positive','model','callback');
+        
+        operator = CreateBasicOperator('convex','positive','callback');
         operator.range = [0 inf];
         operator.domain = [0 inf];    
         operator.derivative = @derivative;
@@ -48,10 +46,10 @@ switch class(varargin{1})
         
         varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/PEXP called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function [L,U] = bounds(xL,xU)

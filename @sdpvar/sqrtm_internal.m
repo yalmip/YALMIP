@@ -23,5 +23,5 @@ switch class(varargin{1})
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/SQRTM called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

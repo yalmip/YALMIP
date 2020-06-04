@@ -35,10 +35,8 @@ switch class(varargin{1})
         end
 
     case 'char'
-
-        X = varargin{3};
-      
-        operator = struct('convexity','concave','monotonicity','none','definiteness','none','model','callback');
+              
+        operator = CreateBasicOperator('concave','callback');
         operator.range = [-inf inf];
         operator.domain = [0 inf];
         operator.bounds = @bounds;
@@ -47,10 +45,10 @@ switch class(varargin{1})
 
         varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/PLOG called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function dp = derivative(x)

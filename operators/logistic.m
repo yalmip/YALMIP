@@ -15,17 +15,9 @@ switch class(varargin{1})
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
-
-        [M,m] = derivebounds(varargin{3});
-        if m >= 0
-            operator = struct('convexity','concave','monotonicity','increasing','definiteness','positive','model','callback');
-        elseif M <= 0
-            operator = struct('convexity','convex','monotonicity','increasing','definiteness','positive','model','callback');
-        else
-            operator = struct('convexity','none','monotonicity','increasing','definiteness','positive','model','callback');
-        end
-        operator.convexhull = @convexhull;
-        operator.bounds     = @bounds;
+        
+        operator = CreateBasicOperator('increasing','positive','callback');
+        operator.convexity  = @convexity;
         operator.derivative = @(x)logistic(x).*(1-logistic(x));
         operator.inverse    = @(x)(log(x)-log(1-x));
         operator.range = [0 1];
@@ -35,30 +27,14 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/LOGISTIC called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
-% Bounding functions for the branch&bound solver
-function [L,U] = bounds(xL,xU)
-L = 1./(1+exp(-xL));
-U = 1./(1+exp(-xU));
-
-function [Ax, Ay, b, K] = convexhull(xL,xU)
-if xU <=0
-    fL = logistic(xL);
-    fU = logistic(xU);
-    dfL = fL*(1-fL);
-    dfU = fU*(1-fU);
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
-elseif xL>=0
-    fL = logistic(xL);
-    fU = logistic(xU);
-    dfL = fL*(1-fL);
-    dfU = fU*(1-fU);
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'concave';
+elseif xU <= 0
+    vexity = 'convex';
 else
-    Ax = [];
-    Ay = [];
-    b = [];
+    vexity = 'none';
 end
-K = [];

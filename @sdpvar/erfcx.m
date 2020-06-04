@@ -3,9 +3,6 @@ function varargout = erfcx(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/ERFCX CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
@@ -19,5 +16,5 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ERFCX called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

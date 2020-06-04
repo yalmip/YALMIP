@@ -20,7 +20,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
         
     otherwise
-        error('SDPVAR/ACOS called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function vexity = convexity(xL,xU)

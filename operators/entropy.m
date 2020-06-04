@@ -34,21 +34,19 @@ switch class(varargin{1})
 
     case 'char'
 
-        X = varargin{3};
-        F = [];
-
         operator = CreateBasicOperator('concave','callback');
-        operator.range = [-inf exp(-1)*length(X)];
+        operator.range = [-inf exp(-1)*length(varargin{3})];
         operator.domain = [0 inf];
         operator.bounds = @bounds;
         operator.convexhull = @convexhull;
         operator.derivative = @derivative;
-        varargout{1} = F;
+        
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ENTROPY called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function df = derivative(x)

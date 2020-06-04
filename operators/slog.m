@@ -22,21 +22,18 @@ switch class(varargin{1})
         end
 
     case 'char'
-
-        X = varargin{3};
-        F = (X >= -1);
-
-        operator = CrateBasicOperator('concave','increasing''callback');                
+             
+        operator = CreateBasicOperator('concave','increasing','callback');                
         operator.domain = [-1 inf];
         operator.derivative = @(x) (1./(abs(1+x)+sqrt(eps)));
         operator.inverse = @(x)(exp(x)-1);
         
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/SLOG called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 

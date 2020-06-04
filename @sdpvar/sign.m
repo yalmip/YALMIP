@@ -3,9 +3,6 @@ function varargout = SIGN(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/SIGN CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar' 
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
@@ -39,5 +36,5 @@ switch class(varargin{1})
                 error('SDPVAR/SIGN called with CHAR argument?');
         end
     otherwise
-        error('Strange type on first argument in SDPVAR/SIGN');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

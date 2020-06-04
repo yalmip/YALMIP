@@ -3,16 +3,13 @@ function varargout = sinh(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/ACOT CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
-
+ 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-        operator.convexhull = [];
+        operator = CreateBasicOperator('increasing','callback');        
+        operator.convexity = @convexity;
         operator.bounds = @bounds;
         operator.derivative = @(x)(cosh(x));
 
@@ -21,9 +18,14 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/SINH called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
-function [L,U] = bounds(xL,xU)
-L = sinh(xL);
-U = sinh(xU);
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'convex';
+elseif xU <= 0
+    vexity = 'concave';
+else
+    vexity = 'none';
+end

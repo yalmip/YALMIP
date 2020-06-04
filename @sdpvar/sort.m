@@ -10,9 +10,6 @@ function varargout=sort(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/SORT CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         
         if min(size(varargin{1})) > 1
@@ -73,5 +70,5 @@ switch class(varargin{1})
         % one call
         varargout{2}.models = vars;
     otherwise
-        error('Strange type on first argument in SDPVAR/SORT');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

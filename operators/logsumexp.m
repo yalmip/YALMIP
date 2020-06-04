@@ -31,20 +31,18 @@ switch class(varargin{1})
         end
 
     case 'char'
-
-        X = varargin{3};
-       
-        operator = struct('convexity','convex','monotonicity','none','definiteness','none','model','callback');        
+              
+        operator = CreateBasicOperator('convex','callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x) exp(x)./(sum(exp(x)));
         operator.convexhull = @convexhull;
                 
         varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/LOGSUMEXP called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 

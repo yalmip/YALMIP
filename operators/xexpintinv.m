@@ -12,21 +12,18 @@ switch class(varargin{1})
 
     case 'char'
         
+        operator = CreateBasicOperator('positive','callback');
+        operator.derivative = @derivative;
+        operator.range = [0 1];
+        operator.domain = [0 inf];
+        
         varargout{1} = [];
-        varargout{2} = createOperator;
+        varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/EXPINT called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
-
-function operator = createOperator
-
-operator = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
-operator.derivative = @derivative;
-operator.range = [0 1];
-operator.domain = [1e-8 inf];
-
 
 function d = derivative(z);
 d = (-1./z.^2).*expint(1./z)+(1./z).*(-z.*exp(-1./z)).*(-1./z.^2);

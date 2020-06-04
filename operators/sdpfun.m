@@ -97,7 +97,7 @@ switch class(varargin{1})
         
 
     otherwise
-        error('SDPVAR/SDPFUN called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function [Ax,Ay,b] = convexhull(xL,xU,varargin)

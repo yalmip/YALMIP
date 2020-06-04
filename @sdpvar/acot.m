@@ -11,9 +11,11 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity',@convexity,'monotonicity','none','definiteness','none','model','callback');        
+        operator = CreateBasicOperator('callback');
+        operator.convexity = @convexity;
         operator.bounds = @bounds;
         operator.derivative = @(x)(-(1 + x.^2).^-1);
+        operator.range = [-pi/2 pi/2];
 
         varargout{1} = [];
         varargout{2} = operator;

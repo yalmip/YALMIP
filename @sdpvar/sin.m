@@ -3,30 +3,25 @@ function varargout = sin(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/SIN CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWiseUnitary(mfilename,varargin{:});
 
     case 'char'
-
-        % General operator
-        operator.model = 'callback';
+        
+        operator = CreateBasicOperator('callback');
         operator.definiteness  = @definiteness;
         operator.monotonicity  = @monotonicity;
         operator.convexity  = @convexity;
         operator.bounds     = @bounds;     
         operator.derivative = @(x)(cos(x));
         operator.range = [-1 1];
-        operator.domain = [-inf inf];     
-  
+               
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/SIN called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function def = definiteness(xL,xU)

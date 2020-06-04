@@ -3,16 +3,12 @@ function varargout = cosh(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/COSH CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
-        operator.convexhull = [];
+        operator = CreateBasicOperator('convex','positive','callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x)(sinh(x));
 
@@ -21,7 +17,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/COSH called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function [L,U] = bounds(xL,xU)

@@ -42,5 +42,5 @@ switch class(varargin{1})
         
         
     otherwise
-        error('SDPVAR/ABS called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end

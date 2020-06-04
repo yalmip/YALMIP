@@ -19,7 +19,7 @@ switch class(varargin{1})
                 operator.domain = [0 inf];
             case 'exact'
                 x = varargin{3};      
-                F = (x >= 0);
+                F = [];
                 operator = CreateBasicOperator('concave','increasing','positive','callback');            
                 operator.derivative = @(x)(1./(exp(lambertw(x)) + x));
                 operator.inverse = @(x)(x.*exp(x));
@@ -31,5 +31,5 @@ switch class(varargin{1})
         varargout{3} = x;
 
     otherwise
-        error('SDPVAR/LAMBERTW called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

@@ -27,7 +27,7 @@ switch class(varargin{1})
         varargout{1} = yalmip('define','crossentropy_internal',[varargin{1};varargin{2}]);
             
     otherwise
-        error('SDPVAR/CROSSENTROPY called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 

@@ -39,5 +39,5 @@ switch class(varargin{1})
                 error('SDPVAR/ROUND called with CHAR argument?');
         end
     otherwise
-        error('Strange type on first argument in SDPVAR/ROUND');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

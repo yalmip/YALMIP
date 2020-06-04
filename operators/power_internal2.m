@@ -19,10 +19,12 @@ switch class(varargin{1})
 
         X = varargin{3};
         Y = varargin{4};
+        
+        operator = CreateBasicOperator('callback');
 
         varargout{1} = [];
-        varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','exact');
+        varargout{2} = operator;
         varargout{3} = [X(:);Y(:)];
     otherwise
-        error('SDPVAR/power_interna2 called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end

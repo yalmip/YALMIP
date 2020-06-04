@@ -13,7 +13,7 @@ switch class(varargin{1})
                 q = varargin{3};
                 y = varargin{4};
                 varargout{1} = [cone([2*q;t-y],t+y)];
-                varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph');
+                varargout{2} = CreateBasicOperator('convex','positive','graph');
                 varargout{3} = [q;y];
               
             case {'exact','integer','callback'}
@@ -22,12 +22,12 @@ switch class(varargin{1})
                 q = varargin{3};
                 y = varargin{4};
                 varargout{1} = [];
-                varargout{2} = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
+                varargout{2} = CreateBasicOperator('positive','callback');
                 varargout{3} = [q;y];
 
             otherwise
-                error('SDPVAR/ABS called with CHAR argument?');
+                error([upper(mfilename) ' called with weird argument']);
         end
     otherwise
-        error('Strange type on first argument in SDPVAR/ABS');
+        error([upper(mfilename) ' called with weird argument']);
 end

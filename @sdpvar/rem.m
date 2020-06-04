@@ -60,5 +60,5 @@ switch class(varargin{1})
         varargout{3} = [x(:);y(:)];
 
     otherwise
-        error('Strange type on first argument in SDPVAR/REM');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

@@ -3,16 +3,12 @@ function varargout = tan (varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/TAN CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
-        operator.convexhull = [];
+        operator = CreateBasicOperator('callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x)(sec(x).^2);
 
@@ -21,7 +17,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/TAN called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 

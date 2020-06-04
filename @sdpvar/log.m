@@ -3,9 +3,6 @@ function varargout = log(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/LOG CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
          % Try to detect logsumexp construction etc
         varargout{1} = check_for_special_cases(varargin{:});
@@ -15,9 +12,7 @@ switch class(varargin{1})
         end
         
     case 'char'
-
-        X = varargin{3};      
-        
+                    
         operator = CreateBasicOperator('concave','increasing','callback');                             
         operator.derivative = @(x)(1./(abs(x)+eps));
         operator.inverse = @(x)(exp(x));
@@ -25,10 +20,10 @@ switch class(varargin{1})
 
         varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/LOG called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function f = check_for_special_cases(x)

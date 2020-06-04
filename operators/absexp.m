@@ -14,7 +14,7 @@ switch class(varargin{1})
 
         F = SetupEvaluationVariable(varargin{:});
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
+        operator = CreateBasicOperator('callback');
         operator.bounds = @bounds;
 
         varargout{1} = F;
@@ -22,7 +22,7 @@ switch class(varargin{1})
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/LOG called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function [L,U] = bounds(xL,xU)

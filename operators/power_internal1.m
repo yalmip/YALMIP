@@ -31,13 +31,13 @@ switch class(varargin{1})
         Y = varargin{4};
         F=[];
         if Y>=1
-            operator = struct('convexity','none','monotonicity','increasing','definiteness','positve','model','callback');
+            operator = CreateBasicOperator('increasing','positive','callback');
         elseif Y>=0
-            operator = struct('convexity','none','monotonicity','decreasing','definiteness','positive','model','callback');
+            operator = CreateBasicOperator('decreasing','positive','callback');
         else
             % Base is negative, so the power has to be an integer
             F = (integer(X));
-            operator = struct('convexity','none','monotonicity','decreasing','definiteness','none','model','callback');
+            operator = CreateBasicOperator('decreasing','callback');
         end
 
         operator.bounds = @bounds_power;
@@ -51,7 +51,7 @@ switch class(varargin{1})
         varargout{2} = operator;
         varargout{3} = [X(:);Y(:)];
     otherwise
-        error('SDPVAR/power_internal1 called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 % This should not be hidden here....

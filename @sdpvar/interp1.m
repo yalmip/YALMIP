@@ -133,7 +133,7 @@ switch class(varargin{3})
         end
         
     otherwise
-        error('SDPVAR/INTERP1 called with strange argument!');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function isconvex = isconvexdata(xi,yi)

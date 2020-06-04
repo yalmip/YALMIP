@@ -3,36 +3,18 @@ function varargout = norminv(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/NORMINV CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
-       
-        X = varargin{3};
-        F = (0 <= X <= 1);
+              
+        operator = CreateBasicOperator('increasing','callback');        
+        operator.domain = [0 1];
 
-        operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
-        operator.bounds = @bounds;
-
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{1};
 
     otherwise
-        error('SDPVAR/NORMINV called with CHAR argument?');
-end
-
-function [L,U] = bounds(xL,xU)
-if xL<=0
-    L = -inf
-else
-    L = norminv(xL);
-end
-if xU>=1
-    U = inf;
-else
-    U = norminv(xU);
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

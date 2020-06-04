@@ -25,5 +25,5 @@ switch class(varargin{1})
         varargout{1} = InstantiateElementWise('gammaincinv_x',varargin{:});
         
     otherwise
-        error('SDPVAR/GAMMAINCINV called with strange argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
