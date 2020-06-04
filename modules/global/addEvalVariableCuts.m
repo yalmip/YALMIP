@@ -35,8 +35,13 @@ if ~isempty(p.evalMap)
                 if remove_auto_generated_convexhull
                     p.evalMap{i}.properties.convexhull = [];
                 end
-            else               
+            elseif ~isinf(xL) && ~isinf(xU)               
                [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);               
+            else
+                Ax = [];
+                Ay = [];
+                b = [];
+                K = [];
             end
             if ~isempty(b)
                 removeThese = find(any(isnan([Ax Ay b]),2));
@@ -107,23 +112,52 @@ z = linspace(xL,xU,100);
 if isequal(p.evalMap{i}.fcn,'power_internal2')
     % Special code for automatically converting sigmonial
     % terms to be solvable with bmibnb
-    fz = feval(p.evalMap{i}.fcn,z,p.evalMap{i}.arg{2});
-    
+    fz = feval(p.evalMap{i}.fcn,z,p.evalMap{i}.arg{2});    
 else
     arg = p.evalMap{i}.arg;
-    arg{1} = z;
+    arg{1} = z;    
+    vectorized = 1;
     fz = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+    if length(fz) ~= length(z)
+        % Operator is not vectorized?
+        vectorized = 0;
+        fz = [];
+        for k = 1:length(z)        
+            arg{1} = z(k);    
+            fz = [fz real(feval(p.evalMap{i}.fcn,arg{1:end-1}))];
+        end
+    end
+    if length(fz) ~= length(z)        
+        Ax = [];
+        Ay = [];
+        b = [];
+        K = [];
+        return
+    end
     % end
     [minval,minpos] = min(fz);
     [maxval,maxpos] = max(fz);
     xtestmin = linspace(z(max([1 minpos-5])),z(min([100 minpos+5])),100);
     xtestmax = linspace(z(max([1 maxpos-5])),z(min([100 maxpos+5])),100);
-    arg{1} = xtestmin;
-    fz1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
-    arg{1} = xtestmax;
-    fz2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
-    z = [z(:);xtestmin(:);xtestmax(:)];
-    fz = [fz(:);fz1(:);fz2(:)];
+    if vectorized
+        arg{1} = xtestmin;
+        fz1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        arg{1} = xtestmax;
+        fz2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        z = [z(:);xtestmin(:);xtestmax(:)];
+        fz = [fz(:);fz1(:);fz2(:)];
+    else
+        fz1 = [];
+        for k = 1:length(xtestmin)        
+            arg{1} = xtestmin(k);    
+            fz1 = [fz1 real(feval(p.evalMap{i}.fcn,arg{1:end-1}))];
+        end
+        fz2 = [];
+        for k = 1:length(xtestmax)        
+            arg{1} = xtestmax(k);    
+            fz2 = [fz2 real(feval(p.evalMap{i}.fcn,arg{1:end-1}))];
+        end
+    end
     [z,sorter] = sort(z);
     fz = fz(sorter);
     [z,ii,jj]=unique(z);
