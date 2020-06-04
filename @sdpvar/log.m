@@ -18,8 +18,7 @@ switch class(varargin{1})
 
         X = varargin{3};      
         
-        operator = CreateBasicOperator('concave','increasing','callback');                
-        operator.bounds = @bounds;        
+        operator = CreateBasicOperator('concave','increasing','callback');                             
         operator.derivative = @(x)(1./(abs(x)+eps));
         operator.inverse = @(x)(exp(x));
         operator.domain = [0 inf];
@@ -30,21 +29,6 @@ switch class(varargin{1})
 
     otherwise
         error('SDPVAR/LOG called with CHAR argument?');
-end
-
-function [L,U] = bounds(xL,xU)
-if xL <= 0
-    % The variable is not bounded enough yet
-    L = -inf;
-else
-    L = log(xL);
-end
-if xU < 0
-    % This is an infeasible problem
-    L = inf;
-    U = -inf;
-else
-    U = log(xU);
 end
 
 function f = check_for_special_cases(x)
