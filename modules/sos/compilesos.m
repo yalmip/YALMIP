@@ -1,4 +1,4 @@
-function [F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomials)
+function [F,obj,m,everything,modeltype] = compilesos(F,obj,options,params,candidateMonomials)
 %COMPILESOS Derive sum-of-squares model without solving
 %
 %    [F,obj,m] = compilesos(F,h,options,params,monomials) compiles the SOS
@@ -236,7 +236,10 @@ switch options.sos.model
         options.sos.model = 2;
     otherwise
 end
-             
+  
+% Save this and return to calling function so we know if we have dualized
+modeltype = options.sos.model;
+
 if ~isempty(yalmip('extvariables')) & options.sos.model == 2 & nargin<4
     disp(' ')
     disp('**Using nonlinear operators in SOS problems can cause problems.')
