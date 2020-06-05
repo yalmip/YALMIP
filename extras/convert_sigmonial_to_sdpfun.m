@@ -237,8 +237,6 @@ f.arg{2} = [];
 f.properties.bounds = @inverse_bound;
 f.properties.convexhull = @inverse_convexhull;
 f.properties.derivative = @(x) -1./(x.^2);
-f.properties.range = [-inf  inf];
-f.properties.domain = [-inf  inf];
 flb = 1/model.lb(variable);
 fub = 1/model.ub(variable);
 if model.lb(variable)>0 | model.ub(variable) < 0
@@ -253,7 +251,7 @@ elseif model.ub(variable) <= 0
     f.properties.convexity = 'concave';
     f.properties.range = [fub  flb];    
 end
-f.properties.inverse = [];
+f.properties = assertOperatorProperties(f.properties);
 
 function f = power_internal2_operator(model,variable,power);
 f.fcn = 'power_internal2';
@@ -263,10 +261,7 @@ f.arg{3} = [];
 f.properties.bounds = @power_bound;
 f.properties.convexhull = @power_convexhull;
 f.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-1);']);
-f.properties.inverse = [];
 if even(power)
     f.properties.range = [0 inf];
-else
-    f.properties.range = [-inf inf];
 end
-f.properties.domain = [-inf inf];
+f.properties = assertOperatorProperties(f.properties);
