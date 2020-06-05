@@ -14,12 +14,20 @@ if any(p.originalModel.variabletype==3)
              U = p.ub(monom_variable);
                     
             if even(n)
-%                 M = (L+U)/2;
-%                 [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));
-%                 p.F_struc(end+1:end+length(b),1) = b;
-%                 p.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
-%                 p.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
-%                 p.K.l = p.K.l+length(b);
+                M = (L+U)/2;
+                if L <= 0 && U >= 0 && M~=0
+                    if M < 0
+                        [Ax,Ay,b,K] = convexhullConvex(L,M,0,U,L^n,M^n,0,U^n,n*L^(n-1),n*M^(n-1),0,n*U^(n-1));
+                    else
+                        [Ax,Ay,b,K] = convexhullConvex(L,0,M,U,L^n,0,M^n,U^n,n*L^(n-1),0,n*M^(n-1),n*U^(n-1));
+                    end
+                else
+                    [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));
+                end
+                p.F_struc(end+1:end+length(b),1) = b;
+                p.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
+                p.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
+                p.K.l = p.K.l+length(b);
             else
                 if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0 & ~isinf(p.lb(monom_variable)) & ~isinf(p.ub(monom_variable))
                    
