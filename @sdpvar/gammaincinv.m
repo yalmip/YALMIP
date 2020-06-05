@@ -1,5 +1,4 @@
 function varargout = gammaincinv(varargin)
-%GAMMAINCINV (overloaded)
 
 if nargin ~= 2
     error('Not enough input arguments in gammainc.');

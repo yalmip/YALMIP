@@ -1,5 +1,9 @@
 function p = propagate_bounds_from_equalities(p)
 
+if p.K.f == 0
+    return
+end
+
 LU = [p.lb p.ub];
 
 p_F_struc = p.F_struc;

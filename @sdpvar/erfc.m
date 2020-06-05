@@ -1,5 +1,4 @@
 function varargout = erfc(varargin)
-%ERFC (overloaded)
 
 switch class(varargin{1})
 

@@ -1,5 +1,4 @@
 function y = mpower(x,d)
-%MPOWER (overloaded)
 
 if (numel(d)>1) || (size(x,1) ~= size(x,2))
    error('Inputs must be a scalar and a square matrix. To compute elementwise POWER, use POWER (.^) instead.');

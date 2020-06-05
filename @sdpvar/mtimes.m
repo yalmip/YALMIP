@@ -1,5 +1,4 @@
 function Z = mtimes(X,Y)
-%MTIMES (overloaded)
 
 % Cannot use isa here since blkvar is marked as sdpvar
 X_class = class(X);

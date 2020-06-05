@@ -1,5 +1,4 @@
 function varargout = interp1(varargin)
-%INTERP1 (overloaded)
 
 switch class(varargin{3})
 

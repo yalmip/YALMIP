@@ -1,5 +1,4 @@
 function varargout = cosh(varargin)
-%COSH (overloaded)
 
 switch class(varargin{1})
 
@@ -11,6 +10,7 @@ switch class(varargin{1})
         operator = CreateBasicOperator('convex','positive','callback');        
         operator.bounds = @bounds;
         operator.derivative = @(x)(sinh(x));
+        operator.stationary = [0 1];
 
         varargout{1} = [];
         varargout{2} = operator;

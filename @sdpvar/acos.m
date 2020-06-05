@@ -1,5 +1,4 @@
 function varargout = acos(varargin)
-%ACOS (overloaded)
 
 switch class(varargin{1})
     

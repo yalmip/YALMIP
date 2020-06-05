@@ -1,5 +1,4 @@
 function varargout = airy(varargin)
-%AIRY (overloaded)
 
 switch class(varargin{1})
 

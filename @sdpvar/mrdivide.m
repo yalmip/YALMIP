@@ -1,5 +1,4 @@
 function y = mrdivide(X,Y)
-%MRDIVIDE (overloaded)
 
 if (isa(Y,'sdpvar'))
     if Y.dim(1)*Y.dim(2) == 1

@@ -1,5 +1,4 @@
 function varargout = sqrtm_internal(varargin)
-%SQRTM (overloaded)
 
 switch class(varargin{1})
 
@@ -10,17 +9,15 @@ switch class(varargin{1})
           varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
-
-        X = varargin{3};
-        F = (X >= 0);
-        
+                        
         operator = CreateBasicOperator('concave','increasing','positive','callback');
         operator.derivative = @(x) 1./(eps + 2*abs(x).^0.5);
         operator.inverse = @(x)x.^2;
+        operator.domain = [0 inf];
 
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
         error(['SDPVAR/' upper(mfilename) ' called with weird argument']);

@@ -1,5 +1,4 @@
 function varargout = cabs(varargin)
-%CABS (overloaded)
 
 switch class(varargin{1})
 

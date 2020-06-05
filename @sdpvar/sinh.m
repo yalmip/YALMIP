@@ -1,5 +1,4 @@
 function varargout = sinh(varargin)
-%SINH (overloaded)
 
 switch class(varargin{1})
 

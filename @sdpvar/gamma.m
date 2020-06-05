@@ -1,5 +1,4 @@
 function varargout = gamma(varargin)
-%GAMMA (overloaded)
 
 switch class(varargin{1})
 

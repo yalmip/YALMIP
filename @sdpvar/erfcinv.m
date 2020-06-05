@@ -1,5 +1,4 @@
 function varargout = erfcinv(varargin)
-%ERFCINV (overloaded)
 
 switch class(varargin{1})
 

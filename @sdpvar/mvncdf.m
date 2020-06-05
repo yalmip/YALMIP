@@ -1,10 +1,4 @@
 function varargout = mvncdf(varargin)
-%MVNCDF
-%
-% y = MVNCDF(x)
-%
-% Computes/declares multivariate normal cumulative distribution function
-% y = (1/2)*(1+erf(x/sqrt(2)))
 
 switch class(varargin{1})
 

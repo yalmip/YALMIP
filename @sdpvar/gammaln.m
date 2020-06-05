@@ -1,5 +1,4 @@
 function varargout = gammaln(varargin)
-%GAMMALN (overloaded)
 
 switch class(varargin{1})
 

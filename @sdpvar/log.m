@@ -1,5 +1,4 @@
 function varargout = log(varargin)
-%LOG (overloaded)
 
 switch class(varargin{1})
 

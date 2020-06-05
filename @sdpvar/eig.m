@@ -1,5 +1,4 @@
 function varargout = eig(varargin)
-%EIG (overloaded)
 
 switch class(varargin{1})
 

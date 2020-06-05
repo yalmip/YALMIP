@@ -1,5 +1,4 @@
 function varargout = expexpintinv(varargin)
-%EXPEXPINTINV (overloaded)
 
 switch class(varargin{1})
 

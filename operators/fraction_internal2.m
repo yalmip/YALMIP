@@ -20,5 +20,5 @@ switch class(varargin{1})
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','exact');
         varargout{3} = [X(:)];
     otherwise
-        error('SDPVAR/fraction_internal2 called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end

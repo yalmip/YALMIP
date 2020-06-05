@@ -1,5 +1,4 @@
 function varargout = SIGN(varargin)
-%SIGN (overloaded)
 
 switch class(varargin{1})
 

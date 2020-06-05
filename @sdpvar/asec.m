@@ -1,5 +1,4 @@
 function varargout = asec(varargin)
-%ASEC (overloaded)
 
 switch class(varargin{1})
 

@@ -1,5 +1,4 @@
 function varargout = cot(varargin)
-%COT (overloaded)
 
 switch class(varargin{1})
 
@@ -9,7 +8,7 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('callback');
-        operator.derivative = @(x)(1./sin(x));
+        operator.derivative = @(x)(-csc(x).^2);
 
         varargout{1} = [];
         varargout{2} = operator;

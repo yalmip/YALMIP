@@ -1,5 +1,4 @@
 function varargout = gammainc(varargin)
-%GAMMAINC (overloaded)
 
 if nargin ~= 2
     error('Not enough input arguments in gammainc.');
@@ -25,5 +24,5 @@ switch class(varargin{1})
         varargout{1} = InstantiateElementWise('gammainc_x',varargin{:});
         
     otherwise
-        error('SDPVAR/GAMMAINC called with strange argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

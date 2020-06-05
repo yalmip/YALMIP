@@ -1,5 +1,4 @@
 function varargout = lambertw(varargin)
-%LAMBERTW (overloaded)
 
 switch class(varargin{1})
 

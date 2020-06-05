@@ -1,5 +1,4 @@
 function varargout = pow10(varargin)
-%POW10 (overloaded)
 
 switch class(varargin{1})
 

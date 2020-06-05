@@ -1,5 +1,4 @@
 function varargout = psi(varargin)
-%PSI (overloaded)
 
 switch class(varargin{1})
 
@@ -21,5 +20,5 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/PSI called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

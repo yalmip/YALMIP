@@ -1,5 +1,4 @@
 function varargout = ellipke(varargin)
-%ELLIPKE (overloaded)
 
 switch class(varargin{1})
     

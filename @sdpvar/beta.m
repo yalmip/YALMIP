@@ -1,5 +1,4 @@
 function varargout=beta(varargin)
-%BETA (overloaded)
 
 switch class(varargin{1})
 

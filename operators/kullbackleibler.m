@@ -8,7 +8,6 @@ function varargout = kullbackleibler(varargin)
 %
 % See also ENTROPY, CROSSENTROPY
 
-
 switch class(varargin{1})
 
     case 'double'    
@@ -64,5 +63,3 @@ x = z(:,1);
 y = z(:,2);
 % Use KL = -Entropy + Cross Entropy
 df = [1+log(x);0*y] + [-log(y);-x./y];
-
-

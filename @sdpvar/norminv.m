@@ -1,5 +1,4 @@
 function varargout = norminv(varargin)
-%NORMINV (overloaded)
 
 switch class(varargin{1})
 

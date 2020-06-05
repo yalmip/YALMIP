@@ -1,5 +1,4 @@
 function varargout = sqrtm(varargin)
-%SQRTM (overloaded)
 
 switch nargout
     case 0

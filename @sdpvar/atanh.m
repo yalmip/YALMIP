@@ -1,5 +1,4 @@
 function varargout = atanh(varargin)
-%ATANH (overloaded)
 
 switch class(varargin{1})
 
