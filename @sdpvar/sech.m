@@ -9,7 +9,8 @@ switch class(varargin{1})
 
         operator = CreateBasicOperator('callback');
         operator.monotonicity = @monotonicity;                
-        operator.derivative = @(x)(-tanh(x).*sech(x));        
+        operator.derivative = @(x)(-tanh(x).*sech(x)); 
+        operator.stationary = [0 1];
         operator.range = [0 1];
         
         varargout{1} = [];

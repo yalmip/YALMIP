@@ -7,8 +7,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = CreateBasicOperator('convex','positive','callback');        
-        operator.bounds = @bounds;
+        operator = CreateBasicOperator('convex','positive','callback');                
         operator.derivative = @(x)(sinh(x));
         operator.stationary = [0 1];
 
@@ -18,16 +17,4 @@ switch class(varargin{1})
 
     otherwise
         error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
-end
-
-function [L,U] = bounds(xL,xU)
-if xL<0 & xU>0
-    L = 0;
-    U = max([cosh(xL) cosh(xU)]);
-elseif xL<0
-    L = cosh(xU);
-    U = cosh(xL);
-else
-    L = cosh(xL);
-    U = cosh(xU);
 end

@@ -7,11 +7,11 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = CreateBasicOperator('increasing','callback');
-        operator.convexity = @convexity;        
-        operator.range = [-1 1];
+        operator = CreateBasicOperator('increasing','callback');                      
         operator.derivative =@(x)exp(-x.^2)*2/sqrt(pi);
         operator.inverse = @(x)(erfinv(x));
+        operator.inflection = [0 -1];
+        operator.range = [-1 1];
               
         varargout{1} = [];
         varargout{2} = operator;
@@ -20,13 +20,3 @@ switch class(varargin{1})
     otherwise
         error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
-
-function vexity = convexity(xL,xU)
-if xL >= 0  
-    vexity = 'concave';
-elseif xU <= 0
-    vexity = 'convex';
-else
-    vexity = 'none';
-end
-

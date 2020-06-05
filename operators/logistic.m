@@ -16,10 +16,10 @@ switch class(varargin{1})
 
     case 'char'
         
-        operator = CreateBasicOperator('increasing','positive','callback');
-        operator.convexity  = @convexity;
+        operator = CreateBasicOperator('increasing','positive','callback');        
         operator.derivative = @(x)logistic(x).*(1-logistic(x));
         operator.inverse    = @(x)(log(x)-log(1-x));
+        operator.inflection = [0 -1];
         operator.range = [0 1];
 
         varargout{1} = [];
@@ -28,13 +28,4 @@ switch class(varargin{1})
 
     otherwise
         error([upper(mfilename) ' called with weird argument']);
-end
-
-function vexity = convexity(xL,xU)
-if xL >= 0  
-    vexity = 'concave';
-elseif xU <= 0
-    vexity = 'convex';
-else
-    vexity = 'none';
 end

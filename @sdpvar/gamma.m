@@ -7,11 +7,11 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = CreateBasicOperator('convex','positive','callback')               
-        operator.monotonicity = @monotonicity;       
-        operator.range = [gamma(1.46163214496836234126) inf];
+        operator = CreateBasicOperator('convex','positive','callback');                                  
         operator.derivative =@(x)psi(0,x).*gamma(x);  
-        operator.stationary = [8.856031944108888e-01 1.46163214496836234126];
+        operator.stationary = [1.46163214496836234126 8.856031944108888e-01];
+        operator.range = [gamma(1.46163214496836234126) inf];
+        operator.domain = [0 inf];
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -19,14 +19,4 @@ switch class(varargin{1})
 
     otherwise
         error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
-end
-
-function mono = monotonicity(xL,xU)
-m = 1.46163214496836234126;
-if xL < m && xU > m
-    mono = 'none';
-elseif xL >= m
-    mono = 'increasing';
-else
-    mono = 'decreasing';
 end

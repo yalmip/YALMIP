@@ -1,5 +1,4 @@
 function varargout = gammaincinv_x(varargin)
-%GAMMAINCINV_X
 
 switch class(varargin{1})
 

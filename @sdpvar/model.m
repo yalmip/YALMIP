@@ -86,6 +86,7 @@ if ~isempty(properties)
         properties{i} = assertProperty(properties{i},'domain',[-inf inf]);
         properties{i} = assertProperty(properties{i},'stationary',[]);
         properties{i} = assertProperty(properties{i},'inflection',[]);
+        properties{i} = assertProperty(properties{i},'singularity',[]);
         properties{i} = assertProperty(properties{i},'shape',[]);
         properties{i} = assertProperty(properties{i},'replace',[]);
         if isa(properties{i}.definiteness,'char')

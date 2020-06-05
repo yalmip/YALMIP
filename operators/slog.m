@@ -24,9 +24,9 @@ switch class(varargin{1})
     case 'char'
              
         operator = CreateBasicOperator('concave','increasing','callback');                
-        operator.domain = [-1 inf];
         operator.derivative = @(x) (1./(abs(1+x)+sqrt(eps)));
         operator.inverse = @(x)(exp(x)-1);
+        operator.domain = [-1 inf];
         
         varargout{1} = [];
         varargout{2} = operator;

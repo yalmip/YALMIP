@@ -9,6 +9,7 @@ switch class(varargin{1})
 
         operator = CreateBasicOperator('callback');
         operator.derivative = @(x)(-csc(x)*(cot(x)));
+        operator.singularity = 0;
 
         varargout{1} = [];
         varargout{2} = operator;

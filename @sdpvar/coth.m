@@ -10,7 +10,8 @@ switch class(varargin{1})
         operator = CreateBasicOperator('callback');
         operator.monotonicity = @monotonicity;                
         operator.convexity = @convexity;                
-        operator.derivative = @(x)(-(1-coth(x)).^2);        
+        operator.derivative = @(x)(-(1-coth(x)).^2); 
+        operator.singularity = 0;
                
         varargout{1} = [];
         varargout{2} = operator;

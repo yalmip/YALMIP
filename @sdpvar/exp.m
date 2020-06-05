@@ -31,7 +31,8 @@ switch class(varargin{1})
         
         operator = CreateBasicOperator('convex','increasing','positive','callback');
         operator.derivative = @(x)exp(x);
-        operator.inverse = @(x)log(x);        
+        operator.inverse = @(x)log(x);   
+        operator.range = [0 inf];
         
         varargout{1} = [];
         varargout{2} = operator;
