@@ -96,6 +96,19 @@ else
             values2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
             L = min([values1 values2]);
             U = max([values1 values2]);
+            if ~isempty(p.evalMap{i}.properties.singularity)
+                if xL <= p.evalMap{i}.properties.singularity && xU >= p.evalMap{i}.properties.singularity
+                    arg = p.evalMap{i}.arg;                                    
+                    arg{1} = p.evalMap{i}.properties.singularity-1/inf;
+                    values = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+                    L = min(L,values);
+                    U = max(U,values);
+                    arg{1} = p.evalMap{i}.properties.singularity+1/inf;
+                    values = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+                    L = min(L,values);
+                    U = max(U,values);
+                end
+            end
         end
     end
 end

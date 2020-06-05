@@ -673,6 +673,16 @@ end
 function bounds = partition(p,options,spliton,x_min)
 x = x_min;
 
+for i = 1:length(p.evalMap)
+    if ~isempty(p.evalMap{i}.properties.singularity)
+        if isequal(spliton, p.evalMap{i}.variableIndex)
+            if (p.evalMap{i}.properties.singularity > p.lb(spliton)) && (p.evalMap{i}.properties.singularity < p.ub(spliton))
+                bounds = [p.lb(spliton) p.evalMap{i}.properties.singularity p.ub(spliton)];
+                return
+            end
+        end
+    end
+end
 switch options.bmibnb.branchrule
     case 'omega'
         U = p.ub(spliton);

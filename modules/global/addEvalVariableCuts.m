@@ -44,7 +44,7 @@ if ~isempty(p.evalMap)
                 K = [];
             end
             if ~isempty(b)
-                removeThese = find(any(isnan([Ax Ay b]),2));
+                removeThese = find(any(isnan([Ax Ay b]),2) | any(isinf([Ax Ay b]),2));
                 Ax(removeThese,:) = [];
                 Ay(removeThese,:) = [];
                 b(removeThese) = [];
@@ -165,6 +165,10 @@ else
 end
 
 [Ax,Ay,b] = convexhullFromSampled(z,fz,xL,xU);
+removeThese = find(any(isnan([Ax Ay b]),2) | any(isinf([Ax Ay b]),2));
+Ax(removeThese,:) = [];
+Ay(removeThese,:) = [];
+b(removeThese) = [];
 K = [];
 
 p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
@@ -184,6 +188,8 @@ elseif isa(p.properties.convexity,'function_handle')
 elseif ~isempty(p.properties.inflection)
     % Derive convexity by information about inflection
     vexity = DeriveVexityFromInflection(p.properties,xL,xU);   
+else
+    vexity = 'none';
 end
 
 if isequal(vexity,'convex')
