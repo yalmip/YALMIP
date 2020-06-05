@@ -173,12 +173,17 @@ function f = createConvexHullMethod(p,xL,xU)
 
 if ~isa(p.properties.derivative,'function_handle')
     f = [];
+    return
 end
 
-if isa(p.properties.convexity,'function_handle')
-    vexity = p.properties.convexity(xL,xU);
-else
+if isa(p.properties.convexity,'char') && ~(isequal(p.properties.convexity,'none'))
     vexity = p.properties.convexity;
+elseif isa(p.properties.convexity,'function_handle')
+    % User-supplied method to derive convexity in region
+    vexity = p.properties.convexity(xL,xU);
+elseif ~isempty(p.properties.inflection)
+    % Derive convexity by information about inflection
+    vexity = DeriveVexityFromInflection(p.properties,xL,xU);   
 end
 
 if isequal(vexity,'convex')
@@ -228,3 +233,23 @@ for i = 1:4
     end
 end
 [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+
+function vexity = DeriveVexityFromInflection(properties,xL,xU)
+if xU <= properties.inflection(1)
+    % Left region
+    if properties.inflection(2) == -1
+        vexity = 'convex';
+    else
+        vexity = 'concave';
+    end
+elseif xL >= properties.inflection(1)
+    % Right region
+    if properties.inflection(2) == -1
+        vexity = 'concave';
+    else
+        vexity = 'convex';
+    end
+else
+    % Covering inflection
+    vexity = 'none';
+end

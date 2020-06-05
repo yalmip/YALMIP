@@ -18,9 +18,12 @@ else
         monotonicity = p.evalMap{i}.properties.monotonicity;
     elseif isa(p.evalMap{i}.properties.monotonicity,'function_handle')
         monotonicity =  p.evalMap{i}.properties.monotonicity(xL,xU);
+    elseif ~isempty(p.evalMap{i}.properties.stationary) && (isequal(p.evalMap{i}.properties.convexity,'convex') || isequal(p.evalMap{i}.properties.convexity,'concave'))
+         monotonicity = DeriveMonotonicityFromStationary(p.evalMap{i}.properties,xL,xU);
     else
         monotonicity = 'none';
     end
+    
     if strcmpi(monotonicity,'increasing')
         % No generator is available, but bound follows from monotinicity
         arg = p.evalMap{i}.arg;
@@ -52,6 +55,22 @@ else
         if isnan(L)            
             L = p.evalMap{i}.properties.range(1);                        
         end
+    elseif isequal(p.evalMap{i}.properties.convexity,'convex') && ~isempty(p.evalMap{i}.properties.stationary)
+        L = p.evalMap{i}.properties.stationary(2);
+        arg = p.evalMap{i}.arg;
+        arg{1} = xL;
+        U1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        arg{1} = xU;
+        U2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        U = max(U1,U2);
+    elseif isequal(p.evalMap{i}.properties.convexity,'concave') && ~isempty(p.evalMap{i}.properties.stationary)
+        U = p.evalMap{i}.properties.stationary(2);
+        arg = p.evalMap{i}.arg;
+        arg{1} = xL;
+        L1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        arg{1} = xU;
+        L2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        L = min(L1,L2);
     else
         % To get some kind of bounds, we just sample the function
         % and pick the min and max from there. This only works for
@@ -82,3 +101,20 @@ else
 end
 p.lb(p.evalVariables(i)) = max([p.lb(p.evalVariables(i)) L],[],2);
 p.ub(p.evalVariables(i)) = min([p.ub(p.evalVariables(i)) U],[],2);
+
+function monotonicity = DeriveMonotonicityFromStationary(properties,xL,xU)
+
+monotonicity = 'none';
+if isequal(properties.convexity,'convex')
+    if xU <= properties.stationary(1)
+        monotonicity = 'decreasing';
+    elseif xL >= properties.stationary(1)
+        monotonicity = 'increasing';
+    end
+elseif isequal(properties.convexity,'concave')
+    if xU <= properties.stationary(1)
+        monotonicity = 'increasing';
+    elseif xL >= properties.stationary(1)
+        monotonicity = 'decreasing';
+    end
+end

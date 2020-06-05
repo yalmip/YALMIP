@@ -77,6 +77,7 @@ if ~isempty(properties)
         properties{i} = assertProperty(properties{i},'definiteness','none');
         properties{i} = assertProperty(properties{i},'convexity','none');
         properties{i} = assertProperty(properties{i},'monotonicity',[]);
+        properties{i} = assertProperty(properties{i},'smoothness',inf);
         properties{i} = assertProperty(properties{i},'derivative',[]);
         properties{i} = assertProperty(properties{i},'inverse',[]);
         properties{i} = assertProperty(properties{i},'models',getvariables(extstruct.var));
@@ -84,6 +85,8 @@ if ~isempty(properties)
         properties{i} = assertProperty(properties{i},'bounds',[]);
         properties{i} = assertProperty(properties{i},'domain',[-inf inf]);
         properties{i} = assertProperty(properties{i},'stationary',[]);
+        properties{i} = assertProperty(properties{i},'inflection',[]);
+        properties{i} = assertProperty(properties{i},'shape',[]);
         properties{i} = assertProperty(properties{i},'replace',[]);
         if isa(properties{i}.definiteness,'char')
             switch properties{i}.definiteness
@@ -112,6 +115,13 @@ if ~isempty(properties)
         if isequal(properties{i}.monotonicity,'nonmonotone')
             properties{i}.monotonicity = 'none';
         end
+        if isequal(properties{i}.smoothness,'smooth')
+            properties{i}.smoothness = inf;
+        elseif isequal(properties{i}.smoothness,'discontinuous')
+            properties{i}.smoothness = 0;
+        elseif isequal(properties{i}.smoothness,'differentiable')
+            properties{i}.smoothness = 1;
+        end                    
     end
 end
 
