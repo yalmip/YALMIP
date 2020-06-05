@@ -682,6 +682,14 @@ for i = 1:length(p.evalMap)
             end
         end
     end
+    if ~isempty(p.evalMap{i}.properties.inflection)
+        if isequal(spliton, p.evalMap{i}.variableIndex)
+            if (p.evalMap{i}.properties.inflection(1) > p.lb(spliton)) && (p.evalMap{i}.properties.inflection(1) < p.ub(spliton))
+                bounds = [p.lb(spliton) p.evalMap{i}.properties.inflection(1) p.ub(spliton)];
+                return
+            end
+        end
+    end
 end
 switch options.bmibnb.branchrule
     case 'omega'
