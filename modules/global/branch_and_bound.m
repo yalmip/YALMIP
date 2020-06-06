@@ -22,6 +22,11 @@ K       = p.K;
 options = p.options;
 
 % *************************************************************************
+% After initial bound propagation, can convexity etc be fixed?
+% *************************************************************************
+p = fixOperatorProperties(p);
+
+% *************************************************************************
 % DEFINE UPPER BOUND PROBLEM. Basically just remove the cuts
 % *************************************************************************
 p_upper = cleanuppermodel(p);
@@ -31,7 +36,7 @@ p_upper = compile_quadraticslist(p_upper);
 
 % *************************************************************************
 % Add constraints obtained from multiplying linear constraints with 
-% variables leading to bilinear constraintsm with monomials already used
+% variables leading to bilinear constraints with monomials already used
 % *************************************************************************
 if p.options.bmibnb.cut.multipliedequality
     p = addMultipliedEqualityCuts(p);
