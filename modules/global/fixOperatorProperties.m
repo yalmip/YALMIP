@@ -6,10 +6,10 @@ for i = 1:length(p.evalMap)
     x = p.evalMap{i}.variableIndex;
     xL = p.lb(x);
     xU = p.ub(x);
-    
+            
     properties = p.evalMap{i}.properties;
     % Can convexity be fixed for xL <= x <= xL?
-    if xL<xU && (isa(properties.convexity,'function_handle') || isequal(properties.convexity,'none'))
+    if any(xL<xU) && (isa(properties.convexity,'function_handle') | isequal(properties.convexity,'none'))
         vexity = 'none';
         % User-supplied code to derive convexity
         if isa(properties.convexity,'function_handle')
@@ -37,7 +37,7 @@ for i = 1:length(p.evalMap)
             end
         end
     end
-    if xL<xU && isa(properties.monotonicity,'function_handle')
+    if any(xL<xU) && isa(properties.monotonicity,'function_handle')
         mono = properties.monotonicity(xL,xU);
         if ~isequal(mono,'none')
             properties.monotonicity = mono;
