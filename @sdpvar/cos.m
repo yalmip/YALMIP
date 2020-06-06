@@ -11,6 +11,7 @@ switch class(varargin{1})
         operator = CreateBasicOperator('callback');
         operator.convexity = @convexity;
         operator.bounds     = @bounds;
+        operator.monotonicity  = @monotonicity;
         operator.derivative = @(x)(-sin(x));
         operator.range = [-1 1];        
  
@@ -48,10 +49,36 @@ function vexity = convexity(xL,xU)
 % Convert to sin
 xL = xL + pi/2;
 xU = xU + pi/2;
-if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
-    vexity = 'concave';    
-elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
-    vexity = 'convex';   
-else
+if xU-xL > pi
     vexity = 'none';
+else
+    n = floor(xU/(2*pi));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if (xL >= 0 && xU <=pi) || (xL >= -2*pi && xU <=-pi)
+        vexity = 'concave';
+    elseif (xL >= -pi && xU <= 0) || (xL >= pi && xU <= 2*pi)
+        vexity = 'convex';
+    else
+        vexity = 'none';
+    end
+end
+
+function mono = monotonicity(xL,xU)
+% Convert to sin
+xL = xL + pi/2;
+xU = xU + pi/2;
+if xU-xL > pi
+    mono = 'none';
+else
+    n = floor(xU/(2*pi));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if (xL >= -pi/2 && xU <=pi/2) || (xL >= 1.5*pi && xU <=2*pi)
+        mono = 'increasing';
+    elseif (xL >= -1.5*pi && xU <= -pi/2) || (xL >= pi/2 && xU <= 1.5*pi)
+        mono = 'decreasing';
+    else
+        mono = 'none';
+    end
 end

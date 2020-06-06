@@ -28,7 +28,7 @@ function def = definiteness(xL,xU)
 if xU-xL > pi
     def = 'none';
 else
-    n = floor(( (xL + xU)/2/(2*pi)));
+     n = floor(xU/(2*pi));
     xL = xL - n*2*pi;
     xU = xU - n*2*pi;
 	if xL >= 0 && xU <=pi
@@ -44,10 +44,10 @@ function mono = monotonicity(xL,xU)
 if xU-xL > pi
     mono = 'none';
 else
-    n = floor(( (xL + xU)/2/(2*pi)));
+    n = floor(xU/(2*pi));
     xL = xL - n*2*pi;
     xU = xU - n*2*pi;
-	if xL >= -pi/2 && xU <=pi/2 
+	if (xL >= -pi/2 && xU <=pi/2) || (xL >= 1.5*pi && xU <=2*pi)
         mono = 'increasing';
     elseif (xL >= -1.5*pi && xU <= -pi/2) || (xL >= pi/2 && xU <= 1.5*pi)
         mono = 'decreasing';
@@ -57,13 +57,19 @@ else
 end
     
 function vexity = convexity(xL,xU)
-
-if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
-    vexity = 'concave';    
-elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
-    vexity = 'convex';   
-else
+if xU-xL > pi
     vexity = 'none';
+else
+    n = floor(xU/(2*pi));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if (xL >= 0 && xU <=pi) || (xL >= -2*pi && xU <=-pi)
+        vexity = 'concave';
+    elseif (xL >= -pi && xU <= 0) || (xL >= pi && xU <= 2*pi)
+        vexity = 'convex';
+    else
+        vexity = 'none';
+    end
 end
 
 function [L,U] = bounds(xL,xU)
