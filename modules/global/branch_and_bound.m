@@ -689,9 +689,11 @@ for i = 1:length(p.evalMap)
     end
     if ~isempty(p.evalMap{i}.properties.inflection)
         if isequal(spliton, p.evalMap{i}.variableIndex)
-            if (p.evalMap{i}.properties.inflection(1) > p.lb(spliton)) && (p.evalMap{i}.properties.inflection(1) < p.ub(spliton))
-                bounds = [p.lb(spliton) p.evalMap{i}.properties.inflection(1) p.ub(spliton)];
-                return
+            for k = 1:length(p.evalMap{i}.properties.inflection)/2
+                if (p.evalMap{i}.properties.inflection(2*k) > p.lb(spliton)) && (p.evalMap{i}.properties.inflection(2*k) < p.ub(spliton))
+                    bounds = [p.lb(spliton) p.evalMap{i}.properties.inflection(1) p.ub(spliton)];
+                    return
+                end
             end
         end
     end
