@@ -77,6 +77,8 @@ p_cut = addNormBoundCut(p_cut);
 p_cut = addBilinearVariableCuts(p_cut);
 p_cut = addEvalVariableCuts(p_cut);
 p_cut = addMonomialCuts(p_cut);
+p_cut = addMonomialTowerCuts(p_cut);
+p_cut = addSinCosCuts(p_cut);
 
 p_cut = mergeBoundsToModel(p_cut);
 if nargin > 1
@@ -114,8 +116,17 @@ else
     if p_cut.K.l > 0
         E = [E,p_cut.F_struc(1+p_cut.K.f:p_cut.K.f + p_cut.K.l,:)*[1;z]>=0];
     end
+    if p_cut.K.q > 0
+        top = 1 + p_cut.K.f + p_cut.K.l ;
+        for i = 1:length(p_cut.K.q)
+            n = p_cut.K.q(i);
+            M = p_cut.F_struc(top:top+n-1,:)*[1;z];
+            E = [E, cone(M)];
+            top = top + n;
+        end
+    end
     if p_cut.K.s(1) > 0
-        top = 1 + p_cut.K.f + p_cut.K.l;
+        top = 1 + p_cut.K.f + p_cut.K.l + sum(p_cut.K.q);
         for i = 1:length(p_cut.K.s)
             n = p_cut.K.s(i);
             M = p_cut.F_struc(top:top+n^2-1,:)*[1;z];

@@ -32,6 +32,12 @@ end
 if p.options.bmibnb.cut.exponential
     p_cut = addExponentialCuts(p_cut);
 end
+if p.options.bmibnb.cut.sincos
+    p_cut = addSinCosCuts(p_cut);
+end
+if p.options.bmibnb.cut.monomialtower
+    p_cut = addMonomialTowerCuts(p_cut);
+end
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
