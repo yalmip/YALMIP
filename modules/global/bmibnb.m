@@ -203,7 +203,7 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
         end
     else
          if p.options.bmibnb.verbose>0
-            disp('(no solution found)\n');
+            disp('(no solution found)');
         end
     end
     p.counter.uppersolved = p.counter.uppersolved + 1;
