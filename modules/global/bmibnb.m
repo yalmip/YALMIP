@@ -49,6 +49,13 @@ otherwise
     p.options.verbose = 0;
 end
 
+if p.options.bmibnb.verbose>0
+    disp('* Starting YALMIP global branch & bound.');
+    disp(['* Upper solver     : ' p.solver.uppersolver.tag]);
+    disp(['* Lower solver     : ' p.solver.lowersolver.tag]);    
+    disp(['* LP solver        : ' p.solver.lpsolver.tag]); 
+end
+
 % CPLEX handles options insanely slow, so we remove all default values in
 % solver options
 p.options = pruneOptions(p.options);
@@ -123,24 +130,23 @@ if isequal(size(bounds),size(p.lb))
     p.ub = min(p.ub,bounds(:,2));
 end
 p = compile_nonlinear_table(p);
+
+if p.options.bmibnb.verbose>0
+	disp('* -Extracting bounds from model');   
+end
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p);
 
 % *************************************************************************
 % Start some bound propagation
 % *************************************************************************
+if p.options.bmibnb.verbose>0
+	disp('* -Perfoming root-node bound propagation');   
+end
 p = propagate_bounds_from_convex_quadratic_ball(p);
 p = propagate_bounds_from_evaluations(p);
 p = update_monomial_bounds(p);
-
-% *************************************************************************
-% Sort equalities in order to improve future bound propagation
-% *************************************************************************
 p = presolve_sortrows(p);
-
-% *************************************************************************
-% Improve the bounds by performing some standard propagation
-% *************************************************************************
 p = propagate_bounds_from_equalities(p); 
 p = propagate_bounds_from_evaluations(p);
 p = propagate_bounds_from_separable_quadratic_equality(p);
@@ -149,6 +155,7 @@ p = presolve_bounds_from_inequalities(p);
 p = propagate_bounds_from_evaluations(p);
 p = update_monomial_bounds(p);
 p = propagate_bounds_from_convex_quadratic_ball(p);
+
 % *************************************************************************
 % For quadratic nonconvex programming over linear constraints, we
 % diagonalize the problem to obtain less number of bilinear terms. Not
@@ -185,9 +192,19 @@ if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
     p = propagate_bounds_from_monomials(p);   
     p = propagate_bounds_from_monomials(p);    
     p = propagate_bounds_from_evaluations(p);    
+    if p.options.bmibnb.verbose>0
+        fprintf('* -Calling upper solver ');   
+    end
     [upper,p.x0,info_text,numglobals,timing] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing);
     if ~isinf(upper)
         p = propagate_bounds_from_upper(p,upper);
+        if p.options.bmibnb.verbose>0
+            disp('(found a solution!)');
+        end
+    else
+         if p.options.bmibnb.verbose>0
+            disp('(no solution found)\n');
+        end
     end
     p.counter.uppersolved = p.counter.uppersolved + 1;
     if numglobals > 0
@@ -265,10 +282,16 @@ p = propagate_bounds_from_evaluations(p);
 % *************************************************************************
 p = reduce_bilinear_branching_variables(p);
 
+if p.options.bmibnb.verbose>0
+    disp(['* -Branch-variables : ' num2str(length(p.branch_variables))]);  
+end
 % *************************************************************************
 % Simple pre-solve loop. The loop is needed for variables defined as w =
 % x*y, x = t*u,y=..db
 % ******************************************[******************************
+if p.options.bmibnb.verbose>0
+	disp('* -More root-node bound-propagation');   
+end
 p = presolveloop(p,upper);
 
 % *************************************************************************
@@ -277,7 +300,13 @@ p = presolveloop(p,upper);
 close = find(abs(p.lb - p.ub) < 1e-12);
 p.lb(close) = (p.lb(close)+p.ub(close))/2;
 p.ub(close) = p.lb(close);
+if p.options.bmibnb.verbose>0 && p.options.bmibnb.roottight
+    disp('* -Performing LP-based bound-propagation ');
+end
 [p,timing] = root_node_tighten(p,upper,timing);
+if p.options.bmibnb.verbose>0
+	disp('* -And some more root-node bound-propagation');   
+end
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_evaluations(p);
 p = propagate_bounds_from_equalities(p);

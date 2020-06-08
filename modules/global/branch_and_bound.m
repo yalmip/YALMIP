@@ -82,12 +82,7 @@ p.getsolvertime = 0;
 
 counter = p.counter;
 
-if options.bmibnb.verbose>0
-    disp('* Starting YALMIP global branch & bound.');
-    disp(['* Branch-variables : ' num2str(length(p.branch_variables))]);
-    disp(['* Upper solver     : ' p.solver.uppersolver.tag]);
-    disp(['* Lower solver     : ' p.solver.lowersolver.tag]);    
-    disp(['* LP solver        : ' p.solver.lpsolver.tag]);    
+if options.bmibnb.verbose>0    
     k = nnz(isinf(p.lb(p.branch_variables)));
     if k>0   
         if k == 1
@@ -104,6 +99,7 @@ if options.bmibnb.verbose>0
             disp(['* Warning: ' num2str(k) ' branch variables are unbounded from above']);
         end
     end    
+    disp('* Starting the b&b process');
     disp(' Node       Upper      Gap(%)       Lower    Open');
 end
 
@@ -135,7 +131,8 @@ while go_on
     % ASSUME THAT WE WON'T FATHOME
     % *********************************************************************
     keep_digging = 1;
-
+    info_text = '';
+    
     % *********************************************************************
     % Strenghten variable bounds a couple of runs
     % *********************************************************************
@@ -165,7 +162,10 @@ while go_on
             X = unique(X','rows')';
             tstart = tic;
             for k = 1:size(X,2)                
-                [upper,x_min,~,info_text,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);                                
+                [upper,x_min,~,info_text_temp,numGlobalSolutions] = heuristics_from_relaxed(p_upper,X(:,k),upper,x_min,inf,numGlobalSolutions);                                
+                if length(info_text_temp) > 0
+                    info_text = info_text_temp;
+                end                    
             end                        
             p.counter.heuristics = p.counter.heuristics + size(X,2);
             timing.heuristics = timing.heuristics + toc(tstart);
@@ -185,14 +185,17 @@ while go_on
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
             propagators{j}.worked  = [propagators{j}.worked [LU(:,1)~=p.lb | LU(:,2)~=p.ub]];                         
-        end        
+        end 
+        if ~p.feasible | ~time_ok
+            break
+        end
     end
 
     % *********************************************************************
     % SOLVE LOWER AND UPPER
     % *********************************************************************
     if ~time_ok
-        info_text = 'Time-out';
+        info_text = 'Time-out during bound-propagation';
         keep_digging = 0; 
         cost = inf;
     elseif p.feasible
@@ -226,11 +229,14 @@ while go_on
                 output.problem = 1;
             end
         end
-               
-        info_text = '';
+                       
         switch output.problem
             case 1 % Infeasible
-                info_text = 'Infeasible';
+                 if length(info_text)==0
+                    info_text = 'Infeasible node in lower solver';
+                 else
+                    info_text = [info_text ' | ' 'Infeasible node in lower solver'];                    
+                 end                                        
                 keep_digging = 0;
                 cost = inf;
                 feasible = 0;
@@ -243,7 +249,7 @@ while go_on
                 end
                 
                 if (output.problem == 3) | (output.problem == 4)
-                    info_text = 'Numerical problems in lower bound solver';
+                    info_text = 'Numerical problems in lower solver';
                 end
                 x = output.Primal;
                 
@@ -268,16 +274,15 @@ while go_on
                     p = addlpcuts(p,x);
 
                     oldCount = numGlobalSolutions;
-                    if numGlobalSolutions < p.options.bmibnb.numglobal                        
+                    if numGlobalSolutions < p.options.bmibnb.numglobal   
+                        tstart = tic;
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
                         timing.heuristics = timing.heuristics + toc(tstart);
                         p.counter.heuristics = p.counter.heuristics + 1;
-                        if length(info_text)==0
+                        if length(info_text)==0 &&  length(info_text2)>0
                             info_text = info_text2;
-                        elseif  length(info_text2)>0
-                            info_text = [info_text ' | ' info_text2];
-                        else
-                            info_text = info_text; 
+                        elseif  length(info_text2)>0 && ~isequal(info_text,info_text2)
+                            info_text = [info_text ' | ' info_text2];                       
                         end
                         if ~isequal(p.solver.uppersolver.tag,'none')
                             if upper > p.options.bmibnb.target
@@ -287,20 +292,20 @@ while go_on
                                 end
                             end
                         end
-                        if upper < p.upper                           
+                        if upper < p.upper                              
                             p = propagate_bounds_from_upper(p,upper);
                         end
                     end
                 else
                     keep_digging = 0;
-                    info_text = 'Poor bound';
+                    info_text = 'Poor bound in lower, killing node';
                 end
             otherwise
                 cost = -inf;
                 x = (p.lb+p.ub)/2;
         end
     else
-        info_text = 'Infeasible';
+        info_text = 'Infeasible in node bound-propagation';
         keep_digging = 0;
         cost = inf;
         feasible = 0;
@@ -311,7 +316,16 @@ while go_on
     % PRUNE SUBOPTIMAL REGIONS BASED ON UPPER BOUND
     % ************************************************
     if ~isempty(stack)
+        nodesBefore = length(stack);
         [stack,lower] = prune(stack,upper,options,solved_nodes,p);
+        nodesAfter = length(stack);
+        if nodesBefore > nodesAfter
+            if length(info_text)==0
+                info_text = 'Pruned stack based on new upper bound';
+            else
+                info_text = [info_text ' | ' 'Pruned stack based on new upper bound'];
+            end
+        end
     end
     if isempty(stack)
         if isinf(cost) && (cost > 0)
@@ -431,7 +445,7 @@ while go_on
 end
 
 if options.bmibnb.verbose>0   
-    fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '\n']);
+    fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '%%\n']);
     if ~time_ok
         fprintf(['* Termination due to time limit \n']);
     elseif ~iter_ok

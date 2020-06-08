@@ -14,7 +14,7 @@ if feasible
     if (this_upper < (1-1e-5)*upper) & (this_upper < upper - 1e-5)
         x_min = z;
         upper = this_upper;
-        info_text = 'Improved solution';
+        info_text = 'Improved solution found by upper solver';
         numglobals = numglobals + 1;
     end
 end
