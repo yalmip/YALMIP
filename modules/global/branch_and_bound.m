@@ -284,7 +284,7 @@ while go_on
                         elseif  length(info_text2)>0 && ~isequal(info_text,info_text2)
                             info_text = [info_text ' | ' info_text2];                       
                         end
-                        if ~isequal(p.solver.uppersolver.tag,'none')
+                        if ~isequal(p.solver.uppersolver.tag,'none') & ~p.options.bmibnb.onlyrunupperinroot
                             if upper > p.options.bmibnb.target
                                 if options.bmibnb.lowertarget > lower                                    
                                     [upper,x_min,info_text,numGlobalSolutions,timing] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing);
