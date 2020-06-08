@@ -264,4 +264,8 @@ f.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-
 if even(power)
     f.properties.range = [0 inf];
 end
+if power ~= round(power)
+    f.properties.domain = [0 inf];
+    f.properties.range  = [0 inf];
+end  
 f.properties = assertOperatorProperties(f.properties);
