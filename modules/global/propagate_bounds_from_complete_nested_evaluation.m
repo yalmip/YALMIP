@@ -1,4 +1,4 @@
-function p = updatebounds_recursive_evaluation(p)
+function p = propagate_bounds_from_complete_nested_evaluation(p)
 
 if p.changedbounds
     if isempty(p.evalMap) & all(p.variabletype <= 2)
