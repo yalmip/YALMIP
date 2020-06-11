@@ -179,7 +179,7 @@ end
 % without bilinearizing it first, we might try to get a local solution,
 % possibly based on our initial crude solution
 % *************************************************************************
-if solver_can_solve(p.solver.uppersolver,p) & any(p.variabletype>2)
+if solver_can_solve(p.solver.uppersolver,p)
     p.high_monom_model = [];
     p = build_recursive_scheme(p);
     p = compile_nonlinear_table(p);
