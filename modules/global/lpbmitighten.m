@@ -30,8 +30,9 @@ p_test.K.s = 0;
 p_test.K.q = 0;
 if ~isnan(lower) & ~isinf(lower)
     p_test.F_struc = [-(p.lower-abs(p.lower)*0.01)+p.f p_test.c';p_test.F_struc];
+    p_test.K.l = p_test.K.l + 1;
     if p.diagonalized
-        n = length(p.c)/2;
+        n = length(p.c)/2;                
         f = p.f;
         c = p.c(1:n);
         d = p.c(n+1:end);
@@ -65,26 +66,22 @@ if upper < inf & ~(nnz(p.c)==0 &  nnz(p.Q)==0)
     p_test.K.l = p_test.K.l + 1;
 end
 
-
 if p.options.bmibnb.cut.evalvariable
     p_test = addBilinearVariableCuts(p_test);
 end
 if p.options.bmibnb.cut.evalvariable
     p_test = addEvalVariableCuts(p_test);
 end
-if 1
-  	p_test = addNormBoundCut(p_test);
-end
-if p.options.bmibnb.cut.multipliedequality
-    p_test = addMultipliedEqualityCuts(p_test);
-end
 
-% Try to get rid of numerical noise (this is far from stringent, but it
-% works, and help GLPK from crashing in some instances)
-%p_test.F_struc = unique(round(p_test.F_struc*1e12)/1e12,'rows');
+% Add equalities to model
 p_test.K.l = size(p_test.F_struc,1);
 p_test.F_struc = [p.F_struc(1:1:p.K.f,:);p_test.F_struc];
 p_test.K.f = p.K.f;
+
+% Norm bound cuts can explot equalities, thus placed down here
+if p.options.bmibnb.cut.normbound
+    p_test = addNormBoundCut(p_test);
+end
 
 feasible = 1;
 
