@@ -512,7 +512,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         
         % Solve node relaxation     
         output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
-        if (output.problem == 12 || output.problem == 2) && ~isinf(p.lower)
+        if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
         end
                
@@ -653,7 +653,7 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     % **************************************
     % YAHOO! INTEGER SOLUTION FOUND
     % **************************************
-    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4)
+    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4) & ~(output.problem == 2)
         if (cost<upper) & feasible
             x_min = x;
             upper = cost;
@@ -1212,7 +1212,7 @@ stack.nodeCount = stack.nodeCount + 1;
 
 function stack1 = mergeStack(stack1,stack2)
 for i = 1:1:length(stack2.nodes)
-    if ~isinf(stack2.lower(i))
+    if ~(isinf(stack2.lower(i)) && stack2.lower(i)>0)
         stack1.nodes{end + 1} = stack2.nodes{i};
         stack1.lower(end + 1) = stack2.lower(i);
         stack1.nodeCount = stack1.nodeCount + 1;   
@@ -1221,7 +1221,7 @@ end
 
 function stack = compressStack(stack)
 
-used = find(~isinf(stack.lower));
+used = find(~(isinf(stack.lower) & stack.lower > 0));
 stack.lower = stack.lower(used);
 stack.nodes = {stack.nodes{used}};
 
@@ -1289,7 +1289,7 @@ end
 
 function D = getStackDepths(stack)
 D = -inf(1,length(stack.nodes));
-for i = find(~isinf(stack.lower))
+for i = find(~(isinf(stack.lower) & stack.lower>0))
     D(i) = stack.nodes{i}.depth;
 end
 
