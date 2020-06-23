@@ -63,12 +63,6 @@ model.sparsityElements = find(G);
 
 usrf = 'snopt_callback';
 snopt_callback([],model);
-if model.options.verbose == 0
-    snscreen('off')
-else
-    snscreen('on');
-end
-snseti('Minimize',1)  
 
 global latest_xevaled
 global latest_x_xevaled
@@ -78,9 +72,21 @@ latest_x_xevaled = [];
 solvertime = tic;
 if strcmpi(model.solver.version,'cmex')
     % Some old interface? Keep for safety
+    if model.options.verbose == 0
+        snscreen('off')
+    else
+        snscreen('on');
+    end
+    snseti('Minimize',1)
     [xout,F,xmul,Fmul,inform, xstate, Fstate, ns, ninf, sinf, mincw, miniw, minrw] = snoptcmex( solveopt, x0, xlow, xupp, xmul, xstate, Flow, Fupp, Fmul, Fstate,ObjAdd, ObjRow, A, iAfun(:), jAvar(:),iGfun(:), jGvar(:), usrf );
 else
-    [xout,F,inform,xmul,Fmul] = snopt(x0, xlow, xupp, xmul, xstate,Flow, Fupp, Fmul, Fstate, usrf,ObjAdd, ObjRow,A, iAfun, jAvar, iGfun, jGvar);      
+    Astruct.A = A;
+    Astruct.row = iAfun;
+    Astruct.col = jAvar;
+    if model.options.verbose == 0
+       model.options.snopt.screen = 'off';
+    end
+    [xout,F,inform,xmul,Fmul] = snopt(x0, xlow, xupp, xmul, xstate,Flow, Fupp, Fmul, Fstate, usrf,ObjAdd, ObjRow,A,G,model.options.snopt);
 end
   
 solvertime = toc(solvertime);

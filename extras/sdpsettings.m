@@ -270,6 +270,9 @@ else
 
     options.sparsepop = setup_sparsepop_options;
     Names = appendOptionNames(Names,options.sparsepop,'sparsepop');
+    
+    options.snopt = setup_snopt_options;
+    Names = appendOptionNames(Names,options.snopt,'snopt');
 
     options.sparsecolo = setup_sparsecolo_options;
     Names = appendOptionNames(Names,options.sparsecolo,'sparsecolo');
