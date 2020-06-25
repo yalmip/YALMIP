@@ -8,6 +8,7 @@ properties = assertProperty(properties,'derivative',[]);
 properties = assertProperty(properties,'inverse',[]);
 properties = assertProperty(properties,'convexhull',[]);
 properties = assertProperty(properties,'bounds',[]);
+properties = assertProperty(properties,'inversebounds',[]);
 properties = assertProperty(properties,'domain',[-inf inf]);
 properties = assertProperty(properties,'stationary',[]);
 properties = assertProperty(properties,'inflection',[]);

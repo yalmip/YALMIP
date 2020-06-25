@@ -19,6 +19,10 @@ if ~all(xL==xU)
                 p.lb(arg) = max(p.lb(arg),invfiL);
                 p.ub(arg) = min(p.ub(arg),invfiU);
             end
+        elseif ~isempty(p.evalMap{i}.properties.inversebounds)
+            [invfiL,invfiU] = feval(p.evalMap{i}.properties.inversebounds,fL,fU,xL,xU);
+             p.lb(arg) = max(p.lb(arg),invfiL);
+             p.ub(arg) = min(p.ub(arg),invfiU);
         end
     catch
     end
