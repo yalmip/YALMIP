@@ -893,9 +893,6 @@ if ~isempty(K.sos)
     end
 end
 
-% if ~isempty(semicont_variables) &&  ~solver.constraint.semivar
-%     [F_struc,K,binary_variables] = expandsemivar(F_struc,K,semicont_variables);
-% end
 % *************************************************************************
 %% Equality constraints not supported or supposed to be removed
 % *************************************************************************
@@ -999,7 +996,7 @@ end
 x0 = [];
 if options.usex0
     if solver.supportsinitial == 0
-        error('You have specified an initial point, but the selected solver does not support warm-starts through YALMIP');
+        error(['You have specified an initial point, but the selected solver (' solver.tag ') does not support warm-starts through YALMIP']);
     end
     if options.relax
         x0_used = relaxdouble(recover(used_variables));
