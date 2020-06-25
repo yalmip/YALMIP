@@ -181,7 +181,15 @@ switch 2*X_is_spdvar+Y_is_spdvar
              in_X_logical = ones(1,length(all_lmi_variables));
              in_Y_logical = ones(1,length(all_lmi_variables));
         else
-            if X.lmi_variables(end) < Y.lmi_variables(1)
+            if isempty(Y.lmi_variables)
+                all_lmi_variables = [X.lmi_variables];
+                in_X_logical = [ones(1,length(X.lmi_variables))];
+                in_Y_logical = [zeros(1,length(X.lmi_variables))];
+            elseif isempty(X.lmi_variables)
+                all_lmi_variables = [Y.lmi_variables];
+                in_Y_logical = [ones(1,length(Y.lmi_variables))];
+                in_X_logical = [zeros(1,length(Y.lmi_variables))];
+            elseif X.lmi_variables(end) < Y.lmi_variables(1)
                 all_lmi_variables = [X.lmi_variables Y.lmi_variables];
                 in_X_logical = [ones(1,length(X.lmi_variables)) zeros(1,length(Y.lmi_variables))];
                 in_Y_logical = [zeros(1,length(X.lmi_variables)) ones(1,length(Y.lmi_variables))];
@@ -217,7 +225,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             end
         else
             if 1
-                if  max(X.lmi_variables) < min(Y.lmi_variables) && n_Y==n_X && m_Y==m_X
+                if  ~isempty(X.lmi_variables) && ~isempty(Y.lmi_variables) && max(X.lmi_variables) < min(Y.lmi_variables) && n_Y==n_X && m_Y==m_X
                     % special case to speed up Lundback's code massivly
                     % Addition of expressions sharing no variables, with
                     % variables in specific sorted order
