@@ -26,4 +26,9 @@ for i = 1:length(varargin)
         continue
     end
     
+    k = strmatch_octavesafe(varargin{i}, {'even','odd'});
+    if ~isempty(k)
+        P.symmetry = varargin{i};
+        continue
+    end
 end

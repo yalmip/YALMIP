@@ -7,7 +7,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = CreateBasicOperator('convex','positive','callback');                
+        operator = CreateBasicOperator('convex','positive','even','callback');                
         operator.derivative = @(x)(sinh(x));
         operator.stationary = [0 1];
 

@@ -7,7 +7,7 @@ switch class(varargin{1})
  
     case 'char'
 
-        operator = CreateBasicOperator('increasing','callback');        
+        operator = CreateBasicOperator('increasing','odd','callback');        
         operator.derivative = @(x)(cosh(x));
         operator.inflection = [0 1];
 

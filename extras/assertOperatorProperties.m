@@ -4,6 +4,7 @@ properties = assertProperty(properties,'definiteness','none');
 properties = assertProperty(properties,'convexity','none');
 properties = assertProperty(properties,'monotonicity',[]);
 properties = assertProperty(properties,'smoothness',inf);
+properties = assertProperty(properties,'symmetry','none');
 properties = assertProperty(properties,'derivative',[]);
 properties = assertProperty(properties,'inverse',[]);
 properties = assertProperty(properties,'convexhull',[]);
