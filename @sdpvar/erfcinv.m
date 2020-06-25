@@ -11,7 +11,7 @@ switch class(varargin{1})
         operator.inverse = @(x)(erfc(x));
         operator.derivative = @(x)-1./(exp(-((erfcinv(x))).^2)*2/sqrt(pi));
         operator.inflection = [1 -1];
-        operator.domain = [-1 1];
+        operator.domain = [0 2];
         
         varargout{1} = [];
         varargout{2} = operator;
