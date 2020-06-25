@@ -2,7 +2,7 @@
 % Tighten bounds at root
 % *************************************************************************
 function [p,timing] = root_node_tighten(p,upper,timing)
-p.feasible = all(p.lb<=p.ub) & p.feasible;
+p.feasible = all(p.lb<=p.ub+1e-7) & p.feasible;
 if p.options.bmibnb.roottight & p.feasible
     pin = p;
     if ~isempty(p.bilinears)

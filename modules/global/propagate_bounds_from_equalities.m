@@ -4,6 +4,13 @@ if p.K.f == 0
     return
 end
 
+try
+    if ~any(abs(p.ub(p.branch_variables)-p.lb(p.branch_variables))>p.options.bmibnb.vartol)
+        return
+    end
+catch
+end
+
 LU = [p.lb p.ub];
 
 p_F_struc = p.F_struc;

@@ -4,21 +4,21 @@ if nargin == 1
 end
 if ~isinf(upper)
     LU = [p.lb p.ub];
-    % Simple objective c_i*x(i)
-    if nnz(p.c(p.ub > p.lb)) == 1 & nnz(p.Q)==0
-        i = find(p.c.*(p.ub > p.lb));
+    % Simple objective f + c_i*x(i)
+    if nnz(p.c) == 1 & nnz(p.Q)==0
+        i = find(p.c);
         if p.c(i) > 0
             % We are minimizing x(i), since an upper bound is UPPER
             % this means c(i)*x(i) has to be < UPPER in optimal solution
-            p.ub(i) = min([p.ub(i) upper/p.c(i)]);
+            p.ub(i) = min([p.ub(i) (upper-p.f)/p.c(i)]);
         elseif p.c(i) < 0
             % We are maximizing x(i), since an lower bound is -UPPER
             % this means x(i) has to be > -UPPER in optimal solution
-            p.lb(i) = max([p.lb(i) -upper/abs(p.c(i))]);
+            p.lb(i) = max([p.lb(i) -(upper-p.f)/abs(p.c(i))]);
         end            
     end
     if nnz(p.Q)==0
-        % Very basic, simply propagate from sum c_i m_i(x) <= upper
+        % Very basic, simply propagate from f + sum c_i m_i(x) <= upper
         i = find(p.c);
         for j = i(:)'
             ii = setdiff(i,j);

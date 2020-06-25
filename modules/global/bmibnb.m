@@ -275,6 +275,7 @@ p.branch_variables = intersect(p.branch_variables,original_variables);
 p = presolve_implied_integer(p);
 p = preprocess_bilinear_bounds(p);
 p = propagate_bounds_from_evaluations(p);
+p = propagate_bounds_from_equalities(p);
 
 % *************************************************************************
 % Now reduce the branch variables by removing bilinear terms that only have
@@ -561,7 +562,7 @@ x(p.original_linear) = y;
 function p = presolveloop(p,upper)
 i = 0;
 goon = 1;
-while goon
+while goon && any(abs(p.ub(p.branch_variables)-p.lb(p.branch_variables))>p.options.bmibnb.vartol)
     start = [p.lb;p.ub];    
     p = propagate_bounds_from_upper(p,upper);    
     p = propagate_bounds_from_complementary(p);
