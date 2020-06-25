@@ -30,3 +30,12 @@ else
     mono = 'none';
 end
 
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'convex';
+elseif xU <= 0
+    vexity = 'concave';
+else
+    vexity = 'none';
+end
+
