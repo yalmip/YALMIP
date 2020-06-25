@@ -5,6 +5,7 @@ properties = assertProperty(properties,'convexity','none');
 properties = assertProperty(properties,'monotonicity',[]);
 properties = assertProperty(properties,'smoothness',inf);
 properties = assertProperty(properties,'symmetry','none');
+properties = assertProperty(properties,'shape','none');
 properties = assertProperty(properties,'derivative',[]);
 properties = assertProperty(properties,'inverse',[]);
 properties = assertProperty(properties,'convexhull',[]);
@@ -32,6 +33,13 @@ else
 end
 if properties.range(1) >= 0;properties.definiteness ='positive';end
 if properties.range(2) <= 0;properties.definiteness ='negative';end
+
+if isequal(properties.shape,'s-shape')
+    properties.monotonicity = 'increasing';
+end
+if isequal(properties.shape,'z-shape')
+    properties.monotonicity = 'decreasing';
+end
 
 properties = assertProperty(properties,'model','unspecified');
 

@@ -37,10 +37,17 @@ for i = 1:length(p.evalMap)
             end
         end
     end
-    if any(xL<xU) && isa(properties.monotonicity,'function_handle')
-        mono = properties.monotonicity(xL,xU);
-        if ~isequal(mono,'none')
-            properties.monotonicity = mono;
+    if any(xL<xU)
+        if isa(properties.monotonicity,'function_handle')
+            mono = properties.monotonicity(xL,xU);
+            if ~isequal(mono,'none')
+                properties.monotonicity = mono;
+            end
+        elseif ~isempty(properties.stationary) && (isequal(properties.shape,'bell-shape') || isequal(properties.shape,'v-shape'))
+            mono = DeriveMonotonicityFromShape(properties,xL,xU);
+            if ~isequal(mono,'none')
+                properties.monotonicity = mono;
+            end
         end
     end
     % Save possibly updated properties

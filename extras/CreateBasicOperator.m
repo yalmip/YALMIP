@@ -31,4 +31,10 @@ for i = 1:length(varargin)
         P.symmetry = varargin{i};
         continue
     end
+    
+    k = strmatch_octavesafe(varargin{i}, {'s-shape','z-shape','v-shape','bell-shape'});
+    if ~isempty(k)
+        P.shape = varargin{i};
+        continue
+    end
 end

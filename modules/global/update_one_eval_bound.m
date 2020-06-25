@@ -20,6 +20,8 @@ else
         monotonicity =  p.evalMap{i}.properties.monotonicity(xL,xU);
     elseif ~isempty(p.evalMap{i}.properties.stationary) && (isequal(p.evalMap{i}.properties.convexity,'convex') || isequal(p.evalMap{i}.properties.convexity,'concave'))
          monotonicity = DeriveMonotonicityFromStationary(p.evalMap{i}.properties,xL,xU);
+    elseif ~isempty(p.evalMap{i}.properties.stationary) && (isequal(p.evalMap{i}.properties.shape,'bell-shape') || isequal(p.evalMap{i}.properties.shape,'v-shape'))
+         monotonicity = DeriveMonotonicityFromShape(p.evalMap{i}.properties,xL,xU);         
     else
         monotonicity = 'none';
     end
@@ -114,20 +116,3 @@ else
 end
 p.lb(p.evalVariables(i)) = max([p.lb(p.evalVariables(i)) L],[],2);
 p.ub(p.evalVariables(i)) = min([p.ub(p.evalVariables(i)) U],[],2);
-
-function monotonicity = DeriveMonotonicityFromStationary(properties,xL,xU)
-
-monotonicity = 'none';
-if isequal(properties.convexity,'convex')
-    if xU <= properties.stationary(1)
-        monotonicity = 'decreasing';
-    elseif xL >= properties.stationary(1)
-        monotonicity = 'increasing';
-    end
-elseif isequal(properties.convexity,'concave')
-    if xU <= properties.stationary(1)
-        monotonicity = 'increasing';
-    elseif xL >= properties.stationary(1)
-        monotonicity = 'decreasing';
-    end
-end
