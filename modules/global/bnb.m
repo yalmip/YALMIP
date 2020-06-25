@@ -224,6 +224,8 @@ output.solvertime = setuptime + bnbsolvertime;
 % **********************************
 if diagnostics == -4
     output.problem = -4;
+elseif diagnostics == 9
+    output.problem = 9;
 else
     output.problem = 0;
     if isinf(upper)
@@ -477,7 +479,8 @@ aggresiveprune = 0;
 allSolutions = [];
 sosgroups = [];
 sosvariables = [];
-while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
+unknownErrorCount = 0;
+while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
     
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
@@ -514,6 +517,10 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
         output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
+        end
+                
+        if output.problem == 9
+            unknownErrorCount = unknownErrorCount + 1;
         end
                
         if p.options.bnb.profile
@@ -859,7 +866,10 @@ while ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (s
     lastUpper = upper;    
 end
 if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
-    
+if unknownErrorCount == 10
+     diagnostics = 9;
+end
+
 % **********************************
 %% BRANCH VARIABLE
 % **********************************
