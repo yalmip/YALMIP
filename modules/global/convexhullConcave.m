@@ -39,5 +39,11 @@ else
     Ay = [];
     b = [];
 end
+j = find(any(isnan([Ax Ay b]),2));
+if ~isempty(j)
+    b(j)=[];
+    Ax(j,:)=[];
+    Ay(j,:)=[];
+end
 K.f = 0;
 K.l = length(b);

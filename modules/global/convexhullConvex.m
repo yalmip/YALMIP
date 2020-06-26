@@ -30,12 +30,18 @@ if all(diff(x)>=0) | all(diff(x(~isinf(x))))>=0 % Support [0 inf inf]
         Ax(end-1)=[];
         Ay(end-1) = [];
         b(end-1) = [];
-    end   
-    
+    end       
 else
     Ax = [];
     Ay = [];
     b = [];
 end
+j = find(any(isnan([Ax Ay b]),2));
+if ~isempty(j)
+    b(j)=[];
+    Ax(j,:)=[];
+    Ay(j,:)=[];
+end
 K.f = 0;
 K.l = length(b);
+
