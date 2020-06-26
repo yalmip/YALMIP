@@ -1,5 +1,12 @@
 function output = callgurobi(interfacedata)
 
+% Gurobi 8 does not like seeing options for gurobi 9
+if ~isempty(interfacedata.options.gurobi)
+    if isequal(interfacedata.options.gurobi,interfacedata.options.default.gurobi)
+        interfacedata.options.gurobi = [];
+    end
+end
+
 options = interfacedata.options;
 nOriginal = length(interfacedata.c);
 model = yalmip2gurobi(interfacedata);
@@ -87,12 +94,6 @@ infostr = yalmiperror(problem,interfacedata.solver.tag);
 % Standard interface 
 output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
 output.qcDual      = qcDual;
-
-
-
-
-
-
 
 
 
