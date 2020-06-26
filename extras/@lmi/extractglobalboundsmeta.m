@@ -7,8 +7,13 @@ Fnew = {};
 for i = meta(:)'
     if isequal(F.clauses{i}.data{1},'implies')
         S = F.clauses{i}.data{end};
-        if isa(S,'lmi') || isa(S,'constraint')
+        if isa(S,'lmi')            
             Fout = [Fout, extsubsref(S,'Global bound')];
+        elseif isa(S,'constraint')
+            g = struct(S).tag;
+            if isequal(g,{'Global bound'})
+                Fout = [Fout, S];
+            end
         end
     end
 end
