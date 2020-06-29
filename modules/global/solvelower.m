@@ -221,6 +221,7 @@ else
             p_cut.x0(removethese)=[];
             p_cut.monomtable(:,find(removethese))=[];
             p_cut.monomtable(find(removethese),:)=[];
+            p_cut.variabletype(removethese) = [];
             
             % The model can become absolutely trivial in some case
             % For instance in ex9_2_2 everything is presolved
