@@ -52,11 +52,12 @@ if p.bilinears~=0
                             % Write as rest >= (x - center)^2-(center)^2
                             center = cij/2;
                             radii2 = rest + (cij/2)^2;
-                            
-                            newUB = center + sqrt(radii2);
-                            newLB = center - sqrt(radii2);
-                            p.lb(x) = max(p.lb(x),newLB);
-                            p.ub(x) = min(p.ub(x),newUB);
+                            if radii2 > 0                                
+                                newUB = center + sqrt(radii2);
+                                newLB = center - sqrt(radii2);
+                                p.lb(x) = max(p.lb(x),newLB);
+                                p.ub(x) = min(p.ub(x),newUB);
+                            end
                         else
                             % rest + cij*x + x^2 >= 0
                             % (x+cij/2)^2 - (cij/2)^2 + rest >= 0
