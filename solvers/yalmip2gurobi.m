@@ -44,6 +44,12 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     interfacedata.Q(nonlinearMonoms,:) = [];
     interfacedata.lb(nonlinearMonoms) = [];
     interfacedata.ub(nonlinearMonoms) = [];
+    F_struc = interfacedata.F_struc;
+    c = interfacedata.c;
+    Q = interfacedata.Q;    
+    lb = interfacedata.lb;
+    ub = interfacedata.ub;
+    K = interfacedata.K;
 end
 
 if ~isempty(ub)

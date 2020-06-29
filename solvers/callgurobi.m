@@ -8,7 +8,7 @@ if ~isempty(interfacedata.options.gurobi)
 end
 
 options = interfacedata.options;
-nOriginal = length(interfacedata.c);
+nOriginal = nnz(interfacedata.variabletype == 0);
 model = yalmip2gurobi(interfacedata);
 
 if interfacedata.options.savedebug
