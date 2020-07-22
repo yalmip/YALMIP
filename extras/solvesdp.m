@@ -23,7 +23,12 @@ end
 if nargin >= 3
     if isa(varargin{3},'struct')
         if isfield(varargin{3},'solver')
-            if isequal(varargin{3}.solver,'bisection')                
+            if isequal(varargin{3}.solver,'bisection')    
+                if any(is(varargin{1},'sos'))
+                    [F_sos,h_sos] = compilesos(varargin{1},varargin{2},varargin{3});
+                    varargin{1} = F_sos;
+                    varargin{2} = h_sos;
+                end
                 diagnostic = bisection(varargin{:});
                 return
             end
