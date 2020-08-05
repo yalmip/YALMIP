@@ -111,6 +111,17 @@ end
 
 [F,obj,m,everything,modeltype] = compilesos(F,obj,options,params,candidateMonomials);
 
+if isempty(everything)
+    % compilesos has detected trivially infeasible
+    sol.yalmipversion = yalmip('version');
+    sol.matlabversion = version;
+    sol.yalmiptime = etime(clock,yalmip_time);
+    sol.solvertime = 0;         
+    sol.info = yalmiperror(1,'solvesos compilation');
+    sol.problem = 1;  
+    return
+end
+
 p = everything.p;
 normp = everything.normp;
 sizep = everything.sizep;
