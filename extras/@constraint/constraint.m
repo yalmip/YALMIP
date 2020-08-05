@@ -31,11 +31,11 @@ if isa(Z,'double')
     
     if checkSDP
         if min(eig(Z))>=0
-            warning('SDP constraint evaluated to trivial true.')
+            warning('Inequality constraint evaluated to trivial true.')
             F = [];
             return
         else
-            error('SDP constraint evaluated to trivial false (no decision variable in constraint)')            
+            error('Inequality constraint evaluated to trivial false (no decision variable in constraint)')            
         end
     else
         Z = Z(:);
