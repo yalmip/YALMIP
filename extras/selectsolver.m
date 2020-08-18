@@ -301,7 +301,7 @@ if ProblemClass.constraint.equalities.quadratic & ~forced_choice & length(solver
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
         indirect = solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
-        direct = solvers(i).constraint.equalities.sigmonial |  so2lvers(i).constraint.equalities.polynomial |  solvers(i).constraint.equalities.quadratic;
+        direct = solvers(i).constraint.equalities.sigmonial |  solvers(i).constraint.equalities.polynomial |  solvers(i).constraint.equalities.quadratic;
         keep(i) = direct | indirect;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'quadratic equality constraints');
