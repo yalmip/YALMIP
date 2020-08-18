@@ -295,8 +295,11 @@ end
 [solver,problem,~,failureMode] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc,allsolvers);
 if isempty(solver)
     diagnostic.solvertime = 0;
-    if problem == -4 || problem == -3 || problem == -9 
+    if problem == -4 
         s = [options.solver ' does not support ' failureMode];
+        diagnostic.info = yalmiperror(problem,s);
+    elseif problem == -3 || problem == -9 
+        s = options.solver;
         diagnostic.info = yalmiperror(problem,s);
     else
         diagnostic.info = yalmiperror(problem,'YALMIP');
