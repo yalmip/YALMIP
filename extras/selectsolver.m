@@ -374,8 +374,7 @@ if ~ProblemClass.gppossible  & length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
          keep(i) = solvers(i).constraint.equalities.multiterm;
-    end
-    solvers = solvers(find(keep));
+    end   
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'multi-term monomial equalities');
 end  
 
