@@ -84,6 +84,19 @@ end
 
 temp_ProblemClass.constraint.binary = 0;
 temp_ProblemClass.constraint.integer = 0;
+if isempty(temp_options.solver)
+    % No solver specified. Make sure Mosek isn't selected as that messes up
+    % exponential models. It would never make sense to use mosek as upper
+    % bound solver, as it would only be applicable in convex models where
+    % bmibnb wouldn't be used
+    keep = ones(1,length(solvers));
+    for i = 1:length(solvers)
+        if strcmp(solvers(i).tag,'MOSEK')
+            keep(i) = 0;
+        end
+    end
+    solvers = solvers(find(keep));
+end
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
 if ~isempty(uppersolver) && strcmpi(uppersolver.tag,'bnb')
     temp_options.solver = 'none';
