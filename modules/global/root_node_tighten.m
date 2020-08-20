@@ -5,6 +5,10 @@ function [p,timing] = root_node_tighten(p,upper,timing)
 p.feasible = all(p.lb<=p.ub+1e-7) & p.feasible;
 if p.options.bmibnb.roottight & p.feasible
     pin = p;
+    if p.solver.lowersolver.constraint.integer == 0 && ~(isempty(p.binary_variables) && isempty(p.integer_variables))
+        p.integer_variables = [];
+        p.binary_variables = [];
+    end
     if ~isempty(p.bilinears)
         %         f = p.F_struc(1:p.K.f,:);
         %         p.F_struc(1:p.K.f,:)=[];

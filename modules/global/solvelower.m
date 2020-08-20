@@ -223,6 +223,11 @@ else
             p_cut.monomtable(find(removethese),:)=[];
             p_cut.variabletype(removethese) = [];
             
+            if p_cut.solver.lowersolver.constraint.integer == 0 && ~(isempty(p_cut.binary_variables) && isempty(p_cut.integer_variables))
+                p_cut.integer_variables = [];
+                p_cut.binary_variables = [];
+            end
+            
             % The model can become absolutely trivial in some case
             % For instance in ex9_2_2 everything is presolved
             if nnz(p_cut.c)==0 & nnz(p_cut.Q)==0 & size(p_cut.F_struc,1)==0
