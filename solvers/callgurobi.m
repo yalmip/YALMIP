@@ -34,6 +34,12 @@ else
     x = zeros(nOriginal,1);
 end
 
+% On nonconvex models, monomials are included in the list of variables
+% simply set those terms to zero, not used anyway
+xtemp = zeros(length(interfacedata.c),1);
+xtemp(find(interfacedata.variabletype == 0)) = x;
+x = xtemp;
+
 problem = 0;
 qcDual = [];
 if isfield(result,'pi')
