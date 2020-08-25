@@ -193,8 +193,7 @@ if ~isempty(nonconvexdata)
                 Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
                 Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;
             end
-        end 
-        qi(m)=0;
+        end      
         model.quadcon(end+1).Qc = -Qi;
         model.quadcon(end).q = -qi;
         model.quadcon(end).rhs = bi;
@@ -211,8 +210,7 @@ if ~isempty(nonconvexdata)
                 Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
                 Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;
             end
-        end 
-        qi(m)=0;
+        end       
         model.quadcon(end+1).Qc = -Qi;
         model.quadcon(end).q = -qi;
         model.quadcon(end).rhs = bi;
