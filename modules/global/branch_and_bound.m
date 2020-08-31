@@ -563,7 +563,7 @@ node.cutState = cutState;
 % *************************************
 function p = addsdpcut(p,x)
 if p.K.s > 0
-    top = p.K.f+p.K.l+1;
+    top = p.K.f+p.K.l+sum(p.K.q)+1;
     newcuts = 1;
     newF = [];
     for i = 1:length(p.K.s)
