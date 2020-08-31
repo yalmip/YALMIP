@@ -186,6 +186,11 @@ if ~isempty(nonconvexdata)
         bi = nonconvexdata.eq(i,1);
         row = nonconvexdata.eq(i,2:end);
         qi = row(find(interfacedata.variabletype == 0))';
+        if length(qi)<m
+            % The number of variables has been extended above when SOCPs
+            % have been normalized and cast as convex quadratics
+            qi(m)=0;
+        end
         di = row(monomials);
         Qi = spalloc(m,m,0);
         for k = 1:length(monomials)
@@ -203,6 +208,11 @@ if ~isempty(nonconvexdata)
         bi = nonconvexdata.ineq(i,1);
         row = nonconvexdata.ineq(i,2:end);
         qi = row(find(interfacedata.variabletype == 0))';
+         if length(qi)<m
+            % The number of variables has been extended above when SOCPs
+            % have been normalized and cast as convex quadratics
+            qi(m)=0;
+        end
         di = row(monomials);
         Qi = spalloc(m,m,0);
         for k = 1:length(monomials)

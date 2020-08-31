@@ -156,6 +156,7 @@ else
             p_cut.linearindicies = 1:length(p.c);
             p_cut.nonlinearindicies = [];
             p_cut.variabletype = zeros(1,length(p.c));
+            p_cut.monomtable = speye(length(p.c));
             p_cut.deppattern = eye(length(p.c));
             p_cut.linears = 1:length(p.c);
             p_cut.bilinears = [];
