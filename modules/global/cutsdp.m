@@ -383,6 +383,9 @@ while goon
             ptemp.c = ptemp.c*0;
             ptemp.Q = ptemp.Q*0;
             output = feval(cutsolver,ptemp);
+            if output.problem == 0
+                output.problem = 2;
+            end
         end
         if min(ptemp.F_struc*[1;output.Primal]) < -abs(p.options.cutsdp.feastol)
             % Ugly hack
@@ -398,6 +401,9 @@ while goon
             ptemp.c = ptemp.c*0;
             ptemp.Q = ptemp.Q*0;
             output = feval(cutsolver,ptemp);
+            if output.problem == 0
+                output.problem = 2;
+            end
         end
     end
      
