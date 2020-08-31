@@ -16,13 +16,13 @@ if nnz(p.K.q)>0
 end
 
 if (length(p.K.s)>1) | p.K.s>0
-    top = 1+p.K.f+p.K.l;
+    top = 1+p.K.f+p.K.l + sum(p.K.q);
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         X = p.F_struc(top:top+n^2-1,:)*[1;x];top = top+n^2;
         X = reshape(X,n,n);
         try
-        res = [res;min(eig(X))];
+            res = [res;min(eig(X))];
         catch
             1
         end
