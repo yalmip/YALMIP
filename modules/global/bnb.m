@@ -481,7 +481,7 @@ sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
 while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
-    
+        
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
@@ -517,6 +517,15 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
         output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
+        elseif output.problem == -1
+            % This is the dreaded unknown state from mosek. Try without
+            % objective to see if it is infeasible?
+            ptest = relaxed_p;
+            ptest.c = ptest.c*0;ptest.Q = ptest.Q*0;
+            outputtest = bnb_solvelower(lowersolver,ptest,upper,lower,x_min,aggresiveprune,allSolutions);
+            if outputtest.problem == 1
+                output.problem = 1;
+            end
         end
                 
         if output.problem == 9
