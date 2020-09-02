@@ -39,10 +39,11 @@ elseif p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.s
     p_upper.K.l  = p_upper.K.l + size(p_u.lpcuts,1);
     
     if ~isempty(p_u.lpcuts)
+        n = length(p_u.cutState);        
         if length(info_text) == 0
-            info_text = ['Added ' num2str(length(p_u.cutState)) ' cuts on SDP cone'];
+            info_text = ['Added ' num2str(n) ' cut' plurals(n) ' on SDP cone'];
         else
-            info_text = [info_text ' | ' 'Added ' num2str(length(p_u.cutState)) ' cuts on SDP cone'];
+            info_text = [info_text ' | ' 'Added ' num2str(n) ' cut' plurals(n) ' on SDP cone'];
         end
     end
     
@@ -59,4 +60,11 @@ if ~isempty(p.K.s) || p.K.s(1) > 0
         p.F_struc(end-sum(p.K.s.^2)+1:end,:) = [];
         p.K.s = 0;
     end
+end
+
+function s = plurals(n)
+if n>1
+    s = 's';
+else
+    s = '';
 end
