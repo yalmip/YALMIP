@@ -20,7 +20,11 @@ if feasible
     if (this_upper < (1-1e-5)*upper) & (this_upper < upper - 1e-5)
         x_min = z;
         upper = this_upper;
-        info_text = 'Improved solution found by upper solver';
+        if length(info_text) == 0
+            info_text = 'Improved solution found by upper solver';
+        else
+            info_text = [info_text ' | ' 'Improved solution found by upper solver'];
+        end
         numglobals = numglobals + 1;
     end
 elseif p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.semidefinite.linear
@@ -33,6 +37,14 @@ elseif p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.s
     p_u=createsdpcut(p_u,z);
     p_upper.F_struc = [p_upper.F_struc(1:p_upper.K.f,:);p_u.lpcuts;p_upper.F_struc(1+p_upper.K.f:end,:)];
     p_upper.K.l  = p_upper.K.l + size(p_u.lpcuts,1);
+    
+    if ~isempty(p_u.lpcuts)
+        if length(info_text) == 0
+            info_text = ['Added ' num2str(length(p_u.cutState)) ' cuts on SDP cone'];
+        else
+            info_text = [info_text ' | ' 'Added ' num2str(length(p_u.cutState)) ' cuts on SDP cone'];
+        end
+    end
     
     % Call recursively if we added cuts, and user wants to run more
     % than one iteration
