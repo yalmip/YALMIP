@@ -2,6 +2,7 @@ function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,s
 
 diagnostic = [];
 
+%% ************************************************************************
 % Relax problem for lower solver
 tempProblemClass = ProblemClass;
 
@@ -68,6 +69,8 @@ end
 solver.lowercall = lowersolver.call;
 solver.lowersolver = lowersolver;
 
+%% ************************************************************************
+% Select upper bound solver
 temp_options = options;
 temp_options.solver = options.bmibnb.uppersolver;
 
@@ -96,6 +99,21 @@ if isempty(temp_options.solver)
         end
     end
     solvers = solvers(find(keep));
+end
+
+% BMIBNB support the use of iteratively added elementwise cuts to replace
+% SDP cone in the upper solver. Hence, if this is ativated, we should allow
+% general nonlinear solvers, and thus remove SDP from problem spec and move
+% to elementwise structure 
+if temp_options.bmibnb.uppersdprelax
+    temp_ProblemClass.constraint.inequalities.elementwise.linear = temp_ProblemClass.constraint.inequalities.elementwise.linear | temp_ProblemClass.constraint.inequalities.semidefinite.linear;
+    temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex = temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex | temp_ProblemClass.constraint.inequalities.semidefinite.quadratic;
+    temp_ProblemClass.constraint.inequalities.elementwise.polynomial = temp_ProblemClass.constraint.inequalities.elementwise.polynomial | temp_ProblemClass.constraint.inequalities.semidefinite.polynomial;
+    temp_ProblemClass.constraint.inequalities.elementwise.sigmonial = temp_ProblemClass.constraint.inequalities.elementwise.sigmonial | temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial;
+    temp_ProblemClass.constraint.inequalities.semidefinite.linear = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.quadratic = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.polynomial = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial = 0;
 end
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
 if ~isempty(uppersolver) && strcmpi(uppersolver.tag,'bnb')

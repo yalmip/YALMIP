@@ -195,21 +195,22 @@ if solver_can_solve(p.solver.uppersolver,p)
     if p.options.bmibnb.verbose>0
         fprintf('* -Calling upper solver ');   
     end
-    [upper,p.x0,info_text,numglobals,timing] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing);
-    if ~isinf(upper)
+    % Note that upper solver can add cuts to model if it is an SDP
+    [upper_,x_min_,info_text,numglobals,timing,p] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing,p.options.bmibnb.uppersdprelax);
+    if upper_ < upper
+        % if ~isinf(upper)
+        upper = upper_;
+        x_min = x_min_;
         p = propagate_bounds_from_upper(p,upper);
         if p.options.bmibnb.verbose>0
             disp('(found a solution!)');
-        end
+        end        
     else
-         if p.options.bmibnb.verbose>0
+        if p.options.bmibnb.verbose>0
             disp('(no solution found)');
         end
     end
     p.counter.uppersolved = p.counter.uppersolved + 1;
-    if numglobals > 0
-        x_min = p.x0;
-    end
 end
 if isempty(p.x0)
     p.x0 = zeros(length(p.c),1);

@@ -472,6 +472,7 @@ bmibnb.onlyrunupperinroot = 0;
 bmibnb.lowersolver = '';
 bmibnb.uppersolver = '';
 bmibnb.lpsolver = '';
+bmibnb.uppersdprelax = 1;
 bmibnb.target =  -inf;
 bmibnb.lowertarget =  inf;
 bmibnb.vartol = 1e-3;
