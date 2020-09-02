@@ -514,10 +514,7 @@ if ~isempty(solver)
             solver.constraint.inequalities.elementwise.quadratic.convex = 1;
             solver.constraint.inequalities.elementwise.quadratic.nonconvex = 1;
             solver.constraint.inequalities.elementwise.polynomial = 1;
-            solver.constraint.inequalities.elementwise.sigmonial = 1;
-            solver.constraint.inequalities.semidefinite.linear = 1;
-            solver.constraint.inequalities.semidefinite.quadratic = 1;
-            solver.constraint.inequalities.semidefinite.polynomial = 1;
+            solver.constraint.inequalities.elementwise.sigmonial = 1;            
             solver.dual = 1;
             solver.evaluation = 1;
         end
