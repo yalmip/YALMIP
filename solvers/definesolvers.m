@@ -754,7 +754,7 @@ solver(i).checkfor= {'opti_ooqp.m'};
 solver(i).call    = 'calloptiooqp';
 i = i+1;
 
-solver(i) = qpsolver;
+solver(i) = lpsolver;
 solver(i).tag     = 'CBC';
 solver(i).version = '';
 solver(i).checkfor= {'cbc','opti_cbc'};
