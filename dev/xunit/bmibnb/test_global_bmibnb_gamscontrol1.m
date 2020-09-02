@@ -12,7 +12,7 @@ F = F+(diag(P)>=0)+(P(:)>=-151) + (P(:)<=150) + (P>=P0)+(K>=-100) + (K<=100);
 
 obj = trace(P);
 
-sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.upper','penbmi,none'))
+sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.uppersolver','penbmi,none'))
 
 assert(sol.problem == 0)
 assert(abs(value(obj)-5.4615) <=  2e-2)

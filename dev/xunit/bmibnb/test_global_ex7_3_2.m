@@ -28,6 +28,6 @@ F=[F,-x3-0.2*x4<=-0.8];
 F=[F,x3-0.2*x4<=0.8];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.upper','fmincon'))
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.uppersolver','fmincon'))
 assert(sol.problem==0)
 assert(abs(value(objective)-1.0899) <= 1e-2)

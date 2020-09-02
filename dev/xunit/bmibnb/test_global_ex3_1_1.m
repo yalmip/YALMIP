@@ -39,7 +39,7 @@ F=[F,10<=x7<=1000];
 F=[F,10<=x8<=1000];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('bmibnb.upper','fmincon','solver','bmibnb','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','allownonconvex',1));
 
 assert(sol.problem==0)
 assert(abs(value(objvar)- 7049.248) <=  .1)

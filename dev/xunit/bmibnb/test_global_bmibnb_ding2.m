@@ -20,7 +20,7 @@ b1 = [10;10;10;10];
 b2 = b1;
 obj = x'*C*y;
 F = [x>=0,y>=0,A1*x==b1,A2*y==b2];
-sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.upper','none'))
+sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.uppersolver','none'))
 
 assert(sol.problem==0)
 assert(abs(value(obj)--4) <= 1e-4)

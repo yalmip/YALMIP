@@ -32,7 +32,7 @@ F=[F,27<=x4<=45];
 F=[F,27<=x5<=45];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownonconvex',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon','allownonconvex',1));
 
 assert(sol.problem==0)
 assert(abs(value(objvar)--30665.5387) <=  10)

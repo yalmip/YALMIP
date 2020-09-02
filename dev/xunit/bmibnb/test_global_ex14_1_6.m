@@ -43,7 +43,7 @@ F = F + ( (-sqr(x7)) - sqr(x8) - x9 <= -1);
 
 F = F + ( -1 <= [x1 x2 x3 x4 x5 x6 x7 x8] <= 1);
 
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon'))
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'))
 assert(sol.problem == 0)
 assert(value(objvar) <= 1e-5)
 

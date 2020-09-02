@@ -28,7 +28,7 @@ obj = obj + ([x{2}]'*[x{2}])^2;
 xk = [2.5;1];
 uk = [];
 cost = 0;
-ops =sdpsettings('solver','bmibnb','bmibnb.lpreduce',0,'bmibnb.maxiter',10,'debug',1,'bmibnb.upper','fmincon','bmibnb.root',1);
+ops =sdpsettings('solver','bmibnb','bmibnb.lpreduce',0,'bmibnb.maxiter',10,'debug',1,'bmibnb.uppersolver','fmincon','bmibnb.root',1);
           
 sol = optimize(F+(-10 <= x{1} <= 10) + (x{1} == xk(:,end)),obj,ops)
 assert(sol.problem == 0)

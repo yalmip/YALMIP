@@ -21,6 +21,6 @@ F = F + (  (-(0.143 + (-0.13*x1) - 0.195*x2)*exp(10*x2/(1 + 0.01*x2))) - x1 + 3*
 
 F = F + (-1 <= [x1 x2 ] <= 1);
 
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1));
+sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon','allownon',1));
 assert(sol.problem==0)
 assert(abs(value(objvar)-0) <= 2e-2)

@@ -16,6 +16,6 @@ F = F + (5.4365636*x1 - 0.920422529629637*exp(2*x1) - 0.865255957591193*x2 - x3 
 
 F = F + (x1>= 0.25) + (x1<= 1)+(6.28 >= x2 >= 1.5);
 
-sol = optimize(F,x3,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1,'bmibnb.absgaptol',1e-8,'bmibnb.relgaptol',1e-8));
+sol = optimize(F,x3,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon','allownon',1,'bmibnb.absgaptol',1e-8,'bmibnb.relgaptol',1e-8));
 assert(sol.problem == 0)
 assert(abs(value(objvar)) <= 1e-4)

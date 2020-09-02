@@ -86,7 +86,7 @@ CI = [-y1 + y2 + y3 <= 1,
       2*x2 + 2*y1 - y2 - 0.5*y3 <= 1,
                      [y1 y2 y3] >= 0,
                         [x1 x2] >= 0];
-solvebilevel(CO,OO-OO^2,CI,OI,[y1 y2 y3],sdpsettings('bilevel.outersolver','bmibnb','bmibnb.upper','fmincon','bilevel.solvefrp',0));
+solvebilevel(CO,OO-OO^2,CI,OI,[y1 y2 y3],sdpsettings('bilevel.outersolver','bmibnb','bmibnb.uppersolver','fmincon','bilevel.solvefrp',0));
 assert(abs(value(OO-OO^2) -(-702)) <= 1e-5);
 
 function test9(dummy)
