@@ -34,13 +34,14 @@ if p.K.s > 0
         %  size(p.lpcuts)
         p.lpcuts = [newF;p.lpcuts];
         p.cutState = [ones(size(newF,1),1);p.cutState];
-        violations = p.lpcuts*[1;x];
-        p.lpcuts = p.lpcuts(violations<0.1,:);
-
+     %   violations = p.lpcuts*[1;x];
+     %   p.lpcuts = p.lpcuts(violations<0.1,:);
+     %   p.cutState = p.cutState(violations<0.1);
+        
         if size(p.lpcuts,1)>15*m
-            disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-            violations = p.lpcuts*[1;x];
-            [i,j] = sort(violations);
+            %disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+            %violations = p.lpcuts*[1;x];
+            %[i,j] = sort(violations);
             %p.lpcuts = p.lpcuts(j(1:15*m),:);
             %p.cutState = lpcuts = p.lpcuts(j(1:15*m),:);
             %p.lpcuts = p.lpcuts(end-15*m+1:end,:);
