@@ -44,6 +44,9 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     interfacedata.Q(nonlinearMonoms,:) = [];
     interfacedata.lb(nonlinearMonoms) = [];
     interfacedata.ub(nonlinearMonoms) = [];
+    if ~isempty(x0)
+        x0(nonlinearMonoms) = [];
+    end
     F_struc = interfacedata.F_struc;
     c = interfacedata.c;
     Q = interfacedata.Q;    
@@ -245,3 +248,7 @@ if ~isempty(x0)
     model.start = x0(find(interfacedata.variabletype == 0));
 end
 model.NegativeSemiVar=NegativeSemiVar;
+
+if isfield(model,'quadcon') && isempty(model.quadcon)
+	model = rmfield(model,'quadcon');
+end    

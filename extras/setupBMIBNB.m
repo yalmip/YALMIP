@@ -116,6 +116,14 @@ if temp_options.bmibnb.uppersdprelax
     temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial = 0;
 end
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
+% if isempty(uppersolver) && temp_ProblemClass.constraint.inequalities.elementwise.polynomial
+%     % Maybe it is a polynomial problem and user wants a quadratic solver
+%     % (which bmibnb can bilinearize)
+%     temp_ProblemClass.constraint.equalities.quadratic = 1;
+%     temp_ProblemClass.constraint.inequalities.elementwise.polynomial = 0;
+%     temp_ProblemClass.constraint.equalities.polynomial = 0;
+%     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
+% end
 if ~isempty(uppersolver) && strcmpi(uppersolver.tag,'bnb')
     temp_options.solver = 'none';
     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
