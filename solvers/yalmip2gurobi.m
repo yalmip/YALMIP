@@ -84,6 +84,9 @@ end
 n_original = length(c);
 if any(K.q)
     [F_struc,K,c,Q,UB,LB,x0] = append_normalized_socp(F_struc,K,c,Q,UB,LB,x0);
+    if length(c) > interfacedata.variabletype
+         interfacedata.variabletype(length(c)) = 0;
+    end
 end
 
 if size(F_struc,1)>0
@@ -238,7 +241,7 @@ if isequal(interfacedata.solver.version,'NONCONVEX')
     model.params.nonconvex = 2;
 end
 
-if ~isempty(x0)
+if ~isempty(x0)  
     model.start = x0(find(interfacedata.variabletype == 0));
 end
 model.NegativeSemiVar=NegativeSemiVar;
