@@ -139,7 +139,7 @@ while go_on
     p.changedbounds = 1;
     time_ok = 1;
     
-    p.upper = upper;
+    p.upper = upper;   
     for i = 1:length(options.bmibnb.strengthscheme)
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,cputime-t_start);
         time_ok = cputime-t_start < options.bmibnb.maxtime;
@@ -382,21 +382,31 @@ while go_on
             end     
         end
         if isempty(node)
-            bounds  = partition(p,options,spliton,x);
-            if length(bounds)>3
-                error('REPORT BOUND LENGTH UNIMPLEMENTED BUG')
-            end
-            for i = 1:length(bounds)-1
-                if ismember(spliton,union(p.binary_variables,p.integer_variables)) & (i==2)
-                    node = savetonode(p,spliton,bounds(i)+1,bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
-                else
-                    node = savetonode(p,spliton,bounds(i),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+            if ismember(spliton,union(p.binary_variables,p.integer_variables)) 
+                node1 = savetonode(p,spliton,p.lb(spliton),floor(x(spliton)),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                node2 = savetonode(p,spliton,ceil(x(spliton)),p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                node1.bilinears = p.bilinears;
+                node1 = updateonenonlinearbound(node1,spliton);
+                node1.branchwidth = [p.ub(spliton)-p.lb(spliton)];
+                if all(node1.lb <= node1.ub)
+                    stack = push(stack,node1);
                 end
-                node.bilinears = p.bilinears;
-                node = updateonenonlinearbound(node,spliton);
-                node.branchwidth = [p.ub(spliton)-p.lb(spliton)];
-                if all(node.lb <= node.ub)
-                    stack = push(stack,node);
+                node2.bilinears = p.bilinears;
+                node2 = updateonenonlinearbound(node2,spliton);
+                node2.branchwidth = [p.ub(spliton)-p.lb(spliton)];
+                if all(node2.lb <= node2.ub)
+                    stack = push(stack,node2);
+                end
+            else
+                bounds  = partition(p,options,spliton,x);           
+                for i = 1:length(bounds)-1                 
+                    node = savetonode(p,spliton,bounds(i),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                    
+                    node.bilinears = p.bilinears;
+                    node = updateonenonlinearbound(node,spliton);
+                    node.branchwidth = [p.ub(spliton)-p.lb(spliton)];
+                    if all(node.lb <= node.ub)
+                        stack = push(stack,node);
+                    end
                 end
             end
         end
