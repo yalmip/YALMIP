@@ -1,24 +1,26 @@
 function [output,timing] = global_solve_upper(p,p_original,x,options,uppersolver,timing)
 
-if ~isempty(p.binary_variables)
-    local_gave_good = find(abs(x(p_original.binary_variables)-fix(x(p_original.binary_variables)))< options.bnb.inttol);
-    p.lb(p.binary_variables(local_gave_good)) = fix(x(p.binary_variables(local_gave_good)));
-    p.ub(p.binary_variables(local_gave_good)) = fix(x(p.binary_variables(local_gave_good)));  
-    for i = 1:3
-        p = propagate_bounds_from_evaluations(p);
-        p = propagate_bounds_from_equalities(p);  
-        p = update_monomial_bounds(p);
+if ~p.solver.uppersolver.constraint.binary
+    if ~isempty(p.binary_variables)
+        local_gave_good = find(abs(x(p_original.binary_variables)-fix(x(p_original.binary_variables)))< options.bnb.inttol);
+        p.lb(p.binary_variables(local_gave_good)) = fix(x(p.binary_variables(local_gave_good)));
+        p.ub(p.binary_variables(local_gave_good)) = fix(x(p.binary_variables(local_gave_good)));
+        for i = 1:3
+            p = propagate_bounds_from_evaluations(p);
+            p = propagate_bounds_from_equalities(p);
+            p = update_monomial_bounds(p);
+        end
     end
-end
-
-if ~isempty(p_original.integer_variables)
-    local_gave_good = find(abs(x(p.integer_variables)-fix(x(p.integer_variables)))< options.bnb.inttol);
-    p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
-    p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
-    for i = 1:3
-        p = propagate_bounds_from_evaluations(p);
-        p = propagate_bounds_from_equalities(p);
-        p = update_monomial_bounds(p);
+    
+    if ~isempty(p_original.integer_variables)
+        local_gave_good = find(abs(x(p.integer_variables)-fix(x(p.integer_variables)))< options.bnb.inttol);
+        p.lb((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
+        p.ub((p.integer_variables(local_gave_good))) = fix(x(p.integer_variables(local_gave_good)));
+        for i = 1:3
+            p = propagate_bounds_from_evaluations(p);
+            p = propagate_bounds_from_equalities(p);
+            p = update_monomial_bounds(p);
+        end
     end
 end
 
