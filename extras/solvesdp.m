@@ -170,6 +170,8 @@ if length(F) > 0
                 display(['For complete path, use addpath(genpath(''' fileparts(which('yalmiptest.m')) '''))']);
                 display('***');
                 error(lasterr)
+            else
+                error(lasterr)
             end
         end        
     end
