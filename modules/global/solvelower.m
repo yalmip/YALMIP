@@ -38,6 +38,16 @@ end
 if p.options.bmibnb.cut.monomialtower
     p_cut = addMonomialTowerCuts(p_cut);
 end
+if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
+    if ~isempty(p_cut.K.s) & p_cut.K.s(1) > 0
+        if isequal(p_cut.solver.lowercall,'callmosek')
+            % Mosek SDP module does not support binary
+            p_cut.binary_variables = [];
+            p_cut.integer_variables = [];
+            p_cut.binary_variables = [];
+        end
+    end
+end
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -165,7 +175,7 @@ else
             p_cut.evaluation_scheme = [];
             
             tstart = tic;     
-            p_cut = pruneUnsupportedCuts(p_cut);
+            p_cut = pruneUnsupportedCuts(p_cut);            
             output = feval(lowersolver,removenonlinearity(p_cut));
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
