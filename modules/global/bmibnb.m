@@ -19,7 +19,7 @@ function output = bmibnb(p)
 % bmibnb.vartol         - Cut tree when x_U-x_L < vartol on all branching variables
 % bmibnb.relgaptol      - Tolerance on relative objective error (UPPER-LOWER)/(1+|UPPER|) [real (0.01)]
 % bmibnb.absgaptol      - Tolerance on objective error (UPPER-LOWER) [real (0.01)]
-% bmibnb.pdtol          - A number is declared non-negative if larger than...[ double (-1e-6)]
+% bmibnb.pdtol          - A number is declared non-negative if larger than...[ double (1e-6)]
 % bmibnb.eqtol          - A number is declared zero if abs(x) smaller than...[ double (1e-6)]
 % bmibnb.maxiter        - Maximum number nodes [int (100)]
 % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]

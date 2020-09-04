@@ -8,7 +8,7 @@ z = apply_recursive_evaluation(p_upper,x(1:length(p_upper.c)));
 relaxed_residual = constraint_residuals(p_upper,z);
 
 eq_ok = all(relaxed_residual(1:p_upper.K.f)>=-p_upper.options.bmibnb.eqtol);
-iq_ok = all(relaxed_residual(1+p_upper.K.f:end)>=p_upper.options.bmibnb.pdtol);
+iq_ok = all(relaxed_residual(1+p_upper.K.f:end)>=-p_upper.options.bmibnb.pdtol);
 
 relaxed_feasible = eq_ok & iq_ok;
 info_text = '';

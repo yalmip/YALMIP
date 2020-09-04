@@ -13,7 +13,7 @@ output.Primal(p_upper.binary_variables) = round(output.Primal(p_upper.binary_var
 z = apply_recursive_evaluation(p_upper,output.Primal);
 
 upper_residual = constraint_residuals(p_upper,z);
-feasible = ~isempty(z) & ~any(isnan(z)) & all(upper_residual(1:p_upper.K.f)>=-p.options.bmibnb.eqtol) & all(upper_residual(1+p_upper.K.f:end)>=p.options.bmibnb.pdtol);
+feasible = ~isempty(z) & ~any(isnan(z)) & all(upper_residual(1:p_upper.K.f)>=-p.options.bmibnb.eqtol) & all(upper_residual(1+p_upper.K.f:end)>=-p.options.bmibnb.pdtol);
 
 if feasible
     this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
