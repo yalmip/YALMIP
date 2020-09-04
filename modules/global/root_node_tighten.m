@@ -37,7 +37,7 @@ if p.options.bmibnb.roottight & p.feasible
             pos = find(p_cut.c>0);
             rhs = rhs - sum(p.ub(neg).*p_cut.c(neg));
             rhs = rhs - sum(p.lb(pos).*p_cut.c(pos));
-            if rhs > 0
+            if rhs > 0 && ~any(isinf(rhs))
                 R = diag(diag(s).^.5)*v';
                 R = R(diag(s)>1e-10,:);
                 % -n*sqrt(rhs) <= R*x <= n*sqrt(R)
