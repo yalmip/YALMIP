@@ -33,6 +33,8 @@ x = x(1:length(p_original.c));
 %         
 p_upper = p_original;
 
+p_upper = restoreQ(p_upper);
+
 p_upper.lb = p.lb;
 p_upper.ub = p.ub;
 
@@ -95,3 +97,33 @@ output.Primal(output.Primal<p_upper.lb) = p_upper.lb(output.Primal<p_upper.lb);
 output.Primal(output.Primal>p_upper.ub) = p_upper.ub(output.Primal>p_upper.ub);
 
 
+function p = restoreQ(p)
+% Sometimes the Q-term has been lifted and relaxed, but it might be the
+% case that we are using a pure Q solver, and then we should really solve
+% it as such
+if nnz(p.Q)==0 && any(p.variabletype > 0)
+    if p.solver.uppersolver.objective.quadratic.convex
+        
+        nonlinear = find(p.variabletype > 0 & p.variabletype <= 2);
+        linear = find(p.variabletype == 0);
+        % Find quadratic and linear terms
+        used_in_c = find(p.c);
+        quadraticterms = used_in_c(find(ismember(used_in_c,nonlinear)));
+        Q = zeros(length(p.c),length(p.c));
+        if ~isempty(quadraticterms)
+            usedinquadratic = zeros(1,length(p.c));
+            for i = 1:length(quadraticterms)
+                Qij = p.c(quadraticterms(i));
+                power_index = find(p.monomtable(quadraticterms(i),:));
+                if length(power_index) == 1
+                    Q(power_index,power_index) = Qij;
+                else
+                    Q(power_index(1),power_index(2)) = Qij/2;
+                    Q(power_index(2),power_index(1)) = Qij/2;
+                end
+            end
+        end
+        p.Q = Q;
+        p.c(nonlinear) = 0;      
+    end
+end
