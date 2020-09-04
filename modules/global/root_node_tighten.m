@@ -42,6 +42,9 @@ if p.options.bmibnb.roottight & p.feasible
                 R = R(diag(s)>1e-10,:);
                 % -n*sqrt(rhs) <= R*x <= n*sqrt(R)
                 p.F_struc = [p.F_struc;size(v,2)*sqrt(rhs)*ones(size(R,1),1) -R;size(v,2)*sqrt(rhs)*ones(size(R,1),1) R];
+                p.F_struc = [p.F_struc(1:p.K.f,:);
+                             size(v,2)*sqrt(rhs)*ones(size(R,1),1) -R;size(v,2)*sqrt(rhs)*ones(size(R,1),1) R
+                            p.F_struc(p.K.f+1:end,:)];
                 p.K.l = p.K.l + 2*size(R,1);
             end
         end
