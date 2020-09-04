@@ -525,6 +525,8 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             outputtest = bnb_solvelower(lowersolver,ptest,upper,lower,x_min,aggresiveprune,allSolutions);
             if outputtest.problem == 1
                 output.problem = 1;
+            else
+                output.problem = 4;
             end
         end
                 
