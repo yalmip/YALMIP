@@ -526,7 +526,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             if outputtest.problem == 1
                 output.problem = 1;
             else
-                output.problem = 4;
+                output.problem = 3;
             end
         end
                 
@@ -558,8 +558,8 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             x  = setnonlinearvariables(p,output.Primal);
             if(p.K.l>0) & any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
                 output.problem = 1;
-            elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
-                output.problem = 1;
+          %  elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
+          %      output.problem = 1;
             end
         end
     end
@@ -574,18 +574,25 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
     % *************************************
     % ANY INTEGERS? ROUND?
     % *************************************
-    non_integer_binary = abs(x(binary_variables)-round(x(binary_variables)))>p.options.bnb.inttol;
-    non_integer_integer = abs(x(integer_variables)-round(x(integer_variables)))>p.options.bnb.inttol;
-    if p.options.bnb.round
-        x(binary_variables(~non_integer_binary))   = round(x(binary_variables(~non_integer_binary)));
-        x(integer_variables(~non_integer_integer)) = round(x(integer_variables(~non_integer_integer)));
-    end
-    non_integer_binary = find(non_integer_binary);
-    non_integer_integer = find(non_integer_integer);
-    if isempty(p.semicont_variables)
-        non_semivar_semivar=[];
+    if output.problem == 0
+        non_integer_binary = abs(x(binary_variables)-round(x(binary_variables)))>p.options.bnb.inttol;
+        non_integer_integer = abs(x(integer_variables)-round(x(integer_variables)))>p.options.bnb.inttol;
+        if p.options.bnb.round
+            x(binary_variables(~non_integer_binary))   = round(x(binary_variables(~non_integer_binary)));
+            x(integer_variables(~non_integer_integer)) = round(x(integer_variables(~non_integer_integer)));
+        end
+        non_integer_binary = find(non_integer_binary);
+        non_integer_integer = find(non_integer_integer);
+        if isempty(p.semicont_variables)
+            non_semivar_semivar=[];
+        else
+            non_semivar_semivar = find(~(abs(x(p.semicont_variables))<p.options.bnb.inttol | (x(p.semicont_variables)>p.semibounds.lb & x(p.semicont_variables)<=p.semibounds.ub)));
+        end
     else
-        non_semivar_semivar = find(~(abs(x(p.semicont_variables))<p.options.bnb.inttol | (x(p.semicont_variables)>p.semibounds.lb & x(p.semicont_variables)<=p.semibounds.ub)));
+        % If we have numerical problems, we cannot trust current solution
+        non_integer_binary = binary_variables;
+        non_integer_integer = integer_variables;
+        non_semivar_semivar = semicont_variables;
     end
     
     x  = setnonlinearvariables(p,x);
@@ -607,10 +614,14 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
     
     
     
-    if output.problem==0 | output.problem==3 | output.problem==4
+    if output.problem==0 | output.problem==3 | output.problem==4 | output.problem==5
         cost = computecost(f,c,Q,x,p);
         
         if output.problem~=1
+            if output.problem == 3 || output.problem == 4 || output.problem == 5
+                cost = -inf;
+            end
+            
             if isnan(lower)
                 lower = cost;
             end
@@ -642,7 +653,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
     feasible = 1;
     
     switch output.problem
-        case {-1,4}
+        case {-1,3,4,5}
             % Solver behaved weird. Make sure we continue digging
             keep_digging = 1;
             feasible = 1;
