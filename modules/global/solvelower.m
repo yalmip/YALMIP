@@ -76,7 +76,7 @@ else
         output.Primal = p.lb;
         res = constraint_residuals(p,output.Primal);
         eq_ok = all(res(1:p.K.f)>=-p.options.bmibnb.eqtol);
-        iq_ok = all(res(1+p.K.f:end)>=p.options.bmibnb.pdtol);
+        iq_ok = all(res(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
         feasible = eq_ok & iq_ok;
         if feasible
             output.problem = 0;
