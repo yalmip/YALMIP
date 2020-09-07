@@ -118,6 +118,22 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
          end
     end
     
+    % Remove zero rows in SOCP cone
+	if p.K.q(1) > 0
+         top = 1 + p.K.f + p.K.l;
+         for j = 1:length(p.K.q)
+             m = p.K.q(j);
+             M = p.F_struc(top:top+m-1,:);
+             remove = any(M,2)==0;
+             if any(remove)
+                 remove = find(remove);
+                 p.F_struc(top + remove-1,:)=[];
+                 p.K.q(j) = p.K.q(j)-length(remove);         
+             end
+              top = top + p.K.q(j);;
+         end
+    end
+                 
 %     if relaxed_p.K.q(1) > 0
 %         top = 1 + p.K.f + p.K.l;
 %         dels = zeros(sum(p.K.q),1);

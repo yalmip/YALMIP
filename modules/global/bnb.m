@@ -89,6 +89,11 @@ end
 p = extractBounds(p);
 
 % ********************************
+%% Presolve trivial SDP stuff (zero in diagonal)
+% ********************************
+p = presolveTrivialSDP(p);
+
+% ********************************
 %% ADD CONSTRAINTS 0<x<1 FOR BINARY
 % ********************************
 if ~isempty(p.binary_variables)
@@ -526,7 +531,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             if outputtest.problem == 1
                 output.problem = 1;
             else
-                output.problem = 3;
+                output.problem = -1;
             end
         end
                 
