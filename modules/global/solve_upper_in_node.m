@@ -12,7 +12,7 @@ output.Primal(p_upper.binary_variables) = round(output.Primal(p_upper.binary_var
 
 z = apply_recursive_evaluation(p_upper,output.Primal);
 
-upper_residual = constraint_residuals(p_upper,z);
+[upper_residual,~,feasibility] = constraint_residuals(p_upper,z);
 feasible = ~isempty(z) & ~any(isnan(z)) & all(upper_residual(1:p_upper.K.f)>=-p.options.bmibnb.eqtol) & all(upper_residual(1+p_upper.K.f:end)>=-p.options.bmibnb.pdtol);
 
 if feasible
@@ -27,7 +27,7 @@ if feasible
         end
         numglobals = numglobals + 1;
     end
-elseif p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.semidefinite.linear
+elseif p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.semidefinite.linear && cutiterations > 0
     % Piggy-back some old code. Generate elementwise cuts from
     % vioalated SDP constraints (if there are any) and add these to the
     % global upper bound model.
@@ -37,6 +37,14 @@ elseif p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.s
     p_u=createsdpcut(p_u,z);
     p_upper.F_struc = [p_upper.F_struc(1:p_upper.K.f,:);p_u.lpcuts;p_upper.F_struc(1+p_upper.K.f:end,:)];
     p_upper.K.l  = p_upper.K.l + size(p_u.lpcuts,1);
+    if ~isempty(p_u.socpcuts)
+        p_upper.F_struc = [p_upper.F_struc(1:p_upper.K.f+p_upper.K.l,:);p_u.socpcuts;p_upper.F_struc(1+p_upper.K.f+p_upper.K.l:end,:)];
+        if isequal(p_upper.K.q,0)
+            p_upper.K.q  = repmat(3,1,size(p_u.socpcuts,1)/3);
+        else
+            p_upper.K.q  = [repmat(3,1,size(p_u.socpcuts,1)/3) p_upper.K.q];
+        end
+    end
     
     if ~isempty(p_u.lpcuts)
         n = length(p_u.cutState);        
