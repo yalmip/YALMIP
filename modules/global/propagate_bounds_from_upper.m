@@ -74,7 +74,7 @@ if ~isinf(upper)
                 end
                 ix = find(h>0);
                 if ~isempty(ix)
-                    rhs = rhs + h(ix)'*p.lb(ix);
+                    rhs = rhs - h(ix)'*p.lb(ix);
                 end
                 if rhs>0
                     D = D/rhs;
