@@ -179,12 +179,18 @@ else
             output = feval(lowersolver,removenonlinearity(p_cut));
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
-            cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
-            % Minor clean-up
-            pp=p;
-            output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
-            output.Primal(output.Primal>p.ub) = p.ub(output.Primal>p.ub);
-            x=output.Primal;
+            if length(output.Primal) == length(p_cut.c)
+                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
+                % Minor clean-up
+                pp=p;
+                output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
+                output.Primal(output.Primal>p.ub) = p.ub(output.Primal>p.ub);
+                x=output.Primal;
+            else
+                cost = nan;
+                x = nan(length(p_cut.c),1);
+                output.Primal = x;
+            end
             return
         else
             pp = p_cut;
