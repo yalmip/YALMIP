@@ -84,7 +84,7 @@ try
     output = feval(uppersolver,p_upper);
 catch
     output.Primal = zeros(length(p_upper.lb),1);
-    output.Problem = -1;
+    output.problem = -1;
 end
 if isempty(output.Primal)
      output.Primal = zeros(length(p_upper.lb),1);
