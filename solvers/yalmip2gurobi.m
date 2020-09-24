@@ -85,6 +85,7 @@ if ~isempty(semicont_variables)
 end
 
 n_original = length(c);
+variabletype_original = interfacedata.variabletype;
 if any(K.q)
     [F_struc,K,c,Q,UB,LB,x0] = append_normalized_socp(F_struc,K,c,Q,UB,LB,x0);
     if length(c) > interfacedata.variabletype
@@ -191,7 +192,7 @@ if ~isempty(nonconvexdata)
     for i = 1:size(nonconvexdata.eq,1)
         bi = nonconvexdata.eq(i,1);
         row = nonconvexdata.eq(i,2:end);
-        qi = row(find(interfacedata.variabletype == 0))';
+        qi = row(find(variabletype_original == 0))';
         if length(qi)<m
             % The number of variables has been extended above when SOCPs
             % have been normalized and cast as convex quadratics
@@ -213,7 +214,7 @@ if ~isempty(nonconvexdata)
     for i = 1:size(nonconvexdata.ineq,1)
         bi = nonconvexdata.ineq(i,1);
         row = nonconvexdata.ineq(i,2:end);
-        qi = row(find(interfacedata.variabletype == 0))';
+        qi = row(find(variabletype_original == 0))';
          if length(qi)<m
             % The number of variables has been extended above when SOCPs
             % have been normalized and cast as convex quadratics
