@@ -27,7 +27,7 @@ if feasible
         end
         numglobals = numglobals + 1;
     end
-elseif output.problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.semidefinite.linear && cutiterations > 0
+elseif output.Problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.semidefinite.linear && cutiterations > 0
     % Piggy-back some old code. Generate elementwise cuts from
     % vioalated SDP constraints (if there are any) and add these to the
     % global upper bound model.
