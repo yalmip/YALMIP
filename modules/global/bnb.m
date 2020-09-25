@@ -314,7 +314,11 @@ else
     violates_finite_bounds = find(violates_finite_bounds & ~isinf(p.lb) & ~isinf(p.ub));
     x_min(violates_finite_bounds) = (p.lb(violates_finite_bounds) + p.ub(violates_finite_bounds))/2;
     x_min = setnonlinearvariables(p,x_min);
-    p.x0 = x_min;
+    if p.solver.lower.supportsinitial
+        p.x0 = x_min;
+    else
+        p.x0 = [];
+    end
 end
 
 
