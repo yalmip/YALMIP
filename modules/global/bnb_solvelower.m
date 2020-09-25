@@ -66,7 +66,9 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
     end
     p.lb(removethese)=[];
     p.ub(removethese)=[];
-    p.x0(removethese)=[];
+    if ~isempty(p.x0)
+        p.x0(removethese)=[];
+    end
     p.monomtable(:,find(removethese))=[];
     p.monomtable(find(removethese),:)=[];
     
