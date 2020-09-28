@@ -10,7 +10,7 @@ if ~isempty(h_w)
     % quadratic objective, and the linearly parameterized w*h(x) <= t
     % However, if h is quadratic in w such as x^2+2*x*w+w^2 we must move
     % everything to the cone epigraph, otherwise it is not convex in x
-    if degree(h,w) == 1
+    if ~is(h,'compound') && degree(h,w) == 1
         base = getbase(h);
         h0 = base(1);
         base = base(2:end);base = base(:);
@@ -22,6 +22,7 @@ if ~isempty(h_w)
     else
         sdpvar t
         F = [F, h <= t];
+        h = t;
     end
     Dependency = iterateDependance(yalmip('monomtable') | yalmip('getdependence') | yalmip('getdependenceUser'));
     DependsOnw = find(any((Dependency(:,getvariables(w))),2));    
