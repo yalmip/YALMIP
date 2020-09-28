@@ -555,16 +555,14 @@ solver(i).checkfor= {'mexclp'};
 solver(i).call    = 'callclp';
 i = i+1;
 
-solver(i) = qpsolver;
+solver(i) = lpsolver;
 solver(i).tag     = 'SCIP';
 solver(i).version = 'linear';
 solver(i).checkfor= {'scip'};
 solver(i).call    = 'callscipmex';
-solver(i).objective.quadratic.nonconvex=1;
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.sos2 = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 0;
 i = i+1;
 
 solver(i) = qpsolver;
