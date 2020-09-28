@@ -124,6 +124,10 @@ propagators{5} = propagator;propagators{5}.fun = @propagate_bounds_lp;
 propagators{6} = propagator;propagators{6}.fun = @propagate_bounds_from_equalities;
 propagators{7} = propagator;propagators{7}.fun = @propagate_bounds_from_combinatorics;
 propagators{8} = propagator;propagators{8}.fun = @propagate_bounds_from_separable_quadratic_equality;
+if any(options.bmibnb.strengthscheme < 1) || any(options.bmibnb.strengthscheme > 8)
+    disp('I do not recognize this bound propagaton in option bmibnb.strengthscheme');
+    error
+end
 
 while go_on
     
