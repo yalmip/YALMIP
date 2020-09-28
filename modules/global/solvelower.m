@@ -26,7 +26,7 @@ end
 if p.options.bmibnb.cut.complementarity
   	p_cut = addComplementarityCuts(p_cut);
 end
-if p.options.bmibnb.cut.quadratic
+if p.solver.lowersolver.constraint.inequalities.secondordercone.linear && p.options.bmibnb.cut.quadratic
     p_cut = addQuadraticCuts(p_cut);
 end
 if p.options.bmibnb.cut.exponential
