@@ -10,7 +10,7 @@ if ~isempty(h_w)
     % quadratic objective, and the linearly parameterized w*h(x) <= t
     % However, if h is quadratic in w such as x^2+2*x*w+w^2 we must move
     % everything to the cone epigraph, otherwise it is not convex in x
-    if ~is(h,'compound') && degree(h,w) == 1
+    if ~is(h,'compound') && max(degree(h,w)) == 1 && min(degree(h,w)) == 1
         base = getbase(h);
         h0 = base(1);
         base = base(2:end);base = base(:);
