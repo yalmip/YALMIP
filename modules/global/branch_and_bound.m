@@ -27,6 +27,17 @@ options = p.options;
 p = fixOperatorProperties(p);
 
 % *************************************************************************
+% Try to perform a convexifying hift of the quadratic for the lower bound
+% QP solver
+% *************************************************************************
+p = addShiftedQP(p);
+if ~isempty(p.shiftedQP)
+    if options.bmibnb.verbose>0    
+        disp('* - Shifted nonconvex QP objective using SDP');
+    end
+end
+
+% *************************************************************************
 % DEFINE UPPER BOUND PROBLEM. Basically just remove the cuts
 % *************************************************************************
 p_upper = cleanuppermodel(p);
@@ -734,3 +745,71 @@ else
     p.feasible = 1;
     p.branchwidth = node.branchwidth;
 end
+
+function p = addShiftedQP(p)
+
+% Diagonal shift of nonconvex QP 
+% 0: Do nothing (i.e. will be relaxed as LP in lower bound)
+% 1: Add term to diagonal by eigenalue shift
+% 2: Solve SDP to compute diagonal convexifying shift
+% 3: 
+p.shiftedQP = [];
+[Q,c] = compileQuadratic(p.c,p,0);
+if nnz(Q)>0            
+    if nonconvexQuadratic(Q)        
+        if p.options.bmibnb.lowerpsdfix > 0
+            r = find(any(Q,2));
+            if nnz(Q-diag(diag(Q)))==0
+                % Trivial case, nothing to do really               
+                return
+            elseif p.options.bmibnb.lowerpsdfix == 2
+                x = sdpvar(length(r),1);
+                % FIXME: Use lower level setup
+                ops = p.options;
+                ops.solver = '';
+                ops.verbose = max(ops.verbose-1,0);
+                optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+                q = zeros(length(Q),1);
+                q(r) = value(x) + 1e-6;
+            else
+                s = min(eig(Q(r,r)));
+                q = zeros(length(Q),1);
+                q(r) = -s + 1e-9;
+            end
+            Q = Q + diag(q);
+            for i = 1:length(r)
+                j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
+                if isempty(j)
+                    % Ouch, cannot do this since we don't have these
+                    % monomials in the model. Add them!
+                    newv = length(c)+1;
+                    p.F_struc(end,end+1) = 0;
+                    p.monomtable(end+1,end+1) = 0;
+                    p.monomtable(end,r(i)) = 2;
+                    p.variabletype(end+1) = 2;
+                    p.lb(end+1) = -inf;
+                    p.ub(end+1) = inf;
+                    p.x0(end+1) = 0;
+                    p.bilinears = [p.bilinears;newv r(i) r(i)];
+                    p.monomials = [p.monomials newv];
+                    j = size(p.bilinears,1);
+                    p.c(end+1) = 0;c(end+1) = 0;
+                    p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
+                    p.Quadratics = [p.Quadratics newv];
+                    p.QuadraticsList(newv,:) = [r(i) r(i)];
+                end
+                c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(i);
+            end                       
+        end
+    end
+    if p.options.bmibnb.lowerpsdfix
+        p.shiftedQP.Q = Q;
+        p.shiftedQP.c = c;    
+    else
+        p.shiftedQP.Q = p.Q;
+        p.shiftedQP.c = p.c;
+    end
+end
+
+
+

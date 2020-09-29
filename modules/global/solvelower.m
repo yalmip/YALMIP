@@ -58,16 +58,14 @@ else
     % We are solving relaxed problem (penbmi might be local solver)
     p_cut.monomtable = eye(length(p_cut.c));
     
-    if p.solver.lowersolver.objective.quadratic.convex
-        % Setup quadratic
-        [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p,0);
-        if nonconvexQuadratic(p_cut.Q)
-            [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p,1);
-            if nonconvexQuadratic(p_cut.Q)
-                p_cut.Q = p.Q;
-                p_cut.c = p.c;
-            end
-        end
+    if p.solver.lowersolver.objective.quadratic.convex && ~isempty(p.shiftedQP)
+        % If lower solver can handle convex quadratic, we should exploit
+        % this.
+        % Convex: Just solve it!
+        % Nonconvex: Adjustments to diagonal, and corresponding in relaxed
+        %            model. These adjustments are computed once       
+        p_cut.Q = p.shiftedQP.Q;
+        p_cut.c = p.shiftedQP.c;       
     end
     
     fixed = p_cut.lb >= p_cut.ub;

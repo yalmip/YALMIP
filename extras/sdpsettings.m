@@ -476,6 +476,7 @@ bmibnb.uppersdprelax = 1;
 bmibnb.uppersdprelaxmethod = 'element';
 bmibnb.target =  -inf;
 bmibnb.lowertarget =  inf;
+bmibnb.lowerpsdfix =  2;
 bmibnb.vartol = 1e-3;
 bmibnb.relgaptol = 1e-2;
 bmibnb.absgaptol = 1e-2;
