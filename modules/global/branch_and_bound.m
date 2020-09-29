@@ -777,13 +777,19 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             ops = p.options;
             ops.solver = '';
             ops.verbose = max(ops.verbose-1,0);
-            optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
-            x = value(x);
-            % SDP solver can fail numerically
-            e = eig(Q(r,r) + diag(x));
-            perturb = max(0,-min(e));
-            q = zeros(length(Q),1);
-            q(r) = value(x) + perturb + 1e-6;
+            sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+            if sol.problem == 0
+                x = value(x);
+                % SDP solver can fail numerically
+                e = eig(Q(r,r) + diag(x));
+                perturb = max(0,-min(e));
+                q = zeros(length(Q),1);
+                q(r) = value(x) + perturb + 1e-6;
+            else
+                s = min(eig(Q(r,r)));
+                q = zeros(length(Q),1);
+                q(r) = -s + 1e-9;
+            end
         else
             s = min(eig(Q(r,r)));
             q = zeros(length(Q),1);
