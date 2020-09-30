@@ -183,6 +183,11 @@ end
 % avoiding to introduce possibly complicating bilinear constraints
 % *************************************************************************
 [p,x_min,upper] = initializesolution(p);
+if ~isinf(upper)
+    if p.options.bmibnb.verbose 
+        disp('* -Feasible solution found by heuristics');
+    end
+end
 
 % *************************************************************************
 % If the upper bound solver is capable of solving the original problem,
@@ -418,20 +423,33 @@ if p.feasible
     % *******************************
     % RUN BILINEAR BRANCH & BOUND
     % *******************************
-    [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing);
-       
-    % ********************************
-    % ADJUST DIAGNOSTICS
-    % ********************************
-    if isinf(upper) && problem == 0
-        problem = 1;
+    if upper < p.options.bmibnb.target
+        % Solution already good enough, no reason to start branching at all
+        if p.options.bmibnb.verbose>0
+            disp('* -Terminating in root as upper bound already meets target.');   
+        end
+        solved_nodes = 0;
+        lower = -inf;
+        lower_hist = -inf;
+        upper_hist = upper;
+        problem = 0;
+        counter = p.counter;
+    else
+        [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing);
+        
+        % ********************************
+        % ADJUST DIAGNOSTICS
+        % ********************************
+        if isinf(upper) && problem == 0
+            problem = 1;
+        end
+        if isinf(lower) & (lower<0) && problem == 0
+            problem = 2;
+        end
+        if isinf(lower) & (lower>0) && problem == 0
+            problem = 1;
+        end
     end
-    if isinf(lower) & (lower<0) && problem == 0
-        problem = 2;
-    end
-    if isinf(lower) & (lower>0) && problem == 0
-        problem = 1;
-    end        
 else
     counter = p.counter;
     problem = 1;
