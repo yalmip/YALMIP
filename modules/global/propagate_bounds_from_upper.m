@@ -19,9 +19,12 @@ if ~isinf(upper)
     end
     if nnz(p.Q)==0
         % Very basic, simply propagate from f + sum c_i m_i(x) <= upper
-        i = find(p.c);
+        c = p.c;
+        i = find(c);
         for j = i(:)'
-            ii = setdiff(i,j);
+            cc = c;cc(j)=0;
+            ii = find(cc);
+           % ii = setdiff(i,j);% Much slower!
             if ~isempty(ii)
                 if p.c(j) > 0
                     obound = upper - p.f;
