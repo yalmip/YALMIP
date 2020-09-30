@@ -10,19 +10,25 @@ function output = bmibnb(p)
 % bmibnb.lowersolver    - Solver for lower bound [solver tag ('')]
 % bmibnb.uppersolver    - Solver for upper bound [solver tag ('')]
 % bmibnb.lpsolver       - Solver for LP bound tightening [solver tag ('')]
-% bmibnb.branchmethod   - Branch strategy ['maxvol' | 'best' ('best')]
-% bmibnb.branchrule     - Branch position ['omega' | 'bisect' ('omega')]
-% bmibnb.lpreduce       - Improve variable bounds using LP (-1 BMIBNB decides, 0 means no reduction, 1 means all variables)
-% bmibnb.lowrank        - Partition variables into two disjoint sets and branch on smallest [ 0|1 (0)]
-% bmibnb.target         - Exit if upper bound<target [double (-inf)]
-% bmibnb.roottight      - Improve variable bounds in root using full problem (-1 BMIBNB decides, 0 off, 1 on)
-% bmibnb.vartol         - Cut tree when x_U-x_L < vartol on all branching variables
-% bmibnb.relgaptol      - Tolerance on relative objective error (UPPER-LOWER)/(1+|UPPER|) [real (0.01)]
-% bmibnb.absgaptol      - Tolerance on objective error (UPPER-LOWER) [real (0.01)]
-% bmibnb.pdtol          - A number is declared non-negative if larger than...[ double (1e-6)]
-% bmibnb.eqtol          - A number is declared zero if abs(x) smaller than...[ double (1e-6)]
+%
 % bmibnb.maxiter        - Maximum number nodes [int (100)]
 % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]
+%
+% bmibnb.relgaptol      - Tolerance on relative objective (in %) error (UPPER-LOWER)/(1+|UPPER|) [real (0.01)]
+% bmibnb.absgaptol      - Tolerance on objective error (UPPER-LOWER) [real (0.01)]
+%
+% bmibnb.target         - Exit if upper bound<=target [double (-inf)]
+% bmibnb.lowertarget    - Exit if lower bound>=target [double ( inf)]
+%
+% bmibnb.branchmethod   - Branch strategy ['maxvol' | 'best' ('best')]
+% bmibnb.branchrule     - Branch position ['omega' | 'bisect' ('omega')]
+%
+% bmibnb.lpreduce       - Improve variable bounds using LP (-1 BMIBNB decides, 0 means no reduction, 1 means all variables)
+% bmibnb.lowrank        - Partition variables into two disjoint sets and branch on smallest [ 0|1 (0)]
+% bmibnb.roottight      - Improve variable bounds in root using full problem (-1 BMIBNB decides, 0 off, 1 on)
+% bmibnb.vartol         - Cut tree when x_U-x_L < vartol on all branching variables
+% bmibnb.pdtol          - A number is declared non-negative if larger than...[ double (1e-6)]
+% bmibnb.eqtol          - A number is declared zero if abs(x) smaller than...[ double (1e-6)]
 
 showprogress('Branch and bound started',p.options.showprogress);
 
