@@ -528,7 +528,7 @@ end
 
 function [stack,lower] = prune(stack,upper,options,solved_nodes,p)
 if ~isempty(stack)
-    toolarge = find([stack.lower]>upper*(1+1e-4));
+    toolarge = find([stack.lower]>upper - abs(upper)*1e-4);
     if ~isempty(toolarge)
         stack(toolarge)=[];
     end
@@ -548,7 +548,7 @@ if ~isempty(stack)
         LB = [stack.lb];
         UB = [stack.ub];
         LOWER =  p.c([indPOS(:);indNEG(:)])'*[LB(indPOS,:);UB(indNEG,:)];
-        toolarge = find(LOWER > upper*(1-1e-8));
+        toolarge = find(LOWER > upper - abs(upper)*1e-8);
         stack(toolarge)=[];
     end
 end
