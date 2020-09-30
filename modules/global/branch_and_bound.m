@@ -770,7 +770,7 @@ p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
-    e = eig(Q(r,r));
+    e = eig(full(Q(r,r)));
     if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)
         % Already convex, so keep the compiled matrices
         p.shiftedQP.Q = Q;
@@ -782,11 +782,11 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             return
         end
         
-       if p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1
+       if p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1 && length(e) <= 500
             x = sdpvar(length(r),1);
             % FIXME: Use lower level setup
             ops = p.options;
-            ops.solver = '';
+            ops.solver = 'mosek,sdpt3,sedumi';
             ops.verbose = max(ops.verbose-1,0);
             sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
             if sol.problem == 0
