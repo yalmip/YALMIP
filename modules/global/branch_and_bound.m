@@ -113,7 +113,7 @@ if options.bmibnb.verbose>0
         end
     end    
     disp('* Starting the b&b process');
-    disp(' Node       Upper      Gap(%)       Lower    Open   Time');
+    disp(' Node       Upper       Gap(%)       Lower     Open   Time');
 end
 
 go_on  = 1;
@@ -452,7 +452,7 @@ while go_on
         depth = p.depth;
     end
     if options.bmibnb.verbose>0
-        fprintf(' %4.0f : %12.3E  %7.2f   %12.3E   %2.0f   %3.0fs  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),floor(toc(timing.total)),info_text);
+        fprintf(' %4.0f :  %12.5E  %7.2f   %12.5E   %2.0f   %3.0fs  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),floor(toc(timing.total)),info_text);
     end
     
     absgap = upper-lower;
