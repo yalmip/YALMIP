@@ -32,10 +32,8 @@ p = fixOperatorProperties(p);
 % *************************************************************************
 p = addShiftedQP(p);
 if ~isempty(p.shiftedQP)
-    if options.bmibnb.verbose>0   
-        if p.options.bmibnb.lowerpsdfix == 2
-            disp('* -Shifted nonconvex QP objective using SDP');
-        end
+    if options.bmibnb.verbose>0          
+        disp('* -Shifted nonconvex QP objective using SDP');        
     end
 end
 
@@ -759,18 +757,18 @@ p.shiftedQP = [];
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
     e = eig(Q(r,r));
-    if min(e) >= 0
+    if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)
         % Already convex, so keep the compiled matrices
         p.shiftedQP.Q = Q;
         p.shiftedQP.c = c;
     else
         % Nonconvex case
-        if all(e <= 1e-6) || ~any(diag(Q))
+        if all(e <= 1e-6) || ~any(diag(Q)) && ~(p.options.bmibnb.lowerpsdfix == 1)
             % Does not benefit from any kind of shift
             return
         end
         
-       if p.options.bmibnb.lowerpsdfix == 2
+       if p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1
             x = sdpvar(length(r),1);
             % FIXME: Use lower level setup
             ops = p.options;
