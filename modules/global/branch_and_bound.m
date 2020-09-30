@@ -116,7 +116,6 @@ if options.bmibnb.verbose>0
     disp(' Node       Upper      Gap(%)       Lower    Open   Time');
 end
 
-t_start = cputime;
 go_on  = 1;
 
 lower_hist = [];
@@ -158,8 +157,8 @@ while go_on
     
     p.upper = upper;   
     for i = 1:length(options.bmibnb.strengthscheme)
-        p = adjustMaxTime(p,p.options.bmibnb.maxtime,cputime-t_start);
-        time_ok = cputime-t_start < options.bmibnb.maxtime;
+        p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));        
+        time_ok = toc(timing.total) < options.bmibnb.maxtime;
         if ~p.feasible | ~time_ok
             break
         end
@@ -221,7 +220,7 @@ while go_on
         % Detect redundant constraints
         % *********************************************************************
         p = remove_redundant(p);
-        p = adjustMaxTime(p,p.options.bmibnb.maxtime,cputime-t_start);
+        p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));
         [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 
         if output.problem == -1
@@ -453,14 +452,14 @@ while go_on
         depth = p.depth;
     end
     if options.bmibnb.verbose>0
-        fprintf(' %4.0f : %12.3E  %7.2f   %12.3E   %2.0f   %3.0fs  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),floor(cputime-t_start),info_text);
+        fprintf(' %4.0f : %12.3E  %7.2f   %12.3E   %2.0f   %3.0fs  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),floor(toc(timing.total)),info_text);
     end
     
     absgap = upper-lower;
     % ************************************************
     % Continue?
     % ************************************************
-    time_ok = cputime-t_start < options.bmibnb.maxtime;
+    time_ok = toc(timing.total) < options.bmibnb.maxtime;
     iter_ok = solved_nodes < options.bmibnb.maxiter;
     any_nodes = ~isempty(p);
     relgap_too_big = (isinf(lower) | isnan(relgap) | relgap>100*options.bmibnb.relgaptol);
@@ -473,7 +472,7 @@ while go_on
 end
 
 if options.bmibnb.verbose>0   
-    fprintf(['* Finished.  Cost: ' num2str(upper) ' Gap: ' num2str(relgap) '%%\n']);
+    fprintf(['* Finished.  Cost: ' num2str(upper) ' (lower bound: ' num2str(lower) ', relative gap ' num2str(relgap) '%%)\n']);    
     if ~time_ok
         fprintf(['* Termination due to time limit \n']);
     elseif ~iter_ok

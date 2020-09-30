@@ -24,9 +24,6 @@ function output = bmibnb(p)
 % bmibnb.maxiter        - Maximum number nodes [int (100)]
 % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]
 
-% Author Johan Löfberg
-
-bnbsolvertime = clock;
 showprogress('Branch and bound started',p.options.showprogress);
 
 % *************************************************************************
@@ -451,7 +448,7 @@ output.solved_nodes = solved_nodes;
 output.Primal        = zeros(length(p.kept),1);
 output.Primal(p.kept(1:n_in))= x_min(1:n_in);
 output.infostr      = yalmiperror(output.problem,'BMIBNB');
-output.solvertime   = etime(clock,bnbsolvertime);
+output.solvertime   = timing.total;
 output.timing = timing;
 output.lower = lower;
 output.solveroutput.nodes = length(lower_hist);
