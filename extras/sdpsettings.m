@@ -207,6 +207,9 @@ else
 
     options.kypd = setup_kypd_options;
     Names = appendOptionNames(Names,options.kypd,'kypd');
+    
+    options.kktqp = setup_kktqp_options;
+    Names = appendOptionNames(Names,options.kktqp,'kktqp');    
 
     options.nag = setup_nag_options;
     Names = appendOptionNames(Names,options.nag,'nag');
@@ -282,7 +285,7 @@ else
 
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
-    
+      
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
     options.default.mosek = options.mosek;   
@@ -426,7 +429,6 @@ options.relax = 0;
 options.dualize = 0;
 options.usex0 = 0;
 options.savedebug = 0;
-options.debug = 0;
 options.expand = 1;
 options.allowmilp = 1;
 options.allownonconvex = 1;
@@ -465,7 +467,7 @@ bmibnb.cut.quadratic = 1;
 bmibnb.cut.exponential = 0;
 bmibnb.cut.sincos = 0;
 bmibnb.sdpcuts = 0;
-bmibnb.lpreduce = 1;
+bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = 1;
 bmibnb.onlyrunupperinroot = 0;
@@ -484,7 +486,7 @@ bmibnb.pdtol = 1e-6;
 bmibnb.eqtol = 1e-6;
 bmibnb.maxiter = 100;
 bmibnb.maxtime = 3600;
-bmibnb.roottight = 1;
+bmibnb.roottight = -1;
 bmibnb.numglobal = inf;
 bmibnb.localstart = 'relaxed';
 bmibnb.presolvescheme = [];
@@ -860,6 +862,10 @@ try
 catch
     intlinprog = [];
 end
+
+function kktqp = setup_kktqp_options
+kktqp.solver = '';
+kktqp.maxtime = '';
 
 function kypd = setup_kypd_options
 kypd.solver = '';
@@ -1266,7 +1272,7 @@ function scip = setup_scip_options
 try
     scip = optiset;
 catch
-    scip = [];
+    scip.maxtime = inf;
 end
 
 function scs = setup_scs_options
