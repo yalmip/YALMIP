@@ -26,10 +26,10 @@ if feasible
         j = find(abs(xx-p_upper.ub)<=p.options.bmibnb.vartol);
         xx(j) = p_upper.ub(j);
         alt_z = apply_recursive_evaluation(p_upper,xx);
-        alt_upper = p_upper.f+p_upper.c'*xx+xx'*p_upper.Q*xx;
+        alt_upper = p_upper.f + p_upper.c'*alt_z + alt_z'*p_upper.Q*alt_z;
         if alt_upper < this_upper
             this_upper = alt_upper;
-            z = alt_z;
+            z = alt_z;         
         end
     end
     if this_upper < upper
