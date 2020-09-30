@@ -17,7 +17,22 @@ feasible = ~isempty(z) & ~any(isnan(z)) & all(upper_residual(1:p_upper.K.f)>=-p.
 
 if feasible
     this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
-    if (this_upper < (1-1e-5)*upper) & (this_upper < upper - 1e-5)
+    if isequal(p_upper.K.f,0) && isequal(p_upper.K.l,0) && isequal(p_upper.K.q,0) && isequal(p_upper.K.s,0) 
+        % This is a simple bound-constrained problem. We can try a
+        % cross-over and see if it improves the objective
+        xx = output.Primal;
+        j = find(abs(xx-p_upper.lb)<=p.options.bmibnb.vartol);
+        xx(j) = p_upper.lb(j);        
+        j = find(abs(xx-p_upper.ub)<=p.options.bmibnb.vartol);
+        xx(j) = p_upper.ub(j);
+        alt_z = apply_recursive_evaluation(p_upper,xx);
+        alt_upper = p_upper.f+p_upper.c'*xx+xx'*p_upper.Q*xx;
+        if alt_upper < this_upper
+            this_upper = alt_upper;
+            z = alt_z;
+        end
+    end
+    if this_upper < upper
         x_min = z;
         upper = this_upper;
         if length(info_text) == 0
