@@ -766,7 +766,7 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
         p.shiftedQP.c = c;
     else
         % Nonconvex case
-        if all(e <= 1e-6)
+        if all(e <= 1e-6) || ~any(diag(Q))
             % Does not benefit from any kind of shift
             return
         end
