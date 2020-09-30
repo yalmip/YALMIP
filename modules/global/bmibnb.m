@@ -224,7 +224,7 @@ end
 % Adaptively turn off LP-based propagation
 % *************************************************************************
 if p.options.bmibnb.lpreduce == -1
-    if size(p.F_struc,1)==0 && isempty(p.evalMap) && isempty(p.binary_variables) &&  isempty(p.integer_variables) 
+    if size(p.F_struc,1)==0 && isempty(p.evalMap) && all(p.variabletype <= 2) && isempty(p.binary_variables) && isempty(p.integer_variables) 
         % No constraints and no operators which might introduce any
         % interesting cuts, so LP-based propagation will only be driven by
         % bounds and quadratic objective, which never can improve anything
@@ -235,7 +235,7 @@ if p.options.bmibnb.lpreduce == -1
     end
 end
 if p.options.bmibnb.roottight == -1
-    if size(p.F_struc,1)==0 && isempty(p.evalMap) && isempty(p.binary_variables) &&  isempty(p.integer_variables) 
+    if size(p.F_struc,1)==0 && isempty(p.evalMap) && all(p.variabletype <= 2) &&  isempty(p.binary_variables) && isempty(p.integer_variables) 
         % No constraints and no operators which might introduce any
         % interesting cuts, so LP-based propagation will only be driven by
         % bounds and quadratic objective, which never can improve anything
