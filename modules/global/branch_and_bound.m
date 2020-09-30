@@ -301,9 +301,9 @@ while go_on
                         end
                         if ~isequal(p.solver.uppersolver.tag,'none') & ~p.options.bmibnb.onlyrunupperinroot
                             if upper > p.options.bmibnb.target
-                                if options.bmibnb.lowertarget > lower                                    
-                                    [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);
-                                    p.counter.uppersolved = p.counter.uppersolved + 1;
+                                if options.bmibnb.lowertarget > lower                                         
+                                    [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);                                    
+                                    p.counter.uppersolved = p.counter.uppersolved + 1;                                    
                                 end
                             end
                         end
@@ -414,7 +414,13 @@ while go_on
             else
                 bounds  = partition(p,options,spliton,x);           
                 for i = 1:length(bounds)-1                 
-                    node = savetonode(p,spliton,bounds(i),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                    
+                    if isnan(bounds(i))
+                        node = savetonode(p,spliton,bounds(i+1),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                        
+                    elseif isnan(bounds(i+1))
+                        node = savetonode(p,spliton,bounds(i),bounds(i),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                        
+                    else
+                        node = savetonode(p,spliton,bounds(i),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                    
+                    end
                     node.bilinears = p.bilinears;
                     node = updateonenonlinearbound(node,spliton);
                     node.branchwidth = [p.ub(spliton)-p.lb(spliton)];
@@ -684,6 +690,12 @@ for i = 1:length(p.evalMap)
         end
     end
 end
+if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && all(p.nonshiftedQP.c==0) && (p.nonshiftedQP.Q(spliton,spliton) < 0)
+    % Simple box-cnstrained min x'*Q*x with negative element Q_ii will
+    % have optimal point at bound
+    bounds = [p.lb(spliton) nan p.ub(spliton)];
+    return
+end
 switch options.bmibnb.branchrule
     case 'omega'
         U = p.ub(spliton);
@@ -754,6 +766,8 @@ function p = addShiftedQP(p)
 % 3:
 p.shiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
+p.nonshiftedQP.Q = Q;
+p.nonshiftedQP.c = c;
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
     e = eig(Q(r,r));
