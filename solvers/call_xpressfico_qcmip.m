@@ -1,5 +1,13 @@
 function output = call_xpressfico_qcmip(interfacedata)
 
+if nnz(interfacedata.Q) == 0 && nnz(interfacedata.K.q)==0
+    output = call_xpressfico_milp(interfacedata);
+    return
+elseif nnz(interfacedata.K.q)==0
+    output = call_xpressfico_miqp(interfacedata);
+    return    
+end
+
 % Retrieve needed data
 options = interfacedata.options;
 n_original = length(interfacedata.c);
@@ -14,13 +22,13 @@ if isempty(model.extra.integer_variables) & isempty(model.extra.binary_variables
     if options.verbose
         [x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);
     else
-        evalc('[x,fval,exitflag,output,lambda] = xprsqp(model.H,model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops);');
+        evalc('[x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);');
     end
 else
     if options.verbose
         [x,fval,exitflag,output] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);
     else
-        evalc('[x,fval,exitflag,output] = xprsmiqp(model.H,model.f,model.A,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);        ');
+        evalc('[x,fval,exitflag,output] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);        ');
     end
     lambda = [];
 end
