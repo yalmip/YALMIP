@@ -33,8 +33,14 @@ p = fixOperatorProperties(p);
 p = addShiftedQP(p);
 if ~isempty(p.shiftedQP)
     if options.bmibnb.verbose>0          
+        switch p.shiftedQP.method
+            case 'sdp'
         disp('* -Shifted nonconvex QP objective using SDP');        
+            case 'eig'
+                disp('* -Shifted nonconvex QP objective using eigenvalues');
+            otherwise
     end
+end
 end
 
 % *************************************************************************
@@ -768,6 +774,7 @@ p.shiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
+p.shiftedQP.method = 'none';
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
     e = eig(full(Q(r,r)));
@@ -796,15 +803,18 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
                 perturb = max(0,-min(e));
                 q = zeros(length(Q),1);
                 q(r) = value(x) + perturb + 1e-6;
+                p.shiftedQP.method = 'sdp';
             else
                 s = min(eig(Q(r,r)));
                 q = zeros(length(Q),1);
                 q(r) = -s + 1e-9;
+                p.shiftedQP.method = 'eig';
             end
         else
             s = min(eig(Q(r,r)));
             q = zeros(length(Q),1);
             q(r) = -s + 1e-9;
+            p.shiftedQP.method = 'eig';
         end
         Q = Q + diag(q);
         for i = 1:length(r)
