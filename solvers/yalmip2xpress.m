@@ -32,10 +32,16 @@ end
 
 % Notation used
 f = c;
-A = -F_struc(1:K.f+K.l,2:end);
-b = F_struc(1:K.f+K.l,1);
-rtype = repmat('L',K.f+K.l,1);
-rtype(1:K.f) = 'E';
+if K.f + K.l > 0
+    A = -F_struc(1:K.f+K.l,2:end);
+    b = F_struc(1:K.f+K.l,1);
+    rtype = repmat('L',K.f+K.l,1);
+    rtype(1:K.f) = 'E';
+else
+    A = [];
+    b = [];
+    rtype = [];
+end
 
 % XPRESS assumes semi-continuous variables only can take positive values so
 % we negate semi-continuous violating this
