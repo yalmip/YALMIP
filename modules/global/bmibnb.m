@@ -183,7 +183,9 @@ end
 % avoiding to introduce possibly complicating bilinear constraints
 % *************************************************************************
 [p,x_min,upper] = initializesolution(p);
+solution_hist = [];
 if ~isinf(upper)
+    solution_hist = [solution_hist x_min(p.linears)];
     if p.options.bmibnb.verbose 
         disp('* -Feasible solution found by heuristics');
     end
@@ -213,9 +215,9 @@ if solver_can_solve(p.solver.uppersolver,p)
     % Note that upper solver can add cuts to model if it is an SDP
     [upper_,x_min_,info_text,numglobals,timing,p] = solve_upper_in_node(p,p,x_min,upper,x_min,p.solver.uppersolver.call,'',0,timing,p.options.bmibnb.uppersdprelax);
     if upper_ < upper
-        % if ~isinf(upper)
+        solution_hist = [solution_hist x_min_(p.linears)];
         upper = upper_;
-        x_min = x_min_;
+        x_min = x_min_;        
         p = propagate_bounds_from_upper(p,upper);
         if p.options.bmibnb.verbose>0
             disp('(found a solution!)');
@@ -256,6 +258,11 @@ if p.options.bmibnb.roottight == -1
         p.options.bmibnb.roottight = 1;
     end
 end
+% *************************************************************************
+% When saving history of solutions, we only want original linear terms
+% *************************************************************************
+p.originallinears = p.linears;
+
 % *************************************************************************
 % Sigmonial terms are converted to evaluation based expressions.
 % *************************************************************************
@@ -434,8 +441,19 @@ if p.feasible
         upper_hist = upper;
         problem = 0;
         counter = p.counter;
+    elseif ~isinf(upper) && isequal(p.options.bmibnb.lowertarget,-inf)
+         % We only want a solution
+        if p.options.bmibnb.verbose>0
+            disp('* -Terminating in root as solution found and lower target is -inf');
+        end
+        solved_nodes = 0;
+        lower = -inf;
+        lower_hist = -inf;
+        upper_hist = upper;
+        problem = 0;
+        counter = p.counter;
     else
-        [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing);
+        [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing,solution_hist);
         
         % ********************************
         % ADJUST DIAGNOSTICS
@@ -458,6 +476,7 @@ else
     lower = inf;
     lower_hist = [];
     upper_hist = [];
+    solution_hist = [];
 end
 
 timing.total = toc(timing.total);
@@ -485,6 +504,7 @@ output.solveroutput.timing = timing;
 output.solveroutput.lower = lower;
 output.solveroutput.lower_hist = lower_hist;
 output.solveroutput.upper_hist = upper_hist;
+output.solveroutput.solution_hist = solution_hist;
 output.extra.propagatedlb = lb;
 output.extra.propagatedub = ub;
 

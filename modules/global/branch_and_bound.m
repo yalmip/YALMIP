@@ -1,4 +1,4 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing,solution_hist)
 
 % *************************************************************************
 % Initialize diagnostic code
@@ -32,15 +32,15 @@ p = fixOperatorProperties(p);
 % *************************************************************************
 p = addShiftedQP(p);
 if ~isempty(p.shiftedQP)
-    if options.bmibnb.verbose>0          
+    if options.bmibnb.verbose>0   
         switch p.shiftedQP.method
             case 'sdp'
-        disp('* -Shifted nonconvex QP objective using SDP');        
+                disp('* -Shifted nonconvex QP objective using SDP');        
             case 'eig'
                 disp('* -Shifted nonconvex QP objective using eigenvalues');
             otherwise
+        end
     end
-end
 end
 
 % *************************************************************************
@@ -186,7 +186,7 @@ while go_on
                 if length(info_text_temp) > 0
                     info_text = info_text_temp;
                 end                    
-            end                        
+            end 
             p.counter.heuristics = p.counter.heuristics + size(X,2);
             timing.heuristics = timing.heuristics + toc(tstart);
             propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
@@ -209,6 +209,13 @@ while go_on
         if ~p.feasible | ~time_ok
             break
         end
+    end
+    if size(solution_hist,1)>1
+        if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))            
+            solution_hist = [solution_hist x_min(p.originallinears(:))];
+        end
+    elseif ~isempty(x_min)        
+        solution_hist = x_min(p.originallinears(:));
     end
 
     % *********************************************************************
@@ -298,6 +305,13 @@ while go_on
                         tstart = tic;
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
                         timing.heuristics = timing.heuristics + toc(tstart);
+                        if size(solution_hist,1)>1
+                            if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
+                                solution_hist = [solution_hist x_min(p.originallinears(:))];
+                            end
+                        elseif ~isempty(x_min)
+                            solution_hist = x_min(p.originallinears(:));;
+                        end
                         
                         p.counter.heuristics = p.counter.heuristics + 1;
                         if length(info_text)==0 &&  length(info_text2)>0
@@ -310,6 +324,13 @@ while go_on
                                 if options.bmibnb.lowertarget > lower                                         
                                     [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);                                    
                                     p.counter.uppersolved = p.counter.uppersolved + 1;                                    
+                                    if size(solution_hist,1)>1
+                                        if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
+                                            solution_hist = [solution_hist x_min(p.originallinears(:))];
+                                        end
+                                    elseif ~isempty(x_min)
+                                        solution_hist = x_min(p.originallinears(:));;
+                                    end
                                 end
                             end
                         end
