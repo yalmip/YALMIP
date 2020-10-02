@@ -217,8 +217,14 @@ if solver_can_solve(p.solver.uppersolver,p)
     if upper_ < upper
         solution_hist = [solution_hist x_min_(p.linears)];
         upper = upper_;
-        x_min = x_min_;        
+        x_min = x_min_;              
         p = propagate_bounds_from_upper(p,upper);
+        p = update_monomial_bounds(p);
+        p = propagate_bounds_from_evaluations(p);
+        p = propagate_bounds_from_monomials(p);
+        p = presolve_bounds_from_inequalities(p);
+        p = propagate_bounds_from_equalities(p);
+        p = update_monomial_bounds(p);
         if p.options.bmibnb.verbose>0
             disp('(found a solution!)');
         end        
