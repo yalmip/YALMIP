@@ -335,6 +335,10 @@ while i <= nargin
     i = i + 1;
 end
 
+if isequal(options.solver,'swarm')
+    error('I guess you missed the joke.');
+end
+
 if expectval
     error(sprintf('Expected value for property ''%s''.', arg));
 end
