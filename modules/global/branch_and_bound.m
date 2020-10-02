@@ -795,7 +795,6 @@ p.shiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
-p.shiftedQP.method = 'none';
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
     e = eig(full(Q(r,r)));
@@ -803,6 +802,7 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
         % Already convex, so keep the compiled matrices
         p.shiftedQP.Q = Q;
         p.shiftedQP.c = c;
+        p.shiftedQP.method = 'none';
     else
         % Nonconvex case
         if all(e <= 1e-6) || ~any(diag(Q)) && ~(p.options.bmibnb.lowerpsdfix == 1)
