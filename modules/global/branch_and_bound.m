@@ -248,7 +248,7 @@ while go_on
             [output_2,cost_2,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
             if cost_1 > cost_2
                 p = p_temp;
-                output = output1;
+                output = output_1;
                 cost = cost_1;
             else
                 cost = cost_2;
@@ -841,17 +841,15 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             % FIXME: Use lower level setup
             ops = p.options;
             ops.solver = 'mosek,sdpt3,sedumi';
-            ops.verbose = max(ops.verbose-1,0);
-            U = (max(abs([p.lb(p.linears) p.ub(p.linears)])')').^2;
-            U = U(r);
-            sol = optimize([Q(r,r) + diag(x./U) >= 0, x >= 0], sum(x),ops);
+            ops.verbose = max(ops.verbose-1,0);           
+            sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
             if sol.problem == 0
                 x = value(x);
                 % SDP solver can fail numerically
                 e = eig(Q(r,r) + diag(x));
                 perturb = max(0,-min(e));
                 q = zeros(length(Q),1);
-                q(r) = value(x./U) + perturb + 1e-6;
+                q(r) = value(x) + perturb + 1e-6;
                 p.shiftedQP.method = 'sdp';
             else
                 s = min(eig(Q(r,r)));
