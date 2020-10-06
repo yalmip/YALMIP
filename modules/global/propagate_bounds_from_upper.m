@@ -130,6 +130,8 @@ if ~isinf(upper)
             end
         end
     end
+    % Numerical issues easily propagates, so widen weird close to feasible box
+    p = widenSmashedBox(p);
     if any(p.lb > p.ub + 1e-7)
         p.feasible = 0;
     end

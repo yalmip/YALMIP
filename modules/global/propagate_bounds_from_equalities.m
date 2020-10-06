@@ -145,7 +145,8 @@ end
 close = find(abs(p.lb - p.ub) < 1e-12);
 p.lb(close) = (p.lb(close)+p.ub(close))/2;
 p.ub(close) = p.lb(close);
-
+% Numerical issues easily propagates, so widen weird close to feasible box 
+p = widenSmashedBox(p);
 p = update_integer_bounds(p);
 
 if ~isequal(LU,[p.lb p.ub])
