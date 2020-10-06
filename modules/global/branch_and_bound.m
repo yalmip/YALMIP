@@ -51,6 +51,10 @@ p_upper = compile_nonlinear_table(p_upper);
 p_upper = compile_bilinearslist(p_upper);
 p_upper = compile_quadraticslist(p_upper);
 
+% Save info about solution structure implied by box concavity
+p = addConcavityInfo(p);
+
+
 % *************************************************************************
 % Add constraints obtained from multiplying linear constraints with 
 % variables leading to bilinear constraints with monomials already used
@@ -231,8 +235,28 @@ while go_on
         % Detect redundant constraints
         % *********************************************************************
         p = remove_redundant(p);
+        
+        % *********************************************************************
+        % solve relaxation
+        % In the root node, if we have an SDP-shifted QP available, we
+        % evaluate its performance to decide if we want to use it
+        % *********************************************************************
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));
-        [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+        if solved_nodes == 0 && ~isempty(p.shiftedQP)           
+            p_temp = p;p_temp.shiftedQP = [];
+            [output_1,cost_1,p_temp,timing] = solvelower(p_temp,options,lowersolver,x_min,upper,timing);
+            [output_2,cost_2,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+            if cost_1 > cost_2
+                p = p_temp;
+                output = output1;
+                cost = cost_1;
+            else
+                cost = cost_2;
+                output = output_2;
+            end
+        else
+            [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+        end
 
         if output.problem == -1
             % We have no idea what happened. 
@@ -717,7 +741,7 @@ for i = 1:length(p.evalMap)
         end
     end
 end
-if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && all(p.nonshiftedQP.c==0) && (p.nonshiftedQP.Q(spliton,spliton) < 0)
+if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && (p.nonshiftedQP.Q(spliton,spliton) < 0)
     % Simple box-cnstrained min x'*Q*x with negative element Q_ii will
     % have optimal point at bound
     bounds = [p.lb(spliton) nan p.ub(spliton)];
@@ -795,6 +819,7 @@ p.shiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
+p.nonshiftedQP.f = p.f;
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
     e = eig(full(Q(r,r)));
@@ -802,10 +827,11 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
         % Already convex, so keep the compiled matrices
         p.shiftedQP.Q = Q;
         p.shiftedQP.c = c;
+        p.shiftedQP.f = p.f;
         p.shiftedQP.method = 'none';
     else
         % Nonconvex case
-        if all(e <= 1e-6) || ~any(diag(Q)) && ~(p.options.bmibnb.lowerpsdfix == 1)
+        if (all(e <= 1e-6) || ~any(diag(Q))) && ~(p.options.bmibnb.lowerpsdfix == 1)
             % Does not benefit from any kind of shift
             return
         end
@@ -816,14 +842,16 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             ops = p.options;
             ops.solver = 'mosek,sdpt3,sedumi';
             ops.verbose = max(ops.verbose-1,0);
-            sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+            U = (max(abs([p.lb(p.linears) p.ub(p.linears)])')').^2;
+            U = U(r);
+            sol = optimize([Q(r,r) + diag(x./U) >= 0, x >= 0], sum(x),ops);
             if sol.problem == 0
                 x = value(x);
                 % SDP solver can fail numerically
                 e = eig(Q(r,r) + diag(x));
                 perturb = max(0,-min(e));
                 q = zeros(length(Q),1);
-                q(r) = value(x) + perturb + 1e-6;
+                q(r) = value(x./U) + perturb + 1e-6;
                 p.shiftedQP.method = 'sdp';
             else
                 s = min(eig(Q(r,r)));
@@ -866,5 +894,43 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     end
     p.shiftedQP.Q = Q;
     p.shiftedQP.c = c;    
+    p.shiftedQP.f = p.f; 
 end
 
+
+function p = addConcavityInfo(p)
+% Indefinite BOX-QP? Add info for branching, cuts to lower relaxation, and
+% move over terms from negative quadratic term to linear term
+if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 0) > 0
+    j = find(diag(p.nonshiftedQP.Q) < 0);
+    % Solution must be at bounds, so we keep this info for later branching      
+    p.possibleSol = [j(:) p.lb(j) p.ub(j)];
+    % The implicitly defines (x-L)*(x-U)=0 (i.e scaled binary)
+    % i.e. x^2 = (U+L)x - LU 
+    var = [];
+    nonlin = [];
+    for i= 1:length(j)
+        var = [var j(i)];
+        nonlin = [nonlin p.bilinears(find(p.bilinears(:,2) == j(i) & p.bilinears(:,3) == j(i)),1)];
+        L = p.lb(var(end));
+        U = p.ub(var(end));
+        % BUGGY?
+        %p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
+        %p.f = p.f - L*U*p.c(nonlin(end));
+        %p.c(nonlin(end)) = 0;
+        %p.nonshiftedQP.c(var(end)) = p.nonshiftedQP.c(var(end)) + (U+L)*p.nonshiftedQP.Q(var(end),var(end));
+        %p.nonshiftedQP.f = p.nonshiftedQP.f - L*U*p.nonshiftedQP.Q(var(end),var(end));
+        %p.nonshiftedQP.Q(var(end),var(end)) = 0;
+    end
+    M = spalloc(length(var),length(p.c)+1,0);
+    % Optimality implies (x-L)*(x-U)==0 x^2 i.e. x^2-x(L+U) + L*U=0
+    for i = 1:length(var);
+        M(i,1)= p.lb(var(i))*p.ub(var(i));
+        M(i,var(i)+1)=-(p.lb(var(i))+p.ub(var(i)));
+        M(i,nonlin(i)+1)=1;
+    end    
+    p.concavityEqualities = M;    
+else
+    p.possibleSol = [];
+    p.concavityEqualities = [];
+end
