@@ -82,7 +82,7 @@ if any(model.variabletype > 2)
             end
         end
     end
-    model = update_eval_bounds(model);
+    model = propagate_bounds_from_evaluations(model);
 end
 
 function  model = add_sigmonial_eval(model,monosig,variable,power)
