@@ -2,6 +2,7 @@ function  p = updateboundsfromupper(p,upper)
 if nargin == 1
     upper = p.upper;
 end
+upper = upper + 1e-7;
 if ~isinf(upper)
     LU = [p.lb p.ub];
     % Simple objective f + c_i*x(i)
