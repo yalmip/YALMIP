@@ -87,7 +87,7 @@ switch class(varargin{1})
                             for k = 1:length(index3)
                                 varargin{2}.subs{1} = index1(i);
                                 varargin{2}.subs{2} = index2(j);
-                                varargin{2}.subs{3} = index3(j);
+                                varargin{2}.subs{3} = index3(k);
                                 temp = [temp yalmip('define',mfilename,varargin{:})];
                             end
                         end                        
@@ -194,7 +194,7 @@ switch class(varargin{1})
                         end
                         if isa(i3,'sdpvar')
                             F = F + (-(1+M3-m3)*(1-di) <= i3-k <= (1+M3-m3)*(1-di));
-                        elseif i3~=j
+                        elseif i3~=k
                             F = [F, sum(d(:,:,k))==0];
                         end
                     end
