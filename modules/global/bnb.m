@@ -322,6 +322,12 @@ else
 end
 
 
+% See if there is structure which can be exploited to improve primal
+% heuristics. If all objective variables only enter SDPs and LPs through
+% positive coefficients (and diagonal in SDP), the we can try a bisection
+% on these, if the combinatorial stuff is feasible
+p = detectMonotoneSDPObjective(p);
+
 % *******************************
 %% Global stuff
 % *******************************
@@ -620,9 +626,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             output.problem = 1;
         end
     end
-    
-    
-    
+            
     if output.problem==0 | output.problem==3 | output.problem==4 | output.problem==5
         cost = computecost(f,c,Q,x,p);
         
@@ -638,17 +642,33 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
                 poriginal.upper = upper;
                 poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);               
+                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);                                
                 if upper1 < upper
                     x_min = x_min1;
                     allSolutions = x_min;
                     upper = upper1;
-                    [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
-                    lower = min(lower,stacklower);                   
+                    if length(stack.nodes)>0
+                        [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+                        lower = min(lower,stacklower);                   
+                    end
                 elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
                     % Yet another solution with same value
                      allSolutions = [allSolutions x_min1];                    
                 end
+                
+                if p.monotoneobjectiveresponse
+                    [xtempwork,upperhere] = monotoneSDPHeuristics(p,upper,x);
+                    if upperhere < upper
+                        x_min = xtempwork;
+                        allSolutions = x_min;
+                        upper = upperhere;
+                        if length(stack.nodes) > 0
+                            [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+                            lower = min(lower,stacklower);                   
+                        end
+                    end
+                end
+                
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
         end
@@ -1347,6 +1367,9 @@ stack.lower(j) = inf;
 function p = detectSOS(p)
 sosgroups = {};
 sosvariables = [];
+cardinalitygroups = {};
+cardinalityvariables = {};
+cardinalitysize = {};
 if p.K.f > 0 & ~isempty(p.binary_variables)
     nbin = length(p.binary_variables);
     Aeq = -p.F_struc(1:p.K.f,2:end);
@@ -1364,12 +1387,21 @@ if p.K.f > 0 & ~isempty(p.binary_variables)
                 sosgroups{end+1} = p.binary_variables(jx);
                 sosvariables = [sosvariables p.binary_variables(jx)];
             end
+        elseif beq_bin(i) > 1
+            [ix,jx,sx] = find(Aeq_bin(i,:));
+            if all(sx == 1)
+                cardinalitygroups{end+1} = p.binary_variables(jx);
+                cardinalityvariables = [cardinalityvariables p.binary_variables(jx)];
+                cardinalitysize{end+1} = beq_bin(i);
+            end
         end
     end
 end
 p.sosgroups = sosgroups;
 p.sosvariables = sosvariables;
-
+p.cardinalitygroups = cardinalitygroups;
+p.cardinalityvariables = cardinalityvariables;
+p.cardinalitysize = cardinalitysize;
 
 function p = simplePresolve(p)
 pss=[];
@@ -1583,3 +1615,4 @@ else
     p.F_struc = [p.F_struc(1:(p.K.f+p.K.l),:);row;p.F_struc(1+p.K.f+p.K.l:end,:)];
 end
 p.K.l = p.K.l + size(row,1);
+
