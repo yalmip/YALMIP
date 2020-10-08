@@ -23,9 +23,9 @@ perturb = zeros(length(p.c),1);
 perturb(s) = abs(x_fix(s)) + 1e-4;
 upperhere = inf;
 steplength = 0;
-while trials < 10
+while trials < 20
     steplength_lower = steplength;
-    steplength = .001*4^(trials+1);
+    steplength = .001*2^(trials+1);
     xtemp = x_fix + steplength*perturb;
     xtemp = setnonlinearvariables(p,xtemp);
     if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)
@@ -43,7 +43,7 @@ if trials < 10
     xtempwork = xtemp;
     for j = 1:10
         steplength = (steplength_lower+steplength_upper)/2;
-        xtemp = x + steplength*perturb;
+        xtemp = x_fix + steplength*perturb;
         xtemp = setnonlinearvariables(p,xtemp);
         if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)
             upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
