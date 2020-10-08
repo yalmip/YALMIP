@@ -1,6 +1,6 @@
 function p = detectMonotoneSDPObjective(p)
 p.monotoneobjectiveresponse = 0;
-if isempty(p.evalMap) && nnz(p.Q == 0) && all(p.variabletype == 0)
+if isempty(p.evalMap) && nnz(p.Q) == 0 && all(p.variabletype == 0)
     s = setdiff(find(p.c),[p.binary_variables p.integer_variables]);
     if ~isempty(s)
         if all(p.c(s))>0
