@@ -668,6 +668,19 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
                         end
                     end
                 end
+                if p.options.bnb.fixandresolve
+                    [xtempwork,upperhere] = fixandresolve(p,upper,x);
+                    if upperhere < upper
+                        x_min = xtempwork;
+                        allSolutions = x_min;
+                        upper = upperhere;
+                        if length(stack.nodes) > 0
+                            [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+                            lower = min(lower,stacklower);                   
+                        end
+                    end
+                end
+                
                 
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
