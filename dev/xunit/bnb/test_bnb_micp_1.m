@@ -51,4 +51,4 @@ obj = t;
 F = ([t e';e eye(length(e))]>=0);
 sol = optimize(F,obj,ops);
 assert(sol.problem == 0);
-assert(abs(value(obj) - 3.352603420494530e+002) <= 1e-4);
+assert(abs(value(obj) - 3.352603420494530e+002) <= 2e-4);
