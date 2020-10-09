@@ -81,6 +81,10 @@ if ~isempty(p.F_struc)
     end
 end
 
+p.nonshiftedQP.Q =[];
+p.nonshiftedQP.c =[];
+p.nonshiftedQP.f =[];
+
 % *************************************************************************
 % Assume feasible (this property can be changed in the presolve codes
 % *************************************************************************
@@ -184,7 +188,7 @@ end
 % *************************************************************************
 [p,x_min,upper] = initializesolution(p);
 solution_hist = [];
-if ~isinf(upper)
+if ~isinf(upper)   
     solution_hist = [solution_hist x_min(p.linears)];
     if p.options.bmibnb.verbose 
         disp('* -Feasible solution found by heuristics');
