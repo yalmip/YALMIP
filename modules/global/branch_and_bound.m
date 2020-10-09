@@ -152,6 +152,7 @@ if any(options.bmibnb.strengthscheme < 1) || any(options.bmibnb.strengthscheme >
     error
 end
 
+quadraticCutFailure = 0;
 while go_on
     
     % *********************************************************************
@@ -271,6 +272,20 @@ while go_on
             end
         else
             [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+            
+            % Gurobi is sensitive sometimes when using quadratic cuts. Turn
+            % off adaptively?
+            if output.problem == 4 && p.options.bmibnb.cut.quadratic==-1 && isequal(p.solver.lowersolver.tag,'GUROBI')
+                ptemp = p;
+                ptemp.options.bmibnb.cut.quadratic=0;
+                [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+                if (output.problem == 0) || (output.problem == 1) 
+                    quadraticCutFailure = quadraticCutFailure + 1;
+                    if quadraticCutFailure > 2
+                        p = ptemp;
+                    end
+                end
+            end
         end
 
         if output.problem == -1
