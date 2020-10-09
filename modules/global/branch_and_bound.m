@@ -69,6 +69,8 @@ if p.options.bmibnb.cut.squaredlinearequality
     p = addSquaredLinearEqualityCuts(p);
 end
 
+p = lastresortBounds(p,upper);
+
 % *************************************************************************
 % Active constraints in main model
 % 0   : Inactive constraint (i.e. a cut which unused)
@@ -154,6 +156,24 @@ end
 
 quadraticCutFailure = 0;
 while go_on
+    
+    % We are waiting for an upper bound to pop up so we can use the SDP
+    % relaxation to compute a global upper bound for a model where no
+    % bounds were given (currently equality constrained QP)
+    if ~isinf(upper) && ~isempty(p.boundGenerator.optimizer)
+        [r2,diagnostics] = p.boundGenerator.optimizer(upper);
+        if diagnostics == 0
+            r = sqrt(max(0,r2));
+            v = p.linears;
+            p.lb(v) = max(p.lb(v),-r);
+            p.ub(v) = min(p.ub(v),r);
+            for i = 1:length(stack)
+                stack(i).lb(v) = max(stack(i).lb(v),-r);
+                stack(i).ub(v) = min(stack(i).ub(v),r);                                
+            end
+        end
+        p.boundGenerator.optimizer = [];
+    end
     
     % *********************************************************************
     % ASSUME THAT WE WON'T FATHOME
@@ -244,6 +264,9 @@ while go_on
         % solve relaxation
         % In the root node, if we have an SDP-shifted QP available, we
         % evaluate its performance to decide if we want to use it
+        % Really ugly with lot's of checking for various numerical issues
+        % etc and adaptively turning of some stuff to get rid of numerical
+        % issues which might lead to weird terminations etc
         % *********************************************************************
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));
         if solved_nodes == 0 && ~isempty(p.shiftedQP)           
@@ -266,7 +289,18 @@ while go_on
                 cost = cost_2;
                 output = output_2;
                 output.problem = 2;
-            else
+            elseif output_1.problem ==4 && output_2.problem == 4 && p.options.bmibnb.cut.quadratic==-1 && isequal(p.solver.lowersolver.tag,'GUROBI')
+                ptemp = p;
+                ptemp.options.bmibnb.cut.quadratic=0;
+                [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+                if (output.problem == 0) || (output.problem == 1) || (output.problem == 12)
+                    quadraticCutFailure = quadraticCutFailure + 1;
+                    if quadraticCutFailure > 2
+                        p = ptemp;
+                    end
+                end
+                
+            else 
                 cost = cost_2;
                 output = output_2;
             end
@@ -279,7 +313,7 @@ while go_on
                 ptemp = p;
                 ptemp.options.bmibnb.cut.quadratic=0;
                 [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
-                if (output.problem == 0) || (output.problem == 1) 
+                if (output.problem == 0) || (output.problem == 1) || (output.problem == 12) 
                     quadraticCutFailure = quadraticCutFailure + 1;
                     if quadraticCutFailure > 2
                         p = ptemp;
@@ -303,6 +337,8 @@ while go_on
         if output.problem == 12
             pp = p;
             pp.c = pp.c*0;
+            pp.shiftedQP = [];
+            pp.nonshiftedQP = [];
             [output2,cost2] = solvelower(pp,options,lowersolver,[],[],timing);
             if output2.problem == 0
                 output.problem = 2;
