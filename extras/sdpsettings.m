@@ -460,6 +460,7 @@ function bmibnb = setup_bmibnb_options
 bmibnb.lowersolver = '';
 bmibnb.uppersolver = '';
 bmibnb.lpsolver = '';
+bmibnb.sdpsolver = '';
 bmibnb.uppersdprelax = 1;
 bmibnb.target =  -inf;
 bmibnb.lowertarget =  inf;

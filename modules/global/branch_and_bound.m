@@ -907,11 +907,11 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             return
         end
         
-       if p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1 && length(e) <= 500
+       if (p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1) && length(e) <= 500 && ~isempty(p.solver.sdpsolver)
             x = sdpvar(length(r),1);
             % FIXME: Use lower level setup
             ops = p.options;
-            ops.solver = 'mosek,sdpt3,sedumi';
+            ops.solver = p.solver.sdpsolver.tag;
             ops.verbose = max(ops.verbose-1,0);           
             sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
             if sol.problem == 0
