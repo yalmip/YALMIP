@@ -162,8 +162,8 @@ while go_on
     % *********************************************************************
     p.changedbounds = 1;
     time_ok = 1;
-    
-    p.upper = upper;   
+          
+    p.upper = upper;       
     for i = 1:length(options.bmibnb.strengthscheme)
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));        
         time_ok = toc(timing.total) < options.bmibnb.maxtime;
@@ -226,7 +226,7 @@ while go_on
     % SOLVE LOWER AND UPPER
     % *********************************************************************
     if ~time_ok
-        info_text = 'Time-out during bound-propagation';
+        info_text = 'Time-out during bound propagation';
         keep_digging = 0; 
         cost = inf;
     elseif p.feasible
@@ -246,7 +246,11 @@ while go_on
             p_temp = p;p_temp.shiftedQP = [];
             [output_1,cost_1,p_temp,timing] = solvelower(p_temp,options,lowersolver,x_min,upper,timing);
             [output_2,cost_2,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
-            if cost_1 > cost_2
+            if (output_1.problem == 12 || output_1.problem == 2) && (output_2.problem == 4)
+                cost = cost_2;
+                output = output_2;
+                output.problem = 2;
+            elseif (output_1.problem == 0) && cost_1 > cost_2
                 p = p_temp;
                 output = output_1;
                 cost = cost_1;
@@ -286,7 +290,7 @@ while go_on
                  if length(info_text)==0
                     info_text = 'Infeasible node in lower solver';
                  else
-                    info_text = [info_text ' | ' 'Infeasible node in lower solver'];                    
+                    info_text = [info_text ' | ' 'Infeasible in lower solver'];                    
                  end                                        
                 keep_digging = 0;
                 cost = inf;
@@ -297,11 +301,16 @@ while go_on
                 % Unbounded
                 if output.problem == 2
                     cost = -inf;
+                elseif output.problem == 4
+                    cost = p.lower;
                 end
                 
                 if (output.problem == 3) | (output.problem == 4)
                     info_text = 'Numerical problems in lower solver';
+                elseif output.problem == 2
+                    info_text = 'Unbounded in lower solver';
                 end
+                
                 x = output.Primal;
                 
                 % UPDATE THE LOWER BOUND
@@ -364,14 +373,14 @@ while go_on
                     end
                 else
                     keep_digging = 0;
-                    info_text = 'Poor bound in lower, killing node';
+                    info_text = 'Poor lower bound';
                 end
             otherwise
                 cost = lower;
                 x = (p.lb+p.ub)/2;
         end
     else
-        info_text = 'Infeasible in node bound-propagation';
+        info_text = 'Terminated in bound propagation';
         keep_digging = 0;
         cost = inf;
         feasible = 0;
