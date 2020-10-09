@@ -469,6 +469,7 @@ bmibnb.branchmethod = 'best';
 bmibnb.branchrule = 'omega';
 bmibnb.cut.multipliedequality = 0;
 bmibnb.cut.multipliedinequality = 0;
+bmibnb.cut.squaredlinearequality = -1;
 bmibnb.cut.normbound = 1;
 bmibnb.cut.evalvariable = 1;
 bmibnb.cut.bilinear = 1;

@@ -65,6 +65,9 @@ end
 if p.options.bmibnb.cut.multipliedinequality
     p = addMultipliedInequalityCuts(p);
 end
+if p.options.bmibnb.cut.squaredlinearequality
+    p = addSquaredLinearEqualityCuts(p);
+end
 
 % *************************************************************************
 % Active constraints in main model
@@ -254,6 +257,14 @@ while go_on
                 p = p_temp;
                 output = output_1;
                 cost = cost_1;
+            elseif output_1.problem == 0 && output_2.problem ~= 0
+                p = p_temp;
+                output = output_1;
+                cost = cost_1;
+            elseif output_1.problem ~= 0 && output_2.problem == 0
+                cost = cost_2;
+                output = output_2;
+                output.problem = 2;
             else
                 cost = cost_2;
                 output = output_2;
