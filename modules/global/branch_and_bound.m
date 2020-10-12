@@ -154,27 +154,14 @@ if any(options.bmibnb.strengthscheme < 1) || any(options.bmibnb.strengthscheme >
     error
 end
 
-quadraticCutFailure = 0;
+p.quadraticCutFailure = 0;
 while go_on
     
     % We are waiting for an upper bound to pop up so we can use the SDP
     % relaxation to compute a global upper bound for a model where no
     % bounds were given (currently equality constrained QP)
-    if ~isinf(upper) && ~isempty(p.boundGenerator.optimizer)
-        [r2,diagnostics] = p.boundGenerator.optimizer(upper);
-        if diagnostics == 0
-            r = sqrt(max(0,r2));
-            v = p.linears;
-            p.lb(v) = max(p.lb(v),-r);
-            p.ub(v) = min(p.ub(v),r);
-            for i = 1:length(stack)
-                stack(i).lb(v) = max(stack(i).lb(v),-r);
-                stack(i).ub(v) = min(stack(i).ub(v),r);                                
-            end
-        end
-        p.boundGenerator.optimizer = [];
-    end
-    
+    [p,stack] = generateBoundFromSDP(p,upper,stack);
+       
     % *********************************************************************
     % ASSUME THAT WE WON'T FATHOME
     % *********************************************************************
@@ -245,6 +232,9 @@ while go_on
     elseif ~isempty(x_min)        
         solution_hist = x_min(p.originallinears(:));
     end
+    
+    % Any upper bond yet...
+    [p,stack] = generateBoundFromSDP(p,upper,stack);
 
     % *********************************************************************
     % SOLVE LOWER AND UPPER
@@ -271,55 +261,35 @@ while go_on
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));
         if solved_nodes == 0 && ~isempty(p.shiftedQP)           
             p_temp = p;p_temp.shiftedQP = [];
-            [output_1,cost_1,p_temp,timing] = solvelower(p_temp,options,lowersolver,x_min,upper,timing);
-            [output_2,cost_2,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
-            if (output_1.problem == 12 || output_1.problem == 2) && (output_2.problem == 4)
+            [output_1,cost_1,p_temp,timing] = solvelower_safelayer(p_temp,options,lowersolver,x_min,upper,timing);
+            [output_2,cost_2,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);
+            if output_1.problem ~= 0 && output_2.problem == 0
                 cost = cost_2;
-                output = output_2;
-                output.problem = 2;
-            elseif (output_1.problem == 0) && cost_1 > cost_2
-                p = p_temp;
-                output = output_1;
-                cost = cost_1;
+                output = output_2;               
             elseif output_1.problem == 0 && output_2.problem ~= 0
                 p = p_temp;
                 output = output_1;
+                cost = cost_1;           
+            elseif output_1.problem == 0 && output_2.problem == 0 && cost_1 > cost_2
+                p = p_temp;
+                output = output_1;
+                cost = cost_1; 
+            elseif output_1.problem == 0 && output_2.problem == 0 && cost_2 > cost_1                
+                output = output_2;
+                cost = cost_2;     
+            elseif output_1.problem == 4
+                cost = cost_2;
+                output = output_2;      
+            elseif output_2.problem == 4
+                p = p_temp;
                 cost = cost_1;
-            elseif output_1.problem ~= 0 && output_2.problem == 0
-                cost = cost_2;
+                output = output_1;  
+            else
                 output = output_2;
-                output.problem = 2;
-            elseif output_1.problem ==4 && output_2.problem == 4 && p.options.bmibnb.cut.quadratic==-1 && isequal(p.solver.lowersolver.tag,'GUROBI')
-                ptemp = p;
-                ptemp.options.bmibnb.cut.quadratic=0;
-                [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
-                if (output.problem == 0) || (output.problem == 1) || (output.problem == 12)
-                    quadraticCutFailure = quadraticCutFailure + 1;
-                    if quadraticCutFailure > 2
-                        p = ptemp;
-                    end
-                end
-                
-            else 
-                cost = cost_2;
-                output = output_2;
+                cost = cost_2;     
             end
         else
-            [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
-            
-            % Gurobi is sensitive sometimes when using quadratic cuts. Turn
-            % off adaptively?
-            if output.problem == 4 && p.options.bmibnb.cut.quadratic==-1 && isequal(p.solver.lowersolver.tag,'GUROBI')
-                ptemp = p;
-                ptemp.options.bmibnb.cut.quadratic=0;
-                [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
-                if (output.problem == 0) || (output.problem == 1) || (output.problem == 12) 
-                    quadraticCutFailure = quadraticCutFailure + 1;
-                    if quadraticCutFailure > 2
-                        p = ptemp;
-                    end
-                end
-            end
+            [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);            
         end
 
         if output.problem == -1
@@ -332,21 +302,7 @@ while go_on
             end
             output.problem = 3;
         end
-        
-        % Some solvers cannot differentiate unbounded and infeasible
-        if output.problem == 12
-            pp = p;
-            pp.c = pp.c*0;
-            pp.shiftedQP = [];
-            pp.nonshiftedQP = [];
-            [output2,cost2] = solvelower(pp,options,lowersolver,[],[],timing);
-            if output2.problem == 0
-                output.problem = 2;
-            else
-                output.problem = 1;
-            end
-        end
-                       
+                              
         switch output.problem
             case 1 % Infeasible
                  if length(info_text)==0
@@ -888,9 +844,12 @@ function p = addShiftedQP(p)
 % 3:
 p.shiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
+f = p.f;
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
-p.nonshiftedQP.f = p.f;
+p.nonshiftedQP.f = f;
+nullQ = 0;
+nullc = 0;
 if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
     r = find(any(Q,2));
     e = eig(full(Q(r,r)));
@@ -909,32 +868,42 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
         
        if (p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1) && length(e) <= 500 && ~isempty(p.solver.sdpsolver)
             x = sdpvar(length(r),1);
+            sdpvar t
             % FIXME: Use lower level setup
             ops = p.options;
             ops.solver = p.solver.sdpsolver.tag;
-            ops.verbose = max(ops.verbose-1,0);           
-            sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+            ops.verbose = max(ops.verbose-1,0); 
+            A = p.F_struc(1,2:end);A=A(:,p.linears);
+            b = p.F_struc(1);
+            sol = optimize([Q(r,r) + diag(x) + A'*A*t >= 0, x >= 0], sum(x),ops);
             if sol.problem == 0
                 x = value(x);
+                t = value(t);
                 % SDP solver can fail numerically
-                e = eig(Q(r,r) + diag(x));
+                e = eig(Q(r,r) + diag(x) + A'*A*t);
                 perturb = max(0,-min(e));
                 q = zeros(length(Q),1);
                 q(r) = value(x) + perturb + 1e-6;
                 p.shiftedQP.method = 'sdp';
+                A = p.F_struc(1,2:end);
+                Q = Q + diag(q);
+                nullQ = A'*A*t;
+                nullc = -2*t*(b'*A)';
+                f = f + t*b'*b;
             else
                 s = min(eig(Q(r,r)));
                 q = zeros(length(Q),1);
                 q(r) = -s + 1e-9;
                 p.shiftedQP.method = 'eig';
+                 Q = Q + diag(q);                 
             end
         else
             s = min(eig(Q(r,r)));
             q = zeros(length(Q),1);
             q(r) = -s + 1e-9;
             p.shiftedQP.method = 'eig';
-        end
-        Q = Q + diag(q);
+             Q = Q + diag(q);
+       end       
         for i = 1:length(r)
             j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
             if isempty(j)
@@ -961,9 +930,9 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(r(i));
         end
     end
-    p.shiftedQP.Q = Q;
-    p.shiftedQP.c = c;    
-    p.shiftedQP.f = p.f; 
+    p.shiftedQP.Q = Q+nullQ;
+    p.shiftedQP.c = c+nullc;    
+    p.shiftedQP.f = f; 
 end
 
 
@@ -1003,3 +972,77 @@ else
     p.possibleSol = [];
     p.concavityEqualities = [];
 end
+
+
+function [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing)
+
+[output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+ptemp=p;
+if output.problem == 12    
+    % Solver cannot judge if infeasible or unbounded. Solve feasibility
+    % problem to figure out
+    ptemp.c = ptemp.c*0;
+    ptemp.Q = ptemp.Q*0;
+    ptemp.shiftedQP = [];
+    [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+    p.counter.lowersolved = p.counter.lowersolved + 1;
+    if output.problem == 0
+        output.problem = 2;
+    elseif output.problem == 12
+        ptemp.options.bmibnb.cut.quadratic=0;
+        [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+        if (output.problem == 0) || (output.problem == 1) || (output.problem == 12)
+            p.quadraticCutFailure = p.quadraticCutFailure + 1;
+            p.counter.lowersolved = p.counter.lowersolved + 1;
+            if p.quadraticCutFailure > 2
+                p.options.bmibnb.cut.quadratic = 0;
+            end
+            if output.problem == 0
+                output.problem = 2;
+            end
+        end
+    end
+elseif output.problem == 4 && p.options.bmibnb.cut.quadratic
+    % We experienced numerical problems. A very common cause is the use of
+    % SOCP-based cuts. Turn off and try again
+    ptemp.options.bmibnb.cut.quadratic=0;
+    [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+    if (output.problem == 0) || (output.problem == 1)
+        p.quadraticCutFailure = p.quadraticCutFailure + 1;
+        p.counter.lowersolved = p.counter.lowersolved + 1;
+        if p.quadraticCutFailure > 2
+            p.options.bmibnb.cut.quadratic = 0;
+        end
+    elseif output.problem == 12
+        ptemp.c = ptemp.c*0;
+        ptemp.Q = ptemp.Q*0;
+        ptemp.shiftedQP = [];
+        [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+        p.quadraticCutFailure = p.quadraticCutFailure + 1;
+        p.counter.lowersolved = p.counter.lowersolved + 1;
+        if p.quadraticCutFailure > 2
+            p.options.bmibnb.cut.quadratic = 0;
+        end
+        if output.problem == 0
+            output.problem = 2; 
+        end
+    end
+end
+
+function [p,stack] = generateBoundFromSDP(p,upper,stack);
+if ~isinf(upper) && ~isempty(p.boundGenerator.optimizer)
+    [r2,diagnostics] = p.boundGenerator.optimizer(upper);
+    if diagnostics == 0
+        r = sqrt(max(0,r2));
+        v = p.linears;
+        p.lb(v) = max(p.lb(v),-r);
+        p.ub(v) = min(p.ub(v),r);
+        for i = 1:length(stack)
+            stack(i).lb(v) = max(stack(i).lb(v),-r);
+            stack(i).ub(v) = min(stack(i).ub(v),r);
+        end
+    end
+    p.boundGenerator.optimizer = [];
+end
+
+
