@@ -21,4 +21,4 @@ F = ([]);
 x = recover(objective);
 sol = optimize(F+[-100<=x<=100],objective,sdpsettings('solver','bmibnb','allownonconvex',1))
 assert(sol.problem==0 | sol.problem == 3)
-assert(abs(value(objective)- 30) <= 1e-2) 
+assert(abs(value(objective)-3) <= 1e-2) 
