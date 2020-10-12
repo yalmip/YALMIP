@@ -873,29 +873,46 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
             ops = p.options;
             ops.solver = p.solver.sdpsolver.tag;
             ops.verbose = max(ops.verbose-1,0); 
-            A = p.F_struc(1,2:end);A=A(:,p.linears);
-            b = p.F_struc(1);
-            sol = optimize([Q(r,r) + diag(x) + A'*A*t >= 0, x >= 0], sum(x),ops);
+            A_used = 0;
+            b = 0;
+            %A = p.F_struc(1:p.K.f,2:end);            
+            %b = p.F_struc(1:p.K.f);
+            % This is the one we use
+            %A_used = A(:,r);
+            % Make sure all other elements are 0
+            %A(:,r) = 0;  
+%             bad = find(any(A,2));
+%             A_used(bad,:)=[];
+%             b(bad)=[];
+%             if nnz(A_used)==0                            
+%                 A_used = 0;
+%                 b = 0;
+%                 t = 0;
+%             end
+            sol = optimize([Q(r,r) + diag(x) + A_used'*A_used*t >= 0, x >= 0], sum(x),ops);
             if sol.problem == 0
                 x = value(x);
-                t = value(t);
+                t = 0;%value(t);
                 % SDP solver can fail numerically
-                e = eig(Q(r,r) + diag(x) + A'*A*t);
+                e = eig(Q(r,r) + diag(x) + A_used'*A_used*t);
                 perturb = max(0,-min(e));
                 q = zeros(length(Q),1);
                 q(r) = value(x) + perturb + 1e-6;
                 p.shiftedQP.method = 'sdp';
-                A = p.F_struc(1,2:end);
+              %  A = p.F_struc(1:p.K.f,2:end);
+              %  b = p.F_struc(1:p.K.f,1);
+              %  A(bad,:) = [];         
+              %  b(bad) = [],
                 Q = Q + diag(q);
-                nullQ = A'*A*t;
-                nullc = -2*t*(b'*A)';
-                f = f + t*b'*b;
+              %  nullQ = A'*A*t;
+              %  nullc = -2*t*(b'*A)';
+              %  f = f + t*b'*b;
             else
                 s = min(eig(Q(r,r)));
                 q = zeros(length(Q),1);
                 q(r) = -s + 1e-9;
                 p.shiftedQP.method = 'eig';
-                 Q = Q + diag(q);                 
+                Q = Q + diag(q);                 
             end
         else
             s = min(eig(Q(r,r)));
@@ -924,14 +941,16 @@ if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
                 j = size(p.bilinears,1);
                 p.c(end+1) = 0;c(end+1) = 0;
                 p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
+                nullQ(size(p.Q,1),size(p.Q,1))=0;
+                nullc(size(p.Q,1),1)=0;
                 p.Quadratics = [p.Quadratics newv];
                 p.QuadraticsList(newv,:) = [r(i) r(i)];
             end
             c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(r(i));
         end
     end
-    p.shiftedQP.Q = Q+nullQ;
-    p.shiftedQP.c = c+nullc;    
+    p.shiftedQP.Q = Q;%+nullQ;
+    p.shiftedQP.c = c;%+nullc;    
     p.shiftedQP.f = f; 
 end
 
