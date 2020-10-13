@@ -843,117 +843,92 @@ function p = addShiftedQP(p)
 % 2: Solve SDP to compute diagonal convexifying shift
 % 3:
 p.shiftedQP = [];
+p.nonshiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
 f = p.f;
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
 p.nonshiftedQP.f = f;
-nullQ = 0;
-nullc = 0;
-if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
-    r = find(any(Q,2));
-    e = eig(full(Q(r,r)));
-    if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)
-        % Already convex, so keep the compiled matrices
-        p.shiftedQP.Q = Q;
-        p.shiftedQP.c = c;
-        p.shiftedQP.f = p.f;
-        p.shiftedQP.method = 'none';
-    else
-        % Nonconvex case
-        if (all(e <= 1e-6) || ~any(diag(Q))) && ~(p.options.bmibnb.lowerpsdfix == 1)
-            % Does not benefit from any kind of shift
-            return
-        end
-        
-       if (p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1) && length(e) <= 500 && ~isempty(p.solver.sdpsolver)
-            x = sdpvar(length(r),1);
-            sdpvar t
-            % FIXME: Use lower level setup
-            ops = p.options;
-            ops.solver = p.solver.sdpsolver.tag;
-            ops.verbose = max(ops.verbose-1,0); 
-            A_used = 0;
-            b = 0;
-            %A = p.F_struc(1:p.K.f,2:end);            
-            %b = p.F_struc(1:p.K.f);
-            % This is the one we use
-            %A_used = A(:,r);
-            % Make sure all other elements are 0
-            %A(:,r) = 0;  
-%             bad = find(any(A,2));
-%             A_used(bad,:)=[];
-%             b(bad)=[];
-%             if nnz(A_used)==0                            
-%                 A_used = 0;
-%                 b = 0;
-%                 t = 0;
-%             end
-            sol = optimize([Q(r,r) + diag(x) + A_used'*A_used*t >= 0, x >= 0], sum(x),ops);
-            if sol.problem == 0
-                x = value(x);
-                t = 0;%value(t);
-                % SDP solver can fail numerically
-                e = eig(Q(r,r) + diag(x) + A_used'*A_used*t);
-                perturb = max(0,-min(e));
-                q = zeros(length(Q),1);
-                q(r) = value(x) + perturb + 1e-6;
-                p.shiftedQP.method = 'sdp';
-              %  A = p.F_struc(1:p.K.f,2:end);
-              %  b = p.F_struc(1:p.K.f,1);
-              %  A(bad,:) = [];         
-              %  b(bad) = [],
-                Q = Q + diag(q);
-              %  nullQ = A'*A*t;
-              %  nullc = -2*t*(b'*A)';
-              %  f = f + t*b'*b;
+if isempty(p.evalMap) && ~any(p.variabletype > 2)
+    if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
+        r = find(any(Q,2));
+        e = eig(full(Q(r,r)));
+        if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)
+            % Already convex, so keep the compiled matrices
+            p.shiftedQP.Q = Q;
+            p.shiftedQP.c = c;
+            p.shiftedQP.f = p.f;
+            p.shiftedQP.method = 'none';
+        else
+            % Nonconvex case
+            if (all(e <= 1e-6) || ~any(diag(Q))) && ~(p.options.bmibnb.lowerpsdfix == 1)
+                % Does not benefit from any kind of shift
+                return
+            end
+            
+            if (p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1) && length(e) <= 500 && ~isempty(p.solver.sdpsolver)
+                x = sdpvar(length(r),1);                
+                % FIXME: Use lower level setup
+                ops = p.options;
+                ops.solver = p.solver.sdpsolver.tag;
+                ops.verbose = max(ops.verbose-1,0);
+                sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+                if sol.problem == 0
+                    x = value(x);
+                    % SDP solver can fail numerically
+                    e = eig(Q(r,r) + diag(x));
+                    perturb = max(0,-min(e));
+                    q = zeros(length(Q),1);
+                    q(r) = value(x) + perturb + 1e-6;
+                    p.shiftedQP.method = 'sdp';
+                    Q = Q + diag(q);
+                else
+                    s = min(eig(Q(r,r)));
+                    q = zeros(length(Q),1);
+                    q(r) = -s + 1e-9;
+                    p.shiftedQP.method = 'eig';
+                    Q = Q + diag(q);
+                end
             else
                 s = min(eig(Q(r,r)));
                 q = zeros(length(Q),1);
                 q(r) = -s + 1e-9;
                 p.shiftedQP.method = 'eig';
-                Q = Q + diag(q);                 
+                Q = Q + diag(q);
             end
-        else
-            s = min(eig(Q(r,r)));
-            q = zeros(length(Q),1);
-            q(r) = -s + 1e-9;
-            p.shiftedQP.method = 'eig';
-             Q = Q + diag(q);
-       end       
-        for i = 1:length(r)
-            j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
-            if isempty(j)
-                % Ouch, cannot do this since we don't have these
-                % monomials in the model. Add them!
-                newv = length(c)+1;
-                if ~isempty(p.F_struc)
-                    p.F_struc(end,end+1) = 0;
+            for i = 1:length(r)
+                j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
+                if isempty(j)
+                    % Ouch, cannot do this since we don't have these
+                    % monomials in the model. Add them!
+                    newv = length(c)+1;
+                    if ~isempty(p.F_struc)
+                        p.F_struc(end,end+1) = 0;
+                    end
+                    p.monomtable(end+1,end+1) = 0;
+                    p.monomtable(end,r(i)) = 2;
+                    p.variabletype(end+1) = 2;
+                    p.lb(end+1) = -inf;
+                    p.ub(end+1) = inf;
+                    p.x0(end+1) = 0;
+                    p.bilinears = [p.bilinears;newv r(i) r(i)];
+                    p.monomials = [p.monomials newv];
+                    j = size(p.bilinears,1);
+                    p.c(end+1) = 0;c(end+1) = 0;
+                    p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
+                    nullQ(size(p.Q,1),size(p.Q,1))=0;
+                    nullc(size(p.Q,1),1)=0;
+                    p.Quadratics = [p.Quadratics newv];
+                    p.QuadraticsList(newv,:) = [r(i) r(i)];
                 end
-                p.monomtable(end+1,end+1) = 0;
-                p.monomtable(end,r(i)) = 2;
-                p.variabletype(end+1) = 2;
-                p.lb(end+1) = -inf;
-                p.ub(end+1) = inf;
-                p.x0(end+1) = 0;
-                p.bilinears = [p.bilinears;newv r(i) r(i)];
-                p.monomials = [p.monomials newv];
-                j = size(p.bilinears,1);
-                p.c(end+1) = 0;c(end+1) = 0;
-                p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
-                nullQ(size(p.Q,1),size(p.Q,1))=0;
-                nullc(size(p.Q,1),1)=0;
-                p.Quadratics = [p.Quadratics newv];
-                p.QuadraticsList(newv,:) = [r(i) r(i)];
+                c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(r(i));
             end
-            c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(r(i));
         end
+        p.shiftedQP.Q = Q;
+        p.shiftedQP.c = c;
+        p.shiftedQP.f = f;
     end
-    p.shiftedQP.Q = Q;%+nullQ;
-    p.shiftedQP.c = c;%+nullc;    
-    p.shiftedQP.f = f; 
 end
-
 
 function p = addConcavityInfo(p)
 % Indefinite BOX-QP? Add info for branching, cuts to lower relaxation, and
