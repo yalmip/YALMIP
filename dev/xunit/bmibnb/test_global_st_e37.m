@@ -26,5 +26,6 @@ F=[F,1==x4];
 F=[F,1==x5];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.maxiter',1));
-assert(sol.problem == 3)
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1,'bmibnb.maxiter',100));
+assert(sol.problem == 0)
+assert(abs(value(objective)-1.041720240470086e-03) <= 1e-2)
