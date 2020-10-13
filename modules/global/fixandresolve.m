@@ -1,4 +1,4 @@
-function [xtempwork,upperhere] = monotoneSDPHeuristics(p,upper,x)
+function [upperhere,xtempwork] = monotoneSDPHeuristics(p,upper,x,aux1,aux2)
 xtempwork = [];
 upperhere = inf;
 

@@ -406,35 +406,6 @@ else
     can_use_ceil_lower = 0;
 end
 
-if p.options.bnb.verbose
-    
-    pc = p.problemclass;
-    non_convex_obj = pc.objective.quadratic.nonconvex | pc.objective.polynomial;
-    non_convex_constraint =  pc.constraint.equalities.quadratic | pc.constraint.inequalities.elementwise.quadratic.nonconvex;
-    non_convex_constraint =  non_convex_constraint | pc.constraint.equalities.polynomial | pc.constraint.inequalities.elementwise.polynomial;
-    
-    possiblynonconvex = non_convex_obj | non_convex_constraint;
-    if ~isequal(p.solver.lower.version,'')
-        p.solver.lower.tag = [p.solver.lower.tag '-' p.solver.lower.version];
-    end
-    
-    disp('* Starting YALMIP integer branch & bound.');
-    disp(['* Lower solver   : ' p.solver.lower.tag]);
-    disp(['* Upper solver   : ' p.options.bnb.uppersolver]);
-    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
-    disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
-    
-    if possiblynonconvex & p.options.warning
-        disp(' ');
-        disp('Warning : The continuous relaxation may be nonconvex. This means ');
-        disp('that the branching process is not guaranteed to find a');
-        disp('globally optimal solution, since the lower bound can be');
-        disp('invalid. Hence, do not trust the bound or the gap...')
-        
-    end
-end
-if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
-
 if nnz(Q)==0 & nnz(c)==1 & isequal(p.K.m,0)
     p.simplecost = 1;
 else
@@ -495,6 +466,45 @@ allSolutions = [];
 sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
+
+% Generalized format (FIXME: clean up)
+if p.monotoneobjectiveresponse
+    uppersolver = [uppersolver ',monotoneSDPHeuristics'];
+end
+if p.options.bnb.fixandresolve
+    uppersolver = [uppersolver ',fixandresolve'];
+end
+upperSolversList = strsplit(uppersolver,',');
+
+if p.options.bnb.verbose
+    
+    pc = p.problemclass;
+    non_convex_obj = pc.objective.quadratic.nonconvex | pc.objective.polynomial;
+    non_convex_constraint =  pc.constraint.equalities.quadratic | pc.constraint.inequalities.elementwise.quadratic.nonconvex;
+    non_convex_constraint =  non_convex_constraint | pc.constraint.equalities.polynomial | pc.constraint.inequalities.elementwise.polynomial;
+    
+    possiblynonconvex = non_convex_obj | non_convex_constraint;
+    if ~isequal(p.solver.lower.version,'')
+        p.solver.lower.tag = [p.solver.lower.tag '-' p.solver.lower.version];
+    end
+    
+    disp('* Starting YALMIP integer branch & bound.');
+    disp(['* Lower solver   : ' p.solver.lower.tag]);
+    disp(['* Upper solver   : ' uppersolver]);
+    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
+    disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
+    
+    if possiblynonconvex & p.options.warning
+        disp(' ');
+        disp('Warning : The continuous relaxation may be nonconvex. This means ');
+        disp('that the branching process is not guaranteed to find a');
+        disp('globally optimal solution, since the lower bound can be');
+        disp('invalid. Hence, do not trust the bound or the gap...')
+        
+    end
+end
+if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
+
 while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
         
     % ********************************************
@@ -639,49 +649,22 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
                 lower = cost;
             end
             
-            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
-                poriginal.upper = upper;
-                poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);                                
-                if upper1 < upper
-                    x_min = x_min1;
-                    allSolutions = x_min;
-                    upper = upper1;
-                    if length(stack.nodes)>0
-                        [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
-                        lower = min(lower,stacklower);                   
-                    end
-                elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
-                    % Yet another solution with same value
-                     allSolutions = [allSolutions x_min1];                    
-                end
-                
-                if p.monotoneobjectiveresponse
-                    [xtempwork,upperhere] = monotoneSDPHeuristics(p,upper,x);
-                    if upperhere < upper
-                        x_min = xtempwork;
-                        allSolutions = x_min;
-                        upper = upperhere;
-                        if length(stack.nodes) > 0
+            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))                              
+                for k = 1:length(upperSolversList)                    
+                    [upper1,x_min1] = feval(upperSolversList{k},p,upper,x,poriginal,output);
+                    if upper1 < upper
+                        x_min = x_min1;
+                        allSolutions = [allSolutions x_min1];
+                        upper = upper1;
+                        if length(stack.nodes)>0
                             [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
-                            lower = min(lower,stacklower);                   
+                            lower = min(lower,stacklower);
                         end
-                    end
-                end
-                if p.options.bnb.fixandresolve
-                    [xtempwork,upperhere] = fixandresolve(p,upper,x);
-                    if upperhere < upper
-                        x_min = xtempwork;
-                        allSolutions = x_min;
-                        upper = upperhere;
-                        if length(stack.nodes) > 0
-                            [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
-                            lower = min(lower,stacklower);                   
-                        end
-                    end
-                end
-                
-                
+                    elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
+                        % Yet another solution with same value
+                        allSolutions = [allSolutions x_min1];
+                    end                
+                end                                
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
         end
