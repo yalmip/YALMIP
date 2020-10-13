@@ -186,7 +186,7 @@ else
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
             if length(output.Primal) == length(p_cut.c)
-                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
+                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p_cut.f;
                 % Minor clean-up
                 pp=p;
                 output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
