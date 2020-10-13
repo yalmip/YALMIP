@@ -933,38 +933,49 @@ end
 function p = addConcavityInfo(p)
 % Indefinite BOX-QP? Add info for branching, cuts to lower relaxation, and
 % move over terms from negative quadratic term to linear term
-if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 0) > 0
+p.possibleSol = [];
+p.concavityEqualities = [];
+if isempty(p.evalMap) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 0) > 0
+    
     j = find(diag(p.nonshiftedQP.Q) < 0);
-    % Solution must be at bounds, so we keep this info for later branching      
-    p.possibleSol = [j(:) p.lb(j) p.ub(j)];
-    % The implicitly defines (x-L)*(x-U)=0 (i.e scaled binary)
-    % i.e. x^2 = (U+L)x - LU 
-    var = [];
-    nonlin = [];
-    for i= 1:length(j)
-        var = [var j(i)];
-        nonlin = [nonlin p.bilinears(find(p.bilinears(:,2) == j(i) & p.bilinears(:,3) == j(i)),1)];
-        L = p.lb(var(end));
-        U = p.ub(var(end));
-        % BUGGY?
-        %p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
-        %p.f = p.f - L*U*p.c(nonlin(end));
-        %p.c(nonlin(end)) = 0;
-        %p.nonshiftedQP.c(var(end)) = p.nonshiftedQP.c(var(end)) + (U+L)*p.nonshiftedQP.Q(var(end),var(end));
-        %p.nonshiftedQP.f = p.nonshiftedQP.f - L*U*p.nonshiftedQP.Q(var(end),var(end));
-        %p.nonshiftedQP.Q(var(end),var(end)) = 0;
+    if size(p.F_struc,1) > 0
+        % Only keep those that are unconstrained (besides being bounded)
+        usedInConstraints = find(any(p.F_struc(:,2:end),1));
+        j = setdiff(j,usedInConstraints);
+        % FIXME: Support nonolinear constraints
+        if nnz(p.F_struc(:,1+p.nonlinears)) > 0
+            j = [];
+        end
+    end   
+    if ~isempty(j)
+        % Solution must be at bounds, so we keep this info for later branching
+        p.possibleSol = [j(:) p.lb(j) p.ub(j)];
+        % The implicitly defines (x-L)*(x-U)=0 (i.e scaled binary)
+        % i.e. x^2 = (U+L)x - LU. WE can add that as constraints, but also
+        % move terms from negative quadratic terms to linear
+        var = [];
+        nonlin = [];
+        for i= 1:length(j)
+            var = [var j(i)];
+            nonlin = [nonlin p.bilinears(find(p.bilinears(:,2) == j(i) & p.bilinears(:,3) == j(i)),1)];
+            L = p.lb(var(end));
+            U = p.ub(var(end));            
+            p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
+            p.f = p.f - L*U*p.c(nonlin(end));
+            p.c(nonlin(end)) = 0;
+            p.nonshiftedQP.c(var(end)) = p.nonshiftedQP.c(var(end)) + (U+L)*p.nonshiftedQP.Q(var(end),var(end));
+            p.nonshiftedQP.f = p.nonshiftedQP.f - L*U*p.nonshiftedQP.Q(var(end),var(end));
+            p.nonshiftedQP.Q(var(end),var(end)) = 0;
+        end
+        M = spalloc(length(var),length(p.c)+1,0);
+        % Optimality implies (x-L)*(x-U)==0 x^2 i.e. x^2-x(L+U) + L*U=0
+        for i = 1:length(var);
+            M(i,1)= p.lb(var(i))*p.ub(var(i));
+            M(i,var(i)+1)=-(p.lb(var(i))+p.ub(var(i)));
+            M(i,nonlin(i)+1)=1;
+        end
+        p.concavityEqualities = M;
     end
-    M = spalloc(length(var),length(p.c)+1,0);
-    % Optimality implies (x-L)*(x-U)==0 x^2 i.e. x^2-x(L+U) + L*U=0
-    for i = 1:length(var);
-        M(i,1)= p.lb(var(i))*p.ub(var(i));
-        M(i,var(i)+1)=-(p.lb(var(i))+p.ub(var(i)));
-        M(i,nonlin(i)+1)=1;
-    end    
-    p.concavityEqualities = M;    
-else
-    p.possibleSol = [];
-    p.concavityEqualities = [];
 end
 
 
