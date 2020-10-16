@@ -216,6 +216,7 @@ while go_on
             [volBefore,openVariables] = branchVolume(p);
             propagators{j}.time(end+1) = tic;
             p = feval(propagators{j}.fun,p);
+            p = propapagate_bounds_from_concavity(p);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
@@ -768,7 +769,7 @@ for i = 1:length(p.evalMap)
         end
     end
 end
-if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && (p.nonshiftedQP.Q(spliton,spliton) < 0)
+if ~isempty(p.possibleSol) && any(spliton == p.possibleSol(:,1))
     % Simple box-cnstrained min x'*Q*x with negative element Q_ii will
     % have optimal point at bound
     bounds = [p.lb(spliton) nan p.ub(spliton)];
@@ -1051,3 +1052,18 @@ if ~isinf(upper) && ~isempty(p.boundGenerator.optimizer)
 end
 
 
+function p = propapagate_bounds_from_concavity(p)
+if ~isempty(p.possibleSol)    
+    k = p.possibleSol(:,1);
+    i = find(p.lb(k) > max(p.possibleSol(:,2)));
+    if ~isempty(i)
+        p.lb(k(i)) = p.possibleSol(i,3);
+    end
+    i = find(p.ub(k) < max(p.possibleSol(:,3)));
+    if ~isempty(i)
+        p.ub(k(i)) = p.possibleSol(i,2);
+    end
+    if any(p.lb > p.ub)
+        p.feasible = 0;
+    end
+end
