@@ -511,7 +511,6 @@ bnb.weight = [];
 bnb.presolve = 0;
 bnb.ineq2eq = 0;
 bnb.plot = 0;
-bnb.fixandresolve = 0;
 bnb.rounding = {'ceil','floor','round','shifted round','fix'};
 bnb.uppersolver = 'rounder';
 bnb.branchrule = 'max';

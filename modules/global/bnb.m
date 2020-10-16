@@ -467,13 +467,7 @@ sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
 
-% Generalized format (FIXME: clean up)
-if p.monotoneobjectiveresponse
-    uppersolver = [uppersolver ',monotoneSDPHeuristics'];
-end
-if p.options.bnb.fixandresolve
-    uppersolver = [uppersolver ',fixandresolve'];
-end
+% Generalized upper solver format
 upperSolversList = strsplit(uppersolver,',');
 
 if p.options.bnb.verbose
