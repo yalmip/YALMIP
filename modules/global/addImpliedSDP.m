@@ -5,11 +5,14 @@ if p.K.q(1)==0 && p.K.s(1) > 0
     % constraints of the type sum x_i >= 1, if only non-negative integer
     % variables are involved, entering with positive coefficient (and v.s)
     newF = [];
-    top = p.K.f + p.K.l + 1;
+    top = sum(p.K.q) + p.K.f + p.K.l + 1;
     for i = 1:length(p.K.s)
         F = p.F_struc(top:top + p.K.s(i)^2-1,:);
+        % Constant term in SDP
         X0 = reshape(F(:,1),p.K.s(i),p.K.s(i));
-        candidates = find(any(X0-diag(diag(X0)),2) & (diag(X0)<=0));
+        % linear terms 
+        XX = reshape(sum(F(:,2:end) ~= 0,2),p.K.s(i),p.K.s(i));
+        candidates = find(any(X0-diag(diag(X0)),2) & (diag(X0)<=0) & ~any(XX-diag(diag(XX)),2));
         if ~isempty(candidates);
             I = speye(p.K.s(i),p.K.s(i));
             pos = find(I(:));
@@ -47,7 +50,7 @@ if p.K.q(1)==0 && p.K.s(1) > 0
     candidates = find(~any(p.F_struc(1:p.K.f + p.K.l,2:end),1));
     fixable = nan(1,length(candidates));   
     
-    top = p.K.f + p.K.l + 1;
+    top = sum(p.K.q) + p.K.f + p.K.l + 1;
     for j = 1:length(p.K.s)
         F = p.F_struc(top:top + p.K.s(j)^2-1,:);
         for i = 1:length(candidates(:)')

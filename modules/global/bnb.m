@@ -89,6 +89,11 @@ end
 p = extractBounds(p);
 
 % ********************************
+%% Presolve trivial SDP stuff (zero in diagonal)
+% ********************************
+p = presolveTrivialSDP(p);
+
+% ********************************
 %% ADD CONSTRAINTS 0<x<1 FOR BINARY
 % ********************************
 if ~isempty(p.binary_variables)
@@ -309,9 +314,19 @@ else
     violates_finite_bounds = find(violates_finite_bounds & ~isinf(p.lb) & ~isinf(p.ub));
     x_min(violates_finite_bounds) = (p.lb(violates_finite_bounds) + p.ub(violates_finite_bounds))/2;
     x_min = setnonlinearvariables(p,x_min);
-    p.x0 = x_min;
+    if p.solver.lower.supportsinitial
+        p.x0 = x_min;
+    else
+        p.x0 = [];
+    end
 end
 
+
+% See if there is structure which can be exploited to improve primal
+% heuristics. If all objective variables only enter SDPs and LPs through
+% positive coefficients (and diagonal in SDP), the we can try a bisection
+% on these, if the combinatorial stuff is feasible
+p = detectMonotoneSDPObjective(p);
 
 % *******************************
 %% Global stuff
@@ -391,35 +406,6 @@ else
     can_use_ceil_lower = 0;
 end
 
-if p.options.bnb.verbose
-    
-    pc = p.problemclass;
-    non_convex_obj = pc.objective.quadratic.nonconvex | pc.objective.polynomial;
-    non_convex_constraint =  pc.constraint.equalities.quadratic | pc.constraint.inequalities.elementwise.quadratic.nonconvex;
-    non_convex_constraint =  non_convex_constraint | pc.constraint.equalities.polynomial | pc.constraint.inequalities.elementwise.polynomial;
-    
-    possiblynonconvex = non_convex_obj | non_convex_constraint;
-    if ~isequal(p.solver.lower.version,'')
-        p.solver.lower.tag = [p.solver.lower.tag '-' p.solver.lower.version];
-    end
-    
-    disp('* Starting YALMIP integer branch & bound.');
-    disp(['* Lower solver   : ' p.solver.lower.tag]);
-    disp(['* Upper solver   : ' p.options.bnb.uppersolver]);
-    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
-    disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
-    
-    if possiblynonconvex & p.options.warning
-        disp(' ');
-        disp('Warning : The continuous relaxation may be nonconvex. This means ');
-        disp('that the branching process is not guaranteed to find a');
-        disp('globally optimal solution, since the lower bound can be');
-        disp('invalid. Hence, do not trust the bound or the gap...')
-        
-    end
-end
-if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
-
 if nnz(Q)==0 & nnz(c)==1 & isequal(p.K.m,0)
     p.simplecost = 1;
 else
@@ -480,8 +466,41 @@ allSolutions = [];
 sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
-while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
+
+% Generalized upper solver format
+upperSolversList = strsplit(uppersolver,',');
+
+if p.options.bnb.verbose
     
+    pc = p.problemclass;
+    non_convex_obj = pc.objective.quadratic.nonconvex | pc.objective.polynomial;
+    non_convex_constraint =  pc.constraint.equalities.quadratic | pc.constraint.inequalities.elementwise.quadratic.nonconvex;
+    non_convex_constraint =  non_convex_constraint | pc.constraint.equalities.polynomial | pc.constraint.inequalities.elementwise.polynomial;
+    
+    possiblynonconvex = non_convex_obj | non_convex_constraint;
+    if ~isequal(p.solver.lower.version,'')
+        p.solver.lower.tag = [p.solver.lower.tag '-' p.solver.lower.version];
+    end
+    
+    disp('* Starting YALMIP integer branch & bound.');
+    disp(['* Lower solver   : ' p.solver.lower.tag]);
+    disp(['* Upper solver   : ' uppersolver]);
+    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
+    disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
+    
+    if possiblynonconvex & p.options.warning
+        disp(' ');
+        disp('Warning : The continuous relaxation may be nonconvex. This means ');
+        disp('that the branching process is not guaranteed to find a');
+        disp('globally optimal solution, since the lower bound can be');
+        disp('invalid. Hence, do not trust the bound or the gap...')
+        
+    end
+end
+if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
+
+while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
+        
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
@@ -517,6 +536,17 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
         output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions);
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
+        elseif output.problem == -1
+            % This is the dreaded unknown state from mosek. Try without
+            % objective to see if it is infeasible?
+            ptest = relaxed_p;
+            ptest.c = ptest.c*0;ptest.Q = ptest.Q*0;
+            outputtest = bnb_solvelower(lowersolver,ptest,upper,lower,x_min,aggresiveprune,allSolutions);
+            if outputtest.problem == 1
+                output.problem = 1;
+            else
+                output.problem = -1;
+            end
         end
                 
         if output.problem == 9
@@ -547,8 +577,8 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             x  = setnonlinearvariables(p,output.Primal);
             if(p.K.l>0) & any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
                 output.problem = 1;
-            elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
-                output.problem = 1;
+          %  elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
+          %      output.problem = 1;
             end
         end
     end
@@ -563,18 +593,25 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
     % *************************************
     % ANY INTEGERS? ROUND?
     % *************************************
-    non_integer_binary = abs(x(binary_variables)-round(x(binary_variables)))>p.options.bnb.inttol;
-    non_integer_integer = abs(x(integer_variables)-round(x(integer_variables)))>p.options.bnb.inttol;
-    if p.options.bnb.round
-        x(binary_variables(~non_integer_binary))   = round(x(binary_variables(~non_integer_binary)));
-        x(integer_variables(~non_integer_integer)) = round(x(integer_variables(~non_integer_integer)));
-    end
-    non_integer_binary = find(non_integer_binary);
-    non_integer_integer = find(non_integer_integer);
-    if isempty(p.semicont_variables)
-        non_semivar_semivar=[];
+    if output.problem == 0
+        non_integer_binary = abs(x(binary_variables)-round(x(binary_variables)))>p.options.bnb.inttol;
+        non_integer_integer = abs(x(integer_variables)-round(x(integer_variables)))>p.options.bnb.inttol;
+        if p.options.bnb.round
+            x(binary_variables(~non_integer_binary))   = round(x(binary_variables(~non_integer_binary)));
+            x(integer_variables(~non_integer_integer)) = round(x(integer_variables(~non_integer_integer)));
+        end
+        non_integer_binary = find(non_integer_binary);
+        non_integer_integer = find(non_integer_integer);
+        if isempty(p.semicont_variables)
+            non_semivar_semivar=[];
+        else
+            non_semivar_semivar = find(~(abs(x(p.semicont_variables))<p.options.bnb.inttol | (x(p.semicont_variables)>p.semibounds.lb & x(p.semicont_variables)<=p.semibounds.ub)));
+        end
     else
-        non_semivar_semivar = find(~(abs(x(p.semicont_variables))<p.options.bnb.inttol | (x(p.semicont_variables)>p.semibounds.lb & x(p.semicont_variables)<=p.semibounds.ub)));
+        % If we have numerical problems, we cannot trust current solution
+        non_integer_binary = binary_variables;
+        non_integer_integer = integer_variables;
+        non_semivar_semivar = semicont_variables;
     end
     
     x  = setnonlinearvariables(p,x);
@@ -593,31 +630,35 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             output.problem = 1;
         end
     end
-    
-    
-    
-    if output.problem==0 | output.problem==3 | output.problem==4
+            
+    if output.problem==0 | output.problem==3 | output.problem==4 | output.problem==5
         cost = computecost(f,c,Q,x,p);
         
         if output.problem~=1
+            if output.problem == 3 || output.problem == 4 || output.problem == 5
+                cost = -inf;
+            end
+            
             if isnan(lower)
                 lower = cost;
             end
             
-            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
-                poriginal.upper = upper;
-                poriginal.lower = lower;
-                [upper1,x_min1] = feval(uppersolver,poriginal,output,p);               
-                if upper1 < upper
-                    x_min = x_min1;
-                    allSolutions = x_min;
-                    upper = upper1;
-                    [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
-                    lower = min(lower,stacklower);                   
-                elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
-                    % Yet another solution with same value
-                     allSolutions = [allSolutions x_min1];                    
-                end
+            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))                              
+                for k = 1:length(upperSolversList)                    
+                    [upper1,x_min1] = feval(upperSolversList{k},p,upper,x,poriginal,output);
+                    if upper1 < upper
+                        x_min = x_min1;
+                        allSolutions = [allSolutions x_min1];
+                        upper = upper1;
+                        if length(stack.nodes)>0
+                            [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+                            lower = min(lower,stacklower);
+                        end
+                    elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
+                        % Yet another solution with same value
+                        allSolutions = [allSolutions x_min1];
+                    end                
+                end                                
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
         end
@@ -631,7 +672,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
     feasible = 1;
     
     switch output.problem
-        case {-1,4}
+        case {-1,3,4,5}
             % Solver behaved weird. Make sure we continue digging
             keep_digging = 1;
             feasible = 1;
@@ -1316,6 +1357,9 @@ stack.lower(j) = inf;
 function p = detectSOS(p)
 sosgroups = {};
 sosvariables = [];
+cardinalitygroups = {};
+cardinalityvariables = {};
+cardinalitysize = {};
 if p.K.f > 0 & ~isempty(p.binary_variables)
     nbin = length(p.binary_variables);
     Aeq = -p.F_struc(1:p.K.f,2:end);
@@ -1333,12 +1377,21 @@ if p.K.f > 0 & ~isempty(p.binary_variables)
                 sosgroups{end+1} = p.binary_variables(jx);
                 sosvariables = [sosvariables p.binary_variables(jx)];
             end
+        elseif beq_bin(i) > 1
+            [ix,jx,sx] = find(Aeq_bin(i,:));
+            if all(sx == 1)
+                cardinalitygroups{end+1} = p.binary_variables(jx);
+                cardinalityvariables = [cardinalityvariables p.binary_variables(jx)];
+                cardinalitysize{end+1} = beq_bin(i);
+            end
         end
     end
 end
 p.sosgroups = sosgroups;
 p.sosvariables = sosvariables;
-
+p.cardinalitygroups = cardinalitygroups;
+p.cardinalityvariables = cardinalityvariables;
+p.cardinalitysize = cardinalitysize;
 
 function p = simplePresolve(p)
 pss=[];
@@ -1552,3 +1605,4 @@ else
     p.F_struc = [p.F_struc(1:(p.K.f+p.K.l),:);row;p.F_struc(1+p.K.f+p.K.l:end,:)];
 end
 p.K.l = p.K.l + size(row,1);
+

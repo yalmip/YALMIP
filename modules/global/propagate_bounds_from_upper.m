@@ -1,7 +1,8 @@
-function  p = updateboundsfromupper(p,upper)
+function  p = propagate_bounds_from_upper(p,upper)
 if nargin == 1
     upper = p.upper;
 end
+upper = upper + 1e-7;
 if ~isinf(upper)
     LU = [p.lb p.ub];
     % Simple objective f + c_i*x(i)
@@ -19,9 +20,12 @@ if ~isinf(upper)
     end
     if nnz(p.Q)==0
         % Very basic, simply propagate from f + sum c_i m_i(x) <= upper
-        i = find(p.c);
+        c = p.c;
+        i = find(c);
         for j = i(:)'
-            ii = setdiff(i,j);
+            cc = c;cc(j)=0;
+            ii = find(cc);
+           % ii = setdiff(i,j);% Much slower!
             if ~isempty(ii)
                 if p.c(j) > 0
                     obound = upper - p.f;
@@ -74,7 +78,7 @@ if ~isinf(upper)
                 end
                 ix = find(h>0);
                 if ~isempty(ix)
-                    rhs = rhs + h(ix)'*p.lb(ix);
+                    rhs = rhs - h(ix)'*p.lb(ix);
                 end
                 if rhs>0
                     D = D/rhs;
@@ -126,6 +130,8 @@ if ~isinf(upper)
             end
         end
     end
+    % Numerical issues easily propagates, so widen weird close to feasible box
+    p = widenSmashedBox(p);
     if any(p.lb > p.ub + 1e-7)
         p.feasible = 0;
     end

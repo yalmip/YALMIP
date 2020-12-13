@@ -44,6 +44,9 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     interfacedata.Q(nonlinearMonoms,:) = [];
     interfacedata.lb(nonlinearMonoms) = [];
     interfacedata.ub(nonlinearMonoms) = [];
+    if ~isempty(x0)
+        x0(nonlinearMonoms) = [];
+    end
     F_struc = interfacedata.F_struc;
     c = interfacedata.c;
     Q = interfacedata.Q;    
@@ -82,8 +85,12 @@ if ~isempty(semicont_variables)
 end
 
 n_original = length(c);
+variabletype_original = interfacedata.variabletype;
 if any(K.q)
     [F_struc,K,c,Q,UB,LB,x0] = append_normalized_socp(F_struc,K,c,Q,UB,LB,x0);
+    if length(c) > interfacedata.variabletype
+         interfacedata.variabletype(length(c)) = 0;
+    end
 end
 
 if size(F_struc,1)>0
@@ -185,7 +192,12 @@ if ~isempty(nonconvexdata)
     for i = 1:size(nonconvexdata.eq,1)
         bi = nonconvexdata.eq(i,1);
         row = nonconvexdata.eq(i,2:end);
-        qi = row(find(interfacedata.variabletype == 0))';
+        qi = row(find(variabletype_original == 0))';
+        if length(qi)<m
+            % The number of variables has been extended above when SOCPs
+            % have been normalized and cast as convex quadratics
+            qi(m)=0;
+        end
         di = row(monomials);
         Qi = spalloc(m,m,0);
         for k = 1:length(monomials)
@@ -202,7 +214,12 @@ if ~isempty(nonconvexdata)
     for i = 1:size(nonconvexdata.ineq,1)
         bi = nonconvexdata.ineq(i,1);
         row = nonconvexdata.ineq(i,2:end);
-        qi = row(find(interfacedata.variabletype == 0))';
+        qi = row(find(variabletype_original == 0))';
+         if length(qi)<m
+            % The number of variables has been extended above when SOCPs
+            % have been normalized and cast as convex quadratics
+            qi(m)=0;
+        end
         di = row(monomials);
         Qi = spalloc(m,m,0);
         for k = 1:length(monomials)
@@ -228,7 +245,11 @@ if isequal(interfacedata.solver.version,'NONCONVEX')
     model.params.nonconvex = 2;
 end
 
-if ~isempty(x0)
-    model.start = x0;
+if ~isempty(x0)  
+    model.start = x0(find(interfacedata.variabletype == 0));
 end
 model.NegativeSemiVar=NegativeSemiVar;
+
+if isfield(model,'quadcon') && isempty(model.quadcon)
+	model = rmfield(model,'quadcon');
+end    

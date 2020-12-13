@@ -91,6 +91,12 @@ if output.problem
     solvertime = 0;
     prob = [];
 else
+    if isempty(model.integer_variables)
+        % Mosek cannot exploit this for continuous models (and if we keep
+        % it from e.g. bnb, then the prmal version will be called, which
+        % will run much slower for large SDPs)
+        model.x0 = [];
+    end
     if nnz(model.Q)==0 && isempty(model.integer_variables) && isempty(model.x0)
         % Standard cone problem which we can model by sending our standard dual
         % and then recover solution via Moseks dual

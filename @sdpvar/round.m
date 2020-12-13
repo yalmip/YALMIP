@@ -23,7 +23,7 @@ switch class(varargin{1})
                 X = varargin{3};
                 
                 F = [X-0.5 <= t <= X+0.5, integer(t)];
-                [M,m] = derivebounds(x);
+                [M,m] = derivebounds(X);
                 if ~isinf(m)
                     F = [F, round(m) <= t];
                 end

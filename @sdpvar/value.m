@@ -129,7 +129,16 @@ if ~isempty(allextended)
                 end
 
                 switch extstruct.fcn
-
+                    
+                    case 'milpsubsref'
+                        for idx = 1:length(extstruct.arg{2}.subs)
+                            if isa(extstruct.arg{2}.subs{idx},'sdpvar')
+                                extstruct.arg{2}.subs{idx} = value(extstruct.arg{2}.subs{idx});
+                            end
+                        end
+                        extstruct.arg{1} = value(extstruct.arg{1});
+                        val = extstruct.arg{1}(extstruct.arg{2}.subs{:});
+                        
                     case 'sort'
                         [w,loc] = sort(extstruct.arg{1});
                         if extstruct.arg{2}.isthisloc

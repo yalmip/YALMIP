@@ -207,6 +207,9 @@ else
 
     options.kypd = setup_kypd_options;
     Names = appendOptionNames(Names,options.kypd,'kypd');
+    
+    options.kktqp = setup_kktqp_options;
+    Names = appendOptionNames(Names,options.kktqp,'kktqp');    
 
     options.nag = setup_nag_options;
     Names = appendOptionNames(Names,options.nag,'nag');
@@ -282,7 +285,7 @@ else
 
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
-    
+      
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
     options.default.mosek = options.mosek;   
@@ -330,6 +333,10 @@ while i <= nargin
         expectval = 0;
     end
     i = i + 1;
+end
+
+if isequal(options.solver,'swarm')
+    error('I guess you missed the joke.');
 end
 
 if expectval
@@ -426,7 +433,6 @@ options.relax = 0;
 options.dualize = 0;
 options.usex0 = 0;
 options.savedebug = 0;
-options.debug = 0;
 options.expand = 1;
 options.allowmilp = 1;
 options.allownonconvex = 1;
@@ -451,37 +457,44 @@ bilevel.relgaptol = 1e-3;
 bilevel.feastol = 1e-6;
 bilevel.compslacktol = 1e-8;
 function bmibnb = setup_bmibnb_options
+bmibnb.lowersolver = '';
+bmibnb.uppersolver = '';
+bmibnb.lpsolver = '';
+bmibnb.sdpsolver = '';
+bmibnb.uppersdprelax = 1;
+bmibnb.target =  -inf;
+bmibnb.lowertarget =  inf;
+bmibnb.relgaptol = 1e-2;
+bmibnb.absgaptol = 1e-2;
 bmibnb.branchmethod = 'best';
 bmibnb.branchrule = 'omega';
 bmibnb.cut.multipliedequality = 0;
 bmibnb.cut.multipliedinequality = 0;
+bmibnb.cut.squaredlinearequality = -1;
 bmibnb.cut.normbound = 1;
 bmibnb.cut.evalvariable = 1;
 bmibnb.cut.bilinear = 1;
 bmibnb.cut.monomial = 1;
 bmibnb.cut.monomialtower = 0;
 bmibnb.cut.complementarity = 1;
-bmibnb.cut.quadratic = 1;
+bmibnb.cut.quadratic = -1;
 bmibnb.cut.exponential = 0;
 bmibnb.cut.sincos = 0;
 bmibnb.sdpcuts = 0;
-bmibnb.lpreduce = 1;
+bmibnb.sdpbounder = -1;
+bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = 1;
 bmibnb.onlyrunupperinroot = 0;
-bmibnb.lowersolver = '';
-bmibnb.uppersolver = '';
-bmibnb.lpsolver = '';
-bmibnb.target =  -inf;
-bmibnb.lowertarget =  inf;
+bmibnb.uppersdprelax = 1;
+bmibnb.uppersdprelaxmethod = 'element';
+bmibnb.lowerpsdfix =  -1;
 bmibnb.vartol = 1e-3;
-bmibnb.relgaptol = 1e-2;
-bmibnb.absgaptol = 1e-2;
-bmibnb.pdtol = -1e-6;
+bmibnb.pdtol = 1e-6;
 bmibnb.eqtol = 1e-6;
 bmibnb.maxiter = 100;
 bmibnb.maxtime = 3600;
-bmibnb.roottight = 1;
+bmibnb.roottight = -1;
 bmibnb.numglobal = inf;
 bmibnb.localstart = 'relaxed';
 bmibnb.presolvescheme = [];
@@ -857,6 +870,10 @@ try
 catch
     intlinprog = [];
 end
+
+function kktqp = setup_kktqp_options
+kktqp.solver = '';
+kktqp.maxtime = '';
 
 function kypd = setup_kypd_options
 kypd.solver = '';
@@ -1263,7 +1280,7 @@ function scip = setup_scip_options
 try
     scip = optiset;
 catch
-    scip = [];
+    scip.maxtime = inf;
 end
 
 function scs = setup_scs_options

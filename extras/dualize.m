@@ -62,12 +62,15 @@ err = 0;
 p1 = ~isreal(obj);%~(isreal(F) & isreal(obj));
 p2 = ~(islinear(F) & islinear(obj));
 p3 = any(is(F,'integer')) | any(is(F,'binary'));
-if p1 | p2 | p3
+bad = union(yalmip('binvariables'),yalmip('intvariables'));
+usd = union(depends(F),depends(obj));
+p4 = any(ismember(usd,bad));
+if p1 | p2 | p3 | p4
     if nargout == 5
         Fdual = ([]);objdual = [];y = []; X = []; t = []; err = 1;
     else
         problems = {'Cannot dualize complex-valued problems','Cannot dualize nonlinear problems','Cannot dualize discrete problems'};
-        error(problems{min(find([p1 p2 p3]))});
+        error(problems{min(find([p1 p2 p3 | p4]))});
     end
 end
 

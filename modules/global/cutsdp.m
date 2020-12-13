@@ -379,6 +379,14 @@ while goon
     ptemp = adjustMaxTime(ptemp,ptemp.options.cutsdp.maxtime,etime(clock,cutsdpsolvertime));
     if integerPhase
         output = feval(cutsolver,ptemp);
+        if output.problem == 12
+            ptemp.c = ptemp.c*0;
+            ptemp.Q = ptemp.Q*0;
+            output = feval(cutsolver,ptemp);
+            if output.problem == 0
+                output.problem = 2;
+            end
+        end
         if min(ptemp.F_struc*[1;output.Primal]) < -abs(p.options.cutsdp.feastol)
             % Ugly hack
             ptemp.F_struc = 1000*ptemp.F_struc;
@@ -393,6 +401,9 @@ while goon
             ptemp.c = ptemp.c*0;
             ptemp.Q = ptemp.Q*0;
             output = feval(cutsolver,ptemp);
+            if output.problem == 0
+                output.problem = 2;
+            end
         end
     end
      

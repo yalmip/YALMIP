@@ -5,16 +5,25 @@ DependsOnw = find(any((Dependency(:,getvariables(w))),2));
 
 h_variables = getvariables(h);
 h_w = find(ismember(h_variables,DependsOnw));
-if ~isempty(h_w)
-    base = getbase(h);
-    h0 = base(1);
-    base = base(2:end);base = base(:);
-    sdpvar t
+if ~isempty(h_w) 
+    % If we have Q(x) + w*h(x) we can replace w*h(x) with t and have a
+    % quadratic objective, and the linearly parameterized w*h(x) <= t
+    % However, if h is quadratic in w such as x^2+2*x*w+w^2 we must move
+    % everything to the cone epigraph, otherwise it is not convex in x
+    if ~is(h,'compound') && max(degree(h,w)) == 1 && min(degree(h,w)) == 1
+        base = getbase(h);
+        h0 = base(1);
+        base = base(2:end);base = base(:);
+        sdpvar t
     
-    F = [F,base(h_w(:))'*recover(h_variables(h_w)) <= t];
-    base(h_w) = 0;
-    h = base(:)'*recover(h_variables) + t;
-    
+        F = [F,base(h_w(:))'*recover(h_variables(h_w)) <= t];
+        base(h_w) = 0;
+        h = base(:)'*recover(h_variables) + t;          
+    else
+        sdpvar t
+        F = [F, h <= t];
+        h = t;
+    end
     Dependency = iterateDependance(yalmip('monomtable') | yalmip('getdependence') | yalmip('getdependenceUser'));
     DependsOnw = find(any((Dependency(:,getvariables(w))),2));    
 end

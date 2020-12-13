@@ -28,8 +28,8 @@ if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0) && ~any(p.variabletype)
         p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
         p.K.l=p.K.l+1;       
     else
-       p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
-       p.K.l=p.K.l+1;
+%        p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
+%        p.K.l=p.K.l+1;
     end
 end
 
@@ -66,7 +66,9 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
     end
     p.lb(removethese)=[];
     p.ub(removethese)=[];
-    p.x0(removethese)=[];
+    if ~isempty(p.x0)
+        p.x0(removethese)=[];
+    end
     p.monomtable(:,find(removethese))=[];
     p.monomtable(find(removethese),:)=[];
     
@@ -118,6 +120,22 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
          end
     end
     
+    % Remove zero rows in SOCP cone
+	if p.K.q(1) > 0
+         top = 1 + p.K.f + p.K.l;
+         for j = 1:length(p.K.q)
+             m = p.K.q(j);
+             M = p.F_struc(top:top+m-1,:);
+             remove = any(M,2)==0;
+             if any(remove)
+                 remove = find(remove);
+                 p.F_struc(top + remove-1,:)=[];
+                 p.K.q(j) = p.K.q(j)-length(remove);         
+             end
+              top = top + p.K.q(j);;
+         end
+    end
+                 
 %     if relaxed_p.K.q(1) > 0
 %         top = 1 + p.K.f + p.K.l;
 %         dels = zeros(sum(p.K.q),1);
@@ -152,11 +170,13 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
     
     if p.K.s(1) > 0
         top = 1 + p.K.f + p.K.l + sum(p.K.q);
+        newEqualities = [];
         for j = 1:length(p.K.s)
             X = p.F_struc(top:top + p.K.s(j)^2-1,:); 
             X = reshape(any(X,2),p.K.s(j),p.K.s(j));
             e = find(~any(X,2));
             if any(e)
+                % Not a single element is used, so simply and reduce SDP
                 Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
                 for k = 1:length(e);
                     Z(:,e(k))=1;
@@ -165,8 +185,30 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
                 m = find(Z(:));
                 p.F_struc(top + m - 1,:)=[];
                 p.K.s(j) = p.K.s(j) - length(e);
+            else
+                % Look for zero diagonal. This means we can move all
+                % nonzero elements to a zero equality                
+                e = find(diag(X)==0);
+                if length(e)>0
+                    Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
+                    for k = 1:length(e);
+                        Z(:,e(k))=1;
+                        Z(e(k),:)=1;
+                    end            
+                    m1 = find(Z(:)); % To be removed
+                    m2 = find(triu(Z,1)); % To be moved
+                    equalityRows = p.F_struc(top + m2 - 1,:);
+                    p.F_struc(top + m1 - 1,:) = [];
+                    p.K.s(j) = p.K.s(j) - length(e);   
+                    equalityRows = equalityRows(find(any(equalityRows,2)),:);
+                    newEqualities = [newEqualities;equalityRows];
+                end
             end
             top = top + p.K.s(j)^2;
+        end
+        if ~isempty(newEqualities)
+            p.F_struc = [newEqualities;p.F_struc];
+            p.K.f = p.K.f + size(newEqualities,1);
         end
     end
                           

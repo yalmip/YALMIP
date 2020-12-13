@@ -34,7 +34,6 @@ sos.type='';
 sos.index=[];
 sos.weight=[];
 
-model.H = tril(Q);
 model.f = full(c);
 model.A = A;
 model.rl = rl;

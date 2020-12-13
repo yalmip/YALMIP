@@ -2,6 +2,7 @@ function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,s
 
 diagnostic = [];
 
+%% ************************************************************************
 % Relax problem for lower solver
 tempProblemClass = ProblemClass;
 
@@ -68,6 +69,26 @@ end
 solver.lowercall = lowersolver.call;
 solver.lowersolver = lowersolver;
 
+%% ************************************************************************
+% Select SDP solver (used in some advanced strategies)
+if lowersolver.constraint.inequalities.semidefinite.linear && isequal(options.bmibnb.lowersolver,'')
+    % Simply use lower bound solver
+    solver.sdpsolver = lowersolver;
+else
+    tempProblemClass.constraint.inequalities.semidefinite.linear = 1;
+    temp_options.solver = options.bmibnb.sdpsolver;
+    [sdpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
+    if problem 
+        % We will not be able to run these strategies
+        solver.sdpsolver = [];
+    else
+        solver.sdpsolver = sdpsolver;
+    end
+end
+    
+
+%% ************************************************************************
+% Select upper bound solver
 temp_options = options;
 temp_options.solver = options.bmibnb.uppersolver;
 
@@ -97,7 +118,30 @@ if isempty(temp_options.solver)
     end
     solvers = solvers(find(keep));
 end
+
+% BMIBNB support the use of iteratively added elementwise cuts to replace
+% SDP cone in the upper solver. Hence, if this is ativated, we should allow
+% general nonlinear solvers, and thus remove SDP from problem spec and move
+% to elementwise structure 
+if temp_options.bmibnb.uppersdprelax
+    temp_ProblemClass.constraint.inequalities.elementwise.linear = temp_ProblemClass.constraint.inequalities.elementwise.linear | temp_ProblemClass.constraint.inequalities.semidefinite.linear;
+    temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex = temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex | temp_ProblemClass.constraint.inequalities.semidefinite.quadratic;
+    temp_ProblemClass.constraint.inequalities.elementwise.polynomial = temp_ProblemClass.constraint.inequalities.elementwise.polynomial | temp_ProblemClass.constraint.inequalities.semidefinite.polynomial;
+    temp_ProblemClass.constraint.inequalities.elementwise.sigmonial = temp_ProblemClass.constraint.inequalities.elementwise.sigmonial | temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial;
+    temp_ProblemClass.constraint.inequalities.semidefinite.linear = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.quadratic = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.polynomial = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial = 0;
+end
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
+% if isempty(uppersolver) && temp_ProblemClass.constraint.inequalities.elementwise.polynomial
+%     % Maybe it is a polynomial problem and user wants a quadratic solver
+%     % (which bmibnb can bilinearize)
+%     temp_ProblemClass.constraint.equalities.quadratic = 1;
+%     temp_ProblemClass.constraint.inequalities.elementwise.polynomial = 0;
+%     temp_ProblemClass.constraint.equalities.polynomial = 0;
+%     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
+% end
 if ~isempty(uppersolver) && strcmpi(uppersolver.tag,'bnb')
     temp_options.solver = 'none';
     [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);

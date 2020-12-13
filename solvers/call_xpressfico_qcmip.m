@@ -1,7 +1,16 @@
 function output = call_xpressfico_qcmip(interfacedata)
 
+if nnz(interfacedata.Q) == 0 && nnz(interfacedata.K.q)==0
+    output = call_xpressfico_milp(interfacedata);
+    return
+elseif nnz(interfacedata.K.q)==0
+    output = call_xpressfico_miqp(interfacedata);
+    return    
+end
+
 % Retrieve needed data
 options = interfacedata.options;
+n_original = length(interfacedata.c);
 model = yalmip2xpress(interfacedata);
 
 if options.savedebug
@@ -11,15 +20,15 @@ end
 solvertime = tic;
 if isempty(model.extra.integer_variables) & isempty(model.extra.binary_variables) & isempty(model.extra.semicont_variables) & isempty(model.sos)
     if options.verbose
-        [x,fval,exitflag,output,lambda] = xprsqp(model.H,model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops);
+        [x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);
     else
-        evalc('[x,fval,exitflag,output,lambda] = xprsqp(model.H,model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops);');
+        evalc('[x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);');
     end
 else
     if options.verbose
-        [x,fval,exitflag,output] = xprsmiqp(model.H,model.f,model.A,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);
+        [x,fval,exitflag,output] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);
     else
-        evalc('[x,fval,exitflag,output] = xprsmiqp(model.H,model.f,model.A,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);        ');
+        evalc('[x,fval,exitflag,output] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);        ');
     end
     lambda = [];
 end
@@ -35,6 +44,9 @@ if length(x) == length(model.f)
     if ~isempty(model.extra.NegatedSemiVar)
         x(model.extra.NegatedSemiVar) = -x(model.extra.NegatedSemiVar);
     end
+    x = x(1:n_original);
+else
+    x = zeros(n_original,1);
 end
 
 % Check, currently not exhaustive...

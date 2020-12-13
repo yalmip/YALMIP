@@ -1,3 +1,3 @@
 % YALMIP
-% Version 16-January-2020
+% Version 30-September-2020
 % Help on http://yalmip.github.io

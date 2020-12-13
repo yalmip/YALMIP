@@ -1,6 +1,12 @@
 function X = subsref(Y,refs)
 % SUBSREF (overloaded)
 
+for i = 1:length(refs.subs)
+    if isa(refs.subs{i},'sdpvar')
+        X = milpsubsref(Y,refs);
+        return
+    end
+end
 if isequal(refs.type,'()')
     if length(refs.subs)==3
         if length(Y.dim)==3 && isequal(Y.conicinfo,[-1 0])

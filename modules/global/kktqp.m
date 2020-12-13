@@ -76,7 +76,7 @@ My = derivedualbounds(F,y,b,S,n);
 F = F + (y <= dy.*My);
 
 obj = -0.5*(c'*x+b'*y); % ==cost in optimal points 
-sol = solvesdp(F,obj,sdpsettings('verbose',interfacedata.options.verbose));
+sol = solvesdp(F,obj,sdpsettings(interfacedata.options,'solver',interfacedata.options.kktqp.solver));
 
 % **********************************
 %% CREATE SOLUTION

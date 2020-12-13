@@ -10,9 +10,15 @@ p.F_struc(removeThese,:) = [];
 p.K.f = p.K.f - length(removeThese);
 
 p_cut = p;
+
+% Add cuts for x^2==x and variants for box QP
+p_cut.F_struc = [p_cut.concavityEqualities;p_cut.F_struc];
+p_cut.K.f = p_cut.K.f + size(p_cut.concavityEqualities,1);
+
 if p.options.bmibnb.cut.bilinear
     p_cut = addBilinearVariableCuts(p_cut);
 end
+
 if p.options.bmibnb.cut.normbound
   	p_cut = addNormBoundCut(p_cut);
 end
@@ -26,7 +32,7 @@ end
 if p.options.bmibnb.cut.complementarity
   	p_cut = addComplementarityCuts(p_cut);
 end
-if p.options.bmibnb.cut.quadratic
+if p.solver.lowersolver.constraint.inequalities.secondordercone.linear && p.options.bmibnb.cut.quadratic
     p_cut = addQuadraticCuts(p_cut);
 end
 if p.options.bmibnb.cut.exponential
@@ -38,6 +44,16 @@ end
 if p.options.bmibnb.cut.monomialtower
     p_cut = addMonomialTowerCuts(p_cut);
 end
+if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
+    if ~isempty(p_cut.K.s) & p_cut.K.s(1) > 0
+        if isequal(p_cut.solver.lowercall,'callmosek')
+            % Mosek SDP module does not support binary
+            p_cut.binary_variables = [];
+            p_cut.integer_variables = [];
+            p_cut.binary_variables = [];
+        end
+    end
+end
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -48,16 +64,16 @@ else
     % We are solving relaxed problem (penbmi might be local solver)
     p_cut.monomtable = eye(length(p_cut.c));
     
-    if p.solver.lowersolver.objective.quadratic.convex
-        % Setup quadratic
-        [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p,0);
-        if nonconvexQuadratic(p_cut.Q)
-            [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p,1);
-            if nonconvexQuadratic(p_cut.Q)
-                p_cut.Q = p.Q;
-                p_cut.c = p.c;
-            end
-        end
+    % If lower solver can handle convex quadratic, we should exploit
+    if p.solver.lowersolver.objective.quadratic.convex && ~isempty(p.shiftedQP)
+        % Use pre-computed SDP-shifted model
+        p_cut.Q = p.shiftedQP.Q;
+        p_cut.c = p.shiftedQP.c;       
+        p_cut.f = p.shiftedQP.f;          
+    elseif p.solver.lowersolver.objective.quadratic.convex 
+        % If we have a QP solver, we can at least try to strengthen the
+        % relaxation by using the positive diagonal terms
+        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);
     end
     
     fixed = p_cut.lb >= p_cut.ub;
@@ -66,7 +82,7 @@ else
         output.Primal = p.lb;
         res = constraint_residuals(p,output.Primal);
         eq_ok = all(res(1:p.K.f)>=-p.options.bmibnb.eqtol);
-        iq_ok = all(res(1+p.K.f:end)>=p.options.bmibnb.pdtol);
+        iq_ok = all(res(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
         feasible = eq_ok & iq_ok;
         if feasible
             output.problem = 0;
@@ -156,6 +172,7 @@ else
             p_cut.linearindicies = 1:length(p.c);
             p_cut.nonlinearindicies = [];
             p_cut.variabletype = zeros(1,length(p.c));
+            p_cut.monomtable = speye(length(p.c));
             p_cut.deppattern = eye(length(p.c));
             p_cut.linears = 1:length(p.c);
             p_cut.bilinears = [];
@@ -164,16 +181,22 @@ else
             p_cut.evaluation_scheme = [];
             
             tstart = tic;     
-            p_cut = pruneUnsupportedCuts(p_cut);
+            p_cut = pruneUnsupportedCuts(p_cut);            
             output = feval(lowersolver,removenonlinearity(p_cut));
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
-            cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
-            % Minor clean-up
-            pp=p;
-            output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
-            output.Primal(output.Primal>p.ub) = p.ub(output.Primal>p.ub);
-            x=output.Primal;
+            if length(output.Primal) == length(p_cut.c)
+                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p_cut.f;
+                % Minor clean-up
+                pp=p;
+                output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
+                output.Primal(output.Primal>p.ub) = p.ub(output.Primal>p.ub);
+                x=output.Primal;
+            else
+                cost = nan;
+                x = nan(length(p_cut.c),1);
+                output.Primal = x;
+            end
             return
         else
             pp = p_cut;

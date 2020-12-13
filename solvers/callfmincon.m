@@ -82,13 +82,19 @@ latest_x_xevaled = [];
 showprogress('Calling FMINCON',model.options.showprogress);
 
 if model.linearconstraints
-    callback_con = [];
+    g = [];
 else
-    callback_con = 'fmincon_con_liftlayer';
+    g = @(x)fmincon_con_liftlayer(x,model);
 end
 
 solvertime = tic;
-[xout,fmin,flag,output,lambda] = fmincon('fmincon_fun_liftlayer',model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,callback_con,model.options.fmincon,model);
+f = @(x)fmincon_fun_liftlayer(x,model);
+if ~exist('OCTAVE_VERSION','builtin')
+    [xout,fmin,flag,output,lambda] = fmincon(f,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,g,model.options.fmincon);
+else
+    [xout,fmin,flag,output] = fmincon(f,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,g,model.options.fmincon);
+    lambda = [];
+end
 solvertime = toc(solvertime);
 
 if ~isempty(xout) && ~isempty(model.lift);
