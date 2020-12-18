@@ -860,6 +860,8 @@ gurobi.ScenarioNumber = 0;
 gurobi.Seed = 0;
 gurobi.Threads = 0;
 gurobi.UpdateMode = 1;
+gurobi.NoRelHeurWork = 0;
+gurobi.NoRelHeurTime = 0;
 
 function intlinprog = setup_intlinprog_options
 try
