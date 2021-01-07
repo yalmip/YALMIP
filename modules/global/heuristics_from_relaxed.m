@@ -16,12 +16,8 @@ if relaxed_feasible
     this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
     if (this_upper < (1-1e-5)*upper) & (this_upper < upper - 1e-5)
         x_min = x;
-        if isinf(upper)
-            info_text = 'Solution found by heuristics';
-        else
-            info_text = 'Improved solution found by heuristics';
-        end
-        upper = this_upper;        
+        upper = this_upper;
+        info_text = 'Improved solution found by heuristics';
         cost = cost-1e-10; % Otherwise we'll fathome!
         numglobals = numglobals + 1;
     end

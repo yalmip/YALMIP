@@ -60,9 +60,6 @@ p.ub(p.binary_variables) = min(1,p.ub(p.binary_variables));
 p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables));
 p.ub(p.integer_variables) = floor(p.ub(p.integer_variables));
 p = clean_bounds(p);
-if size(p.F_struc,1)==0
-    p.F_struc = [];
-end
 if ~isempty(p.bilinears)
     p = propagate_bounds_from_monomials(p);
 end

@@ -10,15 +10,9 @@ p.F_struc(removeThese,:) = [];
 p.K.f = p.K.f - length(removeThese);
 
 p_cut = p;
-
-% Add cuts for x^2==x and variants for box QP
-p_cut.F_struc = [p_cut.concavityEqualities;p_cut.F_struc];
-p_cut.K.f = p_cut.K.f + size(p_cut.concavityEqualities,1);
-
 if p.options.bmibnb.cut.bilinear
     p_cut = addBilinearVariableCuts(p_cut);
 end
-
 if p.options.bmibnb.cut.normbound
   	p_cut = addNormBoundCut(p_cut);
 end
@@ -64,16 +58,14 @@ else
     % We are solving relaxed problem (penbmi might be local solver)
     p_cut.monomtable = eye(length(p_cut.c));
     
-    % If lower solver can handle convex quadratic, we should exploit
     if p.solver.lowersolver.objective.quadratic.convex && ~isempty(p.shiftedQP)
-        % Use pre-computed SDP-shifted model
+        % If lower solver can handle convex quadratic, we should exploit
+        % this.
+        % Convex: Just solve it!
+        % Nonconvex: Adjustments to diagonal, and corresponding in relaxed
+        %            model. These adjustments are computed once       
         p_cut.Q = p.shiftedQP.Q;
         p_cut.c = p.shiftedQP.c;       
-        p_cut.f = p.shiftedQP.f;          
-    elseif p.solver.lowersolver.objective.quadratic.convex 
-        % If we have a QP solver, we can at least try to strengthen the
-        % relaxation by using the positive diagonal terms
-        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);
     end
     
     fixed = p_cut.lb >= p_cut.ub;
@@ -186,7 +178,7 @@ else
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
             if length(output.Primal) == length(p_cut.c)
-                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p_cut.f;
+                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
                 % Minor clean-up
                 pp=p;
                 output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);

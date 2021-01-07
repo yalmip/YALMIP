@@ -28,8 +28,8 @@ if ~isinf(upper) & nnz(p.Q)==0 & isequal(p.K.m,0) && ~any(p.variabletype)
         p.F_struc = [p.F_struc(1:p.K.f,:);upper-1-p.f -p.c';p.F_struc(1+p.K.f:end,:)];
         p.K.l=p.K.l+1;       
     else
-%        p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
-%        p.K.l=p.K.l+1;
+       p.F_struc = [p.F_struc(1:p.K.f,:);upper-p.f -p.c';p.F_struc(1+p.K.f:end,:)];      
+       p.K.l=p.K.l+1;
     end
 end
 

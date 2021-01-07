@@ -72,14 +72,8 @@ switch(X.typeflag)
             if any(ismember(depends(X),yalmip('parvariables')))
                 classification = [classification ', parametric'];
             end
-          
-            try
-                v = value(X);
-            catch
-                v = nan;
-            end
-             if ~isnan(v)
-                classification = [classification '\nCurrent value: ' num2str(v)];                
+            if ~isnan(value(X))
+                classification = [classification '\nCurrent value: ' num2str(value(X))];
             end
             
             B = getbase(X);

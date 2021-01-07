@@ -335,10 +335,6 @@ while i <= nargin
     i = i + 1;
 end
 
-if isequal(options.solver,'swarm')
-    error('I guess you missed the joke.');
-end
-
 if expectval
     error(sprintf('Expected value for property ''%s''.', arg));
 end
@@ -460,7 +456,6 @@ function bmibnb = setup_bmibnb_options
 bmibnb.lowersolver = '';
 bmibnb.uppersolver = '';
 bmibnb.lpsolver = '';
-bmibnb.sdpsolver = '';
 bmibnb.uppersdprelax = 1;
 bmibnb.target =  -inf;
 bmibnb.lowertarget =  inf;
@@ -470,18 +465,16 @@ bmibnb.branchmethod = 'best';
 bmibnb.branchrule = 'omega';
 bmibnb.cut.multipliedequality = 0;
 bmibnb.cut.multipliedinequality = 0;
-bmibnb.cut.squaredlinearequality = -1;
 bmibnb.cut.normbound = 1;
 bmibnb.cut.evalvariable = 1;
 bmibnb.cut.bilinear = 1;
 bmibnb.cut.monomial = 1;
 bmibnb.cut.monomialtower = 0;
 bmibnb.cut.complementarity = 1;
-bmibnb.cut.quadratic = -1;
+bmibnb.cut.quadratic = 1;
 bmibnb.cut.exponential = 0;
 bmibnb.cut.sincos = 0;
 bmibnb.sdpcuts = 0;
-bmibnb.sdpbounder = -1;
 bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = 1;

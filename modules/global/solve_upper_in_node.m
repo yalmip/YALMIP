@@ -33,21 +33,13 @@ if feasible
         end
     end
     if this_upper < upper
-        x_min = z;        
-        if length(info_text) == 0
-            if isinf(upper)
-                info_text = 'Solution found by upper solver';
-            else
-                info_text = 'Improved solution found by upper solver';
-            end
-        else
-            if isinf(upper)
-                info_text = [info_text ' | ' 'Solution found by upper solver'];
-            else
-                info_text = [info_text ' | ' 'Improved solution found by upper solver'];
-            end
-         end
+        x_min = z;
         upper = this_upper;
+        if length(info_text) == 0
+            info_text = 'Improved solution found by upper solver';
+        else
+            info_text = [info_text ' | ' 'Improved solution found by upper solver'];
+        end
         numglobals = numglobals + 1;
     end
 elseif output.problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.constraint.inequalities.semidefinite.linear && cutiterations > 0

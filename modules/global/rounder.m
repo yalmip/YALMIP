@@ -1,10 +1,9 @@
-function [upper,x_min] = rounder(prelaxed,upper,x,p,relaxedoutput)
-% function [upper,x_min] = rounder(p,relaxedsolution,prelaxed)
+function [upper,x_min] = rounder(p,relaxedsolution,prelaxed)
 
 % Extremely simple heuristic for finding integer solutions.
 
 % This was the relaxed solution
-x = relaxedoutput.Primal;
+x = relaxedsolution.Primal;
 
 % Assume we fail
 upper = inf;
