@@ -588,6 +588,7 @@ sos.newton = 1;
 sos.congruence = 2;
 sos.scale = 1;
 sos.numblkdg = 0;
+sos.numblkiterlimit = inf;
 sos.postprocess = 0;
 sos.csp = 0;
 sos.extlp = 1;
