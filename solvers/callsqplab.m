@@ -1,4 +1,4 @@
-function output = callfmincon(interfacedata)
+function output = callsqplab(interfacedata)
 
 global SQPLABDATA
 % Retrieve needed data
@@ -204,3 +204,4 @@ end
 
 % Standard interface
 output = createoutput(x,D_struc,[],problem,'FMINCON',solverinput,solveroutput,solvertime);
+

@@ -1,7 +1,7 @@
 function monom = genmonoms(newton_m,x);
 %GENMONOMS Internal function used in SOS programs
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: genmonoms.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
 
 

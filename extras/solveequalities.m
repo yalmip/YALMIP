@@ -1,7 +1,7 @@
 function [x_equ,H,A_equ,b_equ,factors] = solveequalities(F_struc,K,unitary)
 %SOLVEEQUALITIES Internal function remove equality constraints
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: solveequalities.m,v 1.17 2007-05-24 14:44:20 joloef Exp $
 
 % Extract the inequalities

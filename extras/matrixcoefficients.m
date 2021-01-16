@@ -130,7 +130,7 @@ end
 % %
 % %   See also SDPVAR
 % 
-% % Author Johan Löfberg
+% % Author Johan Lofberg
 % % $Id: matrixcoefficients.m,v 1.4 2006-08-09 12:14:04 joloef Exp $  
 % 
 % 

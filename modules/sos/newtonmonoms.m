@@ -16,7 +16,7 @@ function v = newtonmonoms(p)
 %
 % See also NEWTONREDUCE, CONSISTENT, CONGRUENCEBLOCKS
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: newtonmonoms.m,v 1.1 2006-03-30 13:27:20 joloef Exp $
 
 if isa(p,'double')

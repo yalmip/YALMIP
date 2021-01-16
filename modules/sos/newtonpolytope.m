@@ -1,7 +1,7 @@
 function keep = newtonpolytope(exponent_m,exponent_p)
 %NEWTONPOLYTOPE  Internal function to remove monimials in SOS programs using Newton polytope
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: newtonpolytope.m,v 1.1 2006-03-30 13:27:20 joloef Exp $
 
 

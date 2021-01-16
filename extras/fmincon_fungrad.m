@@ -1,4 +1,4 @@
-function df = fmincon_fun(x,params)
+function df = fmincon_fungrad(x,params)
 
 xevaled = zeros(1,length(params.interfacedata.c));
 xevaled(params.linearindicies) = x;

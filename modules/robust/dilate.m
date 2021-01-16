@@ -23,9 +23,9 @@ function varargout = dilate(F,w,options)
 % GRADUATE SCHOOL OF INFORMATION SCIENCE AND TECHNOLOGY THE UNIVERSITY OF
 % TOKYO BUNKYO-KU, TOKYO 113-8656, JAPAN , February 2006
 %
-% J. Löfberg, Improved matrix dilations for robust semidefinite programming
+% J. Lofberg, Improved matrix dilations for robust semidefinite programming
 % Division of Automatic control, Department of Electrical Engineering, 
-% Technical report 2753, Linköpings universitet, November 2006
+% Technical report 2753, Linkopings universitet, November 2006
 %
 % See also ROBUSTIFY, SOLVEROBUST, UNCERTAIN
 

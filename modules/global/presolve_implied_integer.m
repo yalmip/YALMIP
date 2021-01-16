@@ -1,4 +1,4 @@
-function p = preprocess_bilinear_bounds(p)
+function p = presolve_implied_integer(p)
 
 if ~isempty(p.integer_variables)
     for i = 1:size(p.bilinears,1)

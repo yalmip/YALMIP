@@ -1,4 +1,4 @@
-function dX = apply_recursive_differentiation(model,x,requested);
+function dX = apply_oldrecursive_differentiation(model,x,requested);
 dX = [];
 
 % Compute all evaluation-based derivatives df(x)
@@ -60,3 +60,4 @@ for variable = 1:length(model.linearindicies)
         end
     dX = [dX dx];
 end
+

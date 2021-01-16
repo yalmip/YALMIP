@@ -1,4 +1,4 @@
-function varargout = recover(lmi_variables)
+function varargout = recovernc(lmi_variables)
 %RECOVER Create NCVAR object using variable indicies
 
 if isempty(lmi_variables)
@@ -38,3 +38,4 @@ else
         end
     end
 end
+

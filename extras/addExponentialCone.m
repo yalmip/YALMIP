@@ -1,4 +1,4 @@
-function [data,cones,output] = adExponentialCone(data,cones,model)
+function [data,cones,output] = addExponentialCone(data,cones,model)
 
 output.problem = 0;
 if ~isempty(model.evalMap)
@@ -211,3 +211,4 @@ if ~isempty(model.evalMap)
 else
     cones.ep = 0;
 end
+

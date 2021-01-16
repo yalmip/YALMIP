@@ -1,4 +1,4 @@
-function Y=plot(varargin)
+function Y=domain(varargin)
 %DOMAIN  Extract domain for PWA variable
 
 % Fast version for plotting simple PWA objects
@@ -22,3 +22,4 @@ if nargin == 1
     end
 end
 error('DOMAIN can only be applied to simple MPT related PWA objects')
+

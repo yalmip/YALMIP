@@ -1,6 +1,6 @@
 function [constants,general,newsingles,newpairs] =  compressfactors2(constants,general,singles,pairs)
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: compressfactors2.m,v 1.1 2009-11-03 10:30:33 joloef Exp $
 
 newpairs = {};

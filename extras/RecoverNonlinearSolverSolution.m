@@ -1,4 +1,4 @@
-function x = RecoverNonlinearSolversolution(model,xout);
+function x = RecoverNonlinearSolverSolution(model,xout);
 
 if isempty(model.nonlinearindicies)
     x = xout(:);
@@ -9,3 +9,4 @@ else
     end
     x = x(1:length(model.c));
 end
+

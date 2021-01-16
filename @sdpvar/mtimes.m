@@ -355,7 +355,6 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     allmt_xplusy = local_mt(:,testthese) + sparse(repmat(full(mt_x),1,nyvars));
                 else
                     allmt_xplusy = bsxfun("plus",local_mt(:,testthese),mt_x);
-                 %   allmt_xplusy = bsxfun(@plus,local_mt(:,testthese),mt_x);
                  %   allmt_xplusy = local_mt(:,testthese) + repmat(mt_x,1,nyvars);
                 end
                 allhash = allmt_xplusy'*hash;

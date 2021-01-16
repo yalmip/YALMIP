@@ -1,4 +1,4 @@
-function output = calllinprog(interfacedata)
+function output = callbintprog(interfacedata)
 
 % Standard input interface
 options = interfacedata.options;
@@ -155,3 +155,4 @@ end
 
 % Standard interface 
 output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+

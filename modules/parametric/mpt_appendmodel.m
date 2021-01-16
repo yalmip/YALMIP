@@ -1,4 +1,4 @@
-function model = savemptmodel(model,Pfinal,Pn,Fi,Gi,details);
+function model = mpt_appendmodel(model,Pfinal,Pn,Fi,Gi,details);
 
 if length(Fi)>0
     if length(model) == 0

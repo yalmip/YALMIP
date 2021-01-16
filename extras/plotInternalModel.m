@@ -1,4 +1,4 @@
-function x_opt = PlotInternalModel(internalmodel,x,n,localindex,color,opts)
+function x_opt = plotInternalModel(internalmodel,x,n,localindex,color,opts)
 % Code used by both lmi/plot and optimizer/plot
 
 if isempty(internalmodel.binary_variables)
@@ -210,3 +210,4 @@ pRed.K.l = pRed.K.l - length(removeLP);
 pRed.F_struc = pRed.F_struc(:,[1 1+these]);
 pRed.lb = pRed.lb(these);
 pRed.ub = pRed.ub(these);
+

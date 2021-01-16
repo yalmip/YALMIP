@@ -1,4 +1,4 @@
-function [p,feasible,vol_reduction,seen_x] = domain_reduction(p,upper,lower,lpsolver,xmin);
+function [p,feasible,vol_reduction,seen_x] = propagate_bounds_lp(p,upper,lower,lpsolver,xmin);
 LU = [p.lb p.ub];
 seen_x = {};
 if ~p.options.bmibnb.lpreduce | ((size(p.lpcuts,1)==0) & (any(p.lb(p.linears)<-1e8) & any(p.ub(p.linears)>1e8)))
@@ -16,3 +16,4 @@ if ~isequal(LU,[p.lb p.ub])
 end
 feasible = p.feasible;
 vol_reduction = 0;
+

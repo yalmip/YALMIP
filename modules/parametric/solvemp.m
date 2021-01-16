@@ -37,7 +37,7 @@ function varargout = solvemp(F,h,ops,x,y)
 %
 % See also PARAMETRIC, SET, SDPSETTINGS, YALMIPERROR
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: solvemp.m,v 1.11 2007-08-17 13:17:16 joloef Exp $
 
 if nargin <= 3

@@ -1,4 +1,4 @@
-function p = presolveTrvialSDP(p)
+function p = presolveTrivialSDP(p)
 
 x0 = ones(length(p.c),1);
 x0(find(p.lb == 0 & p.ub==0)) = 0;
@@ -36,3 +36,4 @@ if any(x0 == 0)
         p.K.f = p.K.f + length(keep);
     end
 end
+

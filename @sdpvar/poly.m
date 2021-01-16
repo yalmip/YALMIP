@@ -12,7 +12,7 @@ function p = poly (A, r)
 %
 % See also DET
 
-% Author Anders Helmersson, Johan Löfberg
+% Author Anders Helmersson, Johan Lofberg
 
 [n, m] = size (A);
 if n ~= m, error ('A must be square'); end;

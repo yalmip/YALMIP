@@ -79,7 +79,7 @@ output = createOutputStructure(x,D_struc,[],problem,infostr,[],solveroutput,solv
 
 function [x0,z0,w0,problem,infostr,solveroutput] = callmaxdetphase1(F_struc,F_blksz, G_struc,G_blksz, c, options);
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: callmaxdet.m,v 1.6 2006-12-18 14:42:28 joloef Exp $  
 
 try

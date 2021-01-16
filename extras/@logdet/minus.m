@@ -50,7 +50,7 @@ Z.gain = [Again -Bgain];
 % function Z = minus(cx,P)
 % %display           Overloaded
 % 
-% % Author Johan Löfberg 
+% % Author Johan Lofberg 
 % % $Id: minus.m,v 1.4 2007-02-07 09:11:27 joloef Exp $  
 % 
 % % Standard case c't-logdet(P)

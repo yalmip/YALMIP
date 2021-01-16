@@ -1,4 +1,4 @@
-function output = calldsdp(interfacedata)
+function output = calldsdp5(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -122,3 +122,4 @@ end
 
 % Standard interface 
 output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+

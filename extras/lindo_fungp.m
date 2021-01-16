@@ -1,4 +1,4 @@
-function [f,err] = fmincon_funn(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
+function [f,err] = lindo_fungp(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
 
 persistent prob Af A bf b
 
@@ -34,3 +34,4 @@ else
     f = g(nRow+1);
 end
 err = 0;
+

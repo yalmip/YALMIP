@@ -11,7 +11,7 @@ function varargout = chebyball(F,ops)
 % If only one output is requested, only the symbolic constraint is returned
 % C = chebyball(F)
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: chebyball.m,v 1.1 2004-12-08 00:07:15 johanl Exp $
 
 [model,recoverdata,diagnostic,p] = export(F,[],[],[],[],0);

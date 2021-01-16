@@ -1,4 +1,4 @@
-function output = callmpt(interfacedata)
+function output = callmplcp(interfacedata)
 
 % Speeds up solving LPs in mpmilp
 global mptOptions
@@ -87,3 +87,4 @@ end
 Primal      = nan*ones(length(interfacedata.c),1);
 Dual        = [];
 output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+

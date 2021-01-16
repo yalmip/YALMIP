@@ -1,4 +1,4 @@
-function [Matrices,infeasible]  = derive_bounds(Matrices,options)
+function [Matrices,infeasible]  = mpt_derive_bounds(Matrices,options)
 
 A = [Matrices.G -Matrices.E];
 b = [Matrices.W];
@@ -129,3 +129,4 @@ lb(trivially_unbounded_below(reset_to_minus_inf)) = -inf;
 ub(trivially_unbounded_above(reset_to_inf)) = inf;
 Matrices.lb = lb;
 Matrices.ub = ub;
+

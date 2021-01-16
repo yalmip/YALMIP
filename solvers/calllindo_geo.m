@@ -1,4 +1,4 @@
-function output = calllindo_nlp(interfacedata)
+function output = calllindo_geo(interfacedata)
 
 global MY_LICENSE_FILE
 
@@ -218,3 +218,4 @@ end
 
 % Standard interface
 output = createoutput(w,y,[],problem,'LINDO',solverinput,solveroutput,solvertime);
+

@@ -1,4 +1,4 @@
-function p = update_eval_bounds(p);
+function p = propagate_bounds_from_evaluations(p);
 
 if ~isempty(p.evalVariables)
     for i = 1:length(p.evalMap)
@@ -6,3 +6,4 @@ if ~isempty(p.evalVariables)
         p = update_one_inverseeval_bound(p,i);
     end
 end
+

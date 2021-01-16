@@ -1,4 +1,4 @@
-function output = callgurobi(interfacedata)
+function output = callgurobimex(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -207,3 +207,4 @@ end
 
 % Standard interface 
 output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+

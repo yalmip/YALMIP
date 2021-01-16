@@ -24,7 +24,7 @@ function diagnostic = bmilin(F,h,options)
 % bmilin.maxiterls      - Maximum number of iterations in line search [integer (10)]
 % bmilin.maxiter        - Maximum number of iterations [integer (25)]
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: bmilin.m,v 1.3 2005-04-29 08:05:01 joloef Exp $
 
 

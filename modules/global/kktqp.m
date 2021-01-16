@@ -8,7 +8,7 @@ function output = kktqp(interfacedata)
 % See also kkt
 
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: kktqp.m,v 1.2 2008-06-10 14:47:59 joloef Exp $
 
 % ********************************

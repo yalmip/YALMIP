@@ -21,7 +21,7 @@ function N = congruenceblocks(exponent_m,exponent_p,options,csclasses)
 %
 % See also NEWTONREDUCE, NEWTONMONOMS, CONSISTENT
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: congruenceblocks.m,v 1.2 2008-11-11 13:29:20 joloef Exp $
 
 sdpvarout = 0;

@@ -1,4 +1,4 @@
-function [f,err] = fmincon_funn(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
+function [f,err] = lindo_fun(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
 
 persistent params hash xevaled oldh F
 if nargin == 7
@@ -40,3 +40,4 @@ else
     f = F(nRow + 1);%-params.F_struc(nRow + 1,:)*[1;xevaled];
 end
 err = 0;
+

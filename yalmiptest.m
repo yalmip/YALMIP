@@ -542,15 +542,12 @@ F = norm(x-a)<=1;
 F = F+[norm(x-b) <= 1];
 sol = optimize(F,sum(x),ops);
 pass = ismember(sol.problem,[0 3 4 5]); 
-
 x = double(x);
-
 if pass
     result = resultstring(sum(x),0.58578);
 else
     result = 'N/A';
 end
-
 
 
 function [pass,sol,result] = socptest2(ops)

@@ -1,4 +1,4 @@
-function  p = updateboundsfromupper(p,upper)
+function  p = propagate_bounds_from_upper(p,upper)
 if nargin == 1
     upper = p.upper;
 end
@@ -133,3 +133,4 @@ if ~isinf(upper)
         p.feasible = 0;
     end
 end
+

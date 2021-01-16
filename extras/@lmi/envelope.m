@@ -39,7 +39,7 @@ function [E,P] = envelope(C,x)
 %   plot(E,[x;u],[],[],sdpsettings('relax',1))
 %   xx = (-1:0.01:1);hold on;plot(xx,xx+sin(pi*xx),xx,4-xx.^2)
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 
 [aux1,aux2,aux3,p] = export(C,[],sdpsettings('solver','bmibnb'));
 

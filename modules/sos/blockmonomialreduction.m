@@ -1,7 +1,7 @@
 function N = blockmonomialreduction(exponent_p,N,options)
 %BLOCKMONOMIALREDUCTION Internal function to reduce monomials in SOS problem
 
-% Author Johan Löfberg
+% Author Johan Lofberg
 % $Id: blockmonomialreduction.m,v 1.1 2006-03-30 13:39:36 joloef Exp $
 
 if options.sos.inconsistent & ~options.sos.csp

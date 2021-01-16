@@ -1,4 +1,4 @@
-function C = mptimes(A,B)
+function C = ttimes(A,B)
 % TTIMES Tropical multiplication (max-plus algebra)
 %
 % C = TTIMES(A,B) Computes the tropical multiplication of the matrices A

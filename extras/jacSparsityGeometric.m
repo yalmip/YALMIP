@@ -1,4 +1,4 @@
-function [Nbegcol,Nlencol,Nrowndx,Nobjcnt,Nobjndx,cJacobian] = jacSparsity(interfacedata)
+function [Nbegcol,Nlencol,Nrowndx,Nobjcnt,Nobjndx,cJacobian] = jacSparsityGeometric(interfacedata)
 
 linear = setdiff(find(interfacedata.variabletype == 0),interfacedata.evalVariables);
 oJacobian = zeros(length(linear),1);

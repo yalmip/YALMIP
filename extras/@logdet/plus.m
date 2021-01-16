@@ -50,7 +50,7 @@ Z.gain = [Again Bgain];
 % function Z = plus(X,Y)
 % %display           Overloaded
 % 
-% % Author Johan Löfberg 
+% % Author Johan Lofberg 
 % % $Id: plus.m,v 1.5 2007-02-07 09:11:27 joloef Exp $  
 % 
 % % LOGDET + SDPVAR

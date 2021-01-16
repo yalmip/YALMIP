@@ -1,7 +1,7 @@
 function anys = any(x)
 %ANY (overloaded)
 
-% Author Johan Löfberg 
+% Author Johan Lofberg 
 % $Id: any.m,v 1.2 2006-07-26 20:17:57 joloef Exp $  
 
 x_base = x.basis;

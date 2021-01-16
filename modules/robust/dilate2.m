@@ -1,4 +1,4 @@
-function varargout = dilate(F,w)
+function varargout = dilate2(F,w)
 % DILATE  Derives a matrix dilation
 %
 % [G,H,M] = DILATE(X,w) where X is a symmetric variable derives the
@@ -20,9 +20,9 @@ function varargout = dilate(F,w)
 % GRADUATE SCHOOL OF INFORMATION SCIENCE AND TECHNOLOGY THE UNIVERSITY OF
 % TOKYO BUNKYO-KU, TOKYO 113-8656, JAPAN , February 2006
 %
-% J. Löfberg, Improved matrix dilations for robust semidefinite programming
+% J. Lofberg, Improved matrix dilations for robust semidefinite programming
 % Division of Automatic control, Department of Electrical Engineering, 
-% Technical report XXXX, Linköpings universitet, November 2006
+% Technical report XXXX, Linkopings universitet, November 2006
 %
 % See also ROBUSTIFY, SOLVEROBUST, UNCERTAIN
 
