@@ -1,8 +1,8 @@
-function varargout=size(varargin)
+function varargout=sizeOLD(varargin)
 %size              Returns the number of inequalities and equalities 
 %   
-%    n = SIZE(F)     Returns the number of inequalities
-%    [n,m] = SIZE(F) Returns the number of inequalities and equalities
+%    n = SIZEOLD(F)     Returns the number of inequalities
+%    [n,m] = SIZEOLD(F) Returns the number of inequalities and equalities
 %
 %    See also   LMI, ADDLMI
 
