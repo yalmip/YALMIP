@@ -12,7 +12,7 @@ ub      = interfacedata.ub;
 lb      = interfacedata.lb;
 x0      = interfacedata.x0;
 n = length(c);
-
+x0fixed=0;
 % Recent support for nonconvex case is treated a bit hackish now
 % All convex quadratic stuff has been converted to SOCP cones, and then all
 % the rest are just kept, with nonlinear monomials remaining in the model
@@ -38,6 +38,20 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     else
         nonconvexdata.ineq = [];
     end    
+    if ~isempty(binary_variables)
+        index = 1:length(interfacedata.lb);
+        index(nonlinearMonoms)=[];
+        [~,location] = ismember(binary_variables,index);
+        interfacedata.binary_variables = location;
+        binary_variables = location;
+    end
+    if ~isempty(integer_variables)
+        index = 1:length(interfacedata.lb);
+        index(nonlinearMonoms)=[];
+        [~,location] = ismember(integer_variables,index);
+        interfacedata.integer_variables = location;
+        integer_variables = location;
+    end
     interfacedata.F_struc(:,1 + nonlinearMonoms) = [];
     interfacedata.c(nonlinearMonoms) = [];
     interfacedata.Q(:,nonlinearMonoms) = [];
@@ -45,6 +59,7 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     interfacedata.lb(nonlinearMonoms) = [];
     interfacedata.ub(nonlinearMonoms) = [];
     if ~isempty(x0)
+        x0fixed=1;
         x0(nonlinearMonoms) = [];
     end
     F_struc = interfacedata.F_struc;
@@ -245,7 +260,7 @@ if isequal(interfacedata.solver.version,'NONCONVEX')
     model.params.nonconvex = 2;
 end
 
-if ~isempty(x0)  
+if ~isempty(x0) && ~x0fixed
     model.start = x0(find(interfacedata.variabletype == 0));
 end
 model.NegativeSemiVar=NegativeSemiVar;
