@@ -40,6 +40,7 @@ temp_options.solver = options.bmibnb.lowersolver;
 % this will typically allow us to solver better lower bounding problems
 % (we don't have to linearize the cost)
 [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
+allsolvers = solvers; % Save for later
 if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     % No, probably non-convex cost. Pick a linear solver instead and go
     % for lower bound based on a complete "linearization"
@@ -185,7 +186,7 @@ tempProblemClass.objective.quadratic.nonconvex = 0;
 tempProblemClass.objective.polynomial = 0;
 tempProblemClass.objective.sigmonial = 0;
 
-[lpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
+[lpsolver,problem] = selectsolver(temp_options,tempProblemClass,allsolvers,socp_are_really_qc,allsolvers);
 
 if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb')
     tempbinary = tempProblemClass.constraint.binary;
