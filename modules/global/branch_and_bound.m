@@ -476,8 +476,15 @@ while go_on
         end
         if isempty(node)
             if ismember(spliton,union(p.binary_variables,p.integer_variables)) 
-                node1 = savetonode(p,spliton,p.lb(spliton),floor(x(spliton)),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
-                node2 = savetonode(p,spliton,ceil(x(spliton)),p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                if p.lb(spliton) == floor(x(spliton)) || p.ub(spliton) == ceil(x(spliton))
+                    center1 = floor(-1/2+(p.lb(spliton) + p.ub(spliton))/2);
+                    center2 = ceil((p.lb(spliton) + p.ub(spliton))/2);
+                    node1 = savetonode(p,spliton,p.lb(spliton),center1,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                    node2 = savetonode(p,spliton,center2,p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                else
+                    node1 = savetonode(p,spliton,p.lb(spliton),floor(x(spliton)),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                    node2 = savetonode(p,spliton,ceil(x(spliton)),p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                end
                 node1.bilinears = p.bilinears;
                 node1 = updateonenonlinearbound(node1,spliton);
                 node1.branchwidth = [p.ub(spliton)-p.lb(spliton)];

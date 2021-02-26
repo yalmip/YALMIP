@@ -45,6 +45,9 @@ else
         end
     end
     p.x0 = (p.lb + p.ub)/2;
+    p.x0(isinf(p.ub))=p.lb(isinf(p.ub));
+    p.x0(isinf(p.lb))=p.ub(isinf(p.lb));
+    p.x0(isinf(p.lb) & isinf(p.ub))=0;
     if ~isempty(p.integer_variables)
         p.x0(p.integer_variables) = round(p.x0(p.integer_variables));
     end

@@ -2,7 +2,9 @@ function  p = propagate_bounds_from_upper(p,upper)
 if nargin == 1
     upper = p.upper;
 end
-upper = upper + 1e-7;
+if upper ~= fix(upper)
+    upper = upper + 1e-7;
+end
 if ~isinf(upper)
     LU = [p.lb p.ub];
     % Simple objective f + c_i*x(i)
