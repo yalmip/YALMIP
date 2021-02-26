@@ -210,6 +210,8 @@ else
                 p_cut.F_struc(rf,:) = [];
                 p_cut.K.l = p_cut.K.l - nnz(rf>p_cut.K.f);
                 p_cut.K.f = p_cut.K.f - nnz(rf<=p_cut.K.f);
+            elseif size(p_cut.F_struc,2)>0
+                p_cut.F_struc(:,1+find(fixed))=[]; % can be 0x(n+1)
             end
             p_cut.c(removethese)=[];
             if nnz(p_cut.Q)>0

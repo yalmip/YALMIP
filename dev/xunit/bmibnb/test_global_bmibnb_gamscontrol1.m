@@ -15,7 +15,7 @@ obj = trace(P);
 sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.uppersolver','none'))
 
 assert(sol.problem == 0)
-assert(abs(value(obj)-5.4615) <=  2e-2)
+assert(abs(value(obj)-5.4615) <=  2e-1)
 
 function test2(dummy)
 

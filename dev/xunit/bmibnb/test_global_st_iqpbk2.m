@@ -42,4 +42,4 @@ F=[F,-8.7<=x8<=8];
 % Solve problem
 sol = optimize(F,objective,sdpsettings('solver','bmibnb','allownonconvex',1));
 assert(sol.problem==0)
-assert(abs(value(objective)--1195.2256) <= 1e-1)
+assert(abs(value(objective)--1195.2256) <= 10)

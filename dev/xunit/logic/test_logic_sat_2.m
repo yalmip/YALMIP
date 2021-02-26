@@ -72,7 +72,7 @@ x = sdpvar(1,8);
 p = [0 1 7 2 3 4 3 20];
 optimize((-100 <= [x(:);ii;jj] <= 100) + (x == p)+(x([ii jj]) <= 3)+(ii~=jj),-ii-jj);
 assert(sol.problem == 0);
-assert(min(value([ii jj])) == [5]);
-assert(max(value([ii jj])) == [7]);
+assert(fix(min(value([ii jj]))) == [5]);
+assert(fix(max(value([ii jj]))) == [7]);
 
 
