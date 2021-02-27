@@ -56,7 +56,15 @@ if any(is(F,'integer')) | any(is(F,'binary'))
 end
 
 % Create model using the standard code
-model = export(F,obj,sdpsettings('solver','sedumi'),[],[],1);
+[model,~,diagnostic] = export(F,obj,sdpsettings('solver','sedumi'),[],[],1);
+if isempty(model)
+  if isfield(diagnostic,'problem') && isfield(diagnostic,'info');
+    error("export failed: model is empty, problem=%d,info=%s", ...
+	  diagnostic.problem,diagnostic.info);
+  else
+    error("export failed: model is empty");
+  endif
+endif
 
 Fdual = ([]);
 xvec = [];
