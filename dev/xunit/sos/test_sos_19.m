@@ -51,7 +51,7 @@ p2e = checkset(F(find(~is(F,'sos'))));
 
 fail = 0;
 
-if abs(obj1-obj2) > 1e-4
+if abs(obj1-obj2) > 1e-3
     fail = 1;
 end
 
