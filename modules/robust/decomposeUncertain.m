@@ -35,10 +35,9 @@ integervars = [yalmip('binvariables') yalmip('intvariables')];
 ind = find(is(F_original,'integer') | is(F_original,'binary'));
 if ~isempty(ind)
     integervars = [integervars getvariables(F(ind))];
-    if any(ismember(VariableType.w_variables,integervars))
-        failure = 1;
-        return
-    end
+end
+if any(ismember(VariableType.w_variables,integervars))
+    error('Uncertain variables cannot be binaries/integers')
 end
 
 % Convert quadratic constraints in uncertainty model to SOCPs. This will
