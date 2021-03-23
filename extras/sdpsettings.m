@@ -148,6 +148,9 @@ else
     options.cplex = setup_cplex_options;
     Names = appendOptionNames(Names,options.cplex,'cplex');
 
+    options.coneprog = setup_coneprog_options;
+    Names = appendOptionNames(Names,options.coneprog,'coneprog');
+
     options.csdp = setup_csdp_options;
     Names = appendOptionNames(Names,options.csdp,'csdp');
 
@@ -1333,6 +1336,14 @@ try
     quadprog = trytoset('quadprog');
 catch
     quadprog.param = [];
+end
+
+function coneprog = setup_coneprog_options
+try
+    % FIXME Cannot setup all with defaults?
+    coneprog = optimoptions('coneprog');
+catch
+    coneprog = [];
 end
 
 function linprog = setup_linprog_options

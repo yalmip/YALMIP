@@ -1206,6 +1206,14 @@ solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
 i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'CONEPROG';
+solver(i).version = '';
+solver(i).checkfor= {'coneprog'};
+solver(i).call    = 'callconeprog';
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+i = i+1;
+
 solver(i) = sdpsolver;
 solver(i).tag     = 'penlab';
 solver(i).version = '';
