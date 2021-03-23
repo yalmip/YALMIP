@@ -157,7 +157,13 @@ if n > 1 && isa(Q_new,'sdpvar')
                 end
             end
         end
-        Q_new(zeroDiagonal,:)= [];
-        Q_new(:,zeroDiagonal)= [];
+        % FIXME: We current simply zero this row
+        % We could delete it, but then some post-rpcessin fails due to
+        % inconsistency between Q and A and b
+        % Trust solvers to fix this trivial issue
+        Q_new(zeroDiagonal,:)= 0;
+        Q_new(:,zeroDiagonal)= 0;
+        % Q_new(zeroDiagonal,:)= [];
+        % Q_new(:,zeroDiagonal)= [];
     end
 end
