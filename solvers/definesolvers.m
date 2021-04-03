@@ -1838,18 +1838,6 @@ solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = lpsolver;
-solver(i).tag     = 'powersolver';
-solver(i).version = '';
-solver(i).checkfor= {'powersolver.m'};
-solver(i).call    = 'callpowersolver';
-solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-solver(i).constraint.inequalities.rotatedsecondordercone.linear = 1;
-solver(i).constraint.inequalities.powercone = 1;
-solver(i).complex = 1;
-i = i+1;
-
-solver(i) = lpsolver;
 solver(i).tag     = 'LSQNONNEG';
 solver(i).version = '';
 solver(i).checkfor= {'lsqnonneg.m'};
