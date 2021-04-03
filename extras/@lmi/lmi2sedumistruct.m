@@ -28,7 +28,7 @@ equ_con = find(type_of_constraint == 3);
 qdr_con = find(type_of_constraint == 4);
 mqdr_con = find(type_of_constraint == 54);
 rlo_con = find(type_of_constraint == 5);
-pow_con = find(type_of_constraint == 20);
+pow_con = find(type_of_constraint == 20 | type_of_constraint == 58);
 exp_con = find(type_of_constraint == 21 | type_of_constraint == 22);
 sos2_con = find(type_of_constraint == 50);
 sos1_con = find(type_of_constraint == 51);
@@ -238,16 +238,15 @@ for i = 1:length(pow_con)
     
     % We allocate the structure blockwise...
     F_structemp  = spalloc(1+nvars,ntimesm,0);
-    % Add these rows only
-    F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
     
-    alpha = F_structemp(1,end);
-    F_structemp(:,end)=[];
+    % Get complete base
+    E = F.clauses{constraints}.data;
+    E = reshape(E,[],1);
+    F_structemp([1 1+lmi_variables(:)'],:)= getbase(E).';
     % ...and add them together (efficient for large structures)
-    F_struc = [F_struc F_structemp];
-    
+    F_struc = [F_struc F_structemp];    
     top = top+ntimesm;
-    K.p(i) = n*m;
+    K.p(i:i+m-1) = n;
 end
 
 

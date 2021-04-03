@@ -84,6 +84,7 @@ switch class(varargin{1})
                     absX = sdpvar(length(X),1);
                     F = [-absX <= X <= absX];
                     F = [F,sum(s)<= t,s>=0];
+                    
                     for i = 1:length(X)
                         F = [F,detset(absX(i),[repmat(t,1,l-m) repmat(s(i),1,m) repmat(absX(i),1,w-l)])];
                         F = [F,detset(-absX(i),[repmat(t,1,l-m) repmat(s(i),1,m) repmat(absX(i),1,w-l)])];
