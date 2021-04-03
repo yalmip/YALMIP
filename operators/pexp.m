@@ -3,7 +3,11 @@ function varargout = pexp(varargin)
 %
 % y = PEXP(x)
 %
-% Computes perspective exp, x(1)*exp(x(2)/x(1)) on x>0
+% Defines perspective exp, x(1)*exp(x(2)/x(1)) on x(1)>0
+% 
+% Alternatively
+%
+% y = PEXP(x,y) to define x*exp(y/x) on x>0
 %
 % Implemented as evalutation based nonlinear operator. Hence, the convexity
 % of this function is exploited to perform convexity analysis and rigorous
@@ -38,13 +42,12 @@ switch class(varargin{1})
     case 'char'
         
         operator = CreateBasicOperator('convex','positive','callback');
-        operator.range = [0 inf];
-        operator.domain = [0 inf];    
+        operator.range = [0 inf];   
         operator.derivative = @derivative;
         operator.convexhull = @convexhull;
         operator.bounds = @bounds;
         
-        varargout{1} = [];
+        varargout{1} = [varargin{3}(1) >= 0];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
