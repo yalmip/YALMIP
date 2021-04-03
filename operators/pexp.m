@@ -25,7 +25,7 @@ switch class(varargin{1})
 
 
     case 'sdpvar'
-
+        
         if nargin == 2
             varargin{1} = [varargin{1};varargin{2}];
         end               
