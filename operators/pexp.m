@@ -63,7 +63,7 @@ x1 = [xL(1);xL(2)];
 x2 = [xU(1);xL(2)];
 x3 = [xL(1);xU(2)];
 x4 = [xU(1);xU(2)];
-L = 0;
+L = min([pexp(x1) pexp(x2) pexp(x3) pexp(x4)]);
 U = max([pexp(x1) pexp(x2) pexp(x3) pexp(x4)]);
 
 function dp = derivative(x)
