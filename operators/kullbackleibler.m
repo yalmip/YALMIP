@@ -6,7 +6,7 @@ function varargout = kullbackleibler(varargin)
 % Computes/declares the convex Kullback-Leibler divergence sum(x.*log(x./y))
 % Alternatively -sum(x.*log(y/x)), i.e., negated perspectives of log(y)
 %
-% See also ENTROPY, CROSSENTROPY
+% See also ENTROPY, CROSSENTROPY, LOGSUMEXP, PEXP, EXPCONE
 
 switch class(varargin{1})
 

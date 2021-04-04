@@ -5,11 +5,12 @@ function varargout = entropy(varargin)
 %
 % Computes/declares concave entropy -sum(x.*log(x))
 %
-% Implemented as evalutation based nonlinear operator. Hence, the concavity
-% of this function is exploited to perform convexity analysis and rigorous
-% modelling.
+% Implemented as either evalutation based-nonlinear operator, or
+% represented using exponential cones depending on solver. Hence, the
+% concavity of this function is exploited to perform convexity analysis and
+% rigorous modelling. 
 %
-% See also CROSSENTROPY, KULLBACKLEIBLER.
+% See also CROSSENTROPY, LOGSUMEXP, KULLBACKLEIBLER, PEXP, EXPCONE
 
 switch class(varargin{1})
 
