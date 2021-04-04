@@ -9,9 +9,12 @@ function varargout = pexp(varargin)
 %
 % y = PEXP(x,y) to define x*exp(y/x) on x>0
 %
-% Implemented as evalutation based nonlinear operator. Hence, the convexity
-% of this function is exploited to perform convexity analysis and rigorous
-% modelling.
+% Implemented as either evalutation based-nonlinear operator, or
+% represented using exponential cones depending on solver. Hence, the
+% convexity of this function is exploited to perform convexity analysis and
+% rigorous modelling. 
+%
+% See also ENTROPY, LOGSUMEXP, CROSSENTROPY, KULLBACKLEIBLER, EXPCONE
 
 switch class(varargin{1})
     
@@ -60,7 +63,7 @@ x1 = [xL(1);xL(2)];
 x2 = [xU(1);xL(2)];
 x3 = [xL(1);xU(2)];
 x4 = [xU(1);xU(2)];
-L = -inf;
+L = 0;
 U = max([pexp(x1) pexp(x2) pexp(x3) pexp(x4)]);
 
 function dp = derivative(x)
