@@ -214,17 +214,11 @@ else
     options.kktqp = setup_kktqp_options;
     Names = appendOptionNames(Names,options.kktqp,'kktqp');    
 
-    options.nag = setup_nag_options;
-    Names = appendOptionNames(Names,options.nag,'nag');
-
     options.mosek = setup_mosek_options;
     Names = appendOptionNames(Names,options.mosek,'mosek');
 
     options.nomad = setup_nomad_options;
     Names = appendOptionNames(Names,options.nomad,'nomad');
-
-    options.ooqp = setup_ooqp_options;
-    Names = appendOptionNames(Names,options.ooqp,'ooqp');
 
     options.penbmi = setup_penbmi_options;
     Names = appendOptionNames(Names,options.penbmi,'penbmi');
@@ -919,12 +913,6 @@ logdetppa.switch_alt_newton_tol = 1e-2;
 function lpsolve = setup_lpsolve_options
 lpsolve.scalemode = 0;
 
-function nag = setup_nag_options
-nag.featol = sqrt(eps);
-nag.itmax = 500;
-nag.bigbnd = 1e10;
-nag.orthog = 0;
-
 function penbmi = setup_penbmi_options
 penbmi.DEF = 1;
 penbmi.PBM_MAX_ITER = 50;
@@ -1190,13 +1178,6 @@ try
     nomad = nomadset;
 catch
     nomad =[];
-end
-
-function ooqp = setup_ooqp_options
-try
-    ooqp = ooqpset;
-catch
-    ooqp = [];
 end
 
 function xpress = setup_xpress_options
