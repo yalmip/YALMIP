@@ -25,7 +25,7 @@ for i = 1:Counter
             info.soc = [info.soc;size(Fi,1) size(Fi,2) F.LMIid(i)];
         case 5
             info.rlc = [info.rlc;size(Fi,1) size(Fi,2) F.LMIid(i)];
-        case 20
+        case {20,58}
             info.pow = [info.pow;size(Fi,1) size(Fi,2) F.LMIid(i)];
         case {7,8}
         otherwise

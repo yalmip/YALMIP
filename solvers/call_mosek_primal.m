@@ -109,7 +109,7 @@ if model.K.p(1)>0
     prob.blc(powerRows) = prob.buc(powerRows);
     prob.c = [prob.c;zeros(nof_new,1)];
     % And now say that the new variables are in the POWER cone
-    prob.cones.conepar = full(alpha);
+    prob.cones.conepar = [zeros(1,length(prob.cones.type)) full(alpha)];
     top = nof_original;
     for i = 1:length(model.K.p)
         prob.cones.type = [prob.cones.type 4];
@@ -123,7 +123,7 @@ end
 
 if model.K.s(1)>0
     
-    sdpRows = 1+model.K.f+model.K.l+3*model.K.e+sum(model.K.q):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.p)+sum(model.K.s.^2);
+    sdpRows = 1+model.K.f+model.K.l+3*model.K.e+sum(model.K.q)+sum(model.K.p):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.p)+sum(model.K.s.^2);
     prob.blc(sdpRows) = prob.buc(sdpRows);
     
     prob.bara.subi = [];

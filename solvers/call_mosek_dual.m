@@ -27,23 +27,24 @@ if model.K.q(1)>0 || model.K.e > 0 || model.K.p(1) > 0
     prob.cones.type = [];
     prob.cones.subptr = [];
     prob.cones.sub = [];
+    prob.cones.conepar = [];
 end
 
 if model.K.q(1)>0
     nq = length(model.K.q);
-    prob.cones.type = zeros(nq, 1);
-    prob.cones.subptr = zeros(nq, 1);
-    prob.cones.sub = zeros(sum(model.K.q), 1);
     top0 = top;
     for i = 1:length(model.K.q)
-        prob.cones.subptr(i) = top - top0 + 1;
-        prob.cones.sub(top-top0+1:top-top0+model.K.q(i)) = top+1:top+model.K.q(i);
+        prob.cones.conepar = [prob.cones.conepar 0];
+        prob.cones.type = [prob.cones.type 0];
+        prob.cones.subptr = [prob.cones.subptr(:)' length(prob.cones.sub)+1];
+        prob.cones.sub = [prob.cones.sub top+1:top+model.K.q(i)];
         top = top + model.K.q(i);
     end
 end
 
 if model.K.e>0
     for i = 1:model.K.e
+        prob.cones.conepar = [prob.cones.conepar 0];
         prob.cones.type = [prob.cones.type(:)' 3];
         prob.cones.subptr = [prob.cones.subptr(:)' length(prob.cones.sub)+1];
         prob.cones.sub = [prob.cones.sub(:)' top+3 top+2 top+1];
@@ -51,13 +52,12 @@ if model.K.e>0
     end
 end
 
-if model.K.p(1)>0
-    top0 = top;
-    prob.cones.conepar = full(alpha);
+if model.K.p(1)>0    
+    prob.cones.conepar = [prob.cones.conepar full(alpha(:))'];
     for i = 1:length(model.K.p)
-        prob.cones.type = [prob.cones.type(:)' 4];
-        prob.cones.subptr(i) = top - top0 + 1;
-        prob.cones.sub(top-top0+1:top-top0+model.K.p(i)) = top+1:top+model.K.p(i);
+        prob.cones.type = [prob.cones.type(:)' 5];
+        prob.cones.subptr = [prob.cones.subptr(:)' length(prob.cones.sub)+1];
+        prob.cones.sub = [prob.cones.sub(:)' top+1:top+model.K.p(i)];
         top = top + model.K.p(i);
     end
 end
