@@ -742,54 +742,15 @@ if ~p.solver.lower.constraint.inequalities.secondordercone.linear
     end
 end
 
-function p_lp = addTrivialActivationCuts(p,p_lp)
-if p.K.s(1) > 0
-    top = p.K.f + p.K.l+sum(p.K.q)+1;
-    for k = 1:length(p.K.s)
-        index = top:top+p.K.s(k)^2-1;
-        F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);
-        for col = 1:p.K.s(k)
-            for row = 2:p.K.s(k)
-                pos = (col-1)*p.K.s(k) + row - 1 + top;
-                if p.F_struc(pos,1) ~= 0
-                    if ~any(p.F_struc(pos,2:end))
-                        % Constant in (row col)
-                        pos = p.K.s(k)*(row-1) + row -1 + top;
-                        if p.F_struc(pos,1)==0
-                            used = find(p.F_struc(pos,2:end));
-                            if all(ismember(used,p.binary_variables))
-                            elseif all(ismember(used,p.integer_variables))
-                                if all(p.lb(used)>=0)
-                                elseif all(p.ub(used)<=0)
-                                    % All negative integers. Some of them 
-                                    % has to be -1 at least
-                                    p_lp.F_struc(end+1,1)=-1;
-                                    p_lp.F_struc(end,used+1) = -1;
-                                    p_lp.K.l = p_lp.K.l + 1;
-                                end   
-                            end
-                        end
-                    end
-                end
-            end                                       
-        end
-    end
-end
-
 function p_lp = addActivationCuts(p,p_lp)
 if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) == length(p.c)
     top = p.K.f + p.K.l+sum(p.K.q)+1;
     for k = 1:length(p.K.s)
         F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);
-        %  Fij = p.F_struc(top:top+p.K.s(k)^2-1,2:end);
-        %  Fij = sum(Fij | Fij,2);
         F0 = reshape(F0,p.K.s(k),p.K.s(k));
-        %  Fij = reshape(Fij,p.K.s(k),p.K.s(k));
-        %  Fall = F0 | Fij;
         row = 1;
         added = 0; % Avoid adding more than 2*n cuts (we hope for sparse model...)
-        while row <= p.K.s(k)-1 && added <= 2*p.K.s(k)
-            % if 1
+        while row <= p.K.s(k)-1 && added <= 2*p.K.s(k)            
             j = find(F0(row,:));
             if min(eig(F0(j,j)))<0
                 [ii,jj] = find(F0(j,j));
@@ -803,8 +764,7 @@ if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) 
                 p_lp.F_struc = [p_lp.F_struc;-1 S];
                 p_lp.K.l = p_lp.K.l + 1;
                 
-            end
-            % else
+            end            
             j = find(F0(row,:));
             j = j(j>row);
             for col = j(:)'
