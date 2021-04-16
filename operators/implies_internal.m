@@ -73,7 +73,7 @@ switch settype(Y)
         Y = Y(:);
         [M,m,infbound]=derivebounds(Y);
         if infbound
-            warning('You have unbounded variables in IMPLIES leading to a lousy big-M relaxation.');
+            warning('You have unbounded variables in IMPLIES leading to a lousy big-M relaxation. Read more https://yalmip.github.io/faq/warningbigm/');                        
         end
         F = binary_implies_linearequality(Y,reshape(X,[],1),M,m);
         % F = [F, binary_implies_linearnegativeconstraint(-Y,reshape(X,[],1),-m,-M)];
@@ -88,7 +88,7 @@ switch settype(Y)
         % Derive bounds on all elements
         [M,m,infbound]=derivebounds(y);
         if infbound
-            warning('You have unbounded variables in IMPLIES leading to a lousy big-M relaxation.');
+            warning('You have unbounded variables in IMPLIES leading to a lousy big-M relaxation. Read more https://yalmip.github.io/faq/warningbigm/');            
         end
         % Crude lower bound eig(Y) > -max(abs(Y(:))*n*I
         m=-max(abs([M;m]))*length(Y);
