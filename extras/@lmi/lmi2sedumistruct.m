@@ -246,7 +246,10 @@ for i = 1:length(pow_con)
     % ...and add them together (efficient for large structures)
     F_struc = [F_struc F_structemp];    
     top = top+ntimesm;
-    K.p(i:i+m-1) = n;
+    K.p = [K.p repmat(n,1,m)];
+end
+if K.p(1)==0 && length(K.p)>1
+    K.p = K.p(2:end);
 end
 
 
