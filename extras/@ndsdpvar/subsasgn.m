@@ -23,6 +23,13 @@ if isempty(X)
     X = y;
     return
 end
+
+if length(X.dim) < length(I.subs)
+   for k = length(X.dim)+1:length(I.subs)
+       X.basis = [X.basis;0*repmat(X.basis,max(I.subs{k})-1,1)];
+       X.dim = [X.dim max(I.subs{k})];
+   end          
+end
 base = reshape(1:size(X.basis,1),X.dim);
 base = subsref(base,I);
 
