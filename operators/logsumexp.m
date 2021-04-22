@@ -5,9 +5,12 @@ function varargout = logsumexp(varargin)
 %
 % Computes/declares log of sum of exponentials log(sum(exp(x)))
 %
-% Implemented as evalutation based nonlinear operator. Hence, the convexity
-% of this function is exploited to perform convexity analysis and rigorous
-% modelling.
+% Implemented as either evalutation based-nonlinear operator, or
+% represented using exponential cones depending on solver. Hence, the
+% convexity of this function is exploited to perform convexity analysis and
+% rigorous modelling. 
+%
+% See also ENTROPY, CROSSENTROPY, KULLBACKLEIBLER, PEXP, EXPCONE
 
 switch class(varargin{1})
 

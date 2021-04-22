@@ -650,7 +650,7 @@ end
 
 
 function p = addDiagonalSDPCuts(p)
-if ~isempty(p.K.s) && p.K.s(1) > 0 && p.solver.uppersolver.constraint.inequalities.semidefinite.linear == 0
+if ~isempty(p.K.s) && p.K.s(1) > 0
     top = p.K.f+p.K.l+sum(p.K.q)+1;
     newF = [];
     newCut = 1;

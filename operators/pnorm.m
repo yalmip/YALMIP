@@ -1,15 +1,21 @@
 function varargout = pnorm(varargin)
 %PNORM P-Norm of SDPVAR variable with convexity knowledge
 %
-% PNORM is recommended if your goal is to obtain
-% a convex model, since the function PNORM is implemented
-% as a so called nonlinear operator. (For p/q ==1,2,inf you should use the
-% overloaded norm)
+% PNORM is used if your goal is to obtain a convex conic model model, since
+% the function PNORM is implemented using conic epigrapraphs.
+% (For p/q ==1,2,inf you should use the overloaded norm)
 %
 % t = pnorm(x,p/q), p/q >= 1
 %
-% Note, the pnorm is implemented using cpower, which adds
-% a large number of variables and constraints
+% By default pnorm is implemented using SOCP-represented cpower, which adds
+% a large number of variables and constraints, in particular if p and q are
+% large.
+%
+% An alternative is available if you have a power cone solver
+%
+% t = pnorm(x,p,'power')
+%
+% Note that this model is not based on a rational representation of the power
 
 switch class(varargin{1})
     
@@ -34,63 +40,67 @@ switch class(varargin{1})
             t = varargin{2}; % Second arg is the extended operator variable
             X = varargin{3}; % Third arg and above are the args user used when defining t.
             p = varargin{4};
-            
-            
-            % sum(|xi|^(l/m))^(l/m) < t
-            
-            % si>0
-            % -t^({l-m}/m)si^(m/l) < -xi
-            % -t^({l-m}/m)si^(m/l) <  xi
-            %sum(si) < t
-            % t>0
-            
-            
-            if 0
-                [p,q] = rat(p);
-                absX = sdpvar(length(X),1);
-                y = sdpvar(length(X),1);
-                F = [-absX < X < absX];
-                
-                for i = 1:length(y)
-                    F = [F,pospower(absX(i),y(i),p,q)];
-                end
-                
-                F = [F,pospower(t,sum(y),q,p)];
+            if nargin > 4
+                method = varargin{5};
             else
-                [l,m] = rat(p);
-                % l=4
-                % m = 1
-                % x<(t^(l-m)*s^m)^1/l
-                % -x<(t^(l-m)*s^m)^1/l
-                % x < t t t s
-                if 2^fix(log2(l))==l &  m == 1
-                    s=sdpvar(length(X),1);
-                    absX = sdpvar(length(X),1);
-                    F = [-absX <= X <= absX];
-                    F = [F,sum(s)<= t,s>=0];
-                    for i = 1:length(X)
-                        F = [F,detset(absX(i),[repmat(t,1,l-m) s(i)])];
-                        F = [F,detset(-absX(i),[repmat(t,1,l-m) s(i)])];
-                    end
-                else
-                    % l = 7
-                    % m = 2
-                    % x < (t t t t t s s)^(1/7)
-                    % x^7 < (t t t t t s s)
-                    % x^8 < (t t t t t  s s x)
-                    % x <  (t t t t t  s s x)^(1/8
-                    s=sdpvar(length(X),1);
-                    w = 2^(ceil(log2(l)));
-                    absX = sdpvar(length(X),1);
-                    F = [-absX <= X <= absX];
-                    F = [F,sum(s)<= t,s>=0];
-                    for i = 1:length(X)
-                        F = [F,detset(absX(i),[repmat(t,1,l-m) repmat(s(i),1,m) repmat(absX(i),1,w-l)])];
-                        F = [F,detset(-absX(i),[repmat(t,1,l-m) repmat(s(i),1,m) repmat(absX(i),1,w-l)])];
-                    end
-                end
-                
+                method = 'socp';
             end
+            
+            switch method
+                case 'power'
+                    
+                    n = length(X);
+                    r = sdpvar(1,n);
+                    F = [sum(r) == t, 
+                         pcone([r;
+                                repmat(t,1,n);
+                                X(:)';
+                                repmat(1/p,1,n)])];
+                    
+                case 'socp'
+                    % sum(|xi|^(l/m))^(l/m) < t
+                    % si>0
+                    % -t^({l-m}/m)si^(m/l) < -xi
+                    % -t^({l-m}/m)si^(m/l) <  xi
+                    %sum(si) < t
+                    % t>0                                                            
+                    [l,m] = rat(p);
+                    % l=4
+                    % m = 1
+                    % x<(t^(l-m)*s^m)^1/l
+                    % -x<(t^(l-m)*s^m)^1/l
+                    % x < t t t s
+                    if 2^fix(log2(l))==l &  m == 1
+                        s=sdpvar(length(X),1);
+                        absX = sdpvar(length(X),1);
+                        F = [-absX <= X <= absX];
+                        F = [F,sum(s)<= t,s>=0];
+                        for i = 1:length(X)
+                            F = [F,detset(absX(i),[repmat(t,1,l-m) s(i)])];
+                            F = [F,detset(-absX(i),[repmat(t,1,l-m) s(i)])];
+                        end
+                    else
+                        % l = 7
+                        % m = 2
+                        % x < (t t t t t s s)^(1/7)
+                        % x^7 < (t t t t t s s)
+                        % x^8 < (t t t t t  s s x)
+                        % x <  (t t t t t  s s x)^(1/8
+                        s=sdpvar(length(X),1);
+                        w = 2^(ceil(log2(l)));
+                        absX = sdpvar(length(X),1);
+                        F = [-absX <= X <= absX];
+                        F = [F,sum(s)<= t,s>=0];
+                        
+                        for i = 1:length(X)
+                            F = [F,detset(absX(i),[repmat(t,1,l-m) repmat(s(i),1,m) repmat(absX(i),1,w-l)])];
+                            F = [F,detset(-absX(i),[repmat(t,1,l-m) repmat(s(i),1,m) repmat(absX(i),1,w-l)])];
+                        end
+                    end
+                otherwise
+                    error('Unknown method selected in pnorm (should be power or socp)');
+            end
+            
             varargout{1} = F;
             varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','positive','model','graph');
             varargout{3} = X;

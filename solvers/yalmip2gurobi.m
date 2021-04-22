@@ -12,7 +12,7 @@ ub      = interfacedata.ub;
 lb      = interfacedata.lb;
 x0      = interfacedata.x0;
 n = length(c);
-x0fixed=0;
+
 % Recent support for nonconvex case is treated a bit hackish now
 % All convex quadratic stuff has been converted to SOCP cones, and then all
 % the rest are just kept, with nonlinear monomials remaining in the model
@@ -38,20 +38,6 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     else
         nonconvexdata.ineq = [];
     end    
-    if ~isempty(binary_variables)
-        index = 1:length(interfacedata.lb);
-        index(nonlinearMonoms)=[];
-        [~,location] = ismember(binary_variables,index);
-        interfacedata.binary_variables = location;
-        binary_variables = location;
-    end
-    if ~isempty(integer_variables)
-        index = 1:length(interfacedata.lb);
-        index(nonlinearMonoms)=[];
-        [~,location] = ismember(integer_variables,index);
-        interfacedata.integer_variables = location;
-        integer_variables = location;
-    end
     interfacedata.F_struc(:,1 + nonlinearMonoms) = [];
     interfacedata.c(nonlinearMonoms) = [];
     interfacedata.Q(:,nonlinearMonoms) = [];
@@ -59,7 +45,6 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     interfacedata.lb(nonlinearMonoms) = [];
     interfacedata.ub(nonlinearMonoms) = [];
     if ~isempty(x0)
-        x0fixed=1;
         x0(nonlinearMonoms) = [];
     end
     F_struc = interfacedata.F_struc;
@@ -195,13 +180,26 @@ if ~isempty(nonconvexdata)
     end
     m = length(model.lb);
     monomials = find(interfacedata.variabletype > 0);
+    
+    %Create the function which receives the old variabletype index
+    %of a linear variable and returns the appropriate new index for
+    %gurobi's purposes.
+    
+    old_indices = [1:length(interfacedata.variabletype)];
+    retained_indices = old_indices( interfacedata.variabletype == 0 );
+    old2retained = sparse(size(old_indices,1),size(old_indices,2),0);
+    for ri_index = 1:length(retained_indices)
+        old2retained( retained_indices(ri_index) ) = ri_index;
+    end
+    
+    
     map = [];
     for j = 1:length(monomials)
         s = find(interfacedata.monomtable(monomials(j),:));
         if length(s) == 1
-            map(monomials(j),:) = [s s];
+            map(monomials(j),:) = old2retained([s s]);
         else
-            map(monomials(j),:) = s;
+            map(monomials(j),:) = old2retained(s);
         end
     end
     for i = 1:size(nonconvexdata.eq,1)
@@ -260,7 +258,7 @@ if isequal(interfacedata.solver.version,'NONCONVEX')
     model.params.nonconvex = 2;
 end
 
-if ~isempty(x0) && ~x0fixed
+if ~isempty(x0)  
     model.start = x0(find(interfacedata.variabletype == 0));
 end
 model.NegativeSemiVar=NegativeSemiVar;

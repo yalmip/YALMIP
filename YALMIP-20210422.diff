@@ -1,0 +1,1313 @@
+--- ../YALMIP_orig/@sdpvar/sumsum.m	2021-04-22 22:59:47.629579817 +1000
++++ ../YALMIP/@sdpvar/sumsum.m	2021-04-22 23:00:11.842374429 +1000
+@@ -1,4 +1,4 @@
+-function Y=sum(Y)
++function Y=sumsum(Y)
+ %SUM (overloaded)
+ 
+ Y.basis = sum(Y.basis,1);
+--- ../YALMIP_orig/@sdpvar/domain.m	2021-04-22 22:59:47.614579944 +1000
++++ ../YALMIP/@sdpvar/domain.m	2021-04-22 23:00:11.837374472 +1000
+@@ -1,4 +1,4 @@
+-function Y=plot(varargin)
++function Y=domain(varargin)
+ %DOMAIN  Extract domain for PWA variable
+ 
+ % Fast version for plotting simple PWA objects
+@@ -21,4 +21,5 @@
+         end
+     end
+ end
+-error('DOMAIN can only be applied to simple MPT related PWA objects')
+\ No newline at end of file
++error('DOMAIN can only be applied to simple MPT related PWA objects')
++
+--- ../YALMIP_orig/@sdpvar/gt.m	2021-04-22 22:59:47.618579910 +1000
++++ ../YALMIP/@sdpvar/gt.m	2021-04-22 23:00:11.838374463 +1000
+@@ -9,11 +9,6 @@
+     Y = sdpvar(Y);
+ end
+ 
+-fh = findobj( 'Type', 'Figure', 'Name', 'Kittens don''t like >!' );
+-if isempty(fh)
+-    figure('Name','Kittens don''t like >!');
+-    imshow('strictwarning.jpg')
+-end
+ warning('YALMIP:strict','Strict inequalities are not supported. A non-strict has been added instead'')');
+ 
+ try
+--- ../YALMIP_orig/@sdpvar/mtimes.m	2021-04-22 22:59:47.623579868 +1000
++++ ../YALMIP/@sdpvar/mtimes.m	2021-04-22 23:00:11.839374455 +1000
+@@ -354,7 +354,7 @@
+                 if prod(size(mt_x))==1 % Bug in Solaris and Linux, ML 6.X
+                     allmt_xplusy = local_mt(:,testthese) + sparse(repmat(full(mt_x),1,nyvars));
+                 else
+-                    allmt_xplusy = bsxfun(@plus,local_mt(:,testthese),mt_x);
++                    allmt_xplusy = bsxfun("plus",local_mt(:,testthese),mt_x);
+                  %   allmt_xplusy = local_mt(:,testthese) + repmat(mt_x,1,nyvars);
+                 end
+                 allhash = allmt_xplusy'*hash;
+--- ../YALMIP_orig/@sdpvar/any.m	2021-04-22 22:59:47.609579987 +1000
++++ ../YALMIP/@sdpvar/any.m	2021-04-22 23:00:11.835374489 +1000
+@@ -1,7 +1,7 @@
+ function anys = any(x)
+ %ANY (overloaded)
+ 
+-% Author Johan Löfberg 
++% Author Johan Lofberg 
+ % $Id: any.m,v 1.2 2006-07-26 20:17:57 joloef Exp $  
+ 
+ x_base = x.basis;
+--- ../YALMIP_orig/@sdpvar/poly.m	2021-04-22 22:59:47.624579860 +1000
++++ ../YALMIP/@sdpvar/poly.m	2021-04-22 23:00:11.840374446 +1000
+@@ -12,7 +12,7 @@
+ %
+ % See also DET
+ 
+-% Author Anders Helmersson, Johan Löfberg
++% Author Anders Helmersson, Johan Lofberg
+ 
+ [n, m] = size (A);
+ if n ~= m, error ('A must be square'); end;
+--- ../YALMIP_orig/@sdpvar/variablereplace.m	2021-04-22 22:59:47.630579809 +1000
++++ ../YALMIP/@sdpvar/variablereplace.m	2021-04-22 23:00:11.842374429 +1000
+@@ -1,4 +1,4 @@
+-function y = replace(y,oldVar,newVar)
++function y = variablereplace(y,oldVar,newVar)
+ 
+ var = y.lmi_variables;
+ 
+--- ../YALMIP_orig/@sdpvar/lt.m	2021-04-22 22:59:47.621579885 +1000
++++ ../YALMIP/@sdpvar/lt.m	2021-04-22 23:00:11.839374455 +1000
+@@ -9,11 +9,6 @@
+     Y = sdpvar(Y);
+ end
+ 
+-fh = findobj( 'Type', 'Figure', 'Name', 'Kittens don''t like <!' );
+-if isempty(fh)
+-    figure('Name','Kittens don''t like >!');
+-    imshow('strictwarning.jpg')
+-end
+ warning('YALMIP:strict','Strict inequalities are not supported. A non-strict has been added instead'')');
+ 
+ try
+--- ../YALMIP_orig/solvers/callmaxdet.m	2021-04-22 22:59:47.674579435 +1000
++++ ../YALMIP/solvers/callmaxdet.m	2021-04-22 23:00:11.871374184 +1000
+@@ -79,7 +79,7 @@
+ 
+ function [x0,z0,w0,problem,infostr,solveroutput] = callmaxdetphase1(F_struc,F_blksz, G_struc,G_blksz, c, options);
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: callmaxdet.m,v 1.6 2006-12-18 14:42:28 joloef Exp $  
+ 
+ try
+--- ../YALMIP_orig/solvers/callsqplab.m	2021-04-22 22:59:47.676579419 +1000
++++ ../YALMIP/solvers/callsqplab.m	2021-04-22 23:00:11.873374166 +1000
+@@ -1,4 +1,4 @@
+-function output = callfmincon(interfacedata)
++function output = callsqplab(interfacedata)
+ 
+ global SQPLABDATA
+ % Retrieve needed data
+@@ -203,4 +203,5 @@
+ end
+ 
+ % Standard interface
+-output = createoutput(x,D_struc,[],problem,'FMINCON',solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createoutput(x,D_struc,[],problem,'FMINCON',solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/call_cplexibm_qcmiqp.m	2021-04-22 22:59:47.672579453 +1000
++++ ../YALMIP/solvers/call_cplexibm_qcmiqp.m	2021-04-22 23:00:11.869374200 +1000
+@@ -1,6 +1,6 @@
+ function output = call_cplexibm_qcmiqp(interfacedata)
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ 
+ % This is a gateway to all CPLEX interfaces
+ % Call LP/QP solver if sufficient
+--- ../YALMIP_orig/solvers/callgurobimex.m	2021-04-22 22:59:47.674579435 +1000
++++ ../YALMIP/solvers/callgurobimex.m	2021-04-22 23:00:11.870374192 +1000
+@@ -1,4 +1,4 @@
+-function output = callgurobi(interfacedata)
++function output = callgurobimex(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+@@ -206,4 +206,5 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/calldsdp5.m	2021-04-22 22:59:47.673579444 +1000
++++ ../YALMIP/solvers/calldsdp5.m	2021-04-22 23:00:11.870374192 +1000
+@@ -1,4 +1,4 @@
+-function output = calldsdp(interfacedata)
++function output = calldsdp5(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+@@ -121,4 +121,5 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/callbintprog.m	2021-04-22 22:59:47.673579444 +1000
++++ ../YALMIP/solvers/callbintprog.m	2021-04-22 23:00:11.869374200 +1000
+@@ -1,4 +1,4 @@
+-function output = calllinprog(interfacedata)
++function output = callbintprog(interfacedata)
+ 
+ % Standard input interface
+ options = interfacedata.options;
+@@ -154,4 +154,5 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/yalmip2cplex.m	2021-04-22 22:59:47.676579419 +1000
++++ ../YALMIP/solvers/yalmip2cplex.m	2021-04-22 23:00:11.873374166 +1000
+@@ -1,6 +1,6 @@
+ function [model,nonlinearremain] = yalmip2cplex(interfacedata)
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+--- ../YALMIP_orig/solvers/callipoptgp.m	2021-04-22 22:59:47.674579435 +1000
++++ ../YALMIP/solvers/callipoptgp.m	2021-04-22 23:00:11.870374192 +1000
+@@ -1,4 +1,4 @@
+-function output = callfmincongp(interfacedata)
++function output = callipoptgp(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+@@ -188,4 +188,5 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/calllinprog.m	2021-04-22 22:59:47.674579435 +1000
++++ ../YALMIP/solvers/calllinprog.m	2021-04-22 23:00:11.871374184 +1000
+@@ -53,7 +53,13 @@
+ end
+ 
+ solvertime = tic;
+-[x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
++if exist('OCTAVE_VERSION', 'builtin')
++  [x,fmin] = linprog(c, A, b, Aeq, beq, lb, ub);
++  lambda=[];
++  flag=1;
++else
++  [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
++endif
+ solvertime = toc(solvertime);
+ problem = 0;
+ 
+@@ -114,4 +120,4 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+--- ../YALMIP_orig/solvers/definesolvers.m	2021-04-22 22:59:47.676579419 +1000
++++ ../YALMIP/solvers/definesolvers.m	2021-04-22 23:00:11.873374166 +1000
+@@ -500,6 +500,20 @@
+ i = i+1;
+ 
+ solver(i) = lpsolver;
++solver(i).tag     = 'NAG';
++solver(i).version = 'e04mbf';
++solver(i).checkfor= {'e04mbf'};
++solver(i).call    = 'callnage04mbf';
++i = i+1;
++
++solver(i) = qpsolver;
++solver(i).tag     = 'NAG';
++solver(i).version = 'e04naf';
++solver(i).checkfor= {'e04naf'};
++solver(i).call    = 'callnage04naf';
++i = i+1;
++
++solver(i) = lpsolver;
+ solver(i).tag     = 'CLP';
+ solver(i).version = 'CLPMEX-LP';
+ solver(i).checkfor= {'mexclp'};
+@@ -564,7 +578,6 @@
+ solver(i).call    = 'callmosek';
+ solver(i).constraint.inequalities.secondordercone.linear = 1;
+ solver(i).exponentialcone = 1;
+-solver(i).constraint.inequalities.powercone = 1;
+ i = i+1;
+ 
+ solver(i) = lpsolver;
+@@ -602,20 +615,11 @@
+ solver(i).constraint.sos2 = 1;
+ i = i+1;
+ 
+-solver(i) = lpsolver;
+-solver(i).tag     = 'LINPROG';
+-solver(i).version = '';
+-solver(i).checkfor= {'linprog'};
+-solver(i).call    = 'calllinprog';
+-i = i+1;
+-
+ solver(i) = qpsolver;
+-solver(i).tag     = 'QUADPROG';
++solver(i).tag     = 'BPMPD';
+ solver(i).version = '';
+-solver(i).checkfor= {'quadprog'};
+-solver(i).call    = 'callquadprog';
+-solver(i).objective.quadratic.nonconvex = 1;
+-solver(i).supportsinitial = 1;
++solver(i).checkfor= {'bp'};
++solver(i).call    = 'callbpmpd';
+ i = i+1;
+ 
+ solver(i) = lpsolver;
+@@ -647,6 +651,22 @@
+ i = i+1;
+ 
+ solver(i) = lpsolver;
++solver(i).tag     = 'LINPROG';
++solver(i).version = '';
++solver(i).checkfor= {'linprog'};
++solver(i).call    = 'calllinprog';
++i = i+1;
++
++solver(i) = qpsolver;
++solver(i).tag     = 'QUADPROG';
++solver(i).version = '';
++solver(i).checkfor= {'quadprog'};
++solver(i).call    = 'callquadprog';
++solver(i).objective.quadratic.nonconvex = 1;
++solver(i).supportsinitial = 1;
++i = i+1;
++
++solver(i) = lpsolver;
+ solver(i).tag     = 'CDD';
+ solver(i).version = 'CDDMEX';
+ solver(i).checkfor= {'cddmex'};
+@@ -676,11 +696,20 @@
+ solver(i).constraint.sos2 = 1;
+ i = i+1;
+ 
++solver(i) = lpsolver;
++solver(i).tag     = 'OSL';
++solver(i).version = 'OSLPROG';
++solver(i).checkfor= {'oslprog.m'};
++solver(i).call    = 'calloslprog';
++solver(i).constraint.integer = 1;
++i = i+1;
++
+ solver(i) = qpsolver;
+ solver(i).tag     = 'CLP';
+ solver(i).version = 'CLPMEX-QP';
+ solver(i).checkfor= {'mexclp'};
+ solver(i).call    = 'callclp';
++%solver(i).constraint.integer = 1;
+ i = i+1;
+ 
+ solver(i) = qpsolver;
+@@ -704,6 +733,13 @@
+ solver(i).call    = 'callosqp';
+ i = i+1;
+ 
++solver(i) = qpsolver;
++solver(i).tag     = 'OOQP';
++solver(i).version = '';
++solver(i).checkfor= {'opti_ooqp.m'};
++solver(i).call    = 'calloptiooqp';
++i = i+1;
++
+ solver(i) = lpsolver;
+ solver(i).tag     = 'CBC';
+ solver(i).version = '';
+@@ -714,6 +750,13 @@
+ i = i+1;
+ 
+ solver(i) = qpsolver;
++solver(i).tag     = 'OOQP';
++solver(i).version = '';
++solver(i).checkfor= {'ooqp.m'};
++solver(i).call    = 'callooqp';
++i = i+1;
++
++solver(i) = qpsolver;
+ solver(i).tag     = 'QPIP';
+ solver(i).version = '';
+ solver(i).checkfor= {'qpip'};
+@@ -730,6 +773,14 @@
+ i = i+1;
+ 
+ solver(i) = qpsolver;
++solver(i).tag     = 'lindo';
++solver(i).version = 'MIQP';
++solver(i).checkfor= {'mxlindo'};
++solver(i).call    = 'calllindo_miqp';
++solver(i).constraint.integer = 1;
++i = i+1;
++
++solver(i) = qpsolver;
+ solver(i).tag     = 'ecos';
+ solver(i).version = '';
+ solver(i).checkfor= {'ecos'};
+@@ -1071,6 +1122,25 @@
+ solver(i).objective.quadratic.nonconvex = 1;
+ i = i+1;
+ 
++solver(i) = sdpsolver;
++solver(i).tag     = 'KYPD';
++solver(i).version = '';
++solver(i).checkfor= {'kypd_solver'};
++solver(i).call    = 'callkypd';
++solver(i).usesother = 1;
++i = i+1;
++
++solver(i) = sdpsolver;
++solver(i).tag     = 'STRUL';
++solver(i).version = '1';
++solver(i).checkfor= {'sqlp','skron','symqmr','blkbarrier','HKM_schur_LR_structure'};
++solver(i).call    = 'callstrul';
++solver(i).constraint.equalities.linear = 1;
++solver(i).constraint.inequalities.secondordercone.linear = 1;
++solver(i).objective.maxdet.convex = 1;
++solver(i).usesother = 1;
++i = i+1;
++
+ solver(i) = emptysolver;
+ solver(i).tag     = 'fmincon';
+ solver(i).version = 'geometric';
+@@ -1357,6 +1427,31 @@
+ i = i+1;
+ 
+ solver(i) = emptysolver;
++solver(i).tag     = 'lindo';
++solver(i).version = 'NLP';
++solver(i).checkfor= {'mxlindo'};
++solver(i).call    = 'calllindo_nlp';
++solver(i).objective.linear = 1;
++solver(i).objective.quadratic.convex = 1;
++solver(i).objective.quadratic.nonconvex = 1;
++solver(i).objective.polynomial = 1;
++solver(i).objective.sigmonial = 1;
++solver(i).constraint.equalities.linear = 1;
++solver(i).constraint.equalities.quadratic = 1;
++solver(i).constraint.equalities.polynomial = 1;
++solver(i).constraint.equalities.sigmonial = 1;
++solver(i).constraint.inequalities.elementwise.linear = 1;
++solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
++solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
++solver(i).constraint.inequalities.elementwise.polynomial = 1;
++solver(i).constraint.inequalities.elementwise.sigmonial = 1;
++solver(i).dual = 1;
++solver(i).evaluation = 1;
++solver(i).constraint.integer = 1;
++solver(i).supportsinitial = 1;
++i = i+1;
++
++solver(i) = emptysolver;
+ solver(i).tag     = 'ipopt';
+ solver(i).version = 'standard';
+ solver(i).checkfor= {'ipopt'};
+@@ -1741,6 +1836,18 @@
+ i = i+1;
+ 
+ solver(i) = lpsolver;
++solver(i).tag     = 'powersolver';
++solver(i).version = '';
++solver(i).checkfor= {'powersolver.m'};
++solver(i).call    = 'callpowersolver';
++solver(i).constraint.equalities.linear = 1;
++solver(i).constraint.inequalities.secondordercone.linear = 1;
++solver(i).constraint.inequalities.rotatedsecondordercone.linear = 1;
++solver(i).constraint.inequalities.powercone = 1;
++solver(i).complex = 1;
++i = i+1;
++
++solver(i) = lpsolver;
+ solver(i).tag     = 'LSQNONNEG';
+ solver(i).version = '';
+ solver(i).checkfor= {'lsqnonneg.m'};
+--- ../YALMIP_orig/solvers/callglpkcc.m	2021-04-22 22:59:47.673579444 +1000
++++ ../YALMIP/solvers/callglpkcc.m	2021-04-22 23:00:11.870374192 +1000
+@@ -1,4 +1,4 @@
+-function output = callglpk(interfacedata)
++function output = callglpkcc(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+@@ -148,4 +148,5 @@
+ infostr = yalmiperror(problem,interfacedata.solver.tag);
+ 
+ % Standard interface 
+-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/callopticsdp.m	2021-04-22 22:59:47.675579427 +1000
++++ ../YALMIP/solvers/callopticsdp.m	2021-04-22 23:00:11.871374184 +1000
+@@ -1,4 +1,4 @@
+-function output = calloptidsdp(interfacedata)
++function output = callopticsdp(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+@@ -77,4 +77,5 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/callpennlp.m	2021-04-22 22:59:47.675579427 +1000
++++ ../YALMIP/solvers/callpennlp.m	2021-04-22 23:00:11.872374175 +1000
+@@ -1,4 +1,4 @@
+-function output = callquadprog(interfacedata)
++function output = callpennlp(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+@@ -175,4 +175,5 @@
+ end
+ 
+ % Standard interface 
+-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/yalmip2opticsdp.m	2021-04-22 22:59:47.677579410 +1000
++++ ../YALMIP/solvers/yalmip2opticsdp.m	2021-04-22 23:00:11.873374166 +1000
+@@ -1,4 +1,4 @@
+-function model = sedumi2opticsdp(interfacedata)
++function model = yalmip2opticsdp(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+--- ../YALMIP_orig/solvers/callmpcvx.m	2021-04-22 22:59:47.674579435 +1000
++++ ../YALMIP/solvers/callmpcvx.m	2021-04-22 23:00:11.871374184 +1000
+@@ -1,4 +1,4 @@
+-function output = mpcvx(p)
++function output = callmpcvx(p)
+ %BMIBNB          Branch-and-bound scheme for bilinear programs
+ %
+ % BMIBNB is never called by the user directly, but is called by 
+@@ -26,7 +26,7 @@
+ % bmibnb.maxiter        - Maximum number of solved nodes [int (100)]
+ % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]
+ 
+-% Author Johan Löfberg 
++% Author Johan Lofberg 
+ % $Id: callmpcvx.m,v 1.2 2005-05-07 13:53:20 joloef Exp $
+ 
+ % ********************************
+--- ../YALMIP_orig/solvers/yalmip2optidsdp.m	2021-04-22 22:59:47.677579410 +1000
++++ ../YALMIP/solvers/yalmip2optidsdp.m	2021-04-22 23:00:11.874374158 +1000
+@@ -1,4 +1,4 @@
+-function model = sedumi2optidsdp(interfacedata)
++function model = yalmip2optidsdp(interfacedata)
+ 
+ % Retrieve needed data
+ options = interfacedata.options;
+--- ../YALMIP_orig/solvers/callmplcp.m	2021-04-22 22:59:47.674579435 +1000
++++ ../YALMIP/solvers/callmplcp.m	2021-04-22 23:00:11.871374184 +1000
+@@ -1,4 +1,4 @@
+-function output = callmpt(interfacedata)
++function output = callmplcp(interfacedata)
+ 
+ % Speeds up solving LPs in mpmilp
+ global mptOptions
+@@ -86,4 +86,5 @@
+ % Standard interface
+ Primal      = nan*ones(length(interfacedata.c),1);
+ Dual        = [];
+-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+\ No newline at end of file
++output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
++
+--- ../YALMIP_orig/solvers/callpenbmim.m	2021-04-22 22:59:47.675579427 +1000
++++ ../YALMIP/solvers/callpenbmim.m	2021-04-22 23:00:11.872374175 +1000
+@@ -1,4 +1,4 @@
+-function output = callpenbmi(interfacedata);
++function output = callpenbmim(interfacedata);
+ 
+ if any(interfacedata.variabletype > 2)
+     % Polynomial problem, YALMIP has to bilienarize
+--- ../YALMIP_orig/modules/moment/solvemoment.m	2021-04-22 22:59:47.668579487 +1000
++++ ../YALMIP/modules/moment/solvemoment.m	2021-04-22 23:00:11.865374234 +1000
+@@ -38,7 +38,7 @@
+ %
+ %   See also SDPVAR, SET, SDPSETTINGS, SOLVESDP
+ 
+-% Author Johan Löfberg, Philipp Rostalski  Update
++% Author Johan Lofberg, Philipp Rostalski  Update
+ % $Id: solvemoment.m,v 1.8 2007/05/28 09:09:42 joloef Exp $
+ %
+ % Updated equality constraint handling, 2010/08/02
+--- ../YALMIP_orig/modules/moment/extractsolution.m	2021-04-22 22:59:47.668579487 +1000
++++ ../YALMIP/modules/moment/extractsolution.m	2021-04-22 23:00:11.865374234 +1000
+@@ -11,7 +11,7 @@
+ %
+ %   See also SOLVEMOMENT, SDPSETTINGS
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: extractsolution.m,v 1.1 2006-03-30 13:36:38 joloef Exp $
+ 
+ moment = momentdata.moment;
+--- ../YALMIP_orig/modules/global/propagate_bounds_from_separable_quadratic_equality.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/propagate_bounds_from_separable_quadratic_equality.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,4 +1,4 @@
+-function p = update_sumsepquad_bounds(p);
++function p = propagate_bounds_from_separable_quadratic_equality(p);
+ % Looking for case z == b + q1(x1) + q2(x2) + ... where q quadratic
+ 
+ if p.boundpropagation.sepquad
+@@ -85,4 +85,4 @@
+          
+    
+    
+- 
+\ No newline at end of file
++ 
+--- ../YALMIP_orig/modules/global/propagate_bounds_from_monomials.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/propagate_bounds_from_monomials.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,4 +1,4 @@
+-function p = updatemonomialbounds(p);
++function p = propagate_bounds_from_monomials(p);
+ LU = [p.lb p.ub];
+ if ~isempty(p.bilinears)
+     x = p.bilinears(:,2);
+--- ../YALMIP_orig/modules/global/monotonesdp.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/monotonesdp.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,4 +1,4 @@
+-function [upperhere,xtempwork] = monotoneSDPHeuristics(p,upper,x,aux1,aux2)
++function [upperhere,xtempwork] = monotonesdp(p,upper,x,aux1,aux2)
+ x_fix = x;
+ xtempwork = [];
+ upperhere = inf;
+--- ../YALMIP_orig/modules/global/propagate_bounds_from_convex_quadratic.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/propagate_bounds_from_convex_quadratic.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,4 +1,4 @@
+-function p = presolve_quadratic_psdbound(p)
++function p = propagate_bounds_from_convex_quadratic(p)
+ % Look for r >= (or ==) (x - c)^T Q (x - c)
+ if p.K.f + p.K.l > 0    
+     for i = 1:p.K.l + p.K.f
+--- ../YALMIP_orig/modules/global/addSquaredLinearEqualityCuts.m	2021-04-22 22:59:47.665579512 +1000
++++ ../YALMIP/modules/global/addSquaredLinearEqualityCuts.m	2021-04-22 23:00:11.862374260 +1000
+@@ -1,4 +1,4 @@
+-function p = addMultipliedEqualityCuts(p)
++function p = addSquaredLinearEqualityCuts(p)
+ 
+ newRows = [];
+ for j = 1:p.K.f
+@@ -37,4 +37,4 @@
+ if ~isempty(newRows)
+     p.F_struc = [newRows;p.F_struc];
+     p.K.f = p.K.f + size(newRows,1);    
+-end
+\ No newline at end of file
++end
+--- ../YALMIP_orig/modules/global/fixandresolve.m	2021-04-22 22:59:47.666579503 +1000
++++ ../YALMIP/modules/global/fixandresolve.m	2021-04-22 23:00:11.863374251 +1000
+@@ -1,4 +1,4 @@
+-function [upperhere,xtempwork] = monotoneSDPHeuristics(p,upper,x,aux1,aux2)
++function [upperhere,xtempwork] = fixandresolve(p,upper,x,aux1,aux2)
+ xtempwork = [];
+ upperhere = inf;
+ 
+@@ -34,4 +34,4 @@
+ xtempwork = setnonlinearvariables(p,xtempwork);
+ if checkfeasiblefast(p,xtempwork,p.options.bnb.feastol)
+     upperhere = computecost(p.f,p.corig,p.Q,xtempwork,p);
+-end
+\ No newline at end of file
++end
+--- ../YALMIP_orig/modules/global/tightenbounds.m	2021-04-22 22:59:47.668579487 +1000
++++ ../YALMIP/modules/global/tightenbounds.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,7 +1,7 @@
+ function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds);
+ %TIGHTENBOUNDS Internal function to perform bound tightening
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: tightenbounds.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
+ 
+ % Simple bound pre-processing (paper by Savelsbergh)
+--- ../YALMIP_orig/modules/global/presolve_implied_integer.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/presolve_implied_integer.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,4 +1,4 @@
+-function p = preprocess_bilinear_bounds(p)
++function p = presolve_implied_integer(p)
+ 
+ if ~isempty(p.integer_variables)
+     for i = 1:size(p.bilinears,1)
+--- ../YALMIP_orig/modules/global/kktqp.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/kktqp.m	2021-04-22 23:00:11.864374243 +1000
+@@ -8,7 +8,7 @@
+ % See also kkt
+ 
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: kktqp.m,v 1.2 2008-06-10 14:47:59 joloef Exp $
+ 
+ % ********************************
+--- ../YALMIP_orig/modules/global/convexhullConcave2D.m	2021-04-22 22:59:47.666579503 +1000
++++ ../YALMIP/modules/global/convexhullConcave2D.m	2021-04-22 23:00:11.863374251 +1000
+@@ -1,4 +1,4 @@
+-function [Ax,Ay,b,K] = convexhullConcave(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5)
++function [Ax,Ay,b,K] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5)
+ % x1-x4 corner points, 5 point in center
+ 
+ % Lower bounds from tangents
+@@ -55,4 +55,5 @@
+ function [n,d] = ceiling(p1,p2,p3);
+ n = cross(p1 - p2, p1 - p3);
+ n = n/sign(n(3));
+-d = p1'*n;
+\ No newline at end of file
++d = p1'*n;
++
+--- ../YALMIP_orig/modules/global/propagate_bounds_lp.m	2021-04-22 22:59:47.667579495 +1000
++++ ../YALMIP/modules/global/propagate_bounds_lp.m	2021-04-22 23:00:11.864374243 +1000
+@@ -1,4 +1,4 @@
+-function [p,feasible,vol_reduction,seen_x] = domain_reduction(p,upper,lower,lpsolver,xmin);
++function [p,feasible,vol_reduction,seen_x] = propagate_bounds_lp(p,upper,lower,lpsolver,xmin);
+ LU = [p.lb p.ub];
+ seen_x = {};
+ if ~p.options.bmibnb.lpreduce | ((size(p.lpcuts,1)==0) & (any(p.lb(p.linears)<-1e8) & any(p.ub(p.linears)>1e8)))
+@@ -15,4 +15,5 @@
+     p.changedbounds = 1;
+ end
+ feasible = p.feasible;
+-vol_reduction = 0;
+\ No newline at end of file
++vol_reduction = 0;
++
+--- ../YALMIP_orig/modules/parametric/solvemp.m	2021-04-22 22:59:47.669579478 +1000
++++ ../YALMIP/modules/parametric/solvemp.m	2021-04-22 23:00:11.865374234 +1000
+@@ -37,7 +37,7 @@
+ %
+ % See also PARAMETRIC, SET, SDPSETTINGS, YALMIPERROR
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: solvemp.m,v 1.11 2007-08-17 13:17:16 joloef Exp $
+ 
+ if nargin <= 3
+--- ../YALMIP_orig/modules/parametric/mpt_appendmodel.m	2021-04-22 22:59:47.668579487 +1000
++++ ../YALMIP/modules/parametric/mpt_appendmodel.m	2021-04-22 23:00:11.865374234 +1000
+@@ -1,4 +1,4 @@
+-function model = savemptmodel(model,Pfinal,Pn,Fi,Gi,details);
++function model = mpt_appendmodel(model,Pfinal,Pn,Fi,Gi,details);
+ 
+ if length(Fi)>0
+     if length(model) == 0
+--- ../YALMIP_orig/modules/parametric/mpt_derive_bounds.m	2021-04-22 22:59:47.668579487 +1000
++++ ../YALMIP/modules/parametric/mpt_derive_bounds.m	2021-04-22 23:00:11.865374234 +1000
+@@ -1,4 +1,4 @@
+-function [Matrices,infeasible]  = derive_bounds(Matrices,options)
++function [Matrices,infeasible]  = mpt_derive_bounds(Matrices,options)
+ 
+ A = [Matrices.G -Matrices.E];
+ b = [Matrices.W];
+@@ -128,4 +128,5 @@
+ lb(trivially_unbounded_below(reset_to_minus_inf)) = -inf;
+ ub(trivially_unbounded_above(reset_to_inf)) = inf;
+ Matrices.lb = lb;
+-Matrices.ub = ub;
+\ No newline at end of file
++Matrices.ub = ub;
++
+--- ../YALMIP_orig/modules/parametric/mpt_detect_and_improve_bounds.m	2021-04-22 22:59:47.668579487 +1000
++++ ../YALMIP/modules/parametric/mpt_detect_and_improve_bounds.m	2021-04-22 23:00:11.865374234 +1000
+@@ -1,4 +1,4 @@
+-function [lb,ub,redundant] = detect_and_improve_bounds(Matrices,lb,ub,binary_var_index,options);
++function [lb,ub,redundant] = mpt_detect_and_improve_bounds(Matrices,lb,ub,binary_var_index,options);
+ 
+ A = [ Matrices.G -Matrices.E];
+ b = [ Matrices.W ];
+--- ../YALMIP_orig/modules/sos/newtonmonoms.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/newtonmonoms.m	2021-04-22 23:00:11.867374217 +1000
+@@ -16,7 +16,7 @@
+ %
+ % See also NEWTONREDUCE, CONSISTENT, CONGRUENCEBLOCKS
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: newtonmonoms.m,v 1.1 2006-03-30 13:27:20 joloef Exp $
+ 
+ if isa(p,'double')
+--- ../YALMIP_orig/modules/sos/blockmonomialreduction.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/blockmonomialreduction.m	2021-04-22 23:00:11.866374226 +1000
+@@ -1,7 +1,7 @@
+ function N = blockmonomialreduction(exponent_p,N,options)
+ %BLOCKMONOMIALREDUCTION Internal function to reduce monomials in SOS problem
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: blockmonomialreduction.m,v 1.1 2006-03-30 13:39:36 joloef Exp $
+ 
+ if options.sos.inconsistent & ~options.sos.csp
+--- ../YALMIP_orig/modules/sos/monomialgeneration.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/monomialgeneration.m	2021-04-22 23:00:11.867374217 +1000
+@@ -1,7 +1,7 @@
+ function exponent_m = monomialgeneration(exponent_p,csclasses)
+ %MONOMIALGENERATION  Internal function to create candidate monomials in SOS programs
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: monomialgeneration.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
+ 
+ exponent_m = [];
+--- ../YALMIP_orig/modules/sos/compilesos.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/compilesos.m	2021-04-22 23:00:11.866374226 +1000
+@@ -565,4 +565,5 @@
+ everything.ranks = ranks;
+ everything.ParametricVariables = ParametricVariables;
+ everything.UncertainData = UncertainData;
+-everything.sol = sol;
+\ No newline at end of file
++everything.sol = sol;
++
+--- ../YALMIP_orig/modules/sos/monomialproducts.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/monomialproducts.m	2021-04-22 23:00:11.867374217 +1000
+@@ -1,7 +1,7 @@
+ function [newton_m2,N_unique,newton_m2_unique] = monomialproducts(N,n);
+ %MONOMIALPRODUCTS  Internal function used for monomial reduction
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: monomialproducts.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
+ 
+ % Exponents in squared monomials
+--- ../YALMIP_orig/modules/sos/congruenceblocks.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/congruenceblocks.m	2021-04-22 23:00:11.866374226 +1000
+@@ -21,7 +21,7 @@
+ %
+ % See also NEWTONREDUCE, NEWTONMONOMS, CONSISTENT
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: congruenceblocks.m,v 1.2 2008-11-11 13:29:20 joloef Exp $
+ 
+ sdpvarout = 0;
+--- ../YALMIP_orig/modules/sos/newtonpolytope.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/newtonpolytope.m	2021-04-22 23:00:11.867374217 +1000
+@@ -1,7 +1,7 @@
+ function keep = newtonpolytope(exponent_m,exponent_p)
+ %NEWTONPOLYTOPE  Internal function to remove monimials in SOS programs using Newton polytope
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: newtonpolytope.m,v 1.1 2006-03-30 13:27:20 joloef Exp $
+ 
+ 
+--- ../YALMIP_orig/modules/sos/genmonoms.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/genmonoms.m	2021-04-22 23:00:11.867374217 +1000
+@@ -1,7 +1,7 @@
+ function monom = genmonoms(newton_m,x);
+ %GENMONOMS Internal function used in SOS programs
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: genmonoms.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
+ 
+ 
+--- ../YALMIP_orig/modules/sos/monomialreduction.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/monomialreduction.m	2021-04-22 23:00:11.867374217 +1000
+@@ -1,7 +1,7 @@
+ function exponent_m = monomialreduction(exponent_m,exponent_p,options,csclasses,LPmodel)
+ %MONOMIALREDUCTION  Internal function for monomial reduction in SOS programs
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: monomialreduction.m,v 1.2 2006-09-26 14:28:43 joloef Exp $
+ 
+ 
+--- ../YALMIP_orig/modules/sos/consistent.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/sos/consistent.m	2021-04-22 23:00:11.867374217 +1000
+@@ -21,7 +21,7 @@
+ %
+ % See also NEWTONREDUCE, NEWTONMONOMS, CONGRUENCEBLOCKS
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: consistent.m,v 1.2 2009-11-24 14:53:54 joloef Exp $
+ 
+ 
+--- ../YALMIP_orig/modules/robust/dilate.m	2021-04-22 22:59:47.669579478 +1000
++++ ../YALMIP/modules/robust/dilate.m	2021-04-22 23:00:11.866374226 +1000
+@@ -23,9 +23,9 @@
+ % GRADUATE SCHOOL OF INFORMATION SCIENCE AND TECHNOLOGY THE UNIVERSITY OF
+ % TOKYO BUNKYO-KU, TOKYO 113-8656, JAPAN , February 2006
+ %
+-% J. Löfberg, Improved matrix dilations for robust semidefinite programming
++% J. Lofberg, Improved matrix dilations for robust semidefinite programming
+ % Division of Automatic control, Department of Electrical Engineering, 
+-% Technical report 2753, Linköpings universitet, November 2006
++% Technical report 2753, Linkopings universitet, November 2006
+ %
+ % See also ROBUSTIFY, SOLVEROBUST, UNCERTAIN
+ 
+--- ../YALMIP_orig/modules/robust/robustify.m	2021-04-22 22:59:47.670579469 +1000
++++ ../YALMIP/modules/robust/robustify.m	2021-04-22 23:00:11.866374226 +1000
+@@ -36,7 +36,7 @@
+ %
+ % See also UNCERTAIN
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: robustify.m,v 1.55 2010-03-10 15:19:05 joloef Exp $
+ 
+ failure = 0;
+--- ../YALMIP_orig/modules/robust/getFzxfromSET.m	2021-04-22 22:59:47.669579478 +1000
++++ ../YALMIP/modules/robust/getFzxfromSET.m	2021-04-22 23:00:11.866374226 +1000
+@@ -1,4 +1,4 @@
+-function [F0,Fz,Fx,Fxz] = getEF(F,z,x);
++function [F0,Fz,Fx,Fxz] = getFzxfromSET(F,z,x);
+ 
+ F = sdpvar(F);
+ F0 = -getbasematrix(F,0);
+@@ -17,4 +17,5 @@
+     for j = 1:length(zvars)
+         Fxz{i,j} = -getbasematrix(F,getvariables(x(i)*z(j)));
+     end
+-end
+\ No newline at end of file
++end
++
+--- ../YALMIP_orig/modules/robust/dilate2.m	2021-04-22 22:59:47.669579478 +1000
++++ ../YALMIP/modules/robust/dilate2.m	2021-04-22 23:00:11.866374226 +1000
+@@ -1,4 +1,4 @@
+-function varargout = dilate(F,w)
++function varargout = dilate2(F,w)
+ % DILATE  Derives a matrix dilation
+ %
+ % [G,H,M] = DILATE(X,w) where X is a symmetric variable derives the
+@@ -20,9 +20,9 @@
+ % GRADUATE SCHOOL OF INFORMATION SCIENCE AND TECHNOLOGY THE UNIVERSITY OF
+ % TOKYO BUNKYO-KU, TOKYO 113-8656, JAPAN , February 2006
+ %
+-% J. Löfberg, Improved matrix dilations for robust semidefinite programming
++% J. Lofberg, Improved matrix dilations for robust semidefinite programming
+ % Division of Automatic control, Department of Electrical Engineering, 
+-% Technical report XXXX, Linköpings universitet, November 2006
++% Technical report XXXX, Linkopings universitet, November 2006
+ %
+ % See also ROBUSTIFY, SOLVEROBUST, UNCERTAIN
+ 
+--- ../YALMIP_orig/extras/jacSparsityGeometric.m	2021-04-22 22:59:47.660579554 +1000
++++ ../YALMIP/extras/jacSparsityGeometric.m	2021-04-22 23:00:11.856374311 +1000
+@@ -1,4 +1,4 @@
+-function [Nbegcol,Nlencol,Nrowndx,Nobjcnt,Nobjndx,cJacobian] = jacSparsity(interfacedata)
++function [Nbegcol,Nlencol,Nrowndx,Nobjcnt,Nobjndx,cJacobian] = jacSparsityGeometric(interfacedata)
+ 
+ linear = setdiff(find(interfacedata.variabletype == 0),interfacedata.evalVariables);
+ oJacobian = zeros(length(linear),1);
+--- ../YALMIP_orig/extras/ipoptgp_callback_dg.m	2021-04-22 22:59:47.659579563 +1000
++++ ../YALMIP/extras/ipoptgp_callback_dg.m	2021-04-22 23:00:11.856374311 +1000
+@@ -1,4 +1,4 @@
+-function G = ipopt_callback_dg(x,returnStructOnly,prob)
++function G = ipoptgp_callback_dg(x,returnStructOnly,prob)
+ 
+ if returnStructOnly
+     G = sparse(ones(max(prob.map)+size(prob.G,1),size(prob.A,2)));
+@@ -8,4 +8,5 @@
+ % Compute the nonlinear terms in the constraints
+ [g,geq,dg,dgeq] = fmincon_congp(x,prob);
+ G = [dg';dgeq'];
+-G = sparse(G);
+\ No newline at end of file
++G = sparse(G);
++
+--- ../YALMIP_orig/extras/solveequalities.m	2021-04-22 22:59:47.663579529 +1000
++++ ../YALMIP/extras/solveequalities.m	2021-04-22 23:00:11.860374277 +1000
+@@ -1,7 +1,7 @@
+ function [x_equ,H,A_equ,b_equ,factors] = solveequalities(F_struc,K,unitary)
+ %SOLVEEQUALITIES Internal function remove equality constraints
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: solveequalities.m,v 1.17 2007-05-24 14:44:20 joloef Exp $
+ 
+ % Extract the inequalities
+--- ../YALMIP_orig/extras/plotInternalModel.m	2021-04-22 22:59:47.661579546 +1000
++++ ../YALMIP/extras/plotInternalModel.m	2021-04-22 23:00:11.857374302 +1000
+@@ -1,4 +1,4 @@
+-function x_opt = PlotInternalModel(internalmodel,x,n,localindex,color,opts)
++function x_opt = plotInternalModel(internalmodel,x,n,localindex,color,opts)
+ % Code used by both lmi/plot and optimizer/plot
+ 
+ if isempty(internalmodel.binary_variables)
+@@ -209,4 +209,5 @@
+ pRed.K.l = pRed.K.l - length(removeLP);
+ pRed.F_struc = pRed.F_struc(:,[1 1+these]);
+ pRed.lb = pRed.lb(these);
+-pRed.ub = pRed.ub(these);
+\ No newline at end of file
++pRed.ub = pRed.ub(these);
++
+--- ../YALMIP_orig/extras/sedumi2dsdp5.m	2021-04-22 22:59:47.662579537 +1000
++++ ../YALMIP/extras/sedumi2dsdp5.m	2021-04-22 23:00:11.859374285 +1000
+@@ -1,4 +1,4 @@
+-function [b,AC] = sedumi2dsdp(F_struc,c,K)
++function [b,AC] = sedumi2dsdp5(F_struc,c,K)
+ %SEDUMI2DSDP5 Internal function to convert SeDuMi structure to format needed in DSDP 5
+ 
+ nvars = size(F_struc,2)-1;
+--- ../YALMIP_orig/extras/RecoverNonlinearSolverSolution.m	2021-04-22 22:59:47.655579597 +1000
++++ ../YALMIP/extras/RecoverNonlinearSolverSolution.m	2021-04-22 23:00:11.852374345 +1000
+@@ -1,4 +1,4 @@
+-function x = RecoverNonlinearSolversolution(model,xout);
++function x = RecoverNonlinearSolverSolution(model,xout);
+ 
+ if isempty(model.nonlinearindicies)
+     x = xout(:);
+@@ -8,4 +8,5 @@
+         x(model.linearindicies(i)) = xout(i);
+     end
+     x = x(1:length(model.c));
+-end
+\ No newline at end of file
++end
++
+--- ../YALMIP_orig/extras/lindo_fun.m	2021-04-22 22:59:47.660579554 +1000
++++ ../YALMIP/extras/lindo_fun.m	2021-04-22 23:00:11.856374311 +1000
+@@ -1,4 +1,4 @@
+-function [f,err] = fmincon_funn(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
++function [f,err] = lindo_fun(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
+ 
+ persistent params hash xevaled oldh F
+ if nargin == 7
+@@ -39,4 +39,5 @@
+ else
+     f = F(nRow + 1);%-params.F_struc(nRow + 1,:)*[1;xevaled];
+ end
+-err = 0;
+\ No newline at end of file
++err = 0;
++
+--- ../YALMIP_orig/extras/pennonm_callback_f.m	2021-04-22 22:59:47.661579546 +1000
++++ ../YALMIP/extras/pennonm_callback_f.m	2021-04-22 23:00:11.857374302 +1000
+@@ -1,4 +1,4 @@
+-function f = ipopt_callback_f(x,model_in)
++function f = pennonm_callback_f(x,model_in)
+ 
+ global latest_x
+ global latest_df
+--- ../YALMIP_orig/extras/@logdet/minus.m	2021-04-22 22:59:47.649579648 +1000
++++ ../YALMIP/extras/@logdet/minus.m	2021-04-22 23:00:11.846374396 +1000
+@@ -50,7 +50,7 @@
+ % function Z = minus(cx,P)
+ % %display           Overloaded
+ % 
+-% % Author Johan Löfberg 
++% % Author Johan Lofberg 
+ % % $Id: minus.m,v 1.4 2007-02-07 09:11:27 joloef Exp $  
+ % 
+ % % Standard case c't-logdet(P)
+--- ../YALMIP_orig/extras/@logdet/plus.m	2021-04-22 22:59:47.649579648 +1000
++++ ../YALMIP/extras/@logdet/plus.m	2021-04-22 23:00:11.846374396 +1000
+@@ -50,7 +50,7 @@
+ % function Z = plus(X,Y)
+ % %display           Overloaded
+ % 
+-% % Author Johan Löfberg 
++% % Author Johan Lofberg 
+ % % $Id: plus.m,v 1.5 2007-02-07 09:11:27 joloef Exp $  
+ % 
+ % % LOGDET + SDPVAR
+--- ../YALMIP_orig/extras/recovernc.m	2021-04-22 22:59:47.662579537 +1000
++++ ../YALMIP/extras/recovernc.m	2021-04-22 23:00:11.858374294 +1000
+@@ -1,4 +1,4 @@
+-function varargout = recover(lmi_variables)
++function varargout = recovernc(lmi_variables)
+ %RECOVER Create NCVAR object using variable indicies
+ 
+ if isempty(lmi_variables)
+@@ -37,4 +37,5 @@
+             end
+         end
+     end
+-end
+\ No newline at end of file
++end
++
+--- ../YALMIP_orig/extras/fmincon_funhessian.m	2021-04-22 22:59:47.659579563 +1000
++++ ../YALMIP/extras/fmincon_funhessian.m	2021-04-22 23:00:11.855374319 +1000
+@@ -1,4 +1,4 @@
+-function H = fmincon_fun(x,params,what)
++function H = fmincon_funhessian(x,params,what)
+ 
+ xevaled = zeros(1,length(params.interfacedata.c));
+ xevaled(params.linearindicies) = x;
+@@ -16,4 +16,4 @@
+ else
+     error('Not implemented')
+ end
+-    
+\ No newline at end of file
++    
+--- ../YALMIP_orig/extras/apply_oldrecursive_differentiation.m	2021-04-22 22:59:47.656579588 +1000
++++ ../YALMIP/extras/apply_oldrecursive_differentiation.m	2021-04-22 23:00:11.852374345 +1000
+@@ -1,4 +1,4 @@
+-function dX = apply_recursive_differentiation(model,x,requested);
++function dX = apply_oldrecursive_differentiation(model,x,requested);
+ dX = [];
+ 
+ % Compute all evaluation-based derivatives df(x)
+@@ -59,4 +59,5 @@
+             end
+         end
+     dX = [dX dx];
+-end
+\ No newline at end of file
++end
++
+--- ../YALMIP_orig/extras/@lmi/envelope.m	2021-04-22 22:59:47.647579665 +1000
++++ ../YALMIP/extras/@lmi/envelope.m	2021-04-22 23:00:11.844374412 +1000
+@@ -39,7 +39,7 @@
+ %   plot(E,[x;u],[],[],sdpsettings('relax',1))
+ %   xx = (-1:0.01:1);hold on;plot(xx,xx+sin(pi*xx),xx,4-xx.^2)
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ 
+ [aux1,aux2,aux3,p] = export(C,[],sdpsettings('solver','bmibnb'));
+ 
+--- ../YALMIP_orig/extras/@lmi/chebyball.m	2021-04-22 22:59:47.647579665 +1000
++++ ../YALMIP/extras/@lmi/chebyball.m	2021-04-22 23:00:11.844374412 +1000
+@@ -11,7 +11,7 @@
+ % If only one output is requested, only the symbolic constraint is returned
+ % C = chebyball(F)
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: chebyball.m,v 1.1 2004-12-08 00:07:15 johanl Exp $
+ 
+ [model,recoverdata,diagnostic,p] = export(F,[],[],[],[],0);
+--- ../YALMIP_orig/extras/@lmi/constraintclass.m	2021-04-22 22:59:47.647579665 +1000
++++ ../YALMIP/extras/@lmi/constraintclass.m	2021-04-22 23:00:11.844374412 +1000
+@@ -1,7 +1,7 @@
+ function LIST = constraintclass(F,property)
+ %CONSTRAINTCLASS   Returns a list describing the constraints
+ 
+-% Author Johan Löfberg 
++% Author Johan Lofberg 
+ % $Id: constraintclass.m,v 1.2 2005-02-04 10:10:26 johanl Exp $   
+ 
+ F = flatten(F);
+--- ../YALMIP_orig/extras/@lmi/sizeOLD.m	2021-04-22 22:59:47.649579648 +1000
++++ ../YALMIP/extras/@lmi/sizeOLD.m	2021-04-22 23:00:11.846374396 +1000
+@@ -1,8 +1,8 @@
+-function varargout=size(varargin)
++function varargout=sizeOLD(varargin)
+ %size              Returns the number of inequalities and equalities 
+ %   
+-%    n = SIZE(F)     Returns the number of inequalities
+-%    [n,m] = SIZE(F) Returns the number of inequalities and equalities
++%    n = SIZEOLD(F)     Returns the number of inequalities
++%    [n,m] = SIZEOLD(F) Returns the number of inequalities and equalities
+ %
+ %    See also   LMI, ADDLMI
+ 
+@@ -36,4 +36,4 @@
+ 	otherwise
+ 		error('Second argument should be 1 (# LMIs) or 2 (# equalities)');
+ 	end
+-end
+\ No newline at end of file
++end
+--- ../YALMIP_orig/extras/matrixcoefficients.m	2021-04-22 22:59:47.660579554 +1000
++++ ../YALMIP/extras/matrixcoefficients.m	2021-04-22 23:00:11.856374311 +1000
+@@ -130,7 +130,7 @@
+ % %
+ % %   See also SDPVAR
+ % 
+-% % Author Johan Löfberg
++% % Author Johan Lofberg
+ % % $Id: matrixcoefficients.m,v 1.4 2006-08-09 12:14:04 joloef Exp $  
+ % 
+ % 
+--- ../YALMIP_orig/extras/primalize.m	2021-04-22 22:59:47.661579546 +1000
++++ ../YALMIP/extras/primalize.m	2021-04-22 23:00:11.858374294 +1000
+@@ -56,7 +56,15 @@
+ end
+ 
+ % Create model using the standard code
+-model = export(F,obj,sdpsettings('solver','sedumi'),[],[],1);
++[model,~,diagnostic] = export(F,obj,sdpsettings('solver','sedumi'),[],[],1);
++if isempty(model)
++  if isfield(diagnostic,'problem') && isfield(diagnostic,'info');
++    error("export failed: model is empty, problem=%d,info=%s", ...
++	  diagnostic.problem,diagnostic.info);
++  else
++    error("export failed: model is empty");
++  endif
++endif
+ 
+ Fdual = ([]);
+ xvec = [];
+@@ -93,4 +101,4 @@
+ yvars = union(getvariables(F),getvariables(obj));
+ y = recover(yvars);
+ 
+-yalmip('associatedual',getlmiid(Fdual(end)),y);
+\ No newline at end of file
++yalmip('associatedual',getlmiid(Fdual(end)),y);
+--- ../YALMIP_orig/extras/fmincon_fungrad.m	2021-04-22 22:59:47.659579563 +1000
++++ ../YALMIP/extras/fmincon_fungrad.m	2021-04-22 23:00:11.855374319 +1000
+@@ -1,4 +1,4 @@
+-function df = fmincon_fun(x,params)
++function df = fmincon_fungrad(x,params)
+ 
+ xevaled = zeros(1,length(params.interfacedata.c));
+ xevaled(params.linearindicies) = x;
+@@ -16,4 +16,4 @@
+ else
+     error('not implmented')
+ end
+-    
+\ No newline at end of file
++    
+--- ../YALMIP_orig/extras/compressfactors2.m	2021-04-22 22:59:47.657579580 +1000
++++ ../YALMIP/extras/compressfactors2.m	2021-04-22 23:00:11.853374336 +1000
+@@ -1,6 +1,6 @@
+ function [constants,general,newsingles,newpairs] =  compressfactors2(constants,general,singles,pairs)
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: compressfactors2.m,v 1.1 2009-11-03 10:30:33 joloef Exp $
+ 
+ newpairs = {};
+--- ../YALMIP_orig/extras/findulb_interval.m	2021-04-22 22:59:47.659579563 +1000
++++ ../YALMIP/extras/findulb_interval.m	2021-04-22 23:00:11.855374319 +1000
+@@ -1,4 +1,4 @@
+-function [lb,ub,cand_rows] = findulb(F_struc,K)
++function [lb,ub,cand_rows] = findulb_interval(F_struc,K)
+ %FINDULB Internal function to extract upper and lower variable bounds
+ 
+ % special code for the interval data case, to avoid overhead in the default
+@@ -34,4 +34,5 @@
+             lb(j)=max(lb(j),inf_(b(cand_rows(i))/A(cand_rows(i),j)));
+         end
+     end
+-end
+\ No newline at end of file
++end
++
+--- ../YALMIP_orig/extras/lindo_fungp.m	2021-04-22 22:59:47.660579554 +1000
++++ ../YALMIP/extras/lindo_fungp.m	2021-04-22 23:00:11.856374311 +1000
+@@ -1,4 +1,4 @@
+-function [f,err] = fmincon_funn(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
++function [f,err] = lindo_fungp(cbData,nRow,x,njdiff,dXjbase,reserved,inParam)
+ 
+ persistent prob Af A bf b
+ 
+@@ -33,4 +33,5 @@
+ 
+     f = g(nRow+1);
+ end
+-err = 0;
+\ No newline at end of file
++err = 0;
++
+--- ../YALMIP_orig/extras/yalmip.m	2021-04-22 22:59:47.664579520 +1000
++++ ../YALMIP/extras/yalmip.m	2021-04-22 23:00:11.861374268 +1000
+@@ -512,9 +512,9 @@
+                 else
+                     z = [];
+                 end
+-                for i = 1:nout
++                for i = 1:prod(nout)
+                     % Avoid subsref to save time
+-                    if nout == 1
++                    if prod(nout) == 1
+                         yi = y;
+                     else
+                         yi = y(i);
+--- ../YALMIP_orig/extras/bmilin.m	2021-04-22 22:59:47.656579588 +1000
++++ ../YALMIP/extras/bmilin.m	2021-04-22 23:00:11.852374345 +1000
+@@ -24,7 +24,7 @@
+ % bmilin.maxiterls      - Maximum number of iterations in line search [integer (10)]
+ % bmilin.maxiter        - Maximum number of iterations [integer (25)]
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: bmilin.m,v 1.3 2005-04-29 08:05:01 joloef Exp $
+ 
+ 
+--- ../YALMIP_orig/extras/addExponentialCone.m	2021-04-22 22:59:47.655579597 +1000
++++ ../YALMIP/extras/addExponentialCone.m	2021-04-22 23:00:11.852374345 +1000
+@@ -1,4 +1,4 @@
+-function [data,cones,output] = adExponentialCone(data,cones,model)
++function [data,cones,output] = addExponentialCone(data,cones,model)
+ 
+ output.problem = 0;
+ if ~isempty(model.evalMap)
+@@ -210,4 +210,5 @@
+     end            
+ else
+     cones.ep = 0;
+-end
+\ No newline at end of file
++end
++
+--- ../YALMIP_orig/extras/pennlp_conhess.m	2021-04-22 22:59:47.661579546 +1000
++++ ../YALMIP/extras/pennlp_conhess.m	2021-04-22 23:00:11.857374302 +1000
+@@ -1,4 +1,4 @@
+-function [nnz, row, col, val] = pennlp_fun(i,x)
++function [nnz, row, col, val] = pennlp_conhess(i,x)
+ 
+ try
+ H = datasaver(6,x,i+1);
+--- ../YALMIP_orig/extras/ttimes.m	2021-04-22 22:59:47.664579520 +1000
++++ ../YALMIP/extras/ttimes.m	2021-04-22 23:00:11.860374277 +1000
+@@ -1,4 +1,4 @@
+-function C = mptimes(A,B)
++function C = ttimes(A,B)
+ % TTIMES Tropical multiplication (max-plus algebra)
+ %
+ % C = TTIMES(A,B) Computes the tropical multiplication of the matrices A
+--- ../YALMIP_orig/extras/@ncvar/integer.m	2021-04-22 22:59:47.651579630 +1000
++++ ../YALMIP/extras/@ncvar/integer.m	2021-04-22 23:00:11.847374387 +1000
+@@ -21,7 +21,7 @@
+ %
+ %   See also BINARY, SET, SDPVAR, INTVAR, BINVAR
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: integer.m,v 1.1 2006-08-10 18:00:20 joloef Exp $
+ 
+ x.typeflag = 7;
+--- ../YALMIP_orig/extras/setpolynomials.m	2021-04-22 22:59:47.663579529 +1000
++++ ../YALMIP/extras/setpolynomials.m	2021-04-22 23:00:11.859374285 +1000
+@@ -1,7 +1,7 @@
+ function setpolynomials
+ %SETPOLYNOMIALS Internal function
+ 
+-% Author Johan Löfberg
++% Author Johan Lofberg
+ % $Id: setpolynomials.m,v 1.3 2005-04-29 08:05:01 joloef Exp $
+ 
+ solution = sdpvar('getSolution');

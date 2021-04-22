@@ -11,11 +11,11 @@ if ~isempty(model.evalMap)
     data.b = full(model.F_struc(:,1));
     data.c = full(model.c);
     cones = model.K;
-    % Clear away the SDP cone to easier add new rows. Will be put back in
+    % Clear away the Power and SDP cone to easier add new rows. Will be put back in
     % place later
-    data.A(end-sum(model.K.s.^2)+1:end,:)=[];
-    data.b(end-sum(model.K.s.^2)+1:end) = [];
-    sdpData = model.F_struc(end-sum(model.K.s.^2)+1:end,:);
+    data.A(end-sum(model.K.p)-sum(model.K.s.^2)+1:end,:)=[];
+    data.b(end-sum(model.K.p)-sum(model.K.s.^2)+1:end) = [];
+    sdpData = model.F_struc(end-sum(model.K.p)-sum(model.K.s.^2)+1:end,:);
     
     % First check that we have only exponentials
     convexFunctions = [];
@@ -172,7 +172,7 @@ if ~isempty(model.evalMap)
                           -sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
             case 'pexp'
-                % xv(1)*exp(xv(2)/xv(1)) <= xc
+                % xv(1)*exp(xv(2)/xv(1)) <= xc                
                 x = model.evalMap{i}.variableIndex(2);
                 y = model.evalMap{i}.variableIndex(1);
                 z = model.evalMap{i}.computes;
@@ -230,8 +230,8 @@ if ~isempty(model.evalMap)
     model.F_struc = [data.b data.A];
     model.c = data.c;
     model.K = cones;   
-    % Put back the SDP cone in place
-    if model.K.s(1)>0
+    % Put back the POWER+SDP cone in place
+    if model.K.s(1)>0 || model.K.p(1)>0
         if size(sdpData,2) < size(model.F_struc,2)
             sdpData(end,size(model.F_struc,2)) = 0;
         end

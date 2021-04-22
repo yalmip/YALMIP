@@ -1,5 +1,13 @@
 function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
 
+% Extract alpha in power cone and remove from basis
+if model.K.p(1) > 0
+    top = model.K.f + model.K.l + sum(model.K.q) + 3*model.K.e;
+    alpha = model.F_struc(top + cumsum(model.K.p),1);
+    model.F_struc(top + cumsum(model.K.p),:) = [];
+    model.K.p = model.K.p - 1;
+end
+
 prob.c = model.c;
 if ~isempty(model.F_struc)
     prob.a = -model.F_struc(:,2:end);
@@ -27,7 +35,7 @@ end
 
 [prob.qosubi,prob.qosubj,prob.qoval] = find(tril(sparse(2*model.Q)));
 
-if model.K.q(1)>0 || model.K.e > 0
+if model.K.q(1)>0 || model.K.e > 0 || model.K.p(1) > 0
     % Mosek crashes with empty lists, so only create if needed
     prob.cones.type = [];
     prob.cones.sub = [];
@@ -42,6 +50,7 @@ if model.K.q(1)>0
         spalloc(model.K.l,nof_new,0);
         speye(nof_new);
         spalloc(3*model.K.e,nof_new,0);
+        spalloc(sum(model.K.p),nof_new,0);
         spalloc(sum(model.K.s.^2),nof_new,0)];
     
     prob.a = [prob.a extendBasis];
@@ -67,6 +76,7 @@ if nnz(model.K.e) > 0
     nof_original = size(prob.a,2);
     extendedBasis = [spalloc(model.K.f + model.K.l + sum(model.K.q),nof_new,0);
         speye(m*3);
+        spalloc(sum(model.K.p),nof_new,0);
         spalloc(sum(model.K.s.^2),nof_new,0)];
     prob.a = [prob.a extendedBasis];
     prob.c = [prob.c;zeros(nof_new,1)];
@@ -82,9 +92,38 @@ if nnz(model.K.e) > 0
     end
 end
 
+if model.K.p(1)>0
+    % Append new variables to represent POWER cones
+    nof_new = sum(model.K.p);
+    nof_original = size(prob.a,2);
+    extendBasis = [spalloc(model.K.f,nof_new,0);
+                   spalloc(model.K.l,nof_new,0);  
+                   spalloc(sum(model.K.q),nof_new,0); 
+                   spalloc(3*model.K.e,nof_new,0);
+                   speye(nof_new);
+                   spalloc(sum(model.K.s.^2),nof_new,0)];
+    
+    prob.a = [prob.a extendBasis];
+    % Change the P rows to be equalities for the slacks
+    powerRows = 1+model.K.f+model.K.l+sum(model.K.q)+3*model.K.e:model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.p);
+    prob.blc(powerRows) = prob.buc(powerRows);
+    prob.c = [prob.c;zeros(nof_new,1)];
+    % And now say that the new variables are in the POWER cone
+    prob.cones.conepar = [zeros(1,length(prob.cones.type)) full(alpha)];
+    top = nof_original;
+    for i = 1:length(model.K.p)
+        prob.cones.type = [prob.cones.type 4];
+        prob.cones.subptr = [prob.cones.subptr length(prob.cones.sub)+1];
+        prob.cones.sub = [prob.cones.sub top+1:top+model.K.p(i)];
+        prob.blx(top+1:top+model.K.p(i)) = -inf;
+        prob.bux(top+1:top+model.K.p(i)) = inf;
+        top = top + model.K.p(i);
+    end
+end
+
 if model.K.s(1)>0
     
-    sdpRows = 1+model.K.f+model.K.l+3*model.K.e+sum(model.K.q):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.s.^2);
+    sdpRows = 1+model.K.f+model.K.l+3*model.K.e+sum(model.K.q)+sum(model.K.p):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.p)+sum(model.K.s.^2);
     prob.blc(sdpRows) = prob.buc(sdpRows);
     
     prob.bara.subi = [];
@@ -98,7 +137,7 @@ if model.K.s(1)>0
     prob.barc.subk = [];
     prob.barc.subl = [];
     prob.barc.val = [];
-    top = model.K.f + model.K.l + sum(model.K.q) + 3*model.K.e;
+    top = model.K.f + model.K.l + sum(model.K.q) + 3*model.K.e + sum(model.K.p);
     A = prob.a(top+1:end,:);
     blc = prob.blc(top+1:end);
     buc = prob.buc(top+1:end);

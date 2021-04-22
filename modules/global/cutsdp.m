@@ -245,6 +245,7 @@ p_lp = addDiagonalCuts(p,p_lp);
 % all binary variables 2x2 = constant not psd + M(x) means some x has to be
 % non-zero
 p_lp = addActivationCuts(p,p_lp);
+p_lp = addTrivialActivationCuts(p,p_lp);
 p_lp = removeRedundant(p_lp);
 
 only_solvelp = 0;
@@ -746,15 +747,10 @@ if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) 
     top = p.K.f + p.K.l+sum(p.K.q)+1;
     for k = 1:length(p.K.s)
         F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);
-        %  Fij = p.F_struc(top:top+p.K.s(k)^2-1,2:end);
-        %  Fij = sum(Fij | Fij,2);
         F0 = reshape(F0,p.K.s(k),p.K.s(k));
-        %  Fij = reshape(Fij,p.K.s(k),p.K.s(k));
-        %  Fall = F0 | Fij;
         row = 1;
         added = 0; % Avoid adding more than 2*n cuts (we hope for sparse model...)
-        while row <= p.K.s(k)-1 && added <= 2*p.K.s(k)
-            % if 1
+        while row <= p.K.s(k)-1 && added <= 2*p.K.s(k)            
             j = find(F0(row,:));
             if min(eig(F0(j,j)))<0
                 [ii,jj] = find(F0(j,j));
@@ -768,8 +764,7 @@ if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) 
                 p_lp.F_struc = [p_lp.F_struc;-1 S];
                 p_lp.K.l = p_lp.K.l + 1;
                 
-            end
-            % else
+            end            
             j = find(F0(row,:));
             j = j(j>row);
             for col = j(:)'

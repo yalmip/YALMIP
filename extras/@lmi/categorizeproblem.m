@@ -180,7 +180,7 @@ for i = 1:Counter
                 problem.constraint.inequalities.secondordercone.linear = 1;
             case 5
                 problem.constraint.inequalities.rotatedsecondordercone.linear = 1;
-            case 20
+            case {20,58}
                 problem.constraint.inequalities.powercone = 1;
             case {21,22}
                 problem.exponentialcone = 1;

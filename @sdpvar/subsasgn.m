@@ -10,7 +10,12 @@ try
         end
         if any(I.subs{1} <=0)
             error('Index into matrix is negative or zero.');
-        end       
+        end 
+        
+        if length(I.subs)>2 && X_is_spdvar
+            y = subsasgn(ndsdpvar(X),I,Y);
+            return
+        end
 
         switch 2*X_is_spdvar+Y_is_spdvar
             case 1 

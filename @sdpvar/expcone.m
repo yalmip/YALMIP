@@ -13,7 +13,7 @@ function y = expcone(x)
 % command is then short-hand for 
 % for i = 1:size(x,2);F = [F,expcone(x(:,i))];end 
 %
-% See also  @SDPVAR/CONE, @SDPVAR/SDPCONE
+% See also  @SDPVAR/CONE, @SDPVAR/PCONE
 
 
 [n,m] = size(x);
