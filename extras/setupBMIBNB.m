@@ -40,6 +40,7 @@ temp_options.solver = options.bmibnb.lowersolver;
 % this will typically allow us to solver better lower bounding problems
 % (we don't have to linearize the cost)
 [lowersolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
+allsolvers = solvers; % Save for later
 if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersolver.tag,'bnb')
     % No, probably non-convex cost. Pick a linear solver instead and go
     % for lower bound based on a complete "linearization"
@@ -68,6 +69,24 @@ if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb') || strcmpi(lowersol
 end
 solver.lowercall = lowersolver.call;
 solver.lowersolver = lowersolver;
+
+%% ************************************************************************
+% Select SDP solver (used in some advanced strategies)
+if lowersolver.constraint.inequalities.semidefinite.linear && isequal(options.bmibnb.lowersolver,'')
+    % Simply use lower bound solver
+    solver.sdpsolver = lowersolver;
+else
+    tempProblemClass.constraint.inequalities.semidefinite.linear = 1;
+    temp_options.solver = options.bmibnb.sdpsolver;
+    [sdpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
+    if problem 
+        % We will not be able to run these strategies
+        solver.sdpsolver = [];
+    else
+        solver.sdpsolver = sdpsolver;
+    end
+end
+    
 
 %% ************************************************************************
 % Select upper bound solver
@@ -167,7 +186,7 @@ tempProblemClass.objective.quadratic.nonconvex = 0;
 tempProblemClass.objective.polynomial = 0;
 tempProblemClass.objective.sigmonial = 0;
 
-[lpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
+[lpsolver,problem] = selectsolver(temp_options,tempProblemClass,allsolvers,socp_are_really_qc,allsolvers);
 
 if isempty(lowersolver) || strcmpi(lowersolver.tag,'bmibnb')
     tempbinary = tempProblemClass.constraint.binary;

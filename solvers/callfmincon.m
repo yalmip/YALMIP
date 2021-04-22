@@ -89,7 +89,7 @@ end
 
 solvertime = tic;
 f = @(x)fmincon_fun_liftlayer(x,model);
-if exist('OCTAVE_VERSION','builtin')
+if ~exist('OCTAVE_VERSION','builtin')
     [xout,fmin,flag,output,lambda] = fmincon(f,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,g,model.options.fmincon);
 else
     [xout,fmin,flag,output] = fmincon(f,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,g,model.options.fmincon);

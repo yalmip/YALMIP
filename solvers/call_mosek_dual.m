@@ -61,11 +61,13 @@ end
 if res.rcode == 1001
     % license expired
     x = nan(length(model.c),1);
+elseif res.rcode == 1375
+    x = nan(length(model.c),1); % super bad numerics
 else
     try
         x = res.sol.itr.y;
     catch   
-        if ~isempty(model.options.mosek) & isequal(model.options.mosek.MSK_IPAR_OPTIMIZER,'MSK_OPTIMIZER_FREE_SIMPLEX')
+        if ~isempty(model.options.mosek) & isfield(model.options.mosek,'MSK_IPAR_OPTIMIZER') & isequal(model.options.mosek.MSK_IPAR_OPTIMIZER,'MSK_OPTIMIZER_FREE_SIMPLEX')
             x = res.sol.bas.y;
         else
             x = nan(length(model.c),1);
@@ -131,6 +133,9 @@ elseif res.rcode == 1001
     return;
 elseif res.rcode == 1008
     problem = -12;
+    return;
+elseif res.rcode == 1375
+    problem = 22;
     return;
 end
 

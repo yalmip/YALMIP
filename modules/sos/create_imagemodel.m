@@ -95,7 +95,8 @@ for i = 1:length(BlockedQ)
         Q_new = Q_old_base(:,1) + Q_old_base(:,2:end)*imQ(in_this);
         Q_new = reshape(Q_new,length(BlockedQ{i}{j}),length(BlockedQ{i}{j}));
         obj = obj+trace(Q_new);
-        if ~isa(Q_new,'double')
+        [F_sos,Q_new,infeasible] = trivialReduce(F_sos,Q_new);
+        if ~infeasible && ~isa(Q_new,'double')            
             switch options.sos.model
                 case {2,4}
                     F_sos = F_sos + [Q_new>=0];
@@ -105,14 +106,14 @@ for i = 1:length(BlockedQ)
                     F_sos = F_sos + [sdd(Q_new)];                                             
                 otherwise
             end
-        elseif min(eig(Q_new))<-1e-8
+        elseif infeasible || (~isempty(Q_new) && min(eig(Q_new))<-1e-8)
             sol.yalmiptime = 0; % FIX
             sol.solvertime = 0;
             sol.problem = 2;
             sol.info = yalmiperror(1,'YALMIP');
             F = [];
             obj = [];
-            error('Problem is trivially infeasible. After block-diagonalizing, I found constant negative definite blocks!');
+            error('Problem is trivially infeasible. After block-diagonalizing, I found constant negative definite blocks (or impossible definiteness)');
             return
         end
         BlockedQ{i}{j} = Q_new;
@@ -127,4 +128,42 @@ end
 
 if ~isempty(parobj)
     obj = parobj;
+end
+
+function [F_sos,Q_new,infeasible] = trivialReduce(F_sos,Q_new)
+
+infeasible = 0;
+n = size(Q_new,1);
+if n > 1 && isa(Q_new,'sdpvar')
+    B = getbase(Q_new);
+    dindex = find(reshape(speye(n),[],1));    
+    diagonalsBase = B(dindex,:);
+    zeroDiagonal = find(~any(diagonalsBase,2));
+    if ~isempty(zeroDiagonal)
+        for j = zeroDiagonal(:)'
+            restofRow = Q_new(j,setdiff(1:n,j));
+            if isa(restofRow,'double') && any(restofRow)
+                infeasible = 1;
+                return
+            else
+                for k = 1:length(restofRow)
+                    element = restofRow(k);
+                    if isa(element,'double') && any(element)
+                        infeasible = 1;
+                        return
+                    elseif isa(element,'sdpvar')
+                        F_sos = [F_sos, (element == 0):'Trivial due to zero diagonal'];
+                    end
+                end
+            end
+        end
+        % FIXME: We current simply zero this row
+        % We could delete it, but then some post-rpcessin fails due to
+        % inconsistency between Q and A and b
+        % Trust solvers to fix this trivial issue
+        Q_new(zeroDiagonal,:)= 0;
+        Q_new(:,zeroDiagonal)= 0;
+        % Q_new(zeroDiagonal,:)= [];
+        % Q_new(:,zeroDiagonal)= [];
+    end
 end

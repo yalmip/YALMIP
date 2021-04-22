@@ -148,6 +148,9 @@ else
     options.cplex = setup_cplex_options;
     Names = appendOptionNames(Names,options.cplex,'cplex');
 
+    options.coneprog = setup_coneprog_options;
+    Names = appendOptionNames(Names,options.coneprog,'coneprog');
+
     options.csdp = setup_csdp_options;
     Names = appendOptionNames(Names,options.csdp,'csdp');
 
@@ -335,6 +338,10 @@ while i <= nargin
     i = i + 1;
 end
 
+if isequal(options.solver,'swarm')
+    error('I guess you missed the joke.');
+end
+
 if expectval
     error(sprintf('Expected value for property ''%s''.', arg));
 end
@@ -456,6 +463,7 @@ function bmibnb = setup_bmibnb_options
 bmibnb.lowersolver = '';
 bmibnb.uppersolver = '';
 bmibnb.lpsolver = '';
+bmibnb.sdpsolver = '';
 bmibnb.uppersdprelax = 1;
 bmibnb.target =  -inf;
 bmibnb.lowertarget =  inf;
@@ -465,16 +473,18 @@ bmibnb.branchmethod = 'best';
 bmibnb.branchrule = 'omega';
 bmibnb.cut.multipliedequality = 0;
 bmibnb.cut.multipliedinequality = 0;
+bmibnb.cut.squaredlinearequality = -1;
 bmibnb.cut.normbound = 1;
 bmibnb.cut.evalvariable = 1;
 bmibnb.cut.bilinear = 1;
 bmibnb.cut.monomial = 1;
 bmibnb.cut.monomialtower = 0;
 bmibnb.cut.complementarity = 1;
-bmibnb.cut.quadratic = 1;
+bmibnb.cut.quadratic = -1;
 bmibnb.cut.exponential = 0;
 bmibnb.cut.sincos = 0;
 bmibnb.sdpcuts = 0;
+bmibnb.sdpbounder = -1;
 bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = 1;
@@ -581,6 +591,7 @@ sos.newton = 1;
 sos.congruence = 2;
 sos.scale = 1;
 sos.numblkdg = 0;
+sos.numblkiterlimit = inf;
 sos.postprocess = 0;
 sos.csp = 0;
 sos.extlp = 1;
@@ -853,6 +864,8 @@ gurobi.ScenarioNumber = 0;
 gurobi.Seed = 0;
 gurobi.Threads = 0;
 gurobi.UpdateMode = 1;
+gurobi.NoRelHeurWork = 0;
+gurobi.NoRelHeurTime = 0;
 
 function intlinprog = setup_intlinprog_options
 try
@@ -1323,6 +1336,14 @@ try
     quadprog = trytoset('quadprog');
 catch
     quadprog.param = [];
+end
+
+function coneprog = setup_coneprog_options
+try
+    % FIXME Cannot setup all with defaults?
+    coneprog = optimoptions('coneprog');
+catch
+    coneprog = [];
 end
 
 function linprog = setup_linprog_options

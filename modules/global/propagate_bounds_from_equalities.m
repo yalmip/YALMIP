@@ -76,10 +76,40 @@ if p.K.f >0
                                 p.lb(ij(2)) = max( p.lb(ij(2)),-val(1)/p.ub(ij(1)));
                                 p.lb(ij(1)) = max( p.lb(ij(1)),-val(1)/p.ub(ij(2)));
                             end
+                        elseif p.ub(ij(1))<=0 & p.ub(ij(2))<=0
+                            if -val(1)<0
+                                p.feasible = 0;
+                                return
+                            else
+                                x = ij(1);y = ij(2);
+                                if p.ub(y)
+                                    p.lb(x) = max(p.lb(x),-val(1)/p.ub(y));
+                                end
+                                if p.ub(x)
+                                    p.lb(y) = max(p.lb(y),-val(1)/p.ub(x));
+                                end
+                                if p.lb(y)
+                                    p.ub(x) = min( p.ub(x),-val(1)/p.lb(y));
+                                end
+                                if p.ub(x)
+                                    p.ub(y) = min( p.ub(y),-val(1)/p.lb(x));                                
+                                end
+                            end
+                            
                         elseif -val(1)>0 &  p.lb(ij(1))>=0
                             p.lb(ij(2)) = max(0,p.lb(ij(2)));
                         elseif -val(1)>0 &  p.lb(ij(2))>=0
                             p.lb(ij(1)) = max(0,p.lb(ij(1)));
+                        elseif val(1) < 0 &&  val(2) > 0 % x*y == pos so sign can be derived at least
+                            if p.lb(ij(1))>=0
+                                p.lb(ij(2)) = max(0,p.lb(ij(2)));
+                            elseif p.lb(ij(2))>=0
+                                p.lb(ij(1)) = max(0,p.lb(ij(1)));
+                            elseif p.ub(ij(1))<=0
+                                p.ub(ij(2)) = min(0,p.ub(ij(2)));
+                            elseif p.ub(ij(2))<=0
+                                 p.ub(ij(1)) = min(0,p.ub(ij(1)));
+                            end
                         end
                     end
                 end
@@ -145,7 +175,8 @@ end
 close = find(abs(p.lb - p.ub) < 1e-12);
 p.lb(close) = (p.lb(close)+p.ub(close))/2;
 p.ub(close) = p.lb(close);
-
+% Numerical issues easily propagates, so widen weird close to feasible box 
+p = widenSmashedBox(p);
 p = update_integer_bounds(p);
 
 if ~isequal(LU,[p.lb p.ub])

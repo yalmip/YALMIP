@@ -492,7 +492,7 @@ while goon
             upper = cost;
         end
         
-        goon = infeasibility <= p.options.cutsdp.feastol || output.problem ==3;
+        goon = infeasibility <= p.options.cutsdp.feastol || output.problem ==3 || output.problem == 2;
         
         if length(lowerHistory)>1 && phaseHistory(end)==0
             % We made a massive jump when turning on integrality. This

@@ -53,7 +53,13 @@ if options.savedebug
 end
 
 solvertime = tic;
-[x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
+if exist('OCTAVE_VERSION', 'builtin')
+  [x,fmin] = linprog(c, A, b, Aeq, beq, lb, ub);
+  lambda=[];
+  flag=1;
+else
+  [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
+endif
 solvertime = toc(solvertime);
 problem = 0;
 

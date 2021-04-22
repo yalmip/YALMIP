@@ -500,41 +500,6 @@ solver(i).subversion = '12.0';
 i = i+1;
 
 solver(i) = lpsolver;
-solver(i).tag     = 'GLPK';
-solver(i).version = 'GLPKMEX-CC';
-solver(i).checkfor= {'glpkcc'};
-solver(i).call    = 'callglpkcc';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'GLPK';
-solver(i).version = 'GLPKMEX';
-solver(i).checkfor= {'glpkmex.m'};
-solver(i).call    = 'callglpk';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-i = i+1;
-
-% Needed for Later Octave version (glpkmex is depracated)
-solver(i) = lpsolver;
-solver(i).tag     = 'GLPK';
-solver(i).version = 'GLPKMEX';
-solver(i).checkfor= {'glpk.m'};
-solver(i).call    = 'callglpkoctave';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'CDD';
-solver(i).version = 'CDDMEX';
-solver(i).checkfor= {'cddmex'};
-solver(i).call    = 'callcdd';
-i = i+1;
-
-solver(i) = lpsolver;
 solver(i).tag     = 'NAG';
 solver(i).version = 'e04mbf';
 solver(i).checkfor= {'e04mbf'};
@@ -555,16 +520,6 @@ solver(i).checkfor= {'mexclp'};
 solver(i).call    = 'callclp';
 i = i+1;
 
-solver(i) = lpsolver;
-solver(i).tag     = 'SCIP';
-solver(i).version = 'linear';
-solver(i).checkfor= {'scip'};
-solver(i).call    = 'callscipmex';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-solver(i).constraint.sos2 = 1;
-i = i+1;
-
 solver(i) = qpsolver;
 solver(i).tag     = 'XPRESS';
 solver(i).version = 'MEXPRESS 1.1';
@@ -583,59 +538,18 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
 
-solver(i) = lpsolver;
-solver(i).tag     = 'XPRESS';
-solver(i).version = 'FICO';
-solver(i).checkfor= {'xprsmip.m'};
-solver(i).call    = 'call_xpressfico_milp';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-solver(i).constraint.sos2 = 1;
-solver(i).constraint.semivar = 1;
-solver(i).constraint.semiintvar = 1;
-i = i+1;
-
 solver(i) = qpsolver;
 solver(i).tag     = 'XPRESS';
 solver(i).version = 'FICO';
-solver(i).checkfor= {'xprsmiqp.m'};
-solver(i).call    = 'call_xpressfico_miqp';
+solver(i).checkfor= {'xprsmiqcqp.m'};
+solver(i).call    = 'call_xpressfico_qcmip';
+solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.sos2 = 1;
 solver(i).constraint.semivar = 1;
 solver(i).constraint.semiintvar = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'QSOPT';
-solver(i).version = 'OPTI';
-solver(i).checkfor= {'opti_qsopt.m'};
-solver(i).call    = 'calloptiqsopt';
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'QSOPT';
-solver(i).version = 'MEXQSOPT';
-solver(i).checkfor= {'qsopt.m'};
-solver(i).call    = 'callqsopt';
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'LPSOLVE';
-solver(i).version = 'MXLPSOLVE';
-solver(i).checkfor= {'lp_solve'};
-solver(i).call    = 'calllpsolve';
-solver(i).constraint.integer = 1;
-solver(i).constraint.sos2 = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'OSL';
-solver(i).version = 'OSLPROG';
-solver(i).checkfor= {'oslprog.m'};
-solver(i).call    = 'calloslprog';
-solver(i).constraint.integer = 1;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -692,10 +606,13 @@ solver(i).constraint.binary = 1;
 i = i+1;
 
 solver(i) = lpsolver;
-solver(i).tag     = 'LINPROG';
-solver(i).version = '';
-solver(i).checkfor= {'linprog'};
-solver(i).call    = 'calllinprog';
+solver(i).tag     = 'SCIP';
+solver(i).version = 'linear';
+solver(i).checkfor= {'scip'};
+solver(i).call    = 'callscipmex';
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+solver(i).constraint.sos2 = 1;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -705,7 +622,40 @@ solver(i).checkfor= {'bp'};
 solver(i).call    = 'callbpmpd';
 i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'GLPK';
+solver(i).version = 'GLPKMEX-CC';
+solver(i).checkfor= {'glpkcc'};
+solver(i).call    = 'callglpkcc';
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'GLPK';
+solver(i).version = 'GLPKMEX';
+solver(i).checkfor= {'glpkmex.m'};
+solver(i).call    = 'callglpk';
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+i = i+1;
+
+% Needed for Later Octave version (glpkmex is depracated)
+solver(i) = lpsolver;
+solver(i).tag     = 'GLPK';
+solver(i).version = 'GLPKMEX';
+solver(i).checkfor= {'glpk.m'};
+solver(i).call    = 'callglpkoctave';
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'LINPROG';
+solver(i).version = '';
+solver(i).checkfor= {'linprog'};
+solver(i).call    = 'calllinprog';
+i = i+1;
 
 solver(i) = qpsolver;
 solver(i).tag     = 'QUADPROG';
@@ -714,6 +664,44 @@ solver(i).checkfor= {'quadprog'};
 solver(i).call    = 'callquadprog';
 solver(i).objective.quadratic.nonconvex = 1;
 solver(i).supportsinitial = 1;
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'CDD';
+solver(i).version = 'CDDMEX';
+solver(i).checkfor= {'cddmex'};
+solver(i).call    = 'callcdd';
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'QSOPT';
+solver(i).version = 'OPTI';
+solver(i).checkfor= {'opti_qsopt.m'};
+solver(i).call    = 'calloptiqsopt';
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'QSOPT';
+solver(i).version = 'MEXQSOPT';
+solver(i).checkfor= {'qsopt.m'};
+solver(i).call    = 'callqsopt';
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'LPSOLVE';
+solver(i).version = 'MXLPSOLVE';
+solver(i).checkfor= {'lp_solve'};
+solver(i).call    = 'calllpsolve';
+solver(i).constraint.integer = 1;
+solver(i).constraint.sos2 = 1;
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'OSL';
+solver(i).version = 'OSLPROG';
+solver(i).checkfor= {'oslprog.m'};
+solver(i).call    = 'calloslprog';
+solver(i).constraint.integer = 1;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -1214,6 +1202,14 @@ solver(i).constraint.semivar = 1;
 solver(i).constraint.sos2 = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'CONEPROG';
+solver(i).version = '';
+solver(i).checkfor= {'coneprog'};
+solver(i).call    = 'callconeprog';
+solver(i).constraint.inequalities.secondordercone.linear = 1;
 i = i+1;
 
 solver(i) = sdpsolver;

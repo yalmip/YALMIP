@@ -11,19 +11,13 @@ Anonlinear = [ model.Anonlinineq; model.Anonlineq];
 
 % Create string representing objective
 obj = createmodelstring(model.c,model);
-obj = strrep(obj,'sqrtm_internal','sqrt');
-obj = strrep(obj,'cabs','abs');
 if nnz(model.Q)>0
     obj = [obj '+' createQstring(model.Q,model)];
 end
 if model.f > 0
     obj = [obj '+' num2str(model.f)];
 end
-% YALMIP ctches log(1+z) and implements internal model slog(z) 
-% Replace with log
-expression = 'slog((\w*)';
-replace = 'log(1+$1';
-obj =  regexprep(obj,expression,replace);
+obj = baronify(obj);
 if length(obj)>0
     obj = strrep(obj,'+-','-');
     obj = ['@(x) ' obj];
@@ -46,8 +40,7 @@ if length(cu)>0
     cl(remove) = [];
     cu(remove) = [];
     con = [con ']'];
-    con = strrep(con,'sqrtm_internal','sqrt');
-    con =  regexprep(con,expression,replace);
+    con = baronify(con);
     con = ['@(x) ' con];
     con = eval(con);
 else
@@ -182,6 +175,16 @@ if pos
             end 
         end
         z = ['log' z(1:end-1) ')'];                    
+    elseif strcmp(model.evalMap{pos}.fcn,'power_internal1')
+        j = find(map.computes == i);
+        j = map.variableIndex(j);
+        % we have f(x(j)), but have to map back to linear indicies
+        jl = find(model.linearindicies == j);
+        if isempty(jl)
+            z =  [num2str(model.evalMap{pos}.arg{2}) '^(' createmonomstring(model.monomtable(j,:),model)  ')'];
+        else
+            z =  [num2str(model.evalMap{pos}.arg{2}) '^(x(' num2str(jl) '))'];
+        end  
     else
         j = find(map.computes == i);
         j = map.variableIndex(j);
@@ -244,3 +247,17 @@ string = string(1:end-1);
 string = strrep(string,'+-','-');
 string = strrep(string,'-1*','-');
 string = strrep(string,'+1*','+');
+
+function s = baronify(s)
+s = strrep(s,'sqrtm_internal','sqrt');
+s = strrep(s,'cabs','abs');
+% YALMIP catches log(1+z) and implements internal model slog(z) 
+% Replace with log
+expression = 'slog((\w*)';
+replace = 'log(1+$1';
+s =  regexprep(s,expression,replace);
+% YALMIP catches x^y and replaced with power1_internal
+expression = 'slog((\w*)';
+replace = 'log(1+$1';
+s =  regexprep(s,expression,replace);
+

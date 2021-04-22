@@ -2,8 +2,7 @@ function p = createsdpcut(p,x)
 if p.K.s > 0
     top = p.K.f+p.K.l+sum(p.K.q)+1;
     newcuts = 1;
-    newF = [];
-    newQF = [];
+    newF = [];    
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         X = p.F_struc(top:top+n^2-1,:)*[1;x];
@@ -26,23 +25,14 @@ if p.K.s > 0
                     end
                 end
             end
-        end
-        if 0% v(1,1)<0
-            tempcut = [];
-            for j = 1:length(x)+1;
-                temp = d(:,1:2)'*reshape(p.F_struc(top:top+n^2-1,j),n,n)*d(:,1:2);
-                tempcut = [tempcut [temp(1,1)+temp(2,2);temp(1,1)-temp(2,2);2*temp(1,2)]];
-            end 
-            newQF = [newQF;tempcut];
-        end
+        end        
         top = top+n^2;
     end
 
     if ~isempty(newF)
-        % Don't keep all
         m = size(newF,2);        
         p.lpcuts = [newF;p.lpcuts];
         p.cutState = [ones(size(newF,1),1);p.cutState];          
     end
-    p.socpcuts = newQF;
+    p.socpcuts = [];
 end

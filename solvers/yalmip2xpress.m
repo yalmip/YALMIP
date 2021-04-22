@@ -25,12 +25,23 @@ if ~isempty(semicont_variables)
     semicont_variables = setdiff(semicont_variables,redundant);
 end
 
+n_original = length(c);
+if any(K.q)
+    [F_struc,K,c,H,ub,lb,x0] = append_normalized_socp(F_struc,K,c,H,ub,lb,x0);   
+end
+
 % Notation used
 f = c;
-A = -F_struc(:,2:end);
-b = F_struc(:,1);
-rtype = repmat('L',size(F_struc,1),1);
-rtype(1:K.f) = 'E';
+if K.f + K.l > 0
+    A = -F_struc(1:K.f+K.l,2:end);
+    b = F_struc(1:K.f+K.l,1);
+    rtype = repmat('L',K.f+K.l,1);
+    rtype(1:K.f) = 'E';
+else
+    A = [];
+    b = [];
+    rtype = [];
+end
 
 % XPRESS assumes semi-continuous variables only can take positive values so
 % we negate semi-continuous violating this
@@ -71,6 +82,20 @@ if ~isempty(K.sos.type)
         sos(i).type = K.sos.type(i);
         sos(i).ind =  K.sos.variables{i}-1;
         sos(i).wt = (1:length(K.sos.weight{i}))';
+    end
+end
+
+model.Q = [];
+if ~isequal(K.q,0)
+    A = [A;spalloc(nnz(K.q),size(A,2),0)];
+    b = [b;spalloc(nnz(K.q),1,0)];
+    rtype = [rtype;repmat('L',nnz(K.q),1)];
+    top = n_original + 1;
+    for i = 1:length(K.q)
+        n = K.q(i);      
+        Qi = sparse(top:top+n-1,top:top+n-1,[-1 repmat(1,1,n-1)],length(c),length(c));
+        model.Q{K.f + K.l + i} = Qi;               
+        top = top + n;
     end
 end
 

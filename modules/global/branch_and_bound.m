@@ -1,4 +1,4 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing,solution_hist)
 
 % *************************************************************************
 % Initialize diagnostic code
@@ -32,8 +32,14 @@ p = fixOperatorProperties(p);
 % *************************************************************************
 p = addShiftedQP(p);
 if ~isempty(p.shiftedQP)
-    if options.bmibnb.verbose>0          
-        disp('* -Shifted nonconvex QP objective using SDP');        
+    if options.bmibnb.verbose>0   
+        switch p.shiftedQP.method
+            case 'sdp'
+                disp('* -Shifted nonconvex QP objective using SDP');        
+            case 'eig'
+                disp('* -Shifted nonconvex QP objective using eigenvalues');
+            otherwise
+        end
     end
 end
 
@@ -45,6 +51,10 @@ p_upper = compile_nonlinear_table(p_upper);
 p_upper = compile_bilinearslist(p_upper);
 p_upper = compile_quadraticslist(p_upper);
 
+% Save info about solution structure implied by box concavity
+p = addConcavityInfo(p);
+
+
 % *************************************************************************
 % Add constraints obtained from multiplying linear constraints with 
 % variables leading to bilinear constraints with monomials already used
@@ -55,6 +65,11 @@ end
 if p.options.bmibnb.cut.multipliedinequality
     p = addMultipliedInequalityCuts(p);
 end
+if p.options.bmibnb.cut.squaredlinearequality
+    p = addSquaredLinearEqualityCuts(p);
+end
+
+p = lastresortBounds(p,upper);
 
 % *************************************************************************
 % Active constraints in main model
@@ -139,8 +154,14 @@ if any(options.bmibnb.strengthscheme < 1) || any(options.bmibnb.strengthscheme >
     error
 end
 
+p.quadraticCutFailure = 0;
 while go_on
     
+    % We are waiting for an upper bound to pop up so we can use the SDP
+    % relaxation to compute a global upper bound for a model where no
+    % bounds were given (currently equality constrained QP)
+    [p,stack] = generateBoundFromSDP(p,upper,stack);
+       
     % *********************************************************************
     % ASSUME THAT WE WON'T FATHOME
     % *********************************************************************
@@ -152,8 +173,8 @@ while go_on
     % *********************************************************************
     p.changedbounds = 1;
     time_ok = 1;
-    
-    p.upper = upper;   
+          
+    p.upper = upper;       
     for i = 1:length(options.bmibnb.strengthscheme)
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));        
         time_ok = toc(timing.total) < options.bmibnb.maxtime;
@@ -180,7 +201,7 @@ while go_on
                 if length(info_text_temp) > 0
                     info_text = info_text_temp;
                 end                    
-            end                        
+            end 
             p.counter.heuristics = p.counter.heuristics + size(X,2);
             timing.heuristics = timing.heuristics + toc(tstart);
             propagators{j}.worked  = [propagators{j}.worked sparse([LU(:,1)~=p.lb | LU(:,2)~=p.ub])];          
@@ -195,6 +216,7 @@ while go_on
             [volBefore,openVariables] = branchVolume(p);
             propagators{j}.time(end+1) = tic;
             p = feval(propagators{j}.fun,p);
+            p = propapagate_bounds_from_concavity(p);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
@@ -204,12 +226,22 @@ while go_on
             break
         end
     end
+    if size(solution_hist,1)>1
+        if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))            
+            solution_hist = [solution_hist x_min(p.originallinears(:))];
+        end
+    elseif ~isempty(x_min)        
+        solution_hist = x_min(p.originallinears(:));
+    end
+    
+    % Any upper bond yet...
+    [p,stack] = generateBoundFromSDP(p,upper,stack);
 
     % *********************************************************************
     % SOLVE LOWER AND UPPER
     % *********************************************************************
     if ~time_ok
-        info_text = 'Time-out during bound-propagation';
+        info_text = 'Time-out during bound propagation';
         keep_digging = 0; 
         cost = inf;
     elseif p.feasible
@@ -218,8 +250,48 @@ while go_on
         % Detect redundant constraints
         % *********************************************************************
         p = remove_redundant(p);
+        
+        % *********************************************************************
+        % solve relaxation
+        % In the root node, if we have an SDP-shifted QP available, we
+        % evaluate its performance to decide if we want to use it
+        % Really ugly with lot's of checking for various numerical issues
+        % etc and adaptively turning of some stuff to get rid of numerical
+        % issues which might lead to weird terminations etc
+        % *********************************************************************
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));
-        [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+        if solved_nodes == 0 && ~isempty(p.shiftedQP)           
+            p_temp = p;p_temp.shiftedQP = [];
+            [output_1,cost_1,p_temp,timing] = solvelower_safelayer(p_temp,options,lowersolver,x_min,upper,timing);
+            [output_2,cost_2,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);
+            if output_1.problem ~= 0 && output_2.problem == 0
+                cost = cost_2;
+                output = output_2;               
+            elseif output_1.problem == 0 && output_2.problem ~= 0
+                p = p_temp;
+                output = output_1;
+                cost = cost_1;           
+            elseif output_1.problem == 0 && output_2.problem == 0 && cost_1 > cost_2
+                p = p_temp;
+                output = output_1;
+                cost = cost_1; 
+            elseif output_1.problem == 0 && output_2.problem == 0 && cost_2 > cost_1                
+                output = output_2;
+                cost = cost_2;     
+            elseif output_1.problem == 4
+                cost = cost_2;
+                output = output_2;      
+            elseif output_2.problem == 4
+                p = p_temp;
+                cost = cost_1;
+                output = output_1;  
+            else
+                output = output_2;
+                cost = cost_2;     
+            end
+        else
+            [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);            
+        end
 
         if output.problem == -1
             % We have no idea what happened. 
@@ -231,25 +303,13 @@ while go_on
             end
             output.problem = 3;
         end
-        
-        % Some solvers cannot differentiate unbounded and infeasible
-        if output.problem == 12
-            pp = p;
-            pp.c = pp.c*0;
-            [output2,cost2] = solvelower(pp,options,lowersolver,[],[],timing);
-            if output2.problem == 0
-                output.problem = 2;
-            else
-                output.problem = 1;
-            end
-        end
-                       
+                              
         switch output.problem
             case 1 % Infeasible
                  if length(info_text)==0
                     info_text = 'Infeasible node in lower solver';
                  else
-                    info_text = [info_text ' | ' 'Infeasible node in lower solver'];                    
+                    info_text = [info_text ' | ' 'Infeasible in lower solver'];                    
                  end                                        
                 keep_digging = 0;
                 cost = inf;
@@ -260,11 +320,16 @@ while go_on
                 % Unbounded
                 if output.problem == 2
                     cost = -inf;
+                elseif output.problem == 4
+                    cost = p.lower;
                 end
                 
                 if (output.problem == 3) | (output.problem == 4)
                     info_text = 'Numerical problems in lower solver';
+                elseif output.problem == 2
+                    info_text = 'Unbounded in lower solver';
                 end
+                
                 x = output.Primal;
                 
                 % UPDATE THE LOWER BOUND
@@ -292,6 +357,13 @@ while go_on
                         tstart = tic;
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
                         timing.heuristics = timing.heuristics + toc(tstart);
+                        if size(solution_hist,1)>1
+                            if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
+                                solution_hist = [solution_hist x_min(p.originallinears(:))];
+                            end
+                        elseif ~isempty(x_min)
+                            solution_hist = x_min(p.originallinears(:));;
+                        end
                         
                         p.counter.heuristics = p.counter.heuristics + 1;
                         if length(info_text)==0 &&  length(info_text2)>0
@@ -304,6 +376,13 @@ while go_on
                                 if options.bmibnb.lowertarget > lower                                         
                                     [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);                                    
                                     p.counter.uppersolved = p.counter.uppersolved + 1;                                    
+                                    if size(solution_hist,1)>1
+                                        if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
+                                            solution_hist = [solution_hist x_min(p.originallinears(:))];
+                                        end
+                                    elseif ~isempty(x_min)
+                                        solution_hist = x_min(p.originallinears(:));;
+                                    end
                                 end
                             end
                         end
@@ -313,14 +392,14 @@ while go_on
                     end
                 else
                     keep_digging = 0;
-                    info_text = 'Poor bound in lower, killing node';
+                    info_text = 'Poor lower bound';
                 end
             otherwise
                 cost = lower;
                 x = (p.lb+p.ub)/2;
         end
     else
-        info_text = 'Infeasible in node bound-propagation';
+        info_text = 'Terminated in bound propagation';
         keep_digging = 0;
         cost = inf;
         feasible = 0;
@@ -397,8 +476,15 @@ while go_on
         end
         if isempty(node)
             if ismember(spliton,union(p.binary_variables,p.integer_variables)) 
-                node1 = savetonode(p,spliton,p.lb(spliton),floor(x(spliton)),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
-                node2 = savetonode(p,spliton,ceil(x(spliton)),p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                if p.lb(spliton) == floor(x(spliton)) || p.ub(spliton) == ceil(x(spliton))
+                    center1 = floor(-1/2+(p.lb(spliton) + p.ub(spliton))/2);
+                    center2 = ceil((p.lb(spliton) + p.ub(spliton))/2);
+                    node1 = savetonode(p,spliton,p.lb(spliton),center1,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                    node2 = savetonode(p,spliton,center2,p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                else
+                    node1 = savetonode(p,spliton,p.lb(spliton),floor(x(spliton)),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                    node2 = savetonode(p,spliton,ceil(x(spliton)),p.ub(spliton),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
+                end
                 node1.bilinears = p.bilinears;
                 node1 = updateonenonlinearbound(node1,spliton);
                 node1.branchwidth = [p.ub(spliton)-p.lb(spliton)];
@@ -690,7 +776,7 @@ for i = 1:length(p.evalMap)
         end
     end
 end
-if isempty(p.evalMap) && isempty(p.F_struc) && all(p.variabletype<=2) && all(p.nonshiftedQP.c==0) && (p.nonshiftedQP.Q(spliton,spliton) < 0)
+if ~isempty(p.possibleSol) && any(spliton == p.possibleSol(:,1))
     % Simple box-cnstrained min x'*Q*x with negative element Q_ii will
     % have optimal point at bound
     bounds = [p.lb(spliton) nan p.ub(spliton)];
@@ -765,75 +851,226 @@ function p = addShiftedQP(p)
 % 2: Solve SDP to compute diagonal convexifying shift
 % 3:
 p.shiftedQP = [];
+p.nonshiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
+f = p.f;
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
-if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
-    r = find(any(Q,2));
-    e = eig(full(Q(r,r)));
-    if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)
-        % Already convex, so keep the compiled matrices
-        p.shiftedQP.Q = Q;
-        p.shiftedQP.c = c;
-    else
-        % Nonconvex case
-        if all(e <= 1e-6) || ~any(diag(Q)) && ~(p.options.bmibnb.lowerpsdfix == 1)
-            % Does not benefit from any kind of shift
-            return
-        end
-        
-       if p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1 && length(e) <= 500
-            x = sdpvar(length(r),1);
-            % FIXME: Use lower level setup
-            ops = p.options;
-            ops.solver = 'mosek,sdpt3,sedumi';
-            ops.verbose = max(ops.verbose-1,0);
-            sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
-            if sol.problem == 0
-                x = value(x);
-                % SDP solver can fail numerically
-                e = eig(Q(r,r) + diag(x));
-                perturb = max(0,-min(e));
-                q = zeros(length(Q),1);
-                q(r) = value(x) + perturb + 1e-6;
+p.nonshiftedQP.f = f;
+if isempty(p.evalMap) && ~any(p.variabletype > 2)
+    if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
+        r = find(any(Q,2));
+        e = eig(full(Q(r,r)));
+        if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)
+            % Already convex, so keep the compiled matrices
+            p.shiftedQP.Q = Q;
+            p.shiftedQP.c = c;
+            p.shiftedQP.f = p.f;
+            p.shiftedQP.method = 'none';
+        else
+            % Nonconvex case
+            if (all(e <= 1e-6) || ~any(diag(Q))) && ~(p.options.bmibnb.lowerpsdfix == 1)
+                % Does not benefit from any kind of shift
+                return
+            end
+            
+            if (p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1) && length(e) <= 500 && ~isempty(p.solver.sdpsolver)
+                x = sdpvar(length(r),1);                
+                % FIXME: Use lower level setup
+                ops = p.options;
+                ops.solver = p.solver.sdpsolver.tag;
+                ops.verbose = max(ops.verbose-1,0);
+                sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+                if sol.problem == 0
+                    x = value(x);
+                    % SDP solver can fail numerically
+                    e = eig(Q(r,r) + diag(x));
+                    perturb = max(0,-min(e));
+                    q = zeros(length(Q),1);
+                    q(r) = value(x) + perturb + 1e-6;
+                    p.shiftedQP.method = 'sdp';
+                    Q = Q + diag(q);
+                else
+                    s = min(eig(Q(r,r)));
+                    q = zeros(length(Q),1);
+                    q(r) = -s + 1e-9;
+                    p.shiftedQP.method = 'eig';
+                    Q = Q + diag(q);
+                end
             else
                 s = min(eig(Q(r,r)));
                 q = zeros(length(Q),1);
                 q(r) = -s + 1e-9;
+                p.shiftedQP.method = 'eig';
+                Q = Q + diag(q);
             end
-        else
-            s = min(eig(Q(r,r)));
-            q = zeros(length(Q),1);
-            q(r) = -s + 1e-9;
-        end
-        Q = Q + diag(q);
-        for i = 1:length(r)
-            j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
-            if isempty(j)
-                % Ouch, cannot do this since we don't have these
-                % monomials in the model. Add them!
-                newv = length(c)+1;
-                if ~isempty(p.F_struc)
-                    p.F_struc(end,end+1) = 0;
+            for i = 1:length(r)
+                j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
+                if isempty(j)
+                    % Ouch, cannot do this since we don't have these
+                    % monomials in the model. Add them!
+                    newv = length(c)+1;
+                    if ~isempty(p.F_struc)
+                        p.F_struc(end,end+1) = 0;
+                    end
+                    p.monomtable(end+1,end+1) = 0;
+                    p.monomtable(end,r(i)) = 2;
+                    p.variabletype(end+1) = 2;
+                    p.lb(end+1) = -inf;
+                    p.ub(end+1) = inf;
+                    p.x0(end+1) = 0;
+                    p.bilinears = [p.bilinears;newv r(i) r(i)];
+                    p.monomials = [p.monomials newv];
+                    j = size(p.bilinears,1);
+                    p.c(end+1) = 0;c(end+1) = 0;
+                    p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
+                    nullQ(size(p.Q,1),size(p.Q,1))=0;
+                    nullc(size(p.Q,1),1)=0;
+                    p.Quadratics = [p.Quadratics newv];
+                    p.QuadraticsList(newv,:) = [r(i) r(i)];
                 end
-                p.monomtable(end+1,end+1) = 0;
-                p.monomtable(end,r(i)) = 2;
-                p.variabletype(end+1) = 2;
-                p.lb(end+1) = -inf;
-                p.ub(end+1) = inf;
-                p.x0(end+1) = 0;
-                p.bilinears = [p.bilinears;newv r(i) r(i)];
-                p.monomials = [p.monomials newv];
-                j = size(p.bilinears,1);
-                p.c(end+1) = 0;c(end+1) = 0;
-                p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
-                p.Quadratics = [p.Quadratics newv];
-                p.QuadraticsList(newv,:) = [r(i) r(i)];
+                c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(r(i));
             end
-            c(p.bilinears(j,1)) = c(p.bilinears(j,1)) - q(r(i));
         end
+        p.shiftedQP.Q = Q;
+        p.shiftedQP.c = c;
+        p.shiftedQP.f = f;
     end
-    p.shiftedQP.Q = Q;
-    p.shiftedQP.c = c;    
 end
 
+function p = addConcavityInfo(p)
+% Indefinite BOX-QP? Add info for branching, cuts to lower relaxation, and
+% move over terms from negative quadratic term to linear term
+p.possibleSol = [];
+p.concavityEqualities = [];
+if isempty(p.evalMap) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 0) > 0
+    
+    j = find(diag(p.nonshiftedQP.Q) < 0);
+    if size(p.F_struc,1) > 0
+        % Only keep those that are unconstrained (besides being bounded)
+        usedInConstraints = find(any(p.F_struc(:,2:end),1));
+        j = setdiff(j,usedInConstraints);
+        % FIXME: Support nonolinear constraints
+        if nnz(p.F_struc(:,1+p.nonlinears)) > 0
+            j = [];
+        end
+    end   
+    if ~isempty(j)
+        % Solution must be at bounds, so we keep this info for later branching
+        p.possibleSol = [j(:) p.lb(j) p.ub(j)];
+        % The implicitly defines (x-L)*(x-U)=0 (i.e scaled binary)
+        % i.e. x^2 = (U+L)x - LU. WE can add that as constraints, but also
+        % move terms from negative quadratic terms to linear
+        var = [];
+        nonlin = [];
+        for i= 1:length(j)
+            var = [var j(i)];
+            nonlin = [nonlin p.bilinears(find(p.bilinears(:,2) == j(i) & p.bilinears(:,3) == j(i)),1)];
+            L = p.lb(var(end));
+            U = p.ub(var(end));            
+            p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
+            p.f = p.f - L*U*p.c(nonlin(end));
+            p.c(nonlin(end)) = 0;
+            p.nonshiftedQP.c(var(end)) = p.nonshiftedQP.c(var(end)) + (U+L)*p.nonshiftedQP.Q(var(end),var(end));
+            p.nonshiftedQP.f = p.nonshiftedQP.f - L*U*p.nonshiftedQP.Q(var(end),var(end));
+            p.nonshiftedQP.Q(var(end),var(end)) = 0;
+        end
+        M = spalloc(length(var),length(p.c)+1,0);
+        % Optimality implies (x-L)*(x-U)==0 x^2 i.e. x^2-x(L+U) + L*U=0
+        for i = 1:length(var);
+            M(i,1)= p.lb(var(i))*p.ub(var(i));
+            M(i,var(i)+1)=-(p.lb(var(i))+p.ub(var(i)));
+            M(i,nonlin(i)+1)=1;
+        end
+        p.concavityEqualities = M;
+    end
+end
+
+
+function [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing)
+
+[output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
+ptemp=p;
+if output.problem == 12    
+    % Solver cannot judge if infeasible or unbounded. Solve feasibility
+    % problem to figure out
+    ptemp.c = ptemp.c*0;
+    ptemp.Q = ptemp.Q*0;
+    ptemp.shiftedQP = [];
+    [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+    p.counter.lowersolved = p.counter.lowersolved + 1;
+    if output.problem == 0
+        output.problem = 2;
+    elseif output.problem == 12
+        ptemp.options.bmibnb.cut.quadratic=0;
+        [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+        if (output.problem == 0) || (output.problem == 1) || (output.problem == 12)
+            p.quadraticCutFailure = p.quadraticCutFailure + 1;
+            p.counter.lowersolved = p.counter.lowersolved + 1;
+            if p.quadraticCutFailure > 2
+                p.options.bmibnb.cut.quadratic = 0;
+            end
+            if output.problem == 0
+                output.problem = 2;
+            end
+        end
+    end
+elseif output.problem == 4 && p.options.bmibnb.cut.quadratic
+    % We experienced numerical problems. A very common cause is the use of
+    % SOCP-based cuts. Turn off and try again
+    ptemp.options.bmibnb.cut.quadratic=0;
+    [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+    if (output.problem == 0) || (output.problem == 1)
+        p.quadraticCutFailure = p.quadraticCutFailure + 1;
+        p.counter.lowersolved = p.counter.lowersolved + 1;
+        if p.quadraticCutFailure > 2
+            p.options.bmibnb.cut.quadratic = 0;
+        end
+    elseif output.problem == 12
+        ptemp.c = ptemp.c*0;
+        ptemp.Q = ptemp.Q*0;
+        ptemp.shiftedQP = [];
+        [output,cost,ptemp,timing] = solvelower(ptemp,options,lowersolver,x_min,upper,timing);
+        p.quadraticCutFailure = p.quadraticCutFailure + 1;
+        p.counter.lowersolved = p.counter.lowersolved + 1;
+        if p.quadraticCutFailure > 2
+            p.options.bmibnb.cut.quadratic = 0;
+        end
+        if output.problem == 0
+            output.problem = 2; 
+        end
+    end
+end
+
+function [p,stack] = generateBoundFromSDP(p,upper,stack);
+if ~isinf(upper) && ~isempty(p.boundGenerator.optimizer)
+    [r2,diagnostics] = p.boundGenerator.optimizer(upper);
+    if diagnostics == 0
+        r = sqrt(max(0,r2));
+        v = p.linears;
+        p.lb(v) = max(p.lb(v),-r);
+        p.ub(v) = min(p.ub(v),r);
+        for i = 1:length(stack)
+            stack(i).lb(v) = max(stack(i).lb(v),-r);
+            stack(i).ub(v) = min(stack(i).ub(v),r);
+        end
+    end
+    p.boundGenerator.optimizer = [];
+end
+
+
+function p = propapagate_bounds_from_concavity(p)
+if ~isempty(p.possibleSol)    
+    k = p.possibleSol(:,1);
+    i = find(p.lb(k) > max(p.possibleSol(:,2)));
+    if ~isempty(i)
+        p.lb(k(i)) = p.possibleSol(i,3);
+    end
+    i = find(p.ub(k) < max(p.possibleSol(:,3)));
+    if ~isempty(i)
+        p.ub(k(i)) = p.possibleSol(i,2);
+    end
+    if any(p.lb > p.ub)
+        p.feasible = 0;
+    end
+end

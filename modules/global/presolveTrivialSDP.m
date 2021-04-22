@@ -1,11 +1,11 @@
-function p = presolveTrivialSDP(p)
+function p = presolveTrvialSDP(p)
 
 x0 = ones(length(p.c),1);
 x0(find(p.lb == 0 & p.ub==0)) = 0;
 if any(x0 == 0)
+    newEqualities = [];
     if p.K.s(1) > 0
-        top = 1 + p.K.f + p.K.l + sum(p.K.q);
-        newEqualities = [];
+        top = 1 + p.K.f + p.K.l + sum(p.K.q);        
         for j = 1:length(p.K.s)
             X = p.F_struc(top:top + p.K.s(j)^2-1,:);
             X = X | X;
@@ -36,4 +36,3 @@ if any(x0 == 0)
         p.K.f = p.K.f + length(keep);
     end
 end
-

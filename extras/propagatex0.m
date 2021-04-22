@@ -10,10 +10,14 @@ if size(Ab,1) > 0 & ~all(isnan(x0)) & any(isnan(x0))
         [~,j,s] = find(a);        
         notSet = find(isnan(x0(j)));
         if length(notSet) == 1
-            j = j(:);
-            theRest = find(~isnan(x0(j)));
-           % a(notset)*x0(notset) + a(rest)*x0(rest) == b
-            x0(j(notSet)) = (b(i) - a(j(theRest))*x0(j(theRest)))/a(j(notSet));
+            if length(j)==1
+                x0(j) = b(i)/s;
+            else
+                j = j(:);
+                theRest = find(~isnan(x0(j)));
+                % a(notset)*x0(notset) + a(rest)*x0(rest) == b
+                x0(j(notSet)) = (b(i) - a(j(theRest))*x0(j(theRest)))/a(j(notSet));
+            end
         end
     end   
 end
