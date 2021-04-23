@@ -36,9 +36,6 @@ function [F,h,failure] = robustify(F,h,ops,w)
 %
 % See also UNCERTAIN
 
-% Author Johan Löfberg
-% $Id: robustify.m,v 1.55 2010-03-10 15:19:05 joloef Exp $
-
 failure = 0;
 if nargin < 3
     ops = sdpsettings;

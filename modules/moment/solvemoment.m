@@ -38,11 +38,6 @@ function [sol,x_extract,momentsstructure,sosout,Fnew,obj] = solvemoment(F,obj,op
 %
 %   See also SDPVAR, SET, SDPSETTINGS, SOLVESDP
 
-% Author Johan Löfberg, Philipp Rostalski  Update
-% $Id: solvemoment.m,v 1.8 2007/05/28 09:09:42 joloef Exp $
-%
-% Updated equality constraint handling, 2010/08/02
-
 if nargin ==0
     help solvemoment
     return

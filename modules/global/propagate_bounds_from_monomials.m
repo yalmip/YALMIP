@@ -1,4 +1,4 @@
-function p = updatemonomialbounds(p);
+function p = propagate_bounds_from_monomials(p)
 LU = [p.lb p.ub];
 if ~isempty(p.bilinears)
     x = p.bilinears(:,2);

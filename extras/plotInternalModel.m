@@ -1,4 +1,4 @@
-function x_opt = PlotInternalModel(internalmodel,x,n,localindex,color,opts)
+function x_opt = plotInternalModel(internalmodel,x,n,localindex,color,opts)
 % Code used by both lmi/plot and optimizer/plot
 
 if isempty(internalmodel.binary_variables)

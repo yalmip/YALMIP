@@ -1,4 +1,4 @@
-function output = callfmincongp(interfacedata)
+function output = callipoptgp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

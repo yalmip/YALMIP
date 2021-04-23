@@ -1,9 +1,6 @@
 function exponent_m = monomialgeneration(exponent_p,csclasses)
 %MONOMIALGENERATION  Internal function to create candidate monomials in SOS programs
 
-% Author Johan Löfberg
-% $Id: monomialgeneration.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
-
 exponent_m = [];
 for i = 1:length(csclasses)
     if isempty(exponent_p)

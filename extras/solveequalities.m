@@ -1,9 +1,6 @@
 function [x_equ,H,A_equ,b_equ,factors] = solveequalities(F_struc,K,unitary)
 %SOLVEEQUALITIES Internal function remove equality constraints
 
-% Author Johan Löfberg
-% $Id: solveequalities.m,v 1.17 2007-05-24 14:44:20 joloef Exp $
-
 % Extract the inequalities
 A_equ = F_struc(1:K.f,2:end);
 b_equ = -F_struc(1:K.f,1);
@@ -14,16 +11,6 @@ end
 
 factors = [];
 
-% remove = find((~any(A_equ,2)) & (b_equ == 0));
-% if ~isempty(remove)
-%     A_equ = A_equ';
-%     A_equ(:,remove) = [];
-%     A_equ = A_equ';
-%     b_equ = b_equ';
-%     b_equ(remove) = [];
-%     b_equ = b_equ';
-% end
-
 if ~unitary
 
     % This code needs a clean up, and I need to take a course in numerical
@@ -31,12 +18,6 @@ if ~unitary
 
     % Remove redundant constraints
       [L,U,P] = lu(A_equ);
-%     r = colspaces(U);
-%     if ~(length(r) == size(U,1))
-%         b_equ =  L\(P*b_equ);
-%         A_equ = U(r,:);
-%         b_equ = b_equ(r);
-%     end
 
     % Find a basis for the column space of A_equ
     [L,U,P] = lu(A_equ');

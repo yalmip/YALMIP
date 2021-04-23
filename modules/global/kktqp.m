@@ -5,11 +5,7 @@ function output = kktqp(interfacedata)
 % the high-level KKT operator. This version is only kept for compatibility
 % reasons.
 %
-% See also kkt
-
-
-% Author Johan Löfberg
-% $Id: kktqp.m,v 1.2 2008-06-10 14:47:59 joloef Exp $
+% See also KKT
 
 % ********************************
 %% INITIALIZE DIAGNOSTICS IN YALMIP

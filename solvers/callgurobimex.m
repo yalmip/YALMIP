@@ -1,4 +1,4 @@
-function output = callgurobi(interfacedata)
+function output = callgurobimex(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

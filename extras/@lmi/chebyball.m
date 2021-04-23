@@ -11,9 +11,6 @@ function varargout = chebyball(F,ops)
 % If only one output is requested, only the symbolic constraint is returned
 % C = chebyball(F)
 
-% Author Johan Löfberg
-% $Id: chebyball.m,v 1.1 2004-12-08 00:07:15 johanl Exp $
-
 [model,recoverdata,diagnostic,p] = export(F,[],[],[],[],0);
 if p.K.q(1) > 0 | p.K.s(1) > 0 | any(p.variabletype) | ~isempty(p.binary_variables) | ~isempty(p.integer_variables)
     error('Polytope can only be applied to linear elementwise constraints.')

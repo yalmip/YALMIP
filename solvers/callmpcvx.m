@@ -1,4 +1,4 @@
-function output = mpcvx(p)
+function output = callmpcvx(p)
 %BMIBNB          Branch-and-bound scheme for bilinear programs
 %
 % BMIBNB is never called by the user directly, but is called by 
@@ -25,9 +25,6 @@ function output = mpcvx(p)
 % bmibnb.eqtol          - A number is declared zero if abs(x) smaller than...[ double (1e-6)]
 % bmibnb.maxiter        - Maximum number of solved nodes [int (100)]
 % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]
-
-% Author Johan Löfberg 
-% $Id: callmpcvx.m,v 1.2 2005-05-07 13:53:20 joloef Exp $
 
 % ********************************
 % INITIALIZE DIAGNOSTICS IN YALMIP

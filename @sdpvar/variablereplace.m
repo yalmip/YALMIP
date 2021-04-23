@@ -1,4 +1,4 @@
-function y = replace(y,oldVar,newVar)
+function y = variablereplace(y,oldVar,newVar)
 
 var = y.lmi_variables;
 

@@ -1,4 +1,4 @@
-function output = calllinprog(interfacedata)
+function output = callbintprog(interfacedata)
 
 % Standard input interface
 options = interfacedata.options;

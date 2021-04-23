@@ -1,4 +1,4 @@
-function [Matrices,infeasible]  = derive_bounds(Matrices,options)
+function [Matrices,infeasible]  = mpt_derive_bounds(Matrices,options)
 
 A = [Matrices.G -Matrices.E];
 b = [Matrices.W];

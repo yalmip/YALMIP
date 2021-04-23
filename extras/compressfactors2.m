@@ -1,8 +1,5 @@
 function [constants,general,newsingles,newpairs] =  compressfactors2(constants,general,singles,pairs)
 
-% Author Johan Löfberg
-% $Id: compressfactors2.m,v 1.1 2009-11-03 10:30:33 joloef Exp $
-
 newpairs = {};
 taken = zeros(1,length(pairs));
 for i = 1:length(pairs)
@@ -13,14 +10,6 @@ for i = 1:length(pairs)
     
     if ~taken(i)
         for j = i+1:length(pairs)
-            %             if ~isequal(pairs{i}.M,pairs{j}.M)
-            %                 if isequal(pairs{i}.M,pairs{j}.M',1)
-            %                     pairs{j}.M = pairs{i}.M;
-            %                     temp = pairs{j}.L;
-            %                     pairs{j}.L = pairs{j}.R';
-            %                     pairs{j}.R = temp';
-            %                 end
-            %             end
             if isequal(pairs{i}.M,pairs{j}.M,1)
                 if isequal(pairs{i}.L,pairs{j}.L)
                     Lsameas = [Lsameas j];

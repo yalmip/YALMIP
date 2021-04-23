@@ -1,4 +1,4 @@
-function output = callmpt(interfacedata)
+function output = callmplcp(interfacedata)
 
 % Speeds up solving LPs in mpmilp
 global mptOptions

@@ -1,7 +1,5 @@
 function output = call_cplexibm_qcmiqp(interfacedata)
 
-% Author Johan Löfberg
-
 % This is a gateway to all CPLEX interfaces
 % Call LP/QP solver if sufficient
 % Bug in 12.6 regarding display options. Hence, we turn it on and then run

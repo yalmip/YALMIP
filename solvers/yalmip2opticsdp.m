@@ -1,4 +1,4 @@
-function model = sedumi2opticsdp(interfacedata)
+function model = yalmip2opticsdp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

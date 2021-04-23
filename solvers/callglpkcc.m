@@ -1,4 +1,4 @@
-function output = callglpk(interfacedata)
+function output = callglpkcc(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

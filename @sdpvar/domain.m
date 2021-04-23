@@ -1,4 +1,4 @@
-function Y=plot(varargin)
+function Y=domain(varargin)
 %DOMAIN  Extract domain for PWA variable
 
 % Fast version for plotting simple PWA objects

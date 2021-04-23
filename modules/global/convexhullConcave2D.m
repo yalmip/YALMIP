@@ -1,4 +1,4 @@
-function [Ax,Ay,b,K] = convexhullConcave(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5)
+function [Ax,Ay,b,K] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5)
 % x1-x4 corner points, 5 point in center
 
 % Lower bounds from tangents

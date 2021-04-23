@@ -1,4 +1,4 @@
-function [nnz, row, col, val] = pennlp_fun(i,x)
+function [nnz, row, col, val] = pennlp_conhess(i,x)
 
 try
 H = datasaver(6,x,i+1);

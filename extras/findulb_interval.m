@@ -1,4 +1,4 @@
-function [lb,ub,cand_rows] = findulb(F_struc,K)
+function [lb,ub,cand_rows] = findulb_interval(F_struc,K)
 %FINDULB Internal function to extract upper and lower variable bounds
 
 % special code for the interval data case, to avoid overhead in the default
