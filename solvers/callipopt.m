@@ -46,12 +46,12 @@ showprogress('Calling IPOPT',model.options.showprogress);
 % solver. 
 % model = compressLifted(model);
 
-Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
+Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
+Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
@@ -129,7 +129,7 @@ end
 % Hessian of the Lagrangian
 usedinObjective = find(model.c | any(model.Q,2));
 if ~any(model.variabletype(usedinObjective)) & any(model.Q)
-    if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
+    if  ~any(model.K.s) && ~any(model.K.q) && length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
         H = model.Q(:,model.linearindicies);
         H = H(model.linearindicies,:);
         funcs.hessian = @(x,s,l) tril(2*H);

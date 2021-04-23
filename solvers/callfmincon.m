@@ -81,7 +81,7 @@ latest_x_xevaled = [];
 
 showprogress('Calling FMINCON',model.options.showprogress);
 
-if model.linearconstraints
+if model.linearconstraints && ~any(model.K.s)
     g = [];
 else
     g = @(x)fmincon_con_liftlayer(x,model);

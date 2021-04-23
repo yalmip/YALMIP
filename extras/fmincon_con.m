@@ -2,16 +2,20 @@ function [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model,xevaled)
 
 global latest_xevaled
 global latest_x_xevaled
+
 % Early bail for linear problems
-g = [];
-geq = [];
-dg = [];
+g    = [];
+geq  = [];
+dg   = [];
 dgeq = [];
-if model.linearconstraints
+
+% Nothing nonlinear, and no cones
+if model.linearconstraints && ~any(model.K.q) && ~any(model.K.s)
     xevaled = [];
     return
 end
 
+% Compute all nonlinear variables
 if nargin<3
     if isequal(x,latest_x_xevaled)
         xevaled = latest_xevaled;
@@ -24,11 +28,13 @@ if nargin<3
     end
 end
 
+% All simple scalar inequalities
 if model.nonlinearinequalities
-    g = full(model.Anonlinineq*xevaled(:)-model.bnonlinineq);
+    g = full(model.Anonlinineq*xevaled(:)-model.bnonlinineq);    
 end
 
-if nnz(model.K.q) > 0
+% Append SOCP cones
+if any(model.K.q)
     top = 1;
     z0 = model.F_struc*[1;xevaled];
     for i = 1:length(model.K.q)
@@ -38,74 +44,74 @@ if nnz(model.K.q) > 0
     end
 end
 
+% Append SDP cones (eigenvalues)
+if any(model.K.s)
+    top = 1 + sum(model.K.q);
+    for i = 1:length(model.K.s)
+        n = model.K.s(i);
+        X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
+        X = full(reshape(X,n,n));
+        d = eig(X);
+        %d(d>1) = 0;
+        g = [g;-d];
+        top = top + n^2;
+    end
+end
+
+% Create all nonlinear equalities
 if model.nonlinearequalities
     geq = full(model.Anonlineq*xevaled(:)-model.bnonlineq);
 end
 
-dgAll_test = [];
-
+% Now Jacobians...
 if nargout == 2 || ~model.derivative_available
     return
-elseif ~isempty(dgAll_test) & isempty(model.evalMap) 
-    dgAll = dgAll_test;
-elseif isempty(model.evalMap) & (model.nonlinearinequalities==0) & (model.nonlinearequalities==0) & (model.nonlinearcones==0) & any(model.K.q)
+elseif isempty(model.evalMap) & (model.nonlinearinequalities==0) & (model.nonlinearequalities==0) & (model.nonlinearcones==0) & (any(model.K.q) || any(model.K.s))
+    % Linear SOCP
     dg = computeConeDeriv(model,xevaled);
+    % Linear SDP
+    dg = [dg;computeSDPDeriv(model,xevaled,1)];       
 elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) 
-    n = length(model.c);
-    linearindicies = model.linearindicies;    
- %   xevaled = zeros(1,n);
- %   xevaled(linearindicies) = x;
-    % FIXME: This should be vectorized
-    
-    news = model.fastdiff.news;
-    allDerivemt = model.fastdiff.allDerivemt;
-    c = model.fastdiff.c;
-    
-    if model.fastdiff.univariateDifferentiates
-        zzz = c.*(x(model.fastdiff.univariateDiffMonom).^model.fastdiff.univariateDiffPower);
-    else
-        %  X = repmat(x(:)',length(c),1);
-        O = ones(length(c),length(x));
-        nz = find(allDerivemt);
-        %  O(nz) = X(nz).^allDerivemt(nz);
-        O(nz) = x(ceil(nz/length(c))).^allDerivemt(nz);        
-        zzz = c.*prod(O,2);               
-    end
-                          
-    newdxx = model.fastdiff.newdxx;
-    newdxx(model.fastdiff.linear_in_newdxx) = zzz;                
-    %newdxx = newdxx';
-    
+    % Nonlinear terms in constraints so jacobian stuff needed
+    % however, there are only monomials, which is exploited
+    newdxx = computeMonomialVariableJacobian(model,x);
+        
     if ~isempty(model.Anonlineq)      
         dgeq = model.Anonlineq*newdxx; 
     end
     if ~isempty(model.Anonlinineq)
-        dg = model.Anonlinineq*newdxx;        
-    end
-    
-    if nnz(model.K.q)>0
-        dg = [dg;computeConeDeriv(model,xevaled,newdxx);];
+        dg = model.Anonlinineq*newdxx;                
     end    
-else    
+    if any(model.K.q)
+        dg = [dg;computeConeDeriv(model,xevaled,newdxx)];
+    end        
+    if any(model.K.s)
+        dg = [dg;computeSDPDeriv(model,xevaled,newdxx)];       
+    end
+else  
+    % Completely general case with monomials and functions
     requested = model.fastdiff.requested;
-    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);    
-    conederiv = computeConeDeriv(model,xevaled,dx);   
+    dx = apply_recursive_differentiation(model,xevaled,requested,model.Crecursivederivativeprecompute);        
     if ~isempty(model.Anonlineq)
         dgeq = [model.Anonlineq*dx];  
     end
     if ~isempty(model.Anonlinineq)
         dg = [model.Anonlinineq*dx];
+    end        
+    if any(model.K.q)
+        dg = [dg;computeConeDeriv(model,xevaled,dx)];
     end    
-    if ~isempty(conederiv)
-        dg = [dg;conederiv];
+    if any(model.K.s)
+        dg = [dg;computeSDPDeriv(model,xevaled,dx)];
     end
 end
 
+% For performance reasons, we work with transpose
 if model.nonlinearequalities
     dgeq = dgeq';
 end
-if model.nonlinearinequalities | any(model.K.q)
-    dg = dg';
+if model.nonlinearinequalities | any(model.K.q) | any(model.K.s)
+    dg = dg';   
 end
     
 
@@ -155,3 +161,71 @@ if any(model.K.q)
     end
 end
 conederiv = conederiv';
+
+function dg = computeSDPDeriv(model,xevaled,newdxx)
+top = 1 + sum(model.K.q);
+newF = [];newcuts = 1;
+B=model.F_struc(:,2:end)*newdxx;
+persistent xold
+
+for i = 1:length(model.K.s)
+    n = model.K.s(i);
+    X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
+    X = full(reshape(X,n,n));
+    [d,v] = eig(X);  
+    plot(xevaled(1),xevaled(2),'*');
+    if 0%~isempty(xold)  && any(xevaled)              
+        if 1
+            sdpvar x1 x2
+            s1 = sdisplay(d(:,1)'*reshape(full(model.F_struc)*[1;x1;x2],n,n)*d(:,1));
+            try
+                l=ezplot(s1{1});set(l,'LineColor','red');hold on
+            catch
+            end
+            try
+                s1 = sdisplay(d(:,2)'*reshape(full(model.F_struc)*[1;x1;x2;0],n,n)*d(:,2));
+                ezplot(s1{1})
+                plot(x(1),x(2),'k*');drawnow
+            catch
+            end
+        end
+    end
+    xold = xevaled;
+    X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
+    X = full(reshape(X,n,n));
+    [d,v] = eig(X);      
+    for m = 1:n
+        % sum(kron([1;1],v).*kron(v,[1;1]).*q)??
+        %newF = [newF;reshape(d(:,m)*d(:,m)',[],1)'*model.F_struc(top:top+n^2-1,:)];             
+        %newF = [newF;(v(m,m)<=1)*reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:)];        
+         newF = [newF;reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:)];        
+       % q1 = kron(ones(n,1),d(:,m));
+       % q2 = kron(d(:,m),ones(n,1));
+       % newF = [newF;sum((q1.*q2).*model.F_struc(top:top+n^2-1,:))];
+        newcuts = newcuts + 1;
+    end
+    top = top + n^2;
+end
+%dg = -newF(:,2:end)*newdxx;
+dg = -newF;
+
+function newdxx = computeMonomialVariableJacobian(model,x)
+n = length(model.c);
+linearindicies = model.linearindicies;
+
+news = model.fastdiff.news;
+allDerivemt = model.fastdiff.allDerivemt;
+c = model.fastdiff.c;
+
+if model.fastdiff.univariateDifferentiates
+    zzz = c.*(x(model.fastdiff.univariateDiffMonom).^model.fastdiff.univariateDiffPower);
+else
+    %  X = repmat(x(:)',length(c),1);
+    O = ones(length(c),length(x));
+    nz = find(allDerivemt);
+    %  O(nz) = X(nz).^allDerivemt(nz);
+    O(nz) = x(ceil(nz/length(c))).^allDerivemt(nz);
+    zzz = c.*prod(O,2);
+end
+newdxx = model.fastdiff.newdxx;
+newdxx(model.fastdiff.linear_in_newdxx) = zzz;

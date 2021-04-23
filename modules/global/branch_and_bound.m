@@ -93,7 +93,7 @@ p.cutState(p.KCut.l,1) = 0; % Don't use to begin with
 % *************************************************************************
 p.depth = 0;        % depth in search tree
 p.dpos  = 0;        % used for debugging
-p.lower = NaN;
+p.lower = -inf;
 p.spliton = [];
 lower   = NaN;
 gap     = inf;
@@ -349,7 +349,8 @@ while go_on
                     z = evaluate_nonlinear(p,x);
 
                     % Manage cuts etc
-                    p = createsdpcut(p,z);
+                    % Why? Lower bound solver is SDP solver
+                    % p = createsdpcut(p,z);
                     p = addlpcuts(p,x);
 
                     oldCount = numGlobalSolutions;
@@ -528,10 +529,11 @@ while go_on
     %  Pick and create a suitable node
     % ************************************************    
     [p,stack] = selectbranch(p,options,stack,x_min,upper);
-    
+        
     if isempty(p)
         if ~isinf(upper)
             relgap = 0;
+            lower = upper;
         end
         if isinf(upper) & isinf(lower)
             relgap = inf;
