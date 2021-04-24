@@ -458,59 +458,11 @@ solver(i).constraint.semiintvar = 1;
 solver(i).supportsinitial = 1;
 i = i+1;
 
-solver(i) = qpsolver;
-solver(i).tag     = 'CPLEX';
-solver(i).version = 'IBM';
-solver(i).subversion = '12.3';
-solver(i).checkfor= {'cplexqcp.m','cplexlink123'};
-solver(i).call    = 'call_cplexibm_qcmiqp';
-solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-solver(i).constraint.sos2 = 1;
-solver(i).constraint.semivar = 1;
-solver(i).constraint.semiintvar = 1;
-solver(i).supportsinitial = 1;
-i = i+1;
-
-% duals bug...
-solver(i) = solver(i-1);
-solver(i).checkfor = {'cplexqcp.m','cplexlink122'};
-solver(i).subversion = '12.2';
-i = i+1;
-solver(i) = solver(i-1);
-solver(i).checkfor = {'cplexqcp.m','cplexlink121'};
-solver(i).subversion = '12.1';
-i = i+1;
-solver(i) = solver(i-1);
-solver(i).checkfor = {'cplexqcp.m','cplexlink120'};
-solver(i).subversion = '12.0';
-i = i+1;
-
 solver(i) = lpsolver;
 solver(i).tag     = 'CLP';
 solver(i).version = 'CLPMEX-LP';
 solver(i).checkfor= {'mexclp'};
 solver(i).call    = 'callclp';
-i = i+1;
-
-solver(i) = qpsolver;
-solver(i).tag     = 'XPRESS';
-solver(i).version = 'MEXPRESS 1.1';
-solver(i).checkfor= {'xpress.m'};
-solver(i).call    = 'callmexpress11';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-i = i+1;
-
-solver(i) = qpsolver;
-solver(i).tag     = 'XPRESS';
-solver(i).version = 'MEXPRESS 1.0';
-solver(i).checkfor= {'mexpress.m'};
-solver(i).call    = 'callmexpress';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -569,16 +521,6 @@ solver(i).constraint.equalities.quadratic = 1;
 solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
-i = i+1;
-
-solver(i) = qpsolver;
-solver(i).tag     = 'CPLEX';
-solver(i).version = 'CPLEXMEX';
-solver(i).checkfor= {'cplexmex'};
-solver(i).call    = 'callcplexmex';
-solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -807,33 +749,6 @@ solver(i).tag     = 'SparseCoLO';
 solver(i).version = '0';
 solver(i).checkfor= {'sparseCoLO'};
 solver(i).call    = 'callsparsecolo';
-i = i+1;
-
-solver(i) = sdpsolver;
-solver(i).tag     = 'SDPT3';
-solver(i).version = '3.1';
-solver(i).checkfor= {'sqlp','skron','symqmr'};
-solver(i).call    = 'callsdpt331';
-solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-i = i+1;
-
-solver(i) = sdpsolver;
-solver(i).tag     = 'SDPT3';
-solver(i).version = '3.02';
-solver(i).checkfor= {'sqlp','skron','schursysolve'};
-solver(i).call    = 'callsdpt3302';
-solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-i = i+1;
-
-solver(i) = sdpsolver;
-solver(i).tag     = 'SDPT3';
-solver(i).version = '3.0';
-solver(i).checkfor= {'sqlp','mexexec'};
-solver(i).call    = 'callsdpt330';
-solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
