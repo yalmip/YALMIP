@@ -36,17 +36,6 @@
  warning('YALMIP:strict','Strict inequalities are not supported. A non-strict has been added instead'')');
  
  try
---- ../YALMIP_orig/@sdpvar/mtimes.m	2021-04-22 22:59:47.623579868 +1000
-+++ ../YALMIP/@sdpvar/mtimes.m	2021-04-22 23:00:11.839374455 +1000
-@@ -354,7 +354,7 @@
-                 if prod(size(mt_x))==1 % Bug in Solaris and Linux, ML 6.X
-                     allmt_xplusy = local_mt(:,testthese) + sparse(repmat(full(mt_x),1,nyvars));
-                 else
--                    allmt_xplusy = bsxfun(@plus,local_mt(:,testthese),mt_x);
-+                    allmt_xplusy = bsxfun("plus",local_mt(:,testthese),mt_x);
-                  %   allmt_xplusy = local_mt(:,testthese) + repmat(mt_x,1,nyvars);
-                 end
-                 allhash = allmt_xplusy'*hash;
 --- ../YALMIP_orig/@sdpvar/any.m	2021-04-22 22:59:47.609579987 +1000
 +++ ../YALMIP/@sdpvar/any.m	2021-04-22 23:00:11.835374489 +1000
 @@ -1,7 +1,7 @@
