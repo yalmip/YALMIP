@@ -52,7 +52,7 @@ if all(n4'*Z - d4 >= 0)
     Ay = [Ay;-n4(3)];
 end
 
-function [n,d] = ceiling(p1,p2,p3);
+function [n,d] = ceiling(p1,p2,p3)
 n = cross(p1 - p2, p1 - p3);
 n = n/sign(n(3));
 d = p1'*n;
