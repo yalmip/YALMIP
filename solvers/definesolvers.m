@@ -121,17 +121,6 @@ solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 solver(i) = qpsolver;
-solver(i).tag     = 'GUROBI';
-solver(i).version = 'MEX';
-solver(i).checkfor= {'gurobi_mex'};
-solver(i).call    = 'callgurobimex';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-solver(i).constraint.semivar = 1;
-solver(i).constraint.sos2 = 1;
-i = i+1;
-
-solver(i) = qpsolver;
 solver(i).tag     = 'CPLEX';
 solver(i).version = 'IBM';
 solver(i).subversion = '12.10.0';
@@ -1566,16 +1555,6 @@ solver(i).constraint.semiintvar = 1;
 solver(i).evaluation = 1;
 solver(i).usesother = 1;
 solver(i).supportsinitial = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'BINTPROG';
-solver(i).version = '';
-solver(i).checkfor= {'bintprog.m'};
-solver(i).call    = 'callbintprog';
-solver(i).constraint.binary = 1;
-solver(i).constraint.integer = 1;
-solver(i).dual = 0;
 i = i+1;
 
 % % ***************************************
