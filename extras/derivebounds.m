@@ -23,10 +23,10 @@ if any(any(isinf(lowerupper)))
     smallestL = min(lowerupper(~isinf(lowerupper(:))));
     synthetic_bound = max(abs(largestU),abs(smallestL));
     synthetic_bound = max(10^4,synthetic_bound);
-    if lowerinf
+    if lowerinf && length(synthetic_bound)>0
         lowerupper(badlower,1) = -synthetic_bound;
     end
-    if upperinf
+    if upperinf && length(synthetic_bound)>0
         lowerupper(badupper,2) = synthetic_bound;
     end
 
