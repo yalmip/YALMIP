@@ -1,10 +1,6 @@
 function exponent_m = monomialreduction(exponent_m,exponent_p,options,csclasses,LPmodel)
 %MONOMIALREDUCTION  Internal function for monomial reduction in SOS programs
 
-% Author Johan Löfberg
-% $Id: monomialreduction.m,v 1.2 2006-09-26 14:28:43 joloef Exp $
-
-
 % **********************************************
 % TRIVIAL REDUCTIONS (stupid initial generation)
 % **********************************************

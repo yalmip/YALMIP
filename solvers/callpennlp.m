@@ -1,4 +1,4 @@
-function output = callquadprog(interfacedata)
+function output = callpennlp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

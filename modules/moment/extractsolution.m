@@ -11,9 +11,6 @@ function x_extract = extractsolution(momentdata,options)
 %
 %   See also SOLVEMOMENT, SDPSETTINGS
 
-% Author Johan Löfberg
-% $Id: extractsolution.m,v 1.1 2006-03-30 13:36:38 joloef Exp $
-
 moment = momentdata.moment;
 x = momentdata.x;
 monomials = momentdata.monomials;

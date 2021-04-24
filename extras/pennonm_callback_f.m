@@ -1,4 +1,4 @@
-function f = ipopt_callback_f(x,model_in)
+function f = pennonm_callback_f(x,model_in)
 
 global latest_x
 global latest_df

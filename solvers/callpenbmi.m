@@ -1,4 +1,4 @@
-function output = callpenbmi(interfacedata);
+function output = callpenbmi(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

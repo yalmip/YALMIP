@@ -1,4 +1,4 @@
-function output = calloptidsdp(interfacedata)
+function output = callopticsdp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

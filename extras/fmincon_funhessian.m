@@ -1,4 +1,4 @@
-function H = fmincon_fun(x,params,what)
+function H = fmincon_funhessian(x,params,what)
 
 xevaled = zeros(1,length(params.interfacedata.c));
 xevaled(params.linearindicies) = x;
@@ -16,4 +16,5 @@ if nnz(params.interfacedata.c(params.nonlinearindicies)) == 0 & isempty(params.i
 else
     error('Not implemented')
 end
+
     

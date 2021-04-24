@@ -1,4 +1,4 @@
-function output = calldsdp(interfacedata)
+function output = calldsdp5(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;

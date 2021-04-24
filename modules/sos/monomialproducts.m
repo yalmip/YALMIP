@@ -1,9 +1,6 @@
 function [newton_m2,N_unique,newton_m2_unique] = monomialproducts(N,n);
 %MONOMIALPRODUCTS  Internal function used for monomial reduction
 
-% Author Johan Löfberg
-% $Id: monomialproducts.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
-
 % Exponents in squared monomials
 
 N_unique = [];

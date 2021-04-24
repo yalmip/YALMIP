@@ -14,7 +14,7 @@ obj = createmodelstring(model.c,model);
 if nnz(model.Q)>0
     obj = [obj '+' createQstring(model.Q,model)];
 end
-if model.f > 0
+if any(model.f) > 0
     obj = [obj '+' num2str(model.f)];
 end
 obj = baronify(obj);

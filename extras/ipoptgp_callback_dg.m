@@ -1,4 +1,4 @@
-function G = ipopt_callback_dg(x,returnStructOnly,prob)
+function G = ipoptgp_callback_dg(x,returnStructOnly,prob)
 
 if returnStructOnly
     G = sparse(ones(max(prob.map)+size(prob.G,1),size(prob.A,2)));
