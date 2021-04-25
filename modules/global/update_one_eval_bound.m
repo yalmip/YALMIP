@@ -1,4 +1,4 @@
-function p = update_one_eval_bound(p,i);
+function p = update_one_eval_bound(p,i)
 
 % This function computes upper and lower bounds on the scalar nonlinear
 % nonlinear functions modelled using nonlinear evaluation-based operators.
