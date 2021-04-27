@@ -366,7 +366,9 @@ elseif isequal(subs.type,'{}')
                 % problem
                 output.Primal = [nan;output.Primal];
                 assign(self.output.z,output.Primal(1+self.map));
-                assign(self.input.expression,thisData);
+                if ~isempty(thisData)
+                    assign(self.input.expression,thisData);
+                end
                 u = [u reshape(double(self.output.expression),self.dimout)];
             end
         end
