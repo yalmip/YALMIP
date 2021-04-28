@@ -143,13 +143,16 @@ if any(model.K.q)
         else                       
             % -c'*x - d + ||Ax+b||>=0
             e = A*z + b;
-            smoothed = sqrt(10^-10 + e'*e);
-            % conederiv = [conederiv;-c'+(dzdx'*A'*b + dzdx'*A'*A*z(model.linearindicies))'/smoothed]; 
-            aux = z'*(A'*A-c*c')*dzdx+(b'*A-d*c')*dzdx;
-            conederiv = [conederiv ((-dzdx'*c+aux'/smoothed)')'];             
-            % inner derivative
-            % aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
-            % conederiv = [conederiv;aux];                                    
+%             smoothed = sqrt(10^-10 + e'*e);            
+%             aux = z'*(A'*A-c*c')*dzdx+(b'*A-d*c')*dzdx;
+%             conederiv = [conederiv ((-dzdx'*c+aux'/smoothed)')']; 
+            
+                % -c'*x - d + ||Ax+b||>=0
+                e = A*z + b;
+                smoothed = sqrt(10^-10 + e'*e);
+                temp = (-c'+(A'*(b + A*z))'/smoothed);
+                conederiv = [conederiv (temp*dzdx)'];
+            
         end
         top = top + model.K.q(i);
     end
