@@ -27,6 +27,8 @@ function df = derivative(x)
 if ~any(x)
     % Undefined really..
     df = [0 0];
+elseif x(2)==0
+    df = [0 -1/x(1)];
 else
     z = x(1)/x(2);
     dzdx1 = 1/x(2);
