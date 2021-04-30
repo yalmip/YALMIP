@@ -1,71 +1,81 @@
 function varargout = sumabsk(varargin)
-% SUMABSK  Returns sum of k largest (by magnitude) (eigen-)values.
+% SUMK  Returns sum of k largest absolute (eigen-)values.
 %
-% s = SUMABSK(X,k)
+% s = SUMABSK(X,k,w)
 %
-% For a real vector X, SUMABSK returns the sum of the k largest (by magnitude) elements.
+% For a vector X, SUMABSK returns the sum of the k largest absolute elements.
 %
-% For an Hermitian matrix X, SUMABSK returns the sum of the k largest (by magnitude) eigen-values.
+% For a symmetric matrix X, SUMABSK returns the sum of the k largest
+% absolute eigen-values. 
 %
-% See also SUMK
+% A third argument can be used to generalize to weighted sum.
+% The weights have to be non-negative and non-increasing.
+%
+% See also SUMABSK
 
-% ***************************************************
-% This file defines a nonlinear operator for YALMIP
-%
-% It can take three different inputs
-% For double inputs, it returns standard double values
-% For sdpvar inputs, it genreates a an internal variable
-% When first input is 'model' it generates the epigraph
-%
-% ***************************************************
+if nargin == 1
+    error('sumk needs at least two arguments');
+end
+
 switch class(varargin{1})
-
+    
     case 'double' % What is the numerical value of this argument (needed for displays etc)
-        if nargin == 1
-            error('sumabsk needs two arguments');
+        
+        X = varargin{1};
+        [n,m] = size(X);
+        if (min(n,m) > 1 & ~issymmetric(X))
+            error('sumk can only be applied on vectors and symmetric matrices');
         else
-            X = varargin{1};
-            [n,m] = size(X);
-            if (min(n,m) > 1 & ~ishermitian(X)) | (n~=m & ~isreal(X))
-                error('sumabsk can only be applied on real vectors and Hermitian matrices');
-            else
-                k = min(length(X),varargin{2});
-                if min(n,m)==1
-                    sorted = sort(abs(X));
-                else
-                    sorted = sort(abs(eig(X)));
+            k = min(length(X),varargin{2});
+            w = ones(k,1);
+            if nargin == 3
+                w = varargin{3};
+                if length(w)==1
+                    w = ones(k,1)*w;               
                 end
-                varargout{1} = sum(sorted(max(1,end-k+1):end));
             end
+            if min(n,m)==1
+                sorted = sort(X,'descend');
+            else
+                sorted = sort(eig(X),'descend');
+            end
+            sorted = sorted(:);
+            w = w(:);
+            varargout{1} = sum(sorted(1:k).*w(1:k));
         end
-
+        
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         X = varargin{1};
         [n,m] = size(X);
-        if (min(n,m) > 1 & ~ishermitian(X))  | (n~=m & ~isreal(X))
-            error('sumabsk can only be applied on real vectors and Hermitian matrices');
+        if nargin < 3
+            w = 1;
         else
-            if nargin < 2
-                error('sumabsk needs two arguments');
-            else              
-                varargout{1} = yalmip('define',mfilename,varargin{:});                              
+            w = varargin{3};
+            if length(w)>1
+                if any(diff(w)>0) || any(w<0)
+                    error('The weights have to be non-negative non-increasing')
+                end
             end
         end
-
-    case 'char' % YALMIP sends 'model' when it wants the epigraph or hypograph
+        if (min(n,m) > 1 & ~issymmetric(X))
+            error('sumk can only be applied on vectors and symmetric matrices');
+        else
+            varargout{1} = yalmip('define',mfilename,varargin{:});
+        end
+        
+    case 'char' % YALMIP send 'model' when it wants the epigraph or hypograph
         if isequal(varargin{1},'graph')
             t = varargin{2}; % Second arg is the extended operator variable
             X = varargin{3}; % Third arg and above are the args user used when defining t.
             k = min(varargin{4},length(X));
-            [n,m] = size(X);
-            Z = sdpvar(n,m);
-            s = sdpvar(1,1);
-            if min(n,m)==1
-                varargout{1} = (t-k*s-sum(Z) >= 0) + (Z >= 0) + (Z+s >= X >= -Z-s);
+            if nargin == 5
+                w = varargin{5};
             else
-                varargout{1} = (t-k*s-trace(Z) >= 0) + (Z >= 0) + (Z+s*eye(n) >= X >= -Z-s*eye(n));
-            end
-            varargout{2} = struct('convexity','convex','monotonicity','none','definiteness','none','model','graph');
+                w = 1;
+            end                
+            [Model,Properties] = sumabsk_generator(X,k,t,w);
+            varargout{1} = Model;
+            varargout{2} = Properties;
             varargout{3} = X;
         else
         end
