@@ -18,6 +18,17 @@ switch class(varargin{1})
             varargout{2} = loc;
             return
         end
+        
+        if nargin >= 2 && isa(varargin{2},'char')
+            if nargout > 1 && isequal(varargin{2},'descend')
+                error('Sort direction is currently not support when sorting in descending order')
+            elseif strcmp(varargin{2},'descend')
+                % Sort and then reverse answer
+                s = sort(varargin{1});
+                varargout{1} = flipud(fliplr(s));
+                return
+            end
+        end
 
         x = varargin{1};
         if nargin > 1 
