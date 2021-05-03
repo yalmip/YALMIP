@@ -84,7 +84,15 @@ elseif res.rcode == 1375
     x = nan(length(model.c),1); % super bad numerics
 else
     try
-        x = res.sol.itr.y;
+        try
+            if strcmp(res.sol.itr.prosta,'UNKNOWN') && strcmp(res.sol.itr.solsta,'UNKNOWN') && strcmp(res.sol.bas.prosta,'PRIMAL_AND_DUAL_FEASIBLE') && strcmp(res.sol.bas.solsta,'OPTIMAL')
+                x = res.sol.bas.y;
+            else
+                x = res.sol.itr.y;
+            end
+        catch
+            x = res.sol.itr.y;
+        end
     catch   
         if ~isempty(model.options.mosek) & isfield(model.options.mosek,'MSK_IPAR_OPTIMIZER') & isequal(model.options.mosek.MSK_IPAR_OPTIMIZER,'MSK_OPTIMIZER_FREE_SIMPLEX')
             x = res.sol.bas.y;
