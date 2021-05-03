@@ -55,7 +55,7 @@ p_upper = compile_quadraticslist(p_upper);
 p = addConcavityInfo(p);
 
 % Some simple probing to envelope bounds
-p = addImpliedFromBinary(p);
+p = addImpliedFromBinary(p,upper);
 
 % *************************************************************************
 % Add constraints obtained from multiplying linear constraints with 
@@ -294,6 +294,15 @@ while go_on
         else
             [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);            
         end
+        
+%         if output.problem == 0 && cost < upper
+%             pp = p;pp.K.f = 1;
+%             for i = 1:length(p.branch_variables)
+%                 pp.F_struc = [0 p.shiftedQP.Q(i,:)];
+%                 [output2,cost2,pw,timing2] = solvelower_safelayer(pp,options,lowersolver,x_min,upper,timing);
+%                 display([upper cost cost2 cost2>upper])
+%             end                
+%         end
 
         if output.problem == -1
             % We have no idea what happened. 
@@ -743,7 +752,7 @@ else
     else
         if (~ismember(v2,p.branch_variables) | (acc_res1>acc_res2)) & ismember(v1,p.branch_variables)
             spliton = v1;
-        elseif ismember(v2,p.branch_variables)
+        elseif ~ismember(v1,p.branch_variables)
             spliton = v2;
         else
             [i,j] = max(width);
@@ -880,6 +889,7 @@ if isempty(p.evalMap) && ~any(p.variabletype > 2)
                 x = sdpvar(length(r),1);                
                 % FIXME: Use lower level setup
                 ops = p.options;
+                ops.usex0 = 0;
                 ops.solver = p.solver.sdpsolver.tag;
                 ops.verbose = max(ops.verbose-1,0);
                 sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
