@@ -35,7 +35,24 @@ if ~isa(varargin{1},'char') && any(strcmp(cellfun(@class,varargin,'UniformOutput
                     dataExample = varargin_copy{j};
                 end
             end
-            output = feval(varargin_copy{end},varargin_copy{1:end-1});
+            try
+                output = feval(varargin_copy{end},varargin_copy{1:end-1});
+            catch
+                varargin_copy = varargin;
+                for j = 1:length(varargin)-1
+                    % Create zero arguments
+                    if isa(varargin_copy{j},'sdpvar')
+                        varargin_copy{j} = value(varargin_copy{j});
+                        dataExample = varargin_copy{j};
+                    end
+                end
+                try
+                    output = feval(varargin_copy{end},varargin_copy{1:end-1});
+                catch
+                    warning('Cannot figure out output dimension. Assuming 1x1. Assign a reasonable value to the decision variable to avoid this warning');
+                    output = 0;
+                end
+            end
             if prod(size(output)) == 1
                 % MANY -> 1
                 % Append derivative (might be empty)
