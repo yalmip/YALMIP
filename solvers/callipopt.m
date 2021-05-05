@@ -190,6 +190,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'IPOPT',solverinput,solveroutput,solvertime);
-
-
+output = createoutput(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);

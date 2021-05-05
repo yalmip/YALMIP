@@ -157,4 +157,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'FMINCON',solverinput,solveroutput,solvertime);
+output = createoutput(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
