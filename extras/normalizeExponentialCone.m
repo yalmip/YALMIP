@@ -138,7 +138,7 @@ if ~isempty(model.evalMap)
             % exp(x1-z)+exp(x2-z)+...<=1
             data.A = [data.A(1:cones.f,:) spalloc(cones.f,m,0);
                       spalloc(1,n,0) -ones(1,m);
-                      data.A(cones.f+1:end,:) spalloc(cones.l+sum(cones.q)+sum(cones.s),m,0)];
+                      data.A(cones.f+1:end,:) spalloc(cones.l+sum(cones.q),m,0)];
             data.b = [data.b(1:cones.f);
                       1;
                       data.b(cones.f+1:end)];
