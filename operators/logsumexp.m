@@ -16,8 +16,14 @@ switch class(varargin{1})
 
     case 'double'
         x = varargin{1};
-        varargout{1} = log(sum(exp(x)));
-
+        temp = sum(exp(x));
+        if isinf(temp)
+            % Saturated as something was close to infinite
+            varargout{1} = max(x);
+        else
+            varargout{1} = log(sum(exp(x)));
+        end      
+        
     case 'sdpvar'
 
         if min(size(varargin{1}))>1
@@ -37,7 +43,7 @@ switch class(varargin{1})
               
         operator = CreateBasicOperator('convex','callback');        
         operator.bounds = @bounds;
-        operator.derivative = @(x) exp(x)./(sum(exp(x)));
+        operator.derivative = @derivative;
         operator.convexhull = @convexhull;
                 
         varargout{1} = [];
@@ -48,7 +54,12 @@ switch class(varargin{1})
         error([upper(mfilename) ' called with weird argument']);
 end
 
+function df=derivative(x)
 
+df = exp(x)./(sum(exp(x)));
+if any(isnan(df))
+    df(isnan(df)) = 1;
+end
 function [L, U] = bounds(xL,xU)
 
 L = log(sum(exp(xL)));
