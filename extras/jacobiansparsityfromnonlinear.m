@@ -36,15 +36,18 @@ if length(model.linearindicies) == size(allA,2)
 else
     jacobianstructure = spalloc(size(allA,1),m,0);
     for i = 1:size(depends,1)
-        vars = find(depends(i,:));
+        vars = find(depends(i,:));        
         [ii,vars] = find(model.deppattern(vars,:));
         vars = unique(vars);
         s = size(jacobianstructure,1);
+        if 0
         [~,loc] = ismember(vars,model.linearindicies);
-        jacobianstructure(i,loc) = 1;
-        %for j = 1:length(vars)
-        %    jacobianstructure(i,find(vars(j) == model.linearindicies)) = 1;
-        %end
+        jacobianstructure(i,find(loc)) = 1;
+        else
+        for j = 1:length(vars)
+            jacobianstructure(i,find(vars(j) == model.linearindicies)) = 1;
+        end
+        end
     end
 end
 if includeLinear
