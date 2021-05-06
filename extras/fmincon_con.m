@@ -173,7 +173,7 @@ for i = 1:length(model.K.s)
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
     [d,v] = eig(X);  
-    plot(xevaled(1),xevaled(2),'*');
+   % plot(xevaled(1),xevaled(2),'*');
     if 0%~isempty(xold)  && any(xevaled)              
         if 1
             sdpvar x1 x2
