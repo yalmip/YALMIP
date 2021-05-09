@@ -12,6 +12,34 @@ switch class(varargin{1})
 
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
         
+        if nargin >= 2 && isa(varargin{2},'char')
+            switch varargin{2} 
+                case 'descend'
+                    % Sort and then reverse answer
+                    if nargout > 1
+                        [y,loc] = sort(varargin{1});
+                        varargout{1} = flipud(fliplr(y));
+                        varargout{2} = flipud(fliplr(loc));
+                    else                    
+                        s = sort(varargin{1});
+                        varargout{1} = flipud(fliplr(s));
+                    end
+                    return
+                case 'ascend'
+                    if nargout > 1
+                        [y,loc] = sort(varargin{1});
+                        varargout{1} = y;
+                        varargout{2} = loc;
+                    else                        
+                        s = sort(varargin{1});
+                        varargout{1} = s;
+                    end
+                    return                
+                otherwise
+                    error('Sort direction should be ''ascend'' or ''descend''');
+            end
+        end
+        
         if min(size(varargin{1})) > 1
             [y,loc] = matrix_sdpvar_sort(varargin{:});
             varargout{1} = y;
@@ -19,17 +47,6 @@ switch class(varargin{1})
             return
         end
         
-        if nargin >= 2 && isa(varargin{2},'char')
-            if nargout > 1 && isequal(varargin{2},'descend')
-                error('Sort direction is currently not support when sorting in descending order')
-            elseif strcmp(varargin{2},'descend')
-                % Sort and then reverse answer
-                s = sort(varargin{1});
-                varargout{1} = flipud(fliplr(s));
-                return
-            end
-        end
-
         x = varargin{1};
         if nargin > 1 
             % trivial case
