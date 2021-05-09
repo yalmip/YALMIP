@@ -76,8 +76,15 @@ end
 
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.oldGradient = cell(length(model.K.s),1);
+sdpLayer.reordering  = cell(length(model.K.s),1);
+for i=1:length(model.K.s);sdpLayer.T{i}=eye(model.K.s(i));end
+sdpLayer.n  = inf;
+sdpLayer.f = @(x)(1*x);
+sdpLayer.df = @(x)(1);
 
 showprogress('Calling FMINCON',model.options.showprogress);
 

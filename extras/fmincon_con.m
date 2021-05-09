@@ -2,6 +2,7 @@ function [g,geq,dg,dgeq,xevaled] = fmincon_con(x,model,xevaled)
 
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 
 % Early bail for linear problems
 g    = [];
@@ -51,10 +52,11 @@ if any(model.K.s)
         n = model.K.s(i);
         X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
         X = full(reshape(X,n,n));
-        d = eig(X);
-        %d(d>1) = 0;
-        g = [g;-d];
-        top = top + n^2;
+        [d,v] = eig(X);        
+        v = sdpLayer.f(diag(v));
+        % These will reordered later
+        g = [g;-v(1:min(n,sdpLayer.n))];
+        top = top + n^2;          
     end
 end
 
@@ -70,7 +72,11 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities==0) & (model.nonlin
     % Linear SOCP
     dg = computeConeDeriv(model,xevaled);
     % Linear SDP
-    dg = [dg;computeSDPDeriv(model,xevaled,1)];       
+    dg_SDP = computeSDPDeriv(model,xevaled,1);
+    dg = [dg;dg_SDP];     
+    dg = dg(:,model.linearindicies);      
+    g = reorderEigenvalueG(g,model); 
+    
 elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) 
     % Nonlinear terms in constraints so jacobian stuff needed
     % however, there are only monomials, which is exploited
@@ -83,10 +89,12 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
         dg = model.Anonlinineq*newdxx;                
     end    
     if any(model.K.q)
-        dg = [dg;computeConeDeriv(model,xevaled,newdxx)];
-    end        
+        dg = [dg;computeSOCPDeriv(model,xevaled,newdxx)];
+    end          
     if any(model.K.s)
-        dg = [dg;computeSDPDeriv(model,xevaled,newdxx)];       
+        dg_SDP = computeSDPDeriv(model,xevaled,newdxx);               
+        dg = [dg;dg_SDP]; 
+        g = reorderEigenvalueG(g,model);       
     end
 else  
     % Completely general case with monomials and functions
@@ -99,10 +107,12 @@ else
         dg = [model.Anonlinineq*dx];
     end        
     if any(model.K.q)
-        dg = [dg;computeConeDeriv(model,xevaled,dx)];
+        dg = [dg;computeSOCPDeriv(model,xevaled,dx)];
     end    
     if any(model.K.s)
-        dg = [dg;computeSDPDeriv(model,xevaled,dx)];
+        dg_SDP = computeSDPDeriv(model,xevaled,dx);                       
+        dg = [dg;dg_SDP];
+        g = reorderEigenvalueG(g,model);       
     end
 end
 
@@ -113,18 +123,21 @@ end
 if model.nonlinearinequalities | any(model.K.q) | any(model.K.s)
     dg = dg';   
 end
-    
+%  x = sdpvar(2,1);
+%  plot(g + dg'*(x-xevaled(1:2))<=0,x,[],[],sdpsettings('plot.shade',.1))
+% plot(xevaled(1),xevaled(2),'+b')
+% drawnow
+% axis([-2 2 -2 2])
+% 1
 
-function conederiv = computeConeDeriv(model,z,dzdx)
+function conederiv = computeSOCPDeriv(model,z,dzdx)
 conederiv = [];
 z = sparse(z(:));
 if any(model.K.q)
     top = 1 + model.K.f + model.K.l;  
     for i = 1:length(model.K.q)
         d = model.F_struc(top,1);
-       % c = model.F_struc(top,2:end)';
         b = model.F_struc(top+1:top+model.K.q(i)-1,1);
-       % A = model.F_struc(top+1:top+model.K.q(i)-1,2:end);
         cA = model.F_struc(top:top+model.K.q(i)-1,2:end);
         c = cA(1,:)';
         A = cA(2:end,:);
@@ -145,68 +158,50 @@ if any(model.K.q)
                 temp = (-c'+(A'*(b + A*z(model.linearindicies)))'/smoothed);
                 conederiv = [conederiv temp'];
             end
-           % conederiv = [conederiv;(2*A(:,model.linearindicies)'*(A(:,model.linearindicies)*z(model.linearindicies)+b)-2*c(model.linearindicies)*(c(model.linearindicies)'*z(model.linearindicies)+d))'];
         else                       
             % -c'*x - d + ||Ax+b||>=0
             e = A*z + b;
             smoothed = sqrt(10^-10 + e'*e);
-            % conederiv = [conederiv;-c'+(dzdx'*A'*b + dzdx'*A'*A*z(model.linearindicies))'/smoothed]; 
             aux = z'*(A'*A-c*c')*dzdx+(b'*A-d*c')*dzdx;
-            conederiv = [conederiv ((-dzdx'*c+aux'/smoothed)')'];             
-            % inner derivative
-            % aux = 2*z'*(A'*A-c*c')*dzdx+2*(b'*A-d*c')*dzdx;
-            % conederiv = [conederiv;aux];                                    
+            conederiv = [conederiv ((-dzdx'*c+aux'/smoothed)')'];                                                          
         end
         top = top + model.K.q(i);
     end
 end
 conederiv = conederiv';
 
-function dg = computeSDPDeriv(model,xevaled,newdxx)
+function [dg,reordering] = computeSDPDeriv(model,xevaled,newdxx)
 top = 1 + sum(model.K.q);
 newF = [];newcuts = 1;
 B=model.F_struc(:,2:end)*newdxx;
-persistent xold
+global sdpLayer
+reordering = [];
 
 for i = 1:length(model.K.s)
     n = model.K.s(i);
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
-    [d,v] = eig(X);  
-   % plot(xevaled(1),xevaled(2),'*');
-    if 0%~isempty(xold)  && any(xevaled)              
-        if 1
-            sdpvar x1 x2
-            s1 = sdisplay(d(:,1)'*reshape(full(model.F_struc)*[1;x1;x2],n,n)*d(:,1));
-            try
-                l=ezplot(s1{1});set(l,'LineColor','red');hold on
-            catch
-            end
-            try
-                s1 = sdisplay(d(:,2)'*reshape(full(model.F_struc)*[1;x1;x2;0],n,n)*d(:,2));
-                ezplot(s1{1})
-                plot(x(1),x(2),'k*');drawnow
-            catch
-            end
+    [d,v] = eig(X);    
+    newSDPblock = [];
+    for m = 1:min(sdpLayer.n,model.K.s(i))
+        newrow = [];
+        for j = 1:size(B,2)
+            newrow = [newrow d(:,m)'*reshape(B(top:top+n^2-1,j),n,n)*d(:,m)];
         end
-    end
-    xold = xevaled;
-    X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
-    X = full(reshape(X,n,n));
-    [d,v] = eig(X);      
-    for m = 1:n
-        % sum(kron([1;1],v).*kron(v,[1;1]).*q)??
-        %newF = [newF;reshape(d(:,m)*d(:,m)',[],1)'*model.F_struc(top:top+n^2-1,:)];             
-        %newF = [newF;(v(m,m)<=1)*reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:)];        
-         newF = [newF;reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:)];        
-       % q1 = kron(ones(n,1),d(:,m));
-       % q2 = kron(d(:,m),ones(n,1));
-       % newF = [newF;sum((q1.*q2).*model.F_struc(top:top+n^2-1,:))];
+       % newrow = reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:);
+        newrow = newrow*sdpLayer.df(v(i,i));
+        newSDPblock = [newSDPblock;newrow];  
         newcuts = newcuts + 1;
+    end     
+    if ~isempty(sdpLayer.oldGradient{i}) 
+        [reordering] = matchGradientRows(newSDPblock,sdpLayer.oldGradient{i});
+        newSDPblock = newSDPblock(reordering,:);                        
     end
+    sdpLayer.oldGradient{i} = newSDPblock;
+    sdpLayer.reordering{i} = reordering;
+    newF = [newF;newSDPblock];
     top = top + n^2;
 end
-%dg = -newF(:,2:end)*newdxx;
 dg = -newF;
 
 function newdxx = computeMonomialVariableJacobian(model,x)
@@ -229,3 +224,33 @@ else
 end
 newdxx = model.fastdiff.newdxx;
 newdxx(model.fastdiff.linear_in_newdxx) = zzz;
+
+function r = matchGradientRows(X,Y)
+
+C = distancematrix(X,Y);
+[r,m,u] = matchpairs(C,1e12);
+r = r(:,1);
+
+function C = distancematrix(X,Y)
+
+C = zeros(size(X,1));
+for i = 1:size(X,1)
+    for j = 1:size(X,1)
+        C(i,j) = norm(X(i,:)-Y(j,:),1);               
+    end
+end
+
+function  g = reorderEigenvalueG(g,model);
+global sdpLayer
+if ~isempty(sdpLayer.reordering{1})
+    g_nonsdp = g(1:end-sum(min(sdpLayer.n,model.K.s)));
+    g_sdp = g(end-sum(min(sdpLayer.n,model.K.s))+1:end);
+    reordering = [];
+    top = 0;
+    for i = 1:length(model.K.s)
+        reordering = [reordering;top+sdpLayer.reordering{i}];
+        top = top+ min(sdpLayer.n,model.K.s(i));
+    end
+    g_sdp = g_sdp(reordering);
+    g = [g_nonsdp;g_sdp];
+end

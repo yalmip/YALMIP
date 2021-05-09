@@ -63,8 +63,29 @@ end
 
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.oldGradient = cell(length(model.K.s),1);
+sdpLayer.reordering  = cell(length(model.K.s),1);
+sdpLayer.n  = inf;
+sdpLayer.f = @(x)(x);
+sdpLayer.df = @(x)(1);
+
+if sdpLayer.n > max(model.K.s)
+    sdpLayer.n  = inf;
+end
+if ~isinf(sdpLayer.n)
+    % Prune jacobian sparsity
+    J = model.options.knitro.JacobPattern(1:end-sum(model.K.s),:);
+    Jsdp = model.options.knitro.JacobPattern(end-sum(model.K.s)+1:end,:);
+    top = 1;
+    for i = 1:length(model.K.s)
+        J = [J;Jsdp(top:top + min(model.K.s(i),sdpLayer.n)-1,:)];
+        top = top + model.K.s(i);
+    end
+    model.options.knitro.JacobPattern = J;
+end
 
 showprogress('Calling KNITRO',model.options.showprogress);
 
