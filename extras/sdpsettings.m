@@ -870,7 +870,7 @@ end
 
 function kktqp = setup_kktqp_options
 kktqp.solver = '';
-kktqp.maxtime = '';
+kktqp.maxtime = 3600;
 
 function lmilab = setup_lmilab_options
 lmilab.reltol = 1e-3;
