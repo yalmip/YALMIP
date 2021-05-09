@@ -22,7 +22,6 @@ try
     else
         Y = reshape(ndsdpvar(Y),varargin{2:end});
     end
-    Y = flush(Y);
 catch
     error(lasterr)
 end

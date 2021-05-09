@@ -343,10 +343,7 @@ switch nargin
         sys.extra = [];
         sys.extra.expanded = [];
         sys.extra.createTime = definecreationtime;
-        sys.originalbasis = [];
-        sys.leftfactors{1} = [];
-        sys.rightfactors{1} = [];
-        sys.midfactors{1} = [];
+        sys.originalbasis = [];       
         sys.conicinfo = 0;
         
         % Find zero-variables
@@ -373,10 +370,7 @@ switch nargin
         sys.extra.expanded = [];        
         sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
-        sys.originalbasis = [];
-        sys.leftfactors{1} = [];
-        sys.rightfactors{1} = [];
-        sys.midfactors{1} = [];
+        sys.originalbasis = [];       
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
         if ~isempty(constants);
@@ -679,10 +673,7 @@ if isa(basis,'cell')
         sys{blk}.extra.expanded = [];
         sys{blk}.extra.createTime = definecreationtime;
         sys{blk}.conicinfo = conicinfo;
-        sys{blk}.originalbasis = [];
-        sys{blk}.leftfactors{1} = [];
-        sys{blk}.rightfactors{1} = [];
-        sys{blk}.midfactors{1} = [];
+        sys{blk}.originalbasis = [];       
         sys{blk} = class(sys{blk},'ncvar');
     end
     if length(n)==1
@@ -699,10 +690,7 @@ else
     sys.extra.expanded = [];    
     sys.extra.createTime = definecreationtime;
     sys.conicinfo = conicinfo;
-    sys.originalbasis = [];
-    sys.leftfactors{1} = [];
-    sys.rightfactors{1} = [];
-    sys.midfactors{1} = [];
+    sys.originalbasis = [];   
     sys = class(sys,'ncvar');
     if ~isreal(basis)
         % Add internal information about complex pairs

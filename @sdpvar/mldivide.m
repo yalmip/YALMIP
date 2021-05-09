@@ -26,7 +26,6 @@ try
     y.dim(1) = size(temp,1);
     y.dim(2) = size(temp,2);
   end
-  y = flush(y);
 catch
   error(lasterr);
 end

@@ -12,8 +12,7 @@ if ~Xd
     if isa(X,'double')
         if prod(size(X)) == 1
             F = Y;
-            F.basis = F.basis*X;
-            F = flush(F);
+            F.basis = F.basis*X;            
         else
             error('Only scalar multiplication allowed on nD objects');
         end
@@ -24,8 +23,7 @@ if ~Yd
     if isa(Y,'double')
         if prod(size(Y)) == 1
             F = X;
-            F.basis = F.basis*Y;
-            F = flush(F);            
+            F.basis = F.basis*Y;                   
         else
             error('Only scalar multiplication allowed on nD objects');
         end

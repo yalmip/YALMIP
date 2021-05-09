@@ -13,10 +13,6 @@ if ~isequal(size(d),size(x))
     error('Dimension mismatch in power');
 end
 
-if isa(x,'sdpvar')
-    x = flush(x);
-end
-
 % Reuse code
 if numel(x)==1 && numel(d)==1
     y = mpower(x,d);

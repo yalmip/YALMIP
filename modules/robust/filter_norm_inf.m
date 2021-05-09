@@ -20,8 +20,6 @@ collectE = [];
 collectd = [];
 collectC = [];
            
-x = flush(x);
-
 allbi = [];
 alldi = [];
 allnormT=[];

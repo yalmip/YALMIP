@@ -190,8 +190,6 @@ switch property
             YESNO = YESNO && all(all(CompressedList(find(ismember(CompressedList,NonlinearVariables)),2:maxdegree)>0));
         end
         
-    case 'factorized'
-        YESNO = length(X.leftfactors)>0;
     case 'sos'
         YESNO = (X.typeflag==11);  
     case 'kyp'

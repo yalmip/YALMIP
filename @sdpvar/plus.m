@@ -85,8 +85,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % Reset info about conic terms
             y.conicinfo = [0 0];
             y.extra.opname='';
-            y.extra.createTime = definecreationtime;
-            y = addfactors(y,X,Y);
+            y.extra.createTime = definecreationtime;            
             return
          end
          
@@ -106,8 +105,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         end
         % Reset info about conic terms
         y.conicinfo = [0 0];
-        y.extra.opname='';
-        y = addfactors(y,X,Y);
+        y.extra.opname='';        
     case 2
 
         if isempty(Y)
@@ -137,8 +135,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
              % Reset info about conic terms
              y.conicinfo = [0 0];
              y.extra.opname='';
-             y.extra.createTime = definecreationtime;
-             y = addfactors(y,X,Y);
+             y.extra.createTime = definecreationtime;             
              return
          end
          
@@ -159,8 +156,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y.extra.createTime = definecreationtime;
-        y = addfactors(y,X,Y);
+        y.extra.createTime = definecreationtime;        
              
     case 3
 
@@ -218,8 +214,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                  else
                      % Reset info about conic terms
                      y.conicinfo = [0 0];
-                     y.extra.opname='';
-                     y = addfactors(y,X,Y);
+                     y.extra.opname='';                     
                  end
                 return
             end
@@ -234,8 +229,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     basis(:,size(y.basis,2)+1) = [];
                     y.basis = basis;
                     y.conicinfo = [0 0];
-                    y.extra.opname='';
-                    y = addfactors(y,X,Y);
+                    y.extra.opname='';                    
                     return
                 else
                    % [ix,jx,sx] = find(y.basis);y.basis = [];
@@ -280,8 +274,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname=''; 
-        y.extra.createTime = definecreationtime;
-        y = addfactors(y,X,Y);
+        y.extra.createTime = definecreationtime;        
         if nnz(in_X_logical & in_Y_logical)>0
             y = clean(y);
         end

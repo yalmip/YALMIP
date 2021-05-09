@@ -30,6 +30,5 @@ Z.dim(2) = size(z,2);
 Z = clean(Z);
 % Reset info about conic terms
 if isa(Z,'sdpvar')
-    Z.conicinfo = [0 0];
-    Z = flush(Z);
+    Z.conicinfo = [0 0];    
 end

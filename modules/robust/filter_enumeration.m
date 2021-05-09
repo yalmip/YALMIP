@@ -149,8 +149,6 @@ if isequal(ops.robust.auxreduce,'none')
     uncAux = [];
 end
     
-w = flush(w);
-
 if length(F_xw_lp)>0
     rLP = [];
     if ~isempty(uncAux)     

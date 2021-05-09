@@ -18,8 +18,7 @@ if isempty(X)
     y.basis = sparse(y.basis);
     if length(dim)>2 && ~isa(y,'ndsdpvar')
         y = ndsdpvar(y);
-    end
-    y = flush(y);    
+    end    
     X = y;
     return
 end

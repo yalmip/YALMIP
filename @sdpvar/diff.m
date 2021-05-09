@@ -76,5 +76,4 @@ Y.dim(1) = n;
 Y.dim(2) = m - 1;
 % Reset info about conic terms
 Y.conicinfo = [0 0];
-Y = flush(Y);
 Y = clean(Y);

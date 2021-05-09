@@ -59,13 +59,7 @@ end
 % 2 : DOUBLE * SDPVAR
 % 3 : SDPVAR * SDPVAR
 switch 2*X_is_spdvar+Y_is_spdvar
-    case 3
-        if ~isempty(X.midfactors)
-            X = flush(X);
-        end
-        if ~isempty(Y.midfactors)
-            Y = flush(Y);
-        end
+    case 3        
         try
             % HACK: Return entropy when user types x*log(x), plog for
             % x*log(y/x) and -plog for x*log(x/y)
@@ -558,8 +552,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     Z.basis = Z.basis*Y;
                     % Reset info about conic terms
                     Z.conicinfo = [0 0];
-                    Z.extra.opname='';
-                    Z = addrightfactor(Z,Y);
+                    Z.extra.opname='';                   
                     return
                 end
             else
@@ -570,9 +563,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 Z.dim(2) = m_Y;
                 Z.basis = kron(Z.basis,Y(:));
                 Z.conicinfo = [0 0];
-                Z.extra.opname='';
-                Z = addrightfactor(Z,Y);
-                Z = addleftfactor(Z,speye(size(Y,1)));
+                Z.extra.opname='';                                
                 Z = clean(Z);
                 if length(size(Y))>2
                     Z = reshape(reshape(Z,[],1),size(Y));
@@ -588,9 +579,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.basis = Z.basis*Y;
             Z.conicinfo = [0 0];
             Z.extra.opname='';
-            Z.extra.createTime = definecreationtime;
-            Z = addrightfactor(Z,Y);
-            Z = addleftfactor(Z,speye(size(Y,1)));
+            Z.extra.createTime = definecreationtime;                        
             Z = clean(Z);          
             return
         end
@@ -609,8 +598,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         end
         Z.conicinfo = [0 0];
         Z.extra.opname='';
-        Z.extra.createTime = definecreationtime;
-        Z = addrightfactor(Z,Y);
+        Z.extra.createTime = definecreationtime;        
         Z = clean(Z);
 
     case 1
@@ -641,8 +629,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 else
                     Z.basis = Z.basis*X;
                     Z.conicinfo = [0 0];
-                    Z.extra.opname='';
-                    Z = addleftfactor(Z,X);
+                    Z.extra.opname='';                    
                     return
                 end
             else               
@@ -655,8 +642,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
                 Z.conicinfo = [0 0];
                 Z.extra.opname='';
-                Z.extra.createTime = definecreationtime;
-                Z = addleftfactor(Z,X);
+                Z.extra.createTime = definecreationtime;                
                 if X==0
                     Z = clean(Z);
                 end
@@ -666,9 +652,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.dim(1) = n_X;
             Z.dim(2) = m_X;
             Z.basis = X(:)*Y.basis;
-            Z.extra.createTime = definecreationtime;
-            Z = addleftfactor(Z,X);
-            Z = addrightfactor(Z,speye(size(X,2)));
+            Z.extra.createTime = definecreationtime;                        
             Z = clean(Z);
             if length(size(X))>2
                 Z = reshape(reshape(Z,[],1),size(X));
@@ -715,8 +699,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         Z.dim(2) = m;
         Z.conicinfo = [0 0];
         Z.extra.opname='';
-        Z.extra.createTime = definecreationtime;
-        Z = addleftfactor(Z,X);
+        Z.extra.createTime = definecreationtime;        
         Z = clean(Z);
 
     otherwise

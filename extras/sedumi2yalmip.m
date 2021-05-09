@@ -3,9 +3,6 @@ function [F,h,x] = sedumi2yalmip(At,b,c,K)
 nvars = length(b);
 x = sdpvar(nvars,1);
 
-% No reason to try to do factor tracking here
-x = flush(x);
-
 if size(At,2)~=length(b)
     At = At';
 end

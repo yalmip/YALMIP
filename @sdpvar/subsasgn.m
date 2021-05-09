@@ -40,8 +40,7 @@ try
                     y.basis = sparse(y.basis);
                     if length(dim)>2
                         y = ndsdpvar(y);
-                    end
-                    y = flush(y);
+                    end                    
                 catch
                     error(lasterr)
                 end
@@ -82,8 +81,7 @@ try
                      y = clean(y);
                      % Reset info about conic terms
                      if isa(y,'sdpvar')
-                         y.conicinfo = [0 0];
-                         y = flush(y);
+                         y.conicinfo = [0 0];                         
                      end
                      return;
                 end
@@ -134,8 +132,7 @@ try
                 y = clean(y);
                 if isa(y,'sdpvar')
                     % Reset info about conic terms
-                    y.conicinfo = [0 0];
-                    y = flush(y);
+                    y.conicinfo = [0 0];                    
                 end
                 
             case 3
@@ -241,8 +238,7 @@ try
                 z.lmi_variables = all_lmi_variables(:)';
                 y = z;	                
                 % Reset info about conic terms
-                y.conicinfo = [0 0];                 
-                y = flush(y);
+                y.conicinfo = [0 0];                                 
             otherwise
         end
     else

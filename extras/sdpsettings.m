@@ -22,7 +22,7 @@ function options = sdpsettings(varargin)
 %
 %   GENERAL
 %
-%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|refiner|none ('')]
+%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|mpt|refiner|none ('')]
 %    verbose            - Display-level [0|1|2|...(0)] (0 silent, 1 normal, >1 increasingly louder)
 %    usex0              - Use the current values obtained from VALUE as initial iterate if solver supports that [0|1 (0)]
 %    relax              - Disregard integrality constraint and/or relax nonlinear terms  [0 | 1 (both) 2 (relax integrality) 3 (relax nonlinear terms) (0)]
@@ -207,9 +207,6 @@ else
 
     options.lsqlin = setup_lsqlin_options;
     Names = appendOptionNames(Names,options.lsqlin,'lsqlin');
-
-    options.kypd = setup_kypd_options;
-    Names = appendOptionNames(Names,options.kypd,'kypd');
     
     options.kktqp = setup_kktqp_options;
     Names = appendOptionNames(Names,options.kktqp,'kktqp');    
@@ -874,15 +871,6 @@ end
 function kktqp = setup_kktqp_options
 kktqp.solver = '';
 kktqp.maxtime = '';
-
-function kypd = setup_kypd_options
-kypd.solver = '';
-kypd.lyapunovsolver = 'schur';
-kypd.reduce = 0;
-kypd.transform = 0;
-kypd.rho = 1;
-kypd.tol = 1e-8;
-kypd.lowrank = 0;
 
 function lmilab = setup_lmilab_options
 lmilab.reltol = 1e-3;

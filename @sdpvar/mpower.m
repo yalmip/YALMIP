@@ -23,7 +23,7 @@ if isa(d,'sdpvar')
             end
         end
     end
-    d = flush(d);d.conicinfo = [0 0];
+    d.conicinfo = [0 0];
     y = power_internal1(d,x);
     if isa(y,'sdpvar')
         y.extra.createTime = definecreationtime;
@@ -31,8 +31,6 @@ if isa(d,'sdpvar')
     end
     return
 end
-
-x = flush(x);
     
 % Trivial cases
 if d==0

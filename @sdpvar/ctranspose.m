@@ -17,4 +17,3 @@ X.dim(1) = m;
 X.dim(2) = n;
 % Reset info about conic terms
 X.conicinfo = [0 0];
-X = ctransposefactor(X);

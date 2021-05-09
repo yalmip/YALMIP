@@ -28,7 +28,6 @@ else
     X = clean(X);
 end
 % Reset info about conic terms
-if isa(X,'sdpvar')
-    X = flush(X);
+if isa(X,'sdpvar')    
     X.conicinfo = [0 0];
 end

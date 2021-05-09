@@ -5,7 +5,7 @@ if isempty(lmi_variables)
     varargout{1} = [];
 else
     if isa(lmi_variables,'sdpvar') || isa(lmi_variables,'lmi') || isa(lmi_variables,'constraint')
-        varargout{1} = flush(recover(depends(lmi_variables)));
+        varargout{1} = recover(depends(lmi_variables));
     else
         n = length(lmi_variables);
         i=1:n;
@@ -40,7 +40,7 @@ else
                 x = sdpvar(n,1,[],lmi_variables(:)',sparse(i,i+1,ones(n,1),n,n+1),0);
             end
             for i = 1:length(lmi_variables)
-                varargout{i} = flush(x(i));
+                varargout{i} = x(i);
             end
         end
     end

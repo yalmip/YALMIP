@@ -534,7 +534,7 @@ switch varargin{1}
                 yalmip('setdependence',getvariables(y),getvariables(varargin{i}));
             end
         end        
-        varargout{1} = flush(clearconic(y));
+        varargout{1} = clearconic(y);
         return
         
     case 'setdependence'

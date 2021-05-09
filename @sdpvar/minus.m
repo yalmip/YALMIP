@@ -292,23 +292,3 @@ switch 2*X_is_spdvar+Y_is_spdvar
 
     otherwise
 end
-
-% Update info on KYP objects
-if X_is_spdvar && Y_is_spdvar 
-  if  X.typeflag==9  && Y.typeflag==9
-    error('Substraction of KYP objects currently not supported')
-  end
-end
-if Y_is_spdvar
-  if  Y.typeflag==9
-    y.extra.M = -Y.extra.M+X;
-    y.extra.negated = ~Y.extra.negated;
-    return
-  end 
-end
-if X_is_spdvar 
- if X.typeflag==9
-    y.extra.M = y.extra.M-Y;
-    return
- end
-end
