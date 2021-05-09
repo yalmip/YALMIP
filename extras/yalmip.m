@@ -321,6 +321,7 @@ switch varargin{1}
         for i = 1:length(varargin)
             if isa(varargin{i},'sdpvar')
                 varargin{i} = clearcreationtime(varargin{i});
+                varargin{i} = clearconicinfo(varargin{i});
             end
         end
         
@@ -339,18 +340,16 @@ switch varargin{1}
                 correct_operator = correct_operator(strcmp(OperatorName,{internal_sdpvarstate.ExtendedMap(correct_operator).fcn}));
             end
                                                                          
-            for i = correct_operator                
-             %   if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
-                    if isequaln(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
-                        if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
-                            varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
-                        else
-                            varargout{1} =  internal_sdpvarstate.ExtendedMap(i).var;
-                        end
-                        varargout{1} = setoperatorname(varargout{1},varargin{2});
-                        return
+            for i = correct_operator
+                if isequaln(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                    if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
+                        varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
+                    else
+                        varargout{1} =  internal_sdpvarstate.ExtendedMap(i).var;
                     end
-             %   end
+                    varargout{1} = setoperatorname(varargout{1},varargin{2});
+                    return
+                end
             end
         else
             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
