@@ -330,7 +330,7 @@ p.branch_variables = intersect(p.branch_variables,original_variables);
 if p.diagonalized
     if p.solver.lowersolver.objective.quadratic.convex
         Q =  compileQuadratic(p.c,p,2);
-        convex = find(diag(Q)>0);
+        convex = find(diag(Q)>=0);
         p.branch_variables = setdiff(p.branch_variables,convex);
     end
 end
