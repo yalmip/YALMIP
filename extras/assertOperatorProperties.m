@@ -2,7 +2,7 @@ function properties = assertOperatorProperties(properties)
 
 properties = assertProperty(properties,'definiteness','none');
 properties = assertProperty(properties,'convexity','none');
-properties = assertProperty(properties,'monotonicity',[]);
+properties = assertProperty(properties,'monotonicity','none');
 properties = assertProperty(properties,'smoothness',inf);
 properties = assertProperty(properties,'symmetry','none');
 properties = assertProperty(properties,'shape','none');
@@ -15,7 +15,6 @@ properties = assertProperty(properties,'domain',[-inf inf]);
 properties = assertProperty(properties,'stationary',[]);
 properties = assertProperty(properties,'inflection',[]);
 properties = assertProperty(properties,'singularity',[]);
-properties = assertProperty(properties,'shape',[]);
 properties = assertProperty(properties,'replace',[]);
 if isa(properties.definiteness,'char')
     switch properties.definiteness
