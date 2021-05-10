@@ -149,7 +149,7 @@ if p.options.bmibnb.verbose>0
 	disp('* -Extracting bounds from model');   
 end
 p = presolve_bounds_from_domains(p);
-p = presolve_bounds_from_modelbounds(p);
+p = presolve_bounds_from_modelbounds(p,1);
 
 % *************************************************************************
 % Start some bound propagation

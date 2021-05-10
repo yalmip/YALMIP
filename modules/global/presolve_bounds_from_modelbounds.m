@@ -1,4 +1,4 @@
-function model = presolve_bounds_from_modelbounds(model,remove);
+function model = presolve_bounds_from_modelbounds(model,remove)
 if ~isempty(model.F_struc)
     [L,U,cand_rows_eq,cand_rows_lp] = findulb(model.F_struc,model.K);
     model.lb = max([model.lb L],[],2);
