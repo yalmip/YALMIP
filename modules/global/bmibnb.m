@@ -327,6 +327,14 @@ p.branch_variables = decide_branch_variables(p);
 p.branch_variables = setdiff(p.branch_variables,p.evalVariables);
 p.branch_variables = intersect(p.branch_variables,original_variables);
 
+if p.diagonalized
+    if p.solver.lowersolver.objective.quadratic.convex
+        Q =  compileQuadratic(p.c,p,2);
+        convex = find(diag(Q)>0);
+        p.branch_variables = setdiff(p.branch_variables,convex);
+    end
+end
+        
 % *************************************************************************
 % Tighten bounds (might be useful after bilinearization?)
 % *************************************************************************
