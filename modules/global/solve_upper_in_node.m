@@ -6,7 +6,7 @@ end
 
 % Call nonlinear solver (if there are SDP cones and non-SDP solver, remove
 % them and use cut generation later below
-[output,timing] = global_solve_upper(p,pruneSDPCone(p_upper),x,p.options,uppersolver,timing);
+[output,timing] = global_solve_upper(p,pruneSDPCone(removeCuts(p_upper)),x,p.options,uppersolver,timing);
 output.Primal(p_upper.integer_variables) = round(output.Primal(p_upper.integer_variables));
 output.Primal(p_upper.binary_variables) = round(output.Primal(p_upper.binary_variables));
 
