@@ -9,10 +9,18 @@ if ~isempty(model.F_struc)
             if ~isempty(cand_rows_lp)
                 model.F_struc(model.K.f + cand_rows_lp,:) = [];
                 model.K.l = model.K.l - length(cand_rows_lp);
+                [~,loc] = ismember(model.KCut.l,setdiff(model.KCut.l,cand_rows_lp));
+                if ~isempty(loc)
+                    model.KCut.l = loc(find(loc));
+                end
             end
             if ~isempty(cand_rows_eq)
                 model.F_struc(cand_rows_eq,:) = [];
                 model.K.f = model.K.f - length(cand_rows_eq);
+                [~,loc] = ismember(model.KCut.f,setdiff(model.KCut.l,cand_rows_eq));
+                if ~isempty(loc)
+                    model.KCut.f = loc(find(loc));
+                end
             end            
         end
     end
