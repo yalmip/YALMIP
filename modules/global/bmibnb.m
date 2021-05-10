@@ -522,7 +522,6 @@ function pnew = diagonalize_quadratic_program(p);
 pnew = p;
 pnew.V = [];
 pnew.diagonalized = 0;
-return
 
 % No quadratic terms
 if all(p.variabletype == 0)
@@ -542,6 +541,11 @@ if ~isempty(p.binary_variables) | ~isempty(p.integer_variables)
     return
 end
 
+if isempty(p.F_struc)
+    % Bound-constrained QP is faster in original
+    % form as we can exploit concavity
+    return
+end
 
 nonlinear = find(p.variabletype > 0);
 linear = find(p.variabletype == 0);
@@ -571,6 +575,11 @@ if ~isempty(quadraticterms)
 end
 Qlin = Q(linear,linear);
 clin = p.c(linear);
+
+if nnz(Qlin-diag(diag(Qlin)))==0
+    % already diagonal
+    return
+end
 
 % Decompose Q
 [V,D] = eig(full(Qlin));
@@ -618,7 +627,7 @@ pnew.lb =-inf(2*n,1);
 pnew.ub = inf(2*n,1);
 pnew.lb(1:n) = newlb;
 pnew.ub(1:n) = newub;
-if length(pnew.x0)>0
+if length(p.x0)>0
     pnew.x0 = V*p.x0;
 end
 pnew.diagonalized = 1;
