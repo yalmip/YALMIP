@@ -598,8 +598,8 @@ D(abs(D)<1e-11) = 0;
 lb = p.lb(linear);
 ub = p.ub(linear);
 Z = V';
-newub = sum([Z>0].*Z.*repmat(ub,1,length(Z)),2)+sum([Z<0].*Z.*repmat(lb,1,length(Z)),2);
-newlb = sum([Z>0].*Z.*repmat(lb,1,length(Z)),2)+sum([Z<0].*Z.*repmat(ub,1,length(Z)),2);
+newub = sum([Z>0].*Z.*repmat(ub',length(Z),1),2)+sum([Z<0].*Z.*repmat(lb',length(Z),1),2);
+newlb = sum([Z>0].*Z.*repmat(lb',length(Z),1),2)+sum([Z<0].*Z.*repmat(ub',length(Z),1),2);
 newub(isnan(newub)) = inf;
 newlb(isnan(newlb)) = -inf;
 
@@ -626,7 +626,6 @@ if size(p.F_struc,1)>0
         pnew.K.l = pnew.K.l + length(keep);
     end
 end
-
 
 pnew.variabletype = [zeros(1,n) ones(1,n)*2];
 pnew.monomtable = [eye(n);2*eye(n)];
