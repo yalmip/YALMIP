@@ -868,7 +868,7 @@ f = p.f;
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
 p.nonshiftedQP.f = f;
-if isempty(p.evalMap) && ~any(p.variabletype > 2)
+if isempty(p.evalMap) && ~any(p.variabletype > 2) && ~p.diagonalized
     if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
         r = find(any(Q,2));
         e = eig(full(Q(r,r)));
