@@ -68,6 +68,9 @@ end
 if p.options.bmibnb.cut.squaredlinearequality
     p = addSquaredLinearEqualityCuts(p);
 end
+if p.options.bmibnb.cut.disjointbilinearsdp
+    p = addDisjointBilinearSDPcut(p);
+end
 
 p = lastresortBounds(p,upper);
 
@@ -100,6 +103,7 @@ gap     = inf;
 stack   = [];
 solved_nodes = 0;
 numGlobalSolutions = 0;
+balanceIndicator = 1;
 
 % *************************************************************************
 % Silly hack to speed up solver calls
@@ -156,6 +160,17 @@ end
 
 p.quadraticCutFailure = 0;
 while go_on
+    
+    % Reduce the number of upper bound calls if solver
+    % spends to much time in upper solver
+    if solved_nodes && rem(solved_nodes,p.options.bmibnb.rebalancefreq)==0
+        ratio = timing.uppersolve/(timing.uppersolve+timing.lowersolve+timing.lpsolve+timing.heuristics);
+        if ratio > p.options.bmibnb.balancetarget
+            balanceIndicator = balanceIndicator + 1;
+        elseif ratio < p.options.bmibnb.balancetarget-0.2
+            balanceIndicator = max(1,balanceIndicator - 1);
+        end
+    end
     
     % We are waiting for an upper bound to pop up so we can use the SDP
     % relaxation to compute a global upper bound for a model where no
@@ -350,11 +365,11 @@ while go_on
 
                     % Manage cuts etc
                     % Why? Lower bound solver is SDP solver
-                    % p = createsdpcut(p,z);
+                    p = createsdpcut(p,z);
                     p = addlpcuts(p,x);
 
                     oldCount = numGlobalSolutions;
-                    if numGlobalSolutions < p.options.bmibnb.numglobal   
+                    if numGlobalSolutions < p.options.bmibnb.numglobal && (rem(solved_nodes,balanceIndicator)==0)  
                         tstart = tic;
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
                         timing.heuristics = timing.heuristics + toc(tstart);
