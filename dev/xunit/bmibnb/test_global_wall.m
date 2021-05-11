@@ -18,7 +18,7 @@ x6 = sdpvar(1);
 
 % Define constraints 
 
-F = ([]);
+F = ([x2 x3 x4 x5 x6]>=0);
 F=[F,objvar*x2==1];
 F=[F,x3 == 4.8*x4*objvar];
 F=[F,x5==0.98*x2*x6];
@@ -28,5 +28,5 @@ F=[F,2*objvar-2*x2+1E-7*x3-0.01*x4-1E-5*x5+0.01*x6==0];
 
 % Solve problem
 sol = optimize(F,objvar,sdpsettings('solver','bmibnb','allownonconvex',1));
-assert(sol.problem==0)
+assert(sol.problem==0 || sol.problem == 4)
 assert(abs(value(objvar)--1) <= 1e-2)
