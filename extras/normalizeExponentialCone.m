@@ -72,7 +72,7 @@ if ~isempty(model.evalMap)
     % Check so there are no exp/log terms in quadratic or SDP cone
     if sum(model.K.q) + sum(model.K.s) > 0
         if nnz(data.A(1+model.K.f+model.K.l:end,convexFunctions))>0 || nnz(data.A(1+model.K.f+model.K.l:end,concaveFunctions))>0
-            output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+            output = createoutput([],[],[],23,model.solver.tag,[],[],0);
             return
         end
     end

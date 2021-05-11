@@ -82,7 +82,14 @@ output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solverou
 function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);
 
 [model,output] = normalizeExponentialCone(model);
-if output.problem
+if output.problem == 23
+    % Cases such as 1-exp(t) >= x'*x
+    [model,problem] = splitCones(model);
+    if problem
+    else
+        [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);
+    end
+elseif output.problem
     problem = output.problem;
     x = [];
     D_struc = [];
@@ -107,4 +114,55 @@ else
         % Exponential cones
         [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
     end
+end
+
+function [model,failure] = splitCones(model)
+
+% Find top of SOCP
+top = model.K.f+model.K.l+1;
+newF=[];
+failure=0;
+for i = 1:length(model.K.q)
+    % c+A*exp in socp cone
+    A=model.F_struc(top:top+model.K.q(i)-1,1+model.evalVariables);
+    if nnz(A)>0
+        if any(A(2:end-1,:),1)
+            % Operator in norm
+           failure = 1; 
+        else            
+            a = model.F_struc(top,:);
+            b = model.F_struc(top+model.K.q(i)-1,:);
+            c = a+b;
+            if c(1)==1 && ~any(c(2:end))
+                d = a-b;
+                model.F_struc(top,:)=0;
+                model.F_struc(top+model.K.q(i)-1,:)=0;
+                model.F_struc(top,1)=1/2;
+                model.F_struc(top+model.K.q(i)-1,1)=1/2;
+                model.F_struc(top,end+1)=1/2;
+                model.F_struc(top+model.K.q(i)-1,end)=-1/2;
+                d(1,end+1)=-1;
+                newF = addRow(newF,d);
+            else
+                failure = 1;
+            end
+        end
+    end
+end
+if ~failure
+    model.F_struc = [model.F_struc(1:model.K.f+model.K.l,:);
+                    newF;
+                    model.F_struc(model.K.f+model.K.l+1:end,:)];
+model.K.l = model.K.l + size(newF,1);
+n = size(model.F_struc,2)-1;
+model.c(n)=0;
+model.Q(n,n)=0;
+end
+
+function Aa=addRow(A,a)
+if isempty(A)
+    Aa=a;
+else
+    A(end,length(a))=0;
+    Aa=[A;a];
 end

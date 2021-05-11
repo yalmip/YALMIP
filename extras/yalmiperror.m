@@ -42,6 +42,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    20 Solver complains about bad data
 %    21 Failed to initialize bisection space (typically means infeasibility)
 %    22 Ill-posed problem according to solver
+%    23 Unsupported mixed cone
 %
 %   See also OPTIMIZE
 
@@ -127,7 +128,9 @@ case 21
   error_string = ['Failed to initialize bisection space (probably infeasible)' solver ];              
 case 22
   error_string = ['Ill-posed problem according to solver ' solver ];              
-    
+case 23
+  error_string = ['Unsupported mixed cone ' solver ];              
+     
  otherwise
 end
 
