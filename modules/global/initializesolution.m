@@ -1,15 +1,18 @@
-function [p,x_min,upper] = initializesolution(p);
+function [p,x_min,upper] = initializesolution(p,x_min,upper)
 
-x_min = zeros(length(p.c),1);
-upper = inf;
+%x_min = zeros(length(p.c),1);
+%upper = inf;
 if p.options.usex0
     x = p.x0;
     z = evaluate_nonlinear(p,x);
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
-    if relaxed_feasible
-        upper = p.f+p.c'*z+z'*p.Q*z;
-        x_min = z;
+    if relaxed_feasible 
+        upper_ = p.f+p.c'*z+z'*p.Q*z;
+        if upper_ <= upper
+            upper = upper_;
+            x_min = z;
+        end
     end
 else
     x0 = p.x0;
@@ -31,16 +34,22 @@ else
     if relaxed_feasible
         infs = isinf(z);
         if isempty(infs)
-            upper = p.f+p.c'*z+z'*p.Q*z;
-            x_min = z;
-            x0 = x_min;
+            upper_ = p.f+p.c'*z+z'*p.Q*z;
+            if upper_ <= upper
+                upper = upper_;
+                x_min = z;
+                x0 = x_min;
+            end
         else
             % Allow inf solutions if variables aren't used in objective
             if all(p.c(infs)==0) & nnz(p.Q(infs,:))==0
                 ztemp = z;ztemp(infs)=0;
-                upper = p.f+p.c'*ztemp+ztemp'*p.Q*ztemp;
-                x_min = z;
-                x0 = x_min;
+                upper_ = p.f+p.c'*ztemp+ztemp'*p.Q*ztemp;
+                if upper_ <= upper
+                    upper = upper_;
+                    x_min = z;
+                    x0 = x_min;
+                end
             end
         end
     end

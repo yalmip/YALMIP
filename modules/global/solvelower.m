@@ -243,7 +243,9 @@ else
             
             p_cut.lb(removethese)=[];
             p_cut.ub(removethese)=[];
-            p_cut.x0(removethese)=[];
+            if ~isempty(p_cut.x0)
+                p_cut.x0(removethese)=[];
+            end
             p_cut.monomtable(:,find(removethese))=[];
             p_cut.monomtable(find(removethese),:)=[];
             p_cut.variabletype(removethese) = [];

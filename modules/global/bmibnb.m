@@ -174,8 +174,13 @@ p = propagate_bounds_from_convex_quadratic_ball(p);
 % For quadratic nonconvex programming over linear constraints, we
 % diagonalize the problem to obtain less number of bilinear terms. Not
 % theoretically any reason to do so, but practical performance is better
+% If we are using diagonalize=-1, a choice will be made by comparing
+% two lowersolves, and those also generate feasible solutions
+% we we can use for initial upper bound
 % *************************************************************************
-p = diagonalize_quadratic_program(p);
+x_min = zeros(length(p.c),1);
+upper = inf;
+[p,timing,x_min,upper] = diagonalize_quadratic_program(p,timing,x_min,upper);
 if p.diagonalized
     p = compile_nonlinear_table(p);
 end
@@ -183,10 +188,10 @@ end
 % *************************************************************************
 % Try to generate a feasible solution, by using avialable x0 (if usex0=1),
 % or by trying the zero solution, or my trying the (lb+ub)/2 solution. Note
-% that we do this here b4efore the problem possibly is bilinearized, thus
+% that we do this here before the problem possibly is bilinearized, thus
 % avoiding to introduce possibly complicating bilinear constraints
 % *************************************************************************
-[p,x_min,upper] = initializesolution(p);
+[p,x_min,upper] = initializesolution(p,x_min,upper);
 solution_hist = [];
 if ~isinf(upper)   
     solution_hist = [solution_hist x_min(p.linears)];
@@ -526,10 +531,14 @@ output.solveroutput.solution_hist = solution_hist;
 output.extra.propagatedlb = lb;
 output.extra.propagatedub = ub;
 
-function pnew = diagonalize_quadratic_program(p);
+function [pnew,timing,x_min,upper] = diagonalize_quadratic_program(p,timing,x_min,upper)
 pnew = p;
 pnew.V = [];
 pnew.diagonalized = 0;
+
+if ~p.options.bmibnb.diagonalize
+    return
+end
 
 % No quadratic terms
 if all(p.variabletype == 0)
@@ -634,11 +643,59 @@ pnew.lb =-inf(2*n,1);
 pnew.ub = inf(2*n,1);
 pnew.lb(1:n) = newlb;
 pnew.ub(1:n) = newub;
+pnew.lb(n+1:end) = 0;
+pnew.ub(n+1:end) = max(newlb.^2,newub.^2);
 if length(p.x0)>0
-    pnew.x0 = V*p.x0;
+    pnew.x0 = [(V'*p.x0(p.linears));(V'*p.x0(p.linears)).^2];
 end
+x_min = [V'*x_min(p.linears);(V'*x_min(p.linears)).^2];
 pnew.diagonalized = 1;
 
+% Ok ,we now got a new diagonalized model
+% Sometimes it performs much worse though
+% Make trial calls to judge it
+if p.options.bmibnb.diagonalize == -1
+    tstart = tic;
+    [output1,cost1,~,timing] = solvelower(fakeLowerModel(pnew),p.options,p.solver.lowersolver.call,[],[],timing);
+    [upper_cost1,x_u1] = quickCost(pnew,output1.Primal);    
+    [output2,cost2,~,timing] = solvelower(fakeLowerModel(p),p.options,p.solver.lowersolver.call,[],[],timing);
+    [upper_cost2,x_u2] = quickCost(p,output2.Primal);       
+    timing.lowersolve = timing.lowersolve + toc(tstart);
+    if output1.problem && output2.problem
+        % both had issues. Let's assume diagonal is better
+        if p.options.verbose>=0;display('* -Diagonalized QP');end
+    elseif output1.problem && ~output2.problem
+        % new model has issues. use old
+        pnew = p;
+        pnew.V = [];
+        pnew.diagonalized = 0;
+        if p.options.verbose>=0;display('* -Diagonalized QP but switched back to original.');end
+    elseif ~output1.problem && output2.problem
+        % old has issue, so keep new
+        if p.options.verbose>=0;display('* -Diagonalized QP.');end
+    else
+        % Both solved, so which had the best lower bound
+        if cost1 < cost2
+            % New model weaker, keep old. 
+            % Take best upper though!
+            x_min = x_u2;
+            upper = upper_cost2;
+            if upper_cost1 < upper
+                upper = upper_cost1;
+                x_min(p.linears)=V*x_u1(pnew.linears);
+            end
+            pnew = p;
+            pnew.V = [];
+            pnew.diagonalized = 0;
+            if p.options.verbose>=0;display('* -Diagonalized QP but switched back to original.');end
+        else
+            if p.options.verbose>=0;display('* -Diagonalized QP.');end
+        end
+    end
+else
+	if p.options.verbose>=0;display('* -Diagonalized QP.');end    
+end
+       
 function x = dediagonalize(p,x);
 if isempty(p.V)
     return
@@ -691,4 +748,23 @@ if ~isempty(p.K.s) && p.K.s(1) > 0
         p.K.l = p.K.l + size(newF,1);
         p.F_struc = [p.F_struc(1:p.K.f,:);newF;p.F_struc(1 + p.K.f:end,:)];
     end
+end
+
+function pnew = fakeLowerModel(p)
+pnew = p;
+pnew.complementary=[];
+pnew.shiftedQP=[];
+pnew.originalModel.variabletype=[];
+pnew.concavityEqualities=[];
+pnew.EqualityConstraintState=[];
+pnew.EqualityConstraintState=[];
+pnew.InequalityConstraintState=[];
+
+function [q,z] = quickCost(p,x)
+q = 0;
+z=[];
+for i = 1:size(p.monomtable,1);
+    j = find(p.monomtable(i,:));
+    z =[z;prod(x(j))];
+    q = q + p.c(i)*z(i);
 end
