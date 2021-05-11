@@ -12,7 +12,7 @@ if any(p.K.s) && any(p.variabletype == 1)
             possible_t = setdiff(p.linears,used);
             weCanDoIt = 1;
             for j = 1:length(possible_t)
-                t = possible_t(i);                
+                t = possible_t(j);                
                 generateMonomials = t_times_x(t,used,p);
                 if ~any(isnan(generateMonomials))
                     if ~isinf(p.lb(t))
