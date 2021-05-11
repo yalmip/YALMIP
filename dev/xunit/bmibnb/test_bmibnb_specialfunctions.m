@@ -189,8 +189,12 @@ assert(sol.problem == 0)
 
 function test_beta(dummy)
 sdpvar x
-sol = optimize([-1 <= x <= 1], (beta(x-1/pi,.5) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
+sol = optimize([-1 <= x <= 10], (beta(x-1/pi,.5) - 2)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
 assert(sol.problem == 0)
+
+sol = optimize([-1 <= x <= 10], (beta(2,x-1/pi) - 2)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
+assert(sol.problem == 0)
+
 
 function test_expint(dummy)
 sdpvar x
