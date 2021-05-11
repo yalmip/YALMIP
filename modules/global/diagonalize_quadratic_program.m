@@ -7,6 +7,12 @@ if ~p.options.bmibnb.diagonalize
     return
 end
 
+% Preprocessing has moved nonliner constraints
+% to bounds, so don't be fooled...
+if p.originallyNonlinearConstraints
+    return
+end
+
 % No quadratic terms
 if all(p.variabletype == 0)
     return
@@ -189,9 +195,11 @@ pnew.InequalityConstraintState=[];
 function [q,z] = quickCost(p,x)
 q = 0;
 z=[];
-for i = 1:size(p.monomtable,1);
+for i = 1:size(p.monomtable,1)
     j = find(p.monomtable(i,:));
-    z =[z;prod(x(j))];
+    v = x(j);
+    w = p.monomtable(i,j);
+   	z =[z;prod(v(:).^w(:))];
     q = q + p.c(i)*z(i);
 end
 

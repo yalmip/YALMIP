@@ -1,5 +1,11 @@
 function model = presolve_bounds_from_modelbounds(model,remove)
-if ~isempty(model.F_struc)
+%% In case we move monomial constraints to bounds
+%% we should remember that this was a nonlinear model
+model.originallyNonlinearConstraints = 0;
+if ~isempty(model.F_struc)      
+    if any(any(model.F_struc(:,1+model.nonlinears)))
+        model.originallyNonlinearConstraints = 1;
+    end
     [L,U,cand_rows_eq,cand_rows_lp] = findulb(model.F_struc,model.K);
     model.lb = max([model.lb L],[],2);
     model.ub = min([model.ub U],[],2);    
