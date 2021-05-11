@@ -194,7 +194,7 @@ for i = 1:length(model.K.s)
             newrow = [newrow d(:,m)'*reshape(B(top:top+n^2-1,j),n,n)*d(:,m)];
         end
        % newrow = reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:);
-        newrow = newrow*sdpLayer.df(v(i,i));
+        newrow = newrow*sdpLayer.df(v(m,m));
         newSDPblock = [newSDPblock;newrow];  
         newcuts = newcuts + 1;
     end     
