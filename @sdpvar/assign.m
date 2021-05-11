@@ -37,6 +37,11 @@ if isempty(value)
     return
 end
 
+if min(size(X))==1 && min(size(value))==1 && (length(size(X))==2) && (length(size(value))==2)
+    X = reshape(X,[],1);
+    value = reshape(value,[],1);
+end
+
 if ~isequal(size(X),size(value))
     error('Both arguments must have same size')
 end

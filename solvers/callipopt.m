@@ -46,12 +46,12 @@ showprogress('Calling IPOPT',model.options.showprogress);
 % solver. 
 % model = compressLifted(model);
 
-Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
+Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0),1);
+Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
@@ -83,12 +83,18 @@ global latest_G
 global latest_g
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 latest_G = [];
 latest_g = [];
 latest_x_f = [];
 latest_x_g = [];
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.oldGradient = cell(length(model.K.s),1);
+sdpLayer.reordering  = cell(length(model.K.s),1);
+sdpLayer.n  = inf;
+sdpLayer.f = @(x)(1*x);
+sdpLayer.df = @(x)(1);
 
 funcs.objective = @(x)ipopt_callback_f(x,model);
 funcs.gradient = @(x)ipopt_callback_df(x,model);
@@ -129,7 +135,7 @@ end
 % Hessian of the Lagrangian
 usedinObjective = find(model.c | any(model.Q,2));
 if ~any(model.variabletype(usedinObjective)) & any(model.Q)
-    if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
+    if  ~any(model.K.s) && ~any(model.K.q) && length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
         H = model.Q(:,model.linearindicies);
         H = H(model.linearindicies,:);
         funcs.hessian = @(x,s,l) tril(2*H);
@@ -190,6 +196,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'IPOPT',solverinput,solveroutput,solvertime);
-
-
+output = createoutput(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);

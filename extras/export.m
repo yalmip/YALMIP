@@ -181,10 +181,14 @@ switch lower(solver.tag)
         [model.H,model.C,model.A,model.B,model.LB,model.UB,model.QC,model.VARTYPE,model.INDEQ,model.PARAM,model.OPTIONS] = cplex2yalmip(interfacedata);
 
     case {'mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
-        if interfacedata.K.s(1)>0
-            model.prob = yalmip2SDPmosek(interfacedata);
-        else
-            model.prob = yalmip2mosek(interfacedata);
+        try
+            if interfacedata.K.s(1)>0
+                model.prob = yalmip2SDPmosek(interfacedata);
+            else
+                model.prob = yalmip2mosek(interfacedata);
+            end
+        catch
+            model.prob = [];
         end
         model.param = interfacedata.options.mosek;
 

@@ -13,6 +13,7 @@ F = F+[(L*Y*L')<=1];
 sol = optimize(F,-trace(Y),sdpsettings('solver','fmincon-sdp'));
 assert(isequal(sol.problem,0));
 assert(abs(value(trace(Y)-10.26039))<1e-3);
+
 % Multiple LMI
 F = [Y >=0, [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0];
 F = F+[(L*Y*L')<=1];
@@ -33,4 +34,16 @@ F = F+[exp((L*Y*L'))<=exp(1)];
 sol = optimize(F,exp(-.1*trace(Y)),sdpsettings('solver','fmincon-sdp'));
 assert(isequal(sol.problem,0));
 assert(abs(value(trace(Y)-10.26039))<1e-1);
+
+% Some functional stuff should run at least
+F = [Y >=0, [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0];
+F = F+[[exp(1)-exp((L*Y*L')) exp(1)-exp((L*Y*L'))]>=0];
+sol = optimize(F,-trace(Y),sdpsettings('solver','fmincon-sdp','usex0',0));
+assert(isequal(sol.problem,0));
+assert(abs(value(trace(Y)-10.26039))<1e-1);
+
+F = [Y >=0, [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0];
+F = F+[[exp(1)-exp((L*Y*L')) 0;0 exp(1)-exp((L*Y*L'))]>=0];
+sol = optimize(F,-sqrtm(trace(Y)),sdpsettings('solver','fmincon-sdp','usex0',0));
+assert(isequal(sol.problem,0));
 
