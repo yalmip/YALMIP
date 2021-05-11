@@ -54,6 +54,7 @@ if any(model.K.s)
         X = full(reshape(X,n,n));
         [d,v] = eig(X);        
         v = sdpLayer.f(diag(v));
+        v = v.*(1./(1 + 0.1*((1:n)-1))');
         % These will reordered later
         g = [g;-v(1:min(n,sdpLayer.n))];
         top = top + n^2;          
@@ -195,6 +196,7 @@ for i = 1:length(model.K.s)
         end
        % newrow = reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:);
         newrow = newrow*sdpLayer.df(v(m,m));
+        nerow = newrow/(1+0.1*m);
         newSDPblock = [newSDPblock;newrow];  
         newcuts = newcuts + 1;
     end     
