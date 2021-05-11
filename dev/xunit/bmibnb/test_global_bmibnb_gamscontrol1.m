@@ -29,6 +29,13 @@ F = F+(diag(P)>=0)+(P(:)>=-151) + (P(:)<=150) + (P>=P0)+(K>=-100) + (K<=100);
 obj = trace(P);
 
 sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'))
+assert(sol.problem == 0)
+assert(abs(value(obj)-5.4615) <=  2e-2)
 
+sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon','bmibnb.uppersdprelax',0))
+assert(sol.problem == 0)
+assert(abs(value(obj)-5.4615) <=  2e-2)
+
+sol = optimize(F,obj,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon','bmibnb.uppersdprelax',1))
 assert(sol.problem == 0)
 assert(abs(value(obj)-5.4615) <=  2e-2)

@@ -85,6 +85,24 @@ p.nonshiftedQP.Q =[];
 p.nonshiftedQP.c =[];
 p.nonshiftedQP.f =[];
 
+% *************************************************
+% Decide on strategy for nonlinear SDP cone
+% *************************************************
+if p.options.bmibnb.uppersdprelax < 0
+    if p.solver.uppersolver.constraint.inequalities.semidefinite.polynomial
+        % No reason to add nonlinear cuts as we have a nonlinear SDP solver
+        p.options.bmibnb.uppersdprelax = 0;
+    else
+        %Solver does not support SDP cone, so accept iterations
+        p.options.bmibnb.uppersdprelax = -p.options.bmibnb.uppersdprelax;
+    end
+elseif p.options.bmibnb.uppersdprelax > 0
+    % Remove knowledge of SP cone from upper solver
+    p.solver.uppersolver.constraint.inequalities.semidefinite.polynomial = 0;
+    p.solver.uppersolver.constraint.inequalities.semidefinite.quadratic = 0;
+    p.solver.uppersolver.constraint.inequalities.semidefinite.linear = 0;    
+end
+
 % *************************************************************************
 % Assume feasible (this property can be changed in the presolve codes
 % *************************************************************************

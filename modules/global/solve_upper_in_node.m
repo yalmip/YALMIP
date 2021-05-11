@@ -4,9 +4,9 @@ if nargin < 10
     cutiterations = 1;
 end
 
-% Call nonlinear solver (if there are SDP cones and non-SDP solver, remove
-% them and use cut generation later below
-[output,timing] = global_solve_upper(p,pruneSDPCone(removeCuts(p_upper)),x,p.options,uppersolver,timing);
+% Call nonlinear solver (if there are SDP cones and non-SDP solver, or user
+% specified use of nonlinear SDP cut generation, remove SDP cone)
+[output,timing] = global_solve_upper(pruneSDPCone(p),pruneSDPCone(removeCuts(p_upper)),x,p.options,uppersolver,timing);
 output.Primal(p_upper.integer_variables) = round(output.Primal(p_upper.integer_variables));
 output.Primal(p_upper.binary_variables) = round(output.Primal(p_upper.binary_variables));
 
@@ -86,7 +86,7 @@ elseif output.problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.co
 end
 
 function p = pruneSDPCone(p)
-if ~isempty(p.K.s) || p.K.s(1) > 0
+if ~isempty(p.K.s) || p.K.s(1) > 0 && p.options.bmibnb.uppersdprelax
     if ~p.solver.uppersolver.constraint.inequalities.semidefinite.linear
         p.F_struc(end-sum(p.K.s.^2)+1:end,:) = [];
         p.K.s = 0;
