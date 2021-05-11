@@ -42,7 +42,7 @@ if d==1
     return
 end
 
-% Check for special case norm(x)^2 which many users try to do
+% Check for special case norm(x)^2 and abs(x)^2 which many users try to do
 if d==2
     if length(x)==1
         base = getbase(x);
@@ -54,9 +54,19 @@ if d==2
                     z = reshape(model.arg{1},[],1);
                     y = real(z'*z);
                     y.extra.createTime = definecreationtime;
-                     y.extra.opname='';
+                    y.extra.opname='';
+                    return
+                else
+                    y = graph_square(x);
                     return
                 end
+            elseif strcmp(x.extra.opname,'abs')
+                model = yalmip('extstruct',getvariables(x));
+                z = model.arg{1};
+                y = (z.*conj(z));
+                y.extra.createTime = definecreationtime;
+                y.extra.opname='';
+                return                
             end
         end
     end
