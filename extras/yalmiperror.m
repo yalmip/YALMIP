@@ -38,7 +38,7 @@ function error_string = yalmiperror(errorcode,solver)
 %    16 User terminated
 %    17 Presolve recovery failed
 %    18 Missing non-negativity bounds in GP formulation
-%    19 Convexity requirements not met
+%    19 Convexity requirements not met or analysis failed
 %    20 Solver complains about bad data
 %    21 Failed to initialize bisection space (typically means infeasibility)
 %    22 Ill-posed problem according to solver
