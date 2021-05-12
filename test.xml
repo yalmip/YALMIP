@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <testsuites>
-   <testsuite errors="0" failures="0" name="test_operator_abs" skipped="0" tests="2" time="2.3147">
-      <testcase classname="test_operator_abs" name="test1" time="1.6394"/>
-      <testcase classname="test_operator_abs" name="test2" time="0.67527"/>
+   <testsuite errors="0" failures="0" name="test_operator_abs" skipped="0" tests="2">
+      <testcase classname="test_operator_abs" name="test1"/>
+      <testcase classname="test_operator_abs" name="test2"/>
    </testsuite>
-   <testsuite errors="0" failures="0" name="test_operator_alldifferent" skipped="0" tests="2" time="1.1131">
-      <testcase classname="test_operator_alldifferent" name="test1" time="0.57677"/>
-      <testcase classname="test_operator_alldifferent" name="test2" time="0.53633"/>
+   <testsuite errors="0" failures="0" name="test_operator_alldifferent" skipped="0" tests="2">
+      <testcase classname="test_operator_alldifferent" name="test1"/>
+      <testcase classname="test_operator_alldifferent" name="test2"/>
    </testsuite>
 </testsuites>
