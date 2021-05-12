@@ -32,4 +32,4 @@ jobs:
       - name: Run all tests
         uses: matlab-actions/run-command@v0
         with:
-          command: dir();addpath(genpath('/code')); results = runtests('dev/travis/operators'); assertSuccess(results);
+          command: dir();addpath(genpath(pwd)); results = runtests('dev/tests/operators'); assertSuccess(results);
