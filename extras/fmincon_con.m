@@ -11,7 +11,7 @@ dg   = [];
 dgeq = [];
 
 % Nothing nonlinear, and no cones
-if model.linearconstraints && ~any(model.K.q) && ~any(model.K.s)
+if model.linearconstraints && ~any(model.K.q) && ~any(model.K.e) && ~any(model.K.s)
     xevaled = [];
     return
 end
@@ -45,6 +45,23 @@ if any(model.K.q)
     end
 end
 
+% Append EXP cones 
+if any(model.K.e)
+    top = 1 + sum(model.K.q);
+    % x3-x2*exp(x1/x2)>=0
+    for i = 1:model.K.e        
+        x = model.F_struc(top:top+2,:)*[1;xevaled];        
+        if x(2)==0
+            % Eeew, nasty closure let's hope for the best
+            r = x(3);
+        else
+            r = x(3) - x(2)*exp(x(1)/x(2));
+        end
+        g = [g;-r];
+        top = top + 3;          
+    end
+end
+
 % Append SDP cones (eigenvalues)
 if any(model.K.s)
     top = 1 + sum(model.K.q);
@@ -69,16 +86,18 @@ end
 % Now Jacobians...
 if nargout == 2 || ~model.derivative_available
     return
-elseif isempty(model.evalMap) & (model.nonlinearinequalities==0) & (model.nonlinearequalities==0) & (model.nonlinearcones==0) & (any(model.K.q) || any(model.K.s))
+elseif isempty(model.evalMap) && (model.nonlinearinequalities==0) && (model.nonlinearequalities==0) && (model.nonlinearcones==0) && anyCones(model.K)
     % Linear SOCP
-    dg = computeSOCPDeriv(model,xevaled);
+    dg_SOCP = computeSOCPDeriv(model,xevaled);
+    % Linear EXP
+    dg_EXP = computeEXPDeriv(model,xevaled);
     % Linear SDP
     dg_SDP = computeSDPDeriv(model,xevaled,1);
-    dg = [dg;dg_SDP];     
+    dg = [dg_SOCP;dg_EXP;dg_SDP];     
     dg = dg(:,model.linearindicies);      
     g = reorderEigenvalueG(g,model); 
     
-elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) 
+elseif isempty(model.evalMap) & (model.nonlinearinequalities || model.nonlinearequalities || model.nonlinearcones) 
     % Nonlinear terms in constraints so jacobian stuff needed
     % however, there are only monomials, which is exploited
     newdxx = computeMonomialVariableJacobian(model,x);
@@ -91,7 +110,10 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlineareq
     end    
     if any(model.K.q)
         dg = [dg;computeSOCPDeriv(model,xevaled,newdxx)];
-    end          
+    end  
+    if any(model.K.e)
+        dg = [dg;computeEXPDeriv(model,xevaled,newdxx)];
+    end     
     if any(model.K.s)
         dg_SDP = computeSDPDeriv(model,xevaled,newdxx);               
         dg = [dg;dg_SDP]; 
@@ -110,6 +132,9 @@ else
     if any(model.K.q)
         dg = [dg;computeSOCPDeriv(model,xevaled,dx)];
     end    
+    if any(model.K.e)
+        dg = [dg;computeEXPDeriv(model,xevaled,dx)];
+    end     
     if any(model.K.s)
         dg_SDP = computeSDPDeriv(model,xevaled,dx);                       
         dg = [dg;dg_SDP];
@@ -121,7 +146,7 @@ end
 if model.nonlinearequalities
     dgeq = dgeq';
 end
-if model.nonlinearinequalities | any(model.K.q) | any(model.K.s)
+if model.nonlinearinequalities || anyCones(model.K)
     dg = dg';   
 end
 %  x = sdpvar(2,1);
@@ -135,14 +160,14 @@ function conederiv = computeSOCPDeriv(model,z,dzdx)
 conederiv = [];
 z = sparse(z(:));
 if any(model.K.q)
-    top = 1 + model.K.f + model.K.l;  
+    top = startofSOCPCone(model.K);
     for i = 1:length(model.K.q)
         d = model.F_struc(top,1);
         b = model.F_struc(top+1:top+model.K.q(i)-1,1);
         cA = model.F_struc(top:top+model.K.q(i)-1,2:end);
         c = cA(1,:)';
         A = cA(2:end,:);
-        
+        % -c'*x - d + ||Ax+b||<=0
         if nargin == 2
             % No inner derivative
             if length(model.linearindicies)==length(model.c)
@@ -152,8 +177,7 @@ if any(model.K.q)
                 conederiv = [conederiv temp];
             else
                 A = A(:,model.linearindicies);
-                c = c(model.linearindicies);
-                % -c'*x - d + ||Ax+b||>=0
+                c = c(model.linearindicies);                
                 e = A*z(model.linearindicies) + b;
                 smoothed = sqrt(10^-10 + e'*e);
                 temp = (-c'+(A'*(b + A*z(model.linearindicies)))'/smoothed);
@@ -176,8 +200,36 @@ if any(model.K.q)
 end
 conederiv = conederiv';
 
+function conederiv = computeEXPDeriv(model,z,dzdx)
+conederiv = [];
+z = sparse(z(:));
+if any(model.K.e)
+    top = startofEXPCone(model.K);
+    for i = 1:model.K.e
+        c1 = model.F_struc(top,2:end);
+        c2 = model.F_struc(top+1,2:end);
+        c3 = model.F_struc(top+1,2:end);
+        x = model.F_struc(top:top+2,:)*[1;z];
+        x1 = x(1);x2 = x(2);x3 = x(2);
+        % x3 - x2exp(x1/x2) >= 0
+        % d/dx = [-exp(x1) -(exp(x1/x2)-x1/x2*exp(x1/x2)) 1]       
+        if nargin == 2
+            c1=c1(model.linearindicies);
+            c2=c2(model.linearindicies);
+            c3=c3(model.linearindicies);
+            temp = c3-(c2*exp(x1/x2)+exp(x1/x2)*(c1*x2-c2*x1)/x2);
+            conederiv = [conederiv -temp'];
+        else
+            temp = c3-(c2*exp(x1/x2)+exp(x1/x2)*(c1*x2-c2*x1)/x2);
+            conederiv = [conederiv -(temp*dzdx)'];
+        end
+        top = top + 3;
+    end
+end
+conederiv = conederiv';
+
 function [dg,reordering] = computeSDPDeriv(model,xevaled,newdxx)
-top = 1 + sum(model.K.q);
+top = startofSDPCone(model.K);
 newF = [];newcuts = 1;
 B=model.F_struc(:,2:end)*newdxx;
 global sdpLayer
@@ -256,7 +308,7 @@ if ~isempty(sdpLayer.reordering{1})
     top = 0;
     for i = 1:length(model.K.s)
         reordering = [reordering;top+sdpLayer.reordering{i}];
-        top = top+ min(sdpLayer.n,model.K.s(i));
+        top = top + min(sdpLayer.n,model.K.s(i));
     end
     g_sdp = g_sdp(reordering);
     g = [g_nonsdp;g_sdp];

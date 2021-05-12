@@ -198,8 +198,8 @@ end
 
 % Some precomputation of computational scheme for Jacobian
 allA = [model.Anonlineq;model.Anonlinineq];
-if any(model.K.q) || any(model.K.s)
-    allA = [allA;model.F_struc(1+model.K.f + model.K.f:end,2:end)];
+if anyCones(model.K)
+    allA = [allA;model.F_struc(startofSOCPCone(model.K):end,2:end)];
 end
 requested = any(allA',2);
 [i,j] = find((model.deppattern(find(requested),:)));
