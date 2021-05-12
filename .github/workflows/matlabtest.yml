@@ -36,4 +36,12 @@ jobs:
       - name: Run core tests
         uses: matlab-actions/run-command@v0
         with:
-          command: dir();addpath(genpath(pwd)); results = runtests('dev/tests/core'); assertSuccess(results);          
+          command: dir();addpath(genpath(pwd)); 
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.2
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Junit                 # Name of the check run which will be created
+          path: *.xml    # Path to test results
+          reporter: jest-junit        # Format of test results                   
