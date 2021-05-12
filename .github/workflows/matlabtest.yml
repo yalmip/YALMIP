@@ -40,9 +40,9 @@ jobs:
           command: dir();addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
 
       - name: Test Report
-        uses: dorny/test-reporter@v1.4.2
+        uses: dorny/test-reporter@v1.4
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Junit                 # Name of the check run which will be created
           path: '*.xml'               # Path to test results
-          reporter: jest-junit        # Format of test results                   
+          reporter: java-junit        # Format of test results                   
