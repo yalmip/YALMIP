@@ -43,5 +43,5 @@ jobs:
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Junit                 # Name of the check run which will be created
-          path: *.xml    # Path to test results
+          path: '*.xml'               # Path to test results
           reporter: jest-junit        # Format of test results                   
