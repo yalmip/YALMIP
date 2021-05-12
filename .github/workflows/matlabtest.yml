@@ -40,7 +40,7 @@ jobs:
           command: dir();addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
 
       - name: Test Report
-        uses: dorny/test-reporter@v1.4
+        uses: dorny/test-reporter@v1.4.2
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Junit                 # Name of the check run which will be created
