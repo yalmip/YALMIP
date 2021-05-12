@@ -70,7 +70,6 @@ latest_xevaled = [];
 latest_x_xevaled = [];
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
-for i=1:length(model.K.s);sdpLayer.T{i}=eye(model.K.s(i));end
 sdpLayer.n  = inf;
 sdpLayer.f = @(x)((x>=0).*(1*x) + (x<0).*(3*x));
 sdpLayer.df = @(x)((x>=0)*1 + (x<0)*3);
