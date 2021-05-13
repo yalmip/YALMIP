@@ -41,6 +41,11 @@ if d==1
     y = x;
     return
 end
+if isnan(d)
+	disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+	error('NaN power makes no sense.');
+end
+    
 
 % Check for special case norm(x)^2 and abs(x)^2 which many users try to do
 if d==2

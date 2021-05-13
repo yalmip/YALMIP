@@ -47,6 +47,10 @@ if isnumeric(d)
         y = x;
         return
     end
+    if isnan(d)
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('NaN power makes no sense.');
+    end
 end
 
 % Fractional, negative or different powers are

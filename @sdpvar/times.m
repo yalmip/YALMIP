@@ -20,11 +20,13 @@ end
 
 if isnumeric(X)
     if any(isnan(X))
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
 if isnumeric(Y)
     if any(isnan(Y))
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end

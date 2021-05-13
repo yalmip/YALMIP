@@ -1049,29 +1049,18 @@ if ~isempty(oldc)
 end
 
 % Sanity check
-if ~isempty(c)
-    if any(isnan(c) )
-        error('You have NaNs in your objective!. Read more: https://yalmip.github.io/naninmodel/')
-    end
+if (~isempty(c) && any(isnan(c) )) || (~isempty(Q) && any(any(isnan(Q))))
+    disp('You have NaNs in objective (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+    error('NaN in objective')
 end
-if ~isempty(Q)
-    if any(any(isnan(Q)))
-        error('You have NaNs in your quadratic objective!. Read more: https://yalmip.github.io/naninmodel/')
-    end
-end
-if ~isempty(lb)
-    if any(isnan(lb))
-        error('You have NaNs in a lower bound!. Read more: https://yalmip.github.io/naninmodel/')
-    end
-end
-if ~isempty(ub)
-    if any(isnan(ub))
-        error('You have NaNs in an upper bound!.Read more: https://yalmip.github.io/naninmodel/')
-    end
+if (~isempty(ub) && any(isnan(ub))) || (~isempty(lb) && any(isnan(lb)))
+    disp('You have NaNs in a bound (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+    error('NaN in bounds')
 end
 if ~isempty(F_struc)
     if any(any(isnan(F_struc)))
-        error('You have NaNs in your constraints!. Read more: https://yalmip.github.io/naninmodel/')        
+        disp('You have NaNs in your constraints (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('NaN in model')
     end
 end
 

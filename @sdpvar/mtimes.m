@@ -45,12 +45,14 @@ end
 
 if ~X_is_spdvar
     if any(isnan(X))
-       error('Multiplying NaN with an SDPVAR makes no sense.');
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
 if ~Y_is_spdvar
     if any(isnan(Y))
-       error('Multiplying NaN with an SDPVAR makes no sense.');
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('Multiplying NaN with an SDPVAR makes no sense.');       
     end
 end
 
