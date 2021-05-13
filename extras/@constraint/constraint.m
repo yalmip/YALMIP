@@ -76,7 +76,13 @@ switch quantifier
     otherwise
         error('Quantifier not supported')
 end
-
+if isa(Z,'sdpvar') && ~isequal(quantifier,'==')
+    if issquare(Z)
+        if ~issymmetric(Z)
+            warning('YALMIP:SuspectNonSymmetry','Suspect non-symmetry in square constaint <a href="yalmip.github.io/inside/debuggingnonsymmetricsquare">(Learn more)</a> ')            
+        end
+    end
+end
 F.List={X,quantifier,Y};
 F.Evaluated{1} = Z;
 F.ConstraintID = yalmip('ConstraintID');
