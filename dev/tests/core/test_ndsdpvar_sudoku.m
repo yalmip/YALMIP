@@ -1,7 +1,7 @@
 function tests = test_ndsdpvar_sudoku
 tests = functiontests(localfunctions);
 
-function test1(dummy)
+function test1(testCase)
 
 S = [0,0,1,9,0,0,0,0,8;6,0,0,0,8,5,0,3,0;0,0,7,0,6,0,1,0,0;...
      0,3,4,0,9,0,0,0,0;0,0,0,5,0,4,0,0,0;0,0,0,0,1,0,4,2,0;...
@@ -37,6 +37,6 @@ Z = 0;
 for i = 1:p^2
       Z = Z  + i*value(A(:,:,i));
 end
-assert(sol.problem == 0);
-assert(norm(sort(Z(:,1)) - (1:p^2)') <= 1e-4);
+testCase.assertTrue(sol.problem == 0);
+testCase.assertTrue(norm(sort(Z(:,1)) - (1:p^2)') <= 1e-4);
 

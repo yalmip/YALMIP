@@ -1,6 +1,6 @@
 function tests = test_diag
 tests = functiontests(localfunctions);
 
-function test1(dummy)
+function test1(testCase)
 P = sdpvar(3,3,'skew');
-assert(all([0;0;0] == diag(P)));
+testCase.assertTrue(all([0;0;0] == diag(P)));
