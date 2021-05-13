@@ -28,9 +28,10 @@ detected = which('constraint.m');
 if isa(detected,'cell') 
     if length(detected)>0              
         if isempty(strfind(detected{1},'extras\@constraint'))
+            clc
             disp('You seem to have some other toolbox with a function called constraint.m');
             disp('Delete that toolbox, or delete the function/class, or change path so that YALMIP is on top.');
-            detected{1}            
+            disp(detected{1})
         end
         return
     end
@@ -40,8 +41,10 @@ detected = which('yalmip.m','-all');
 % Will not work in Octave as Octave only reports first item found?
 if isa(detected,'cell') 
     if length(detected)>1
-        disp('You seem to have multiple installations of YALMIP in your path. Please correct this...');
-        detected
+        clc
+        disp('You seem to have multiple installations of YALMIP in your path.')
+        disp('Please correct this...');
+        disp(detected)
         return
     end
 end
@@ -69,8 +72,15 @@ else
 end
 
 if ~(exist('callsedumi')==2)
+    clc
     disp('The directory yalmip/solvers is not in your path.')
-    disp('Put yalmip/, yalmip/solvers, yalmip/extras and yalmip/demos in your MATLAB path.');
+    disp('These must be in path:')
+    disp('                      yalmip/');
+    disp('                      yalmip/extras');
+    disp('                      yalmip/operators');
+    disp('                      yalmip/modules');
+    disp('                      yalmip/solvers');
+    disp('See <a href="https://yalmip.github.io/tutorial/installation/">installation guide</a>')
     return
 end
 
@@ -279,8 +289,10 @@ yalmiptable([],header,data,formats)
 x = sdpvar(2);[p,aux1,aux2,m] = export(x>=0,[],[],[],[],0);
 if ~isempty(m)
   only_lmilab = strcmpi(m.solver.tag,'lmilab');
+  only_fmincon = strcmpi(m.solver.tag,'fmincon');
 else
   only_lmilab = 0;
+  only_fmincon = 0;
 end
 x = binvar(1);[p,aux1,aux2,m] = export(x>=0,[],[],[],[],0);
 if ~isempty(m)
@@ -289,15 +301,18 @@ else
   only_bnb = 0;
 end
 if only_lmilab 
- disp('You do not have any efficient LMI solver installed (only found <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers.LMILAB">LMILAB</a>).')
+ disp('You do not have any efficient LMI solver installed (only found <a href="https://yalmip.github.io/solver/lmilab/">LMILAB which should be avoided in YALMIP</a>).')
  disp('If you intend to solve LMIs, please install a better solver.')
+elseif only_fmincon
+ disp('You do not have any efficient LMI solver installed (YALMIP used FMINCON which cannot be expected to work')
+ disp('If you intend to solve LMIs, please install a better solver.')    
 end
 if only_bnb 
- disp('You do not have any efficient MILP solver installed (only found internal <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers.BNB">BNB</a>).')
- disp('If you intend to solve MILPs, please install a better solver.')
+ disp('You do not have any efficient MILP/MIQP/MISOCP solver installed (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>).')
+ disp('If you intend to solve MILP/MIQP/MISOCP, please install a better solver.')
 end
-if only_lmilab  || only_bnb
-  disp('See <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers">Interfaced solvers in YALMIP</a>')
+if only_lmilab  || only_bnb || only_fmincon
+  disp('See <a href="https://yalmip.github.io/allsolvers">guide on interfaced solvers</a>')
 end
 
 
@@ -398,18 +413,21 @@ catch
 end
 
 
-function [pass,sol,result] = feasible(ops) 
+function test_semidefinite_programming(ops) 
 t = sdpvar(1,1);
 Y = sdpvar(2,2);
 F = [Y<=t*eye(2), Y>=[1 0.2;0.2 1]];
 sol = optimize(F,t,ops);
-pass = ismember(sol.problem,[0 3 4 5]);
-if pass
-    result = resultstring(t,1.2);
-else
-    result = 'N/A';
-end
+assert(ismember(sol.problem,[0 3 4 5]) && abs(value(t)-1.2)<=1e-4);
+
+% pass = ismember(sol.problem,[0 3 4 5]);
+% if pass
+%     result = resultstring(t,1.2);
+% else
+%     result = 'N/A';
+% end
     
+
 
 
 function [pass,sol,result] = infeasible(ops)
@@ -620,7 +638,7 @@ F = F+(Y(N)>=-1);
 F = F+(Y(N)<=1); 
 F = F+([Y;U]<=t)+([Y;U]>=-t);
 sol = optimize(F,sum(t),ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
+pass = ismember(sol.problem,[0 3 4 5]);
 if pass
     result = resultstring(sum(t),12.66666);
 else

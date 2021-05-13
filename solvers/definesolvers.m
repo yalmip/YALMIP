@@ -11,6 +11,7 @@ emptysolver.testcode= {''};
 emptysolver.call    = '';
 emptysolver.subcall = '';
 emptysolver.show    = 1;
+emptysolver.builtin    = 0;
 emptysolver.usesother = 0;
 emptysolver.supportsinitial = 0;
 emptysolver.supportsinitialNAN = 0;
@@ -509,6 +510,7 @@ solver(i).constraint.inequalities.powercone = 1;
 i = i+1;
 
 solver(i) = lpsolver;
+solver(i).show = 0;
 solver(i).tag     = 'MOSEK';
 solver(i).version = 'GEOMETRIC';
 solver(i).checkfor= {'mosekopt'};
@@ -976,6 +978,7 @@ solver(i).objective.quadratic.nonconvex = 1;
 i = i+1;
 
 solver(i) = emptysolver;
+solver(i).show = 0;
 solver(i).tag     = 'fmincon';
 solver(i).version = 'geometric';
 solver(i).checkfor= {'fmincon.m'};
@@ -1094,6 +1097,7 @@ solver(i).supportsinitial = 1;
 i = i+1;
 
 solver(i) = emptysolver;
+solver(i).show = 0;
 solver(i).tag     = 'SNOPT';
 solver(i).version = 'geometric';
 solver(i).checkfor= {'snsolve.m'};
@@ -1300,6 +1304,7 @@ i = i+1;
 
 
 solver(i) = emptysolver;
+solver(i).show = 0;
 solver(i).tag     = 'ipopt';
 solver(i).version = 'geometric';
 solver(i).checkfor= {'ipopt.m'};
@@ -1466,6 +1471,7 @@ i = i+1;
 % % THE INTERNAL MICP SOLVER
 % % ***************************************
 solver(i) = emptysolver;
+solver(i).builtin = 1;
 solver(i).tag     = 'BNB';
 solver(i).version = '';
 solver(i).checkfor= {'bnb'};
@@ -1496,6 +1502,7 @@ i = i+1;
 % % THE INTERNAL MICP SOLVER
 % % ***************************************
 solver(i) = emptysolver;
+solver(i).builtin = 1;
 solver(i).tag     = 'CUTSDP';
 solver(i).version = '';
 solver(i).checkfor= {'cutsdp'};
@@ -1520,6 +1527,7 @@ i = i+1;
 % % THE INTERNAL MICP SOLVER
 % % ***************************************
 solver(i) = emptysolver;
+solver(i).builtin = 1;
 solver(i).tag     = 'CUTSDP';
 solver(i).version = '';
 solver(i).checkfor= {'cutsdp'};
@@ -1544,6 +1552,7 @@ i = i+1;
 % THE INTERNAL GLOBAL BMI SOLVER
 % ***************************************
 solver(i) = emptysolver;
+solver(i).builtin = 1;
 solver(i).tag     = 'BMIBNB';
 solver(i).version = '';
 solver(i).checkfor= {'bmibnb'};
@@ -1579,6 +1588,7 @@ i = i+1;
 % THE INTERNAL BISECTION SOLVER
 % ***************************************
 solver(i) = emptysolver;
+solver(i).builtin = 1;
 solver(i).tag     = 'BISECTION';
 solver(i).version = '';
 solver(i).checkfor= {'bisection'};
@@ -1595,7 +1605,8 @@ solver(i).usesother = 1;
 i = i+1;
 
 solver(i) = qpsolver;
-solver(i).tag     = 'kktqp';
+solver(i).builtin = 1;
+solver(i).tag     = 'KKTQP';
 solver(i).version = '';
 solver(i).checkfor= {'kktqp'};
 solver(i).call    = 'kktqp';
@@ -1628,6 +1639,7 @@ i = i+1;
 
 
 solver(i) = emptysolver;
+solver(i).show = 0;
 solver(i).tag     = 'none';
 solver(i).version = '';
 solver(i).checkfor= {'callnone.m'};
