@@ -17,8 +17,8 @@ runner.addPlugin(p)
 
 results = runner.run(suite);
 table(results)
-func_replace_string(xmlFile, xmlFile,'<testsuites>', '')
-func_replace_string(xmlFile, xmlFile,'</testsuites>', '')
+%func_replace_string(xmlFile, xmlFile,'<testsuites>', '')
+%func_replace_string(xmlFile, xmlFile,'</testsuites>', '')
 
 function [] = func_replace_string(InputFile, OutputFile, SearchString, ReplaceString)
 %%change data [e.g. initial conditions] in model file
