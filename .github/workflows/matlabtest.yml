@@ -40,6 +40,12 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
 
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: junit
+          path: core.xml
+
       - name: Test Report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    # run this step even if previous step failed
