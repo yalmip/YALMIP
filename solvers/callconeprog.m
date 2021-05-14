@@ -46,12 +46,8 @@ infostr = yalmiperror(problem,'CONEPROG');
 
 % Save all data sent to solver?
 if options.savesolverinput
-    solverinput.A = A;
-    solverinput.b = b;
-    solverinput.Aeq = Aeq;
-    solverinput.beq = beq;
-    solverinput.c = c;
-    solverinput.options = options.linprog;
+    solverinput.model = model;   
+    solverinput.options = options.coneprog;
 else
     solverinput = [];
 end
