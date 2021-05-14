@@ -24,33 +24,42 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Conforim
+        run: ls -l
+      
       # Sets up MATLAB on the GitHub Actions runner
-      - name: Setup MATLAB
-        uses: matlab-actions/setup-matlab@v0
+#      - name: Setup MATLAB
+#        uses: matlab-actions/setup-matlab@v0
 
       # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
-      - name: Run operator tests
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/core'); assertSuccess(results);
+#      - name: Run operator tests
+#        uses: matlab-actions/run-command@v0
+#        with:
+#          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/core'); assertSuccess(results);
           
-      - name: Run core tests
-        uses: matlab-actions/run-command@v0
-        if: success() || failure()
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
+#      - name: Run core tests
+#        uses: matlab-actions/run-command@v0
+#        if: success() || failure()
+#        with:
+#          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
 
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        if: success() || failure()
-        with:
-          name: junit
-          path: core.xml
+#      - name: Archive production artifacts
+#        uses: actions/upload-artifact@v2
+#        if: success() || failure()
+#        with:
+#          name: junit
+#          path: core.xml
 
-      - name: Test Report
-        uses: dorny/test-reporter@v1.4.3
-        if: success() || failure()    # run this step even if previous step failed
-        with:
-          name: Junit                 # Name of the check run which will be created
-          path: '*.xml'               # Path to test results
-          reporter: java-junit        # Format of test results                   
+#      - name: Test Report
+#        uses: dorny/test-reporter@v1.4.3
+#        if: success() || failure()    # run this step even if previous step failed
+#        with:
+#          name: Junit                 # Name of the check run which will be created
+#          path: '*.xml'               # Path to test results
+#          reporter: java-junit        # Format of test results                   
