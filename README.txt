@@ -30,21 +30,22 @@ Put the following paths in your MATLAB path
 /yalmip/modules/sos
 /yalmip/operators 
 
-Most easily done either via the gui or addpath(genpath('yourlocation/yalmip'))
+Most easily done either via the gui or addpath(genpath('yourlocation/yalmip')) 
+or as explained here https://yalmip.github.io/tutorial/installation/
 
 4)	      
 Make sure to have the desired solvers in your path. 
 
 5)
-Restart Matlab, or at least type "clear classes".
+Restart Matlab if you are installing a new version, or at least type "clear classes".
 
 6)
 Run yalmiptest.m and everything should work (as long as you have the necessary solvers).
 
-Learn more at
-yalmip.github.io
+7) Learn more at yalmip.github.io
 
 Forum
+https://github.com/yalmip/YALMIP/discussions
 https://groups.google.com/forum/?fromgroups#!forum/yalmip
 
 *****************************************
