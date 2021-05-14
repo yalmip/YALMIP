@@ -76,7 +76,7 @@ if ops.robust.coniclp.useconicconic || ((any(is(UncertainModel.F_xw,'sdp')) ||  
     SOSModel = [];
     for i = 1:length(UncertainModel.F_xw)
         if any(ismember(depends(UncertainModel.F_xw(i)),getvariables(VariableType.w)))
-            SOSModel = [SOSModel, dualtososrobustness(UncertainModel.F_xw(i),Uncertainty.F_w,VariableType.w,VariableType.x,ops.robust.conicconic.tau_degree,ops.robust.conicconic.gamma_degree,ops.robust.conicconic.Z_degree)];
+            SOSModel = [SOSModel, dualtososrobustness(UncertainModel.F_xw(i),Uncertainty.F_w,VariableType.w,VariableType.x,ops.robust.conicconic.tau_degree,ops.robust.conicconic.gamma_degree,ops.robust.conicconic.Z_degree,ops.verbose)];
         else
             % Misplaced?
             SOSModel = [SOSModel, UncertainModel.F_xw(i)];
