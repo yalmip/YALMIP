@@ -269,7 +269,7 @@ else
         disp('If you intend to solve LMIs, please install a better solver.')
     elseif only_fmincon
         disp('You do not have any LMI solver installed')
-        disp(' (YALMIP used FMINCON which cannot be expected to work)')
+        disp(' (YALMIP will use a nonlinear solver which cannot be expected to work)')
         disp(' If you intend to solve LMIs you must install a solver.')
     end
 end
