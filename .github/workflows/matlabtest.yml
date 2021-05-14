@@ -41,7 +41,7 @@ jobs:
       - name: Test SeDuMi
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = test_sedumi(0); assert(results);
+          command: addpath(genpath(pwd)); test_sedumi(0);
      
       # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
 #      - name: Run operator tests
