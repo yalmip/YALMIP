@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with MATLAB Actions
+
+name: MATLAB Testing
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Confirm
+        run: ls -l
+      
+      # Sets up MATLAB on the GitHub Actions runner
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
+      # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
+      - name: Test BNB solver
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
+          
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          path: '*.xml'
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Report                 # Name of the check run which will be created
+          path: '*.xml'               # Path to test results
+          reporter: java-junit        # Format of test results                   
