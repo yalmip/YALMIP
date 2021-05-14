@@ -30,13 +30,19 @@ jobs:
           repository: sqlp/sedumi
           path: sedumi
           
-      - name: Conforim
+      - name: Conform
         run: ls -l
       
       # Sets up MATLAB on the GitHub Actions runner
-#      - name: Setup MATLAB
-#        uses: matlab-actions/setup-matlab@v0
-
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+        
+      # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
+      - name: Test SeDuMi
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = test_sedumi(0); assert(results);
+     
       # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
 #      - name: Run operator tests
 #        uses: matlab-actions/run-command@v0
