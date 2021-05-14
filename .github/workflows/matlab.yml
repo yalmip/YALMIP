@@ -58,7 +58,7 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
 
-     - name: Test optimizer module
+      - name: Test optimizer module
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/optimizer'); assertSuccess(results);
