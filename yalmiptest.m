@@ -52,6 +52,12 @@ end
 % Pagination really doesn't work well with solvers
 more off
 
+if exist('OCTAVE_VERSION', 'builtin') 
+    OctaveRunning = 1;
+else
+    OctaveRunning = 0;
+end
+
 donttest = 0;
 if (nargin==1) && isa(prefered_solver,'char') && strcmp(prefered_solver,'test')
     donttest = 0;
@@ -207,9 +213,11 @@ for i = 1:length(test)
         end
         % First make call to figure out solver
         info = eval([test{i}.fcn '(ops)']);
-        sols{i} = addLink(upper(cleanversion(info.yalmipmodel.solver.tag)));
-       % sols{i} = upper(info.yalmipmodel.solver.tag);
-        rawsols{i} = info.yalmipmodel.solver.tag;
+        if ~OctaveRunning
+            sols{i} = addLink(upper(cleanversion(info.yalmipmodel.solver.tag)));
+        else
+            sols{i} = cleanversion(info.yalmipmodel.solver.tag);
+        end               
         % And now run all the tests
         info = eval([test{i}.fcn '(ops)']);
         pass(i) = 1;
@@ -217,8 +225,7 @@ for i = 1:length(test)
     catch
         pass(i) = 0;
         results{i} = 'Failed';
-        sols{i} = '';
-        rawsols{i} = '';
+        sols{i} = '';        
     end
 end
 
@@ -252,35 +259,42 @@ else
     only_lmilab = 0;
     only_fmincon = 0;
 end
-if only_lmilab
-    disp('You do not have any good LMI solver installed')
-    disp(' (only found <a href="https://yalmip.github.io/solver/lmilab/">LMILAB which should be avoided in YALMIP</a>).')
-    disp('If you intend to solve LMIs, please install a better solver.')
-elseif only_fmincon
+if isempty(m)
     disp('You do not have any LMI solver installed')
-    disp(' (YALMIP used FMINCON which cannot be expected to work)')
-    disp(' If you intend to solve LMIs, you must install a solver.')
+    disp(' If you intend to solve LMIs you must install a solver.')
+else
+    if only_lmilab
+        disp('You do not have any good LMI solver installed')
+        disp(' (only found <a href="https://yalmip.github.io/solver/lmilab/">LMILAB which should be avoided in YALMIP</a>).')
+        disp('If you intend to solve LMIs, please install a better solver.')
+    elseif only_fmincon
+        disp('You do not have any LMI solver installed')
+        disp(' (YALMIP used FMINCON which cannot be expected to work)')
+        disp(' If you intend to solve LMIs you must install a solver.')
+    end
 end
 x = binvar(1);[p,aux1,aux2,m] = export(x>=0,x,[],[],[],0);
-if ~isempty(m)
-    only_bnb = strcmpi(m.solver.tag,'bnb');
+if isempty(m)
+    disp('You do not have any LP/MILP solver installed')
+    disp(' If you intend to solve LPs/MILPs, you have to install one.')
 else
-    only_bnb = 0;
-end
-if only_bnb
-    disp('You do not have any MILP solver installed')
-    disp(' (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>).')
-    disp(' If you intend to solve MILP, please install a better solver.')
+    only_bnb = strcmpi(m.solver.tag,'bnb');
+    if only_bnb
+        disp('You do not have any MILP solver installed')
+        disp(' (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>).')
+        disp(' If you intend to solve MILP, please install a better solver.')
+    end
 end
 x = binvar(1);[p,aux1,aux2,m] = export(x>=0,x^2,[],[],[],0);
-if ~isempty(m)
-    only_bnb = strcmpi(m.solver.tag,'bnb');
+if isempty(m)
+    disp('You do not have any QP/SOCP/MIQP/MISOCP solver installed')
+    disp(' If you intend to solve QP/SOCP/MIQP/MISOCP you must install solver.')
 else
-    only_bnb = 0;
-end
-if only_bnb
-    disp('You do not have any MIQP/MISOCP solver installed (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>)')
-    disp(' If you intend to solve MIQP/MISOCP, please install a better solver.')
+    only_bnb = strcmpi(m.solver.tag,'bnb');
+    if only_bnb
+        disp('You do not have any MIQP/MISOCP solver installed (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>)')
+        disp(' If you intend to solve MIQP/MISOCP, please install a better solver.')
+    end
 end
 disp('See <a href="https://yalmip.github.io/allsolvers">guide on interfaced solvers</a>')
 
@@ -670,7 +684,7 @@ end
 
 function x = cleanversion(x)
 
-s = findstr(x,'-');
+s = strfind(x,'-');
 if ~isempty(s)
     x=x(1:s-1);
 end
