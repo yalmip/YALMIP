@@ -42,7 +42,12 @@ jobs:
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
-          
+
+      - name: Test dualize
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/dualize'); assertSuccess(results);
+                    
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         if: success() || failure()
