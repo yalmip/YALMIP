@@ -1,7 +1,7 @@
 function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars,exponential_cone,allsolvers)
 
 diagnostic = [];
-
+options.forceglobal = 0;
 %% ************************************************************************
 % Relax problem for lower solver
 tempProblemClass = ProblemClass;

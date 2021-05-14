@@ -368,6 +368,7 @@ end
 
 if strfind(lower(solver.tag),'sparsecolo')
     temp_options = options;
+    temp_options.options.forceglobal = 0;
     temp_options.solver = options.sparsecolo.SDPsolver;
     tempProblemClass = ProblemClass;   
     localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
@@ -382,6 +383,7 @@ end
 
 if strfind(lower(solver.tag),'frlib')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = options.frlib.solver;
     tempProblemClass = ProblemClass;   
     localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
@@ -425,6 +427,7 @@ localsolver.qc = 0;
 localsolver = solver;
 if strcmpi(solver.tag,'kktqp')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = '';
     tempProblemClass = ProblemClass;
     tempProblemClass.constraint.binary = 1;
@@ -446,6 +449,7 @@ end
 % *************************************************************************
 if strcmpi(solver.tag,'lmirank')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = options.lmirank.solver;
     tempProblemClass = ProblemClass;
     tempProblemClass.constraint.inequalities.rank = 0;
@@ -466,6 +470,7 @@ end
 % *************************************************************************
 if strfind(solver.tag,'VSDP')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = options.vsdp.solver;
     tempProblemClass = ProblemClass;
     tempProblemClass.interval = 0;

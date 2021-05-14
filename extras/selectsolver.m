@@ -69,6 +69,28 @@ if length(options.solver)>0 & isempty(strfind(options.solver,'*'))
 end
 
 % ************************************************
+% Prune based on forced global solver
+% ************************************************
+if  ~forced_choice && options.forceglobal
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)
+        keep(i) = solvers(i).global;                         
+    end    
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'global optimization');
+end
+
+% ************************************************
+% Prune based on objective
+% ************************************************
+if ProblemClass.objective.sigmonial & ~forced_choice & length(solvers)>0
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)
+        keep(i) = solvers(i).objective.sigmonial;                         
+    end    
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial terms in objective');
+end   
+
+% ************************************************
 % Prune based on objective
 % ************************************************
 if ProblemClass.objective.sigmonial & ~forced_choice & length(solvers)>0

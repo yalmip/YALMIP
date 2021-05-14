@@ -68,6 +68,7 @@ emptysolver.parametric = 0;
 emptysolver.evaluation = 0;
 emptysolver.exponentialcone = 0;
 emptysolver.uncertain  = 0;
+emptysolver.global = 0;
 
 % **************************************
 % Some standard solvers to simplify code
@@ -79,6 +80,7 @@ lpsolver.objective.linear = 1;
 lpsolver.constraint.equalities.linear = 1;
 lpsolver.constraint.inequalities.elementwise.linear = 1;
 lpsolver.dual = 1;
+lpsolver.global = 1;
 
 % QP solver
 qpsolver = emptysolver;
@@ -87,6 +89,7 @@ qpsolver.objective.quadratic.convex = 1;
 qpsolver.constraint.equalities.linear = 1;
 qpsolver.constraint.inequalities.elementwise.linear = 1;
 qpsolver.dual = 1;
+qpsolver.global = 1;
 
 % SDP solver
 sdpsolver = emptysolver;
@@ -95,6 +98,7 @@ sdpsolver.constraint.equalities.linear = 1;
 sdpsolver.constraint.inequalities.elementwise.linear = 1;
 sdpsolver.constraint.inequalities.semidefinite.linear = 1;
 sdpsolver.dual = 1;
+sdpsolver.global = 1;
 
 % ****************************
 % INITIALIZE COUNTER
@@ -107,7 +111,7 @@ i = 1;
 
 solver(i) = qpsolver;
 solver(i).tag     = 'GUROBI';
-solver(i).version = 'GUROBI';
+solver(i).version = '';
 solver(i).checkfor= {'gurobi'};
 solver(i).call    = 'callgurobi';
 solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
@@ -489,7 +493,7 @@ i = i+1;
 
 solver(i) = lpsolver;
 solver(i).tag     = 'MOSEK';
-solver(i).version = 'SOCP';
+solver(i).version = 'CONE';
 solver(i).checkfor= {'mosekopt'};
 solver(i).call    = 'callmosek';
 solver(i).constraint.integer = 1;
@@ -545,8 +549,18 @@ solver(i).tag     = 'QUADPROG';
 solver(i).version = '';
 solver(i).checkfor= {'quadprog'};
 solver(i).call    = 'callquadprog';
+solver(i).supportsinitial = 1;
+solver(i).global = 1;
+i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'QUADPROG';
+solver(i).version = 'NONCONVEX';
+solver(i).checkfor= {'quadprog'};
+solver(i).call    = 'callquadprog';
 solver(i).objective.quadratic.nonconvex = 1;
 solver(i).supportsinitial = 1;
+solver(i).global = 0;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -649,7 +663,6 @@ solver(i).tag     = 'QPIP';
 solver(i).version = '';
 solver(i).checkfor= {'qpip'};
 solver(i).call    = 'callqpip';
-solver(i).objective.quadratic.nonconvex = 1;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -657,7 +670,24 @@ solver(i).tag     = 'QPAS';
 solver(i).version = '';
 solver(i).checkfor= {'qpas'};
 solver(i).call    = 'callqpas';
+i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'QPIP';
+solver(i).version = 'NONCONVEX';
+solver(i).checkfor= {'qpip'};
+solver(i).call    = 'callqpip';
 solver(i).objective.quadratic.nonconvex = 1;
+solver(i).global = 0;
+i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'QPAS';
+solver(i).version = 'NONCONVEX';
+solver(i).checkfor= {'qpas'};
+solver(i).call    = 'callqpas';
+solver(i).objective.quadratic.nonconvex = 1;
+solver(i).global = 0;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -856,6 +886,7 @@ solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).supportsinitial = 1;
+solver(i).global = 0;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -870,6 +901,7 @@ solver(i).constraint.inequalities.semidefinite.quadratic = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).supportsinitial = 1;
+solver(i).global = 0;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -973,6 +1005,7 @@ solver(i).version = '';
 solver(i).checkfor= {'quadprogbb'};
 solver(i).call    = 'callquadprogbb';
 solver(i).objective.quadratic.nonconvex = 1;
+solver(i).global = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -1064,6 +1097,7 @@ solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
 solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
 solver(i).constraint.inequalities.elementwise.polynomial = 1;
 solver(i).supportsinitial = 1;
+solver(i).global = 0;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1091,6 +1125,7 @@ solver(i).constraint.inequalities.semidefinite.nonlinear = 1;
 solver(i).dual = 1;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
+solver(i).global = 0;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1377,7 +1412,6 @@ solver(i).supportsinitialNAN = 1;
 solver(i).supportsinitial = 1;
 i = i+1;
 
-
 solver(i) = emptysolver;
 solver(i).tag     = 'baron';
 solver(i).checkfor= {'baron.m'};
@@ -1402,6 +1436,7 @@ solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitialNAN = 1;
 solver(i).supportsinitial = 1;
+solver(i).global = 1;
 i = i+1;
 
 solver(i) = emptysolver;
@@ -1427,6 +1462,7 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).dual = 0;
 solver(i).evaluation = 1;
+solver(i).global = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -1513,6 +1549,7 @@ solver(i).constraint.binary = 1;
 solver(i).dual = 1;
 solver(i).complex = 0;
 solver(i).usesother = 1;
+solver(i).global = 1;
 i = i+1;
 
 % % ***************************************
@@ -1537,6 +1574,7 @@ solver(i).constraint.binary = 1;
 solver(i).dual = 1;
 solver(i).complex = 0;
 solver(i).usesother = 1;
+solver(i).global = 1;
 i = i+1;
 
 % ***************************************
@@ -1572,6 +1610,7 @@ solver(i).evaluation = 1;
 solver(i).usesother = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
+solver(i).global = 1;
 i = i+1;
 
 % ***************************************
@@ -1592,6 +1631,7 @@ solver(i).constraint.inequalities.semidefinite.quadratic = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone.linear = 1;
 solver(i).usesother = 1;
+solver(i).global = 1;
 i = i+1;
 
 solver(i) = qpsolver;
@@ -1605,6 +1645,7 @@ solver(i).objective.quadratic.nonconvex = 1;
 solver(i).constraint.equalities.linear = 0;
 solver(i).constraint.inequalities.elementwise.linear = 1;
 solver(i).usesother = 1;
+solver(i).global = 1;
 i = i+1;
 
 solver(i) = emptysolver;

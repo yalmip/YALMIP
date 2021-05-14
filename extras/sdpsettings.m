@@ -39,6 +39,7 @@ function options = sdpsettings(varargin)
 %    removeequalities   - Let YALMIP remove equality constraints [-1|0|1 (0)] (-1:with double inequalities, 0:don't, 1:by QR decomposition, 2:basis from constraints)
 %    convertconvexquad  - Convert convex quadratic constraints to second order cones [0|1 (1)]
 %    allowmilp          - Allow introduction of binary variables to model nonlinear operators [0 | 1 (0)]
+%    forceglobal        - Only allow global solvers [0 | 1 (0)]
 %    expand             - Expand nonlinear operators [0|1 (1)]. Should always be true except in rare debugging cases.
 %    plot               - Options when plotting sets
 %
@@ -430,6 +431,7 @@ options.savedebug = 0;
 options.expand = 1;
 options.allowmilp = 1;
 options.allownonconvex = 1;
+options.forceglobal = 0;
 options.shift = 0;
 options.dimacs = 0;
 options.beeponproblem = [-5 -4 -3 -2 -1];
