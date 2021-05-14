@@ -38,21 +38,26 @@ jobs:
         uses: matlab-actions/setup-matlab@v0
        
       # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
-      - name: Test BNB solver
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
+      #- name: Test BNB solver
+      #  uses: matlab-actions/run-command@v0
+      #  with:
+      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
 
-      - name: Test dualize
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/dualize'); assertSuccess(results);
+      #- name: Test dualize
+      #  uses: matlab-actions/run-command@v0
+      #  with:
+      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/dualize'); assertSuccess(results);
 
-      - name: Test bilevel solver
+      #- name: Test bilevel solver
+      #  uses: matlab-actions/run-command@v0
+      #  with:
+      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
+        
+      - name: Test sum-of-squars module
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
-                                        
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
+                                           
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         if: success() || failure()
