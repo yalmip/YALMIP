@@ -63,7 +63,11 @@ else
         [x,fmin,flag,output,lambda] = quadprog(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0,model.ops);
     else
         lambda = [];
-        [x,fmin,flag,output] = quadprog(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0,model.ops);
+        if options.savesolveroutput
+            [x,fmin,flag,output] = quadprog(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0,model.ops);
+        else
+            [x,fmin,flag] = quadprog(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0,model.ops);            
+        end
     end
     if flag==5
         [x,fmin,flag,output,lambda] = quadprog(model.Q, model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, [],model.ops);
