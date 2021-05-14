@@ -8,6 +8,7 @@ if isequal(x,latest_x_f)
     df = latest_df;
 else
     [f,df] = fmincon_fungp(x,model);
+    latest_df = df;
 end
 
 

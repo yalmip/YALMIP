@@ -1698,6 +1698,7 @@ solver(i).constraint.inequalities.semidefinite.quadratic = 1;
 solver(i).constraint.inequalities.semidefinite.polynomial = 1;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
+solver(i).show = 0;
 i = i+1;
 
 solver(i) = lpsolver;
