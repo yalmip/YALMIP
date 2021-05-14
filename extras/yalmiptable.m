@@ -10,7 +10,7 @@ for i = 1:ndatay
         if isa(data{i,j},'double')
             data{i,j} = num2str(data{i,j});
         end
-        datasizes(i,j) = length(data{i,j});
+        datasizes(i,j) = safelength(data{i,j});
     end
 end
 
@@ -70,10 +70,22 @@ if length(x) > n
 end
 
 function x = fillstringLeft(x,n)
-x = [x blanks(n-length(x))];
+x = [x blanks(n-safelength(x))];
 
 function x = fillstringRight(x,n)
-x = [blanks(n-length(x)) x];
+x = [blanks(n-safelength(x)) x];
 
 
 
+function l=safelength(d)
+%there has to be a way to find encoded html
+% d = double(d);
+% d = [d;repmat('X',1,length(d))];
+% d=char(d(:)');
+if strfind(d,'">')
+    s1 = strfind(d,'">') ;
+    s2 = strfind(d,'</a') ;
+    l=s2-s1-2;
+else
+    l=length(d);
+end
