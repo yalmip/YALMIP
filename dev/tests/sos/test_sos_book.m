@@ -27,7 +27,7 @@ sdpvar x y lambda
 f=x^4+y^4+2*x^2*y^2-x^2+y^2;
 l=1/sqrt(8)-y;
 F=sos(l+lambda*f);
-sol = solvesos(F,0,sdpsettings('verbose',0),lambda);
+sol = solvesos(F,0,sdpsettings('verbose',1,'sos.model',2),lambda);
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(length(sosd(F))==6)
