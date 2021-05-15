@@ -54,8 +54,8 @@ p_upper = compile_quadraticslist(p_upper);
 % Save info about solution structure implied by box concavity
 p = addConcavityInfo(p);
 
-% Some simple probing to envelope bounds
-p = addImpliedFromBinary(p,upper);
+% Some simple probing
+p = addFromProbedBinary(p);
 
 % *************************************************************************
 % Add constraints obtained from multiplying linear constraints with 

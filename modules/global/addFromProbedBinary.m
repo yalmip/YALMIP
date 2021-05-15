@@ -1,9 +1,9 @@
-function p = addImpliedFromBinary(p,upper)
+function p = addFromProbedBinary(p)
 
 % For a nonlinear operator, the envelope model is tighter on a smaller
 % domain. Search for (binary d implies x >= L) and then compute bounds on 
 % f(x) on that domain, and add implies(d, L <= f(x) <= U)
-if (~isempty(p.evalVariables) || any(p.variabletype)) && ~isempty(p.binary_variables)
+if ~isempty(p.binary_variables)
     newCuts = zeros(0,size(p.F_struc,2));
     b = p.F_struc(:,1);
     A = p.F_struc(:,2:end);
@@ -54,10 +54,7 @@ if (~isempty(p.evalVariables) || any(p.variabletype)) && ~isempty(p.binary_varia
                 end
                 ptemp.lb(p.binary_variables(i)) = 1;
                 pprobed = update_monomial_bounds(ptemp);
-                pprobed = propagate_bounds_from_evaluations(pprobed);
-              %  pprobed = propagate_bounds_from_equalities(pprobed);
-              %  pprobed = presolve_bounds_from_inequalities(pprobed);
-              %  pprobed = propagate_bounds_from_upper(pprobed,upper);
+                pprobed = propagate_bounds_from_evaluations(pprobed);              
                 sL = find(pprobed.lb > ptemp.lb+1e-6);
                 sU = find(pprobed.ub < ptemp.ub-1e-6);
                 for j = 1:length(sL)
