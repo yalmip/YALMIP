@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Nonconvex qP    
+  job1:
+    name: Nonconvex QP    
     runs-on: ubuntu-latest    
     steps:      
       - uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
           path: '*.xml'               
           reporter: java-junit        
 
-  build:
+  job2:
     name: Nonconvex QCQP    
     runs-on: ubuntu-latest
     
@@ -66,7 +66,7 @@ jobs:
           path: '*.xml'               
           reporter: java-junit       
 
-  build:
+  job3:
     name: Polynomial    
     runs-on: ubuntu-latest
     
@@ -95,7 +95,7 @@ jobs:
           path: '*.xml'              
           reporter: java-junit       
 
-  build:
+  job4:
     name: General nonlinear    
     runs-on: ubuntu-latest
     
