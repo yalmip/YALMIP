@@ -63,7 +63,7 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
 
-     - name: Test BMIBNB solver
+      - name: Test BMIBNB solver
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bmibnb'); assertSuccess(results);
