@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with MATLAB Actions
 
-name: MATLAB Testing
+name: Complete integration test
 
 # Controls when the action will run. 
 on:
@@ -44,56 +44,67 @@ jobs:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/core'); assertSuccess(results);
 
       - name: Test operators
+        if: success() || failure() 
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
 
       - name: Test optimizer module
+        if: success() || failure() 
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/optimizer'); assertSuccess(results);   
 
       - name: Test robust optimization module
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/robust'); assertSuccess(results);                 
        
       - name: Test BNB solver
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
 
       - name: Test BMIBNB solver
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bmibnb'); assertSuccess(results);
 
       - name: Test bilevel solver
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
                   
       - name: Test dualize
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/dualize'); assertSuccess(results);
 
       - name: Test geometric programming layer
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/geometric'); assertSuccess(results);
 
       - name: Test sum-of-squares module
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
 
       - name: Test moment relaxations module
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/moment'); assertSuccess(results);
 
       - name: Test misc
+        if: success() || failure()       
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/misc'); assertSuccess(results);
