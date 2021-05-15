@@ -53,22 +53,20 @@ jobs:
       #  with:
       #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
         
-      - name: Test sum-of-squares module
+      #- name: Test sum-of-squares module
+      #  uses: matlab-actions/run-command@v0
+      #  with:
+      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
+
+      #- name: Test optimizer module
+      #  uses: matlab-actions/run-command@v0
+      #  with:
+      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/optimizer'); assertSuccess(results);
+      - name: Test operators
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
-
-      - name: Test optimizer module
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/optimizer'); assertSuccess(results);
-               
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        if: success() || failure()
-        with:
-          path: '*.xml'
-
+          command: addpath(genpath(pwd)); r = runxunittests('dev/tests/operators'); assertSuccess(r);table(r)
+                              
       - name: Test Report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    # run this step even if previous step failed
