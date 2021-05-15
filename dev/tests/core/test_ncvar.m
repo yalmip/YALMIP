@@ -26,16 +26,16 @@ yalmip('clear')
 sdpvar x y z
 ncvar a b c
 p = a*x + (b+c)*x^2 + x*y*z;
-[c,v] = coefficients(p,[x;y;z])
+[c,v] = coefficients(p,[x;y;z]);
 
 yalmip('clear')
 sdpvar x y z
 ncvar a b c
 [coeff,v] = coefficients(a*b+(a*b*b*c)*x,x);
-testCase.assertTrue(coeff(2)-a*b*b*c == 0)
+testCase.assertTrue(coeff(2)-a*b*b*c == 0);
 
 [coeff,v] = coefficients(a*b*x,y);
-testCase.assertTrue(coeff-a*b*x == 0)
+testCase.assertTrue(coeff-a*b*x == 0);
 
 % TEST REPLACE
 testCase.assertTrue(replace(a*b,x,y)-a*b == 0)
