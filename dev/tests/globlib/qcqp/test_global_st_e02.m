@@ -26,6 +26,7 @@ F=[F,0<=x2<=5.9023];
 F=[F,0<=x3<=267.4171];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+% lpreduce removed as linprog fails on github tests
+sol = optimize(F,objective,sdpsettings('solver','bmibnb','bmibnb.lpreduce',0));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-2.011593340563166e+002) <= 1e-2)

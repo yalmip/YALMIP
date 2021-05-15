@@ -129,6 +129,7 @@ while feasible & j<=length(jj)
                 end
             end
             if output.problem == 1
+                seen_x{end+1} = (p.lb + p.ub)/2;
                 feasible = 0;
             end
         end

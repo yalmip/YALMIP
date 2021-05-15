@@ -10,7 +10,7 @@ on:
 
 jobs:
   job1:
-    name: Nonconvex QP    
+    name: Run nonconvex QP    
     runs-on: ubuntu-latest    
     steps:      
       - uses: actions/checkout@v2
@@ -33,12 +33,12 @@ jobs:
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    
         with:
-          name: QP report
+          name: Report (nonconvex QP)
           path: qp.xml               
           reporter: java-junit        
 
   job2:
-    name: Nonconvex QCQP    
+    name: Run nonconvex QCQP    
     runs-on: ubuntu-latest
     
     steps:
@@ -62,12 +62,12 @@ jobs:
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    
         with:
-          name: QCQP report               
+          name: Report (QCQP)
           path: qcqp.xml
           reporter: java-junit       
 
   job3:
-    name: Polynomial    
+    name: Run polynomial    
     runs-on: ubuntu-latest
     
     steps:
@@ -91,12 +91,12 @@ jobs:
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()   
         with:
-          name: Polynomial report      
+          name: Report (polynomial)
           path: polynomial.xml
           reporter: java-junit       
 
   job4:
-    name: General nonlinear    
+    name: Run general nonlinear    
     runs-on: ubuntu-latest
     
     steps:
@@ -120,6 +120,6 @@ jobs:
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()   
         with:
-          name: General nonlinear report
+          name: Report (general nonlinear)
           path: general.xml
           reporter: java-junit       
