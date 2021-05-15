@@ -1,7 +1,5 @@
 function [p,x_min,upper] = initializesolution(p,x_min,upper)
 
-%x_min = zeros(length(p.c),1);
-%upper = inf;
 if p.options.usex0
     x = p.x0;
     z = evaluate_nonlinear(p,x);
