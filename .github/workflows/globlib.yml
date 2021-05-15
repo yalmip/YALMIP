@@ -37,7 +37,6 @@ jobs:
           path: '*.xml'               
           reporter: java-junit        
 
-jobs:
   build:
     name: Nonconvex QCQP    
     runs-on: ubuntu-latest
@@ -67,8 +66,6 @@ jobs:
           path: '*.xml'               
           reporter: java-junit       
 
-
-jobs:
   build:
     name: Polynomial    
     runs-on: ubuntu-latest
@@ -98,8 +95,6 @@ jobs:
           path: '*.xml'              
           reporter: java-junit       
 
-
-jobs:
   build:
     name: General nonlinear    
     runs-on: ubuntu-latest
