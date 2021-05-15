@@ -214,7 +214,7 @@ solution_hist = [];
 if ~isinf(upper)   
     solution_hist = [solution_hist x_min(p.linears)];
     if p.options.bmibnb.verbose 
-        disp('* -Feasible solution found by heuristics');
+        disp(['* -Trivial solution constructed (objective ' num2str(upper) ')']);
     end
 end
 
@@ -253,10 +253,12 @@ if solver_can_solve(p.solver.uppersolver,p)
         p = propagate_bounds_from_equalities(p);
         p = update_monomial_bounds(p);
         if p.options.bmibnb.verbose>0
-            disp('(found a solution!)');
+            disp(['(found a solution, objective ' num2str(upper) ')']);            
         end        
     else
-        if p.options.bmibnb.verbose>0
+        if ~isinf(upper) && p.options.bmibnb.verbose>0
+            disp('(no better solution found)');
+        elseif p.options.bmibnb.verbose>0
             disp('(no solution found)');
         end
     end
@@ -510,14 +512,26 @@ if p.feasible
         end
     end
 else
-    counter = p.counter;
-    problem = 1;
-    x_min = repmat(nan,length(p.c),1);
-    solved_nodes = 0;
-    lower = inf;
-    lower_hist = [];
-    upper_hist = [];
-    solution_hist = [];
+    if ~isinf(upper)
+        if p.options.bmibnb.verbose>0
+            disp('* -Solution proven optimal already in root-node.');   
+        end
+        counter = p.counter;
+        problem = 0;        
+        solved_nodes = 0;
+        lower = nan;
+        lower_hist = [-inf];
+        upper_hist = [upper];        
+    else
+        counter = p.counter;
+        problem = 1;
+        x_min = repmat(nan,length(p.c),1);
+        solved_nodes = 0;
+        lower = inf;
+        lower_hist = [];
+        upper_hist = [];
+        solution_hist = [];
+    end
 end
 
 timing.total = toc(timing.total);
