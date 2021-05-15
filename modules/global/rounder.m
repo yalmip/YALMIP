@@ -14,6 +14,10 @@ x_min = x;
 intvars = [p.integer_variables(:);p.binary_variables(:)];
 convars = p.noninteger_variables;
 
+% Tidy up numerical noise within tolerance
+close = find(abs(x(intvars)-round(x(intvars))<=p.options.bnb.inttol));
+x(intvars(close)) = round(x(intvars(close)));
+
 if ismember('shifted round',p.options.bnb.rounding)
     % Pre-extract...    
     if length(convars)==1 && length(p.K.s)==1 && p.K.s(1) > 0
@@ -64,23 +68,30 @@ if ismember('shifted round',p.options.bnb.rounding)
 end
 
 if length(prelaxed.sosgroups)>0
-    try
     xtemp = x;
+    stillChangable = true(length(xtemp),1);
+    votes = zeros(length(xtemp),1);
     for i = 1:length(prelaxed.sosgroups)
-        xi = x(prelaxed.sosgroups{1});
-        [j,loc] = max(xi);
-        xtemp(prelaxed.sosgroups{i}) = 0;
-        xtemp(prelaxed.sosgroups{i}(loc)) = 1;
+        a = prelaxed.sosgroups{i};
+        xi = x(a);
+        [~,loc] = max(xi);loc = a(loc);
+        votes(setdiff(a,loc)) = votes(setdiff(a,loc))-1;
+        votes(loc) = votes(loc) + 1;
+        stillChangable(a) = false;
     end
+    for i = 1:length(prelaxed.sosgroups)
+        a = prelaxed.sosgroups{i};
+        [~,loc] = max(votes(a));loc = a(loc);
+        xtemp(a(stillChangable(a))) = 0;
+        xtemp(loc(stillChangable(loc))) = 1;
+        stillChangable(a) = false;
+    end
+    xtemp(intvars)=round(xtemp(intvars));
     xtemp = setnonlinearvariables(p,xtemp);
     upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
     if upperhere < upper &  checkfeasiblefast(p,xtemp,p.options.bnb.feastol)
-        if all(xtemp(p.binary_variables) == fix(xtemp(p.binary_variables))) && all(xtemp(p.integer_variables) == fix(xtemp(p.integer_variables)))
-            x_min = xtemp;
-            upper =upperhere;
-        end
-    end
-    catch
+        x_min = xtemp;
+        upper = upperhere;
     end
 end
 
@@ -105,7 +116,7 @@ for i = 1:length(p.semicont_variables)
     end
 end
 
-function xtemp = fix_atmost(p,xtemp,x);
+function xtemp = fix_atmost(p,xtemp,x)
 
 would = zeros(1,length(x));
 for i = 1:length(p.atmost.groups)   
