@@ -1,5 +1,5 @@
 function p = reduce_bilinear_branching_variables(p);
-if p.solver.lowersolver.objective.quadratic.convex & p.problemclass.objective.quadratic.nonconvex==0 & isempty(p.evalMap)
+if ~p.originallyNonlinearConstraints && p.solver.lowersolver.objective.quadratic.convex & p.problemclass.objective.quadratic.nonconvex==0 && isempty(p.evalMap)
     % Setup quadratic
     Q_ = p.Q;
     for i = 1:size(p.bilinears,1)
