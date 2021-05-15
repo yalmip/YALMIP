@@ -9,7 +9,11 @@ if ~p.options.bmibnb.lpreduce | ((size(p.lpcuts,1)==0) & (any(p.lb(p.linears)<-1
     p.lb(p.binary_variables) = ceil(p.lb(p.binary_variables)-1e-7);
     p.ub(p.binary_variables) = floor(p.ub(p.binary_variables)+1e-7);
 else
-    [p,p.feasible,seen_x] =  boxreduce(p,upper,lower,lpsolver,p.options,xmin);
+    try
+        [p,p.feasible,seen_x] =  boxreduce(p,upper,lower,lpsolver,p.options,xmin);
+    catch
+        % LINPROG easiy crashes in poorly constrained cases
+    end
 end
 if ~isequal(LU,[p.lb p.ub])
     p.changedbounds = 1;
