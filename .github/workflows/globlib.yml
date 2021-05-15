@@ -29,12 +29,12 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/qp'); assertSuccess(results);
 
-      - name: Test Report
+      - name: QP report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    
         with:
-          name: Report                
-          path: '*.xml'               
+          name: QP report
+          path: qp.xml               
           reporter: java-junit        
 
   job2:
@@ -58,12 +58,12 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/qcqp'); assertSuccess(results);
 
-      - name: Test Report
+      - name: QCQP report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    
         with:
-          name: Report                
-          path: '*.xml'               
+          name: QCQP report               
+          path: qcqp.xml
           reporter: java-junit       
 
   job3:
@@ -87,12 +87,12 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/polynomial'); assertSuccess(results);
 
-      - name: Test Report
+      - name: Polynomial report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()   
         with:
-          name: Report               
-          path: '*.xml'              
+          name: Polynomial report      
+          path: polynomial.xml
           reporter: java-junit       
 
   job4:
@@ -116,10 +116,10 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/general'); assertSuccess(results);
 
-      - name: Test Report
+      - name: General nonlinear report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()   
         with:
-          name: Report               
-          path: '*.xml'              
+          name: General nonlinear report
+          path: general.xml
           reporter: java-junit       
