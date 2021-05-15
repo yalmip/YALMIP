@@ -16,6 +16,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
+    name: Complete integration test
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -37,36 +38,66 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
        
-      # As an alternative to run-tests, you can use run-command to execute a MATLAB script, function, or statement.
-      #- name: Test BNB solver
-      #  uses: matlab-actions/run-command@v0
-      #  with:
-      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
+      - name: Test core
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/core'); assertSuccess(results);
 
-      #- name: Test dualize
-      #  uses: matlab-actions/run-command@v0
-      #  with:
-      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/dualize'); assertSuccess(results);
-
-      #- name: Test bilevel solver
-      #  uses: matlab-actions/run-command@v0
-      #  with:
-      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
-        
-      #- name: Test sum-of-squares module
-      #  uses: matlab-actions/run-command@v0
-      #  with:
-      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
-
-      #- name: Test optimizer module
-      #  uses: matlab-actions/run-command@v0
-      #  with:
-      #    command: addpath(genpath(pwd)); results = runxunittests('dev/tests/optimizer'); assertSuccess(results);
       - name: Test operators
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); r = runxunittests('dev/tests/operators'); assertSuccess(r);table(r)
-                              
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
+
+      - name: Test optimizer module
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/optimizer'); assertSuccess(results);   
+
+      - name: Test robust optimization module
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/robust'); assertSuccess(results);                 
+       
+      - name: Test BNB solver
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
+
+     - name: Test BMIBNB solver
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bmibnb'); assertSuccess(results);
+
+      - name: Test bilevel solver
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
+                  
+      - name: Test dualize
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/dualize'); assertSuccess(results);
+
+      - name: Test geometric programming layer
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/geometric'); assertSuccess(results);
+
+      - name: Test sum-of-squares module
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/sos'); assertSuccess(results);
+
+      - name: Test moment relaxations module
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/moment'); assertSuccess(results);
+
+      - name: Test misc
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/misc'); assertSuccess(results);
+
       - name: Test Report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    # run this step even if previous step failed
