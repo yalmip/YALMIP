@@ -464,8 +464,8 @@ while go_on
     % CONTINUE SPLITTING?
     % ************************************************
     if ~isempty(p.branch_variables) && keep_digging && max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol && upper > lower
-        node = [];
-        spliton = branchvariable(p,options,x);      
+        node = [];        
+        spliton = branchvariable(p,options,x);
         if ismember(spliton,p.complementary)
             i = find(p.complementary(:,1) == spliton);
             if isempty(i)
@@ -769,9 +769,9 @@ else
     else
         if (~ismember(v2,p.branch_variables) | (acc_res1>acc_res2)) & ismember(v1,p.branch_variables)
             spliton = v1;
-        elseif ~ismember(v1,p.branch_variables)
+        elseif ~ismember(v1,p.branch_variables)& ismember(v2,p.branch_variables)
             spliton = v2;
-        else
+        else            
             [i,j] = max(width);
             spliton = p.branch_variables(j);
         end
@@ -1103,3 +1103,18 @@ if ~isempty(p.possibleSol)
         p.feasible = 0;
     end
 end
+
+function j = splitSensitivty(p)
+k = find(p.ub > p.lb);
+for k = 1:length(p.branch_variables)
+    i = p.branch_variables(k);
+    middle = (p.lb(i)+ p.ub(i))/2;
+    p2 = p;p2.lb(i) = middle;
+    p1 = p;p1.ub(i) = middle;
+    p2 = propagate_bounds_from_monomials(p2);
+    p1 = propagate_bounds_from_monomials(p1);
+    j = setdiff(1:length(p1.lb),i);
+    vol(i) = mean((p2.ub(j)-p2.lb(j)))+ mean((p1.ub(j)-p1.lb(j)));    
+end
+[~,loc] = min(vol);
+j = p.branch_variables(loc);

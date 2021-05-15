@@ -45,7 +45,7 @@ testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(obj)--2) <= 1e-4);
 
 obj = -x-y;
-sol = optimize((abs([1 x y x^2]) <= min([-x^2-y^2 -x-y]) +3),obj,sdpsettings('allownonconvex',1))
+sol = optimize((abs([1 x y x^2]) <= min([-x^2-y^2 -x-y]) +3),obj,sdpsettings())
 testCase.assertTrue(sol.problem == 0)
 
 obj = -x-y;

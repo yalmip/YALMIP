@@ -1,0 +1,130 @@
+name: Globlib regression test
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Nonconvex qP    
+    runs-on: ubuntu-latest    
+    steps:      
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+      
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
+      - name: Nonconvex QP
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/qp'); assertSuccess(results);
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    
+        with:
+          name: Report                
+          path: '*.xml'               
+          reporter: java-junit        
+
+jobs:
+  build:
+    name: Nonconvex QCQP    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+      
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
+      - name: Nonconvex QCQP
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/qcqp'); assertSuccess(results);
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    
+        with:
+          name: Report                
+          path: '*.xml'               
+          reporter: java-junit       
+
+
+jobs:
+  build:
+    name: Polynomial    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+      
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
+      - name: Polynomial
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/polynomial'); assertSuccess(results);
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()   
+        with:
+          name: Report               
+          path: '*.xml'              
+          reporter: java-junit       
+
+
+jobs:
+  build:
+    name: General nonlinear    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+      
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
+      - name: General nonlinear
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/general'); assertSuccess(results);
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()   
+        with:
+          name: Report               
+          path: '*.xml'              
+          reporter: java-junit       

@@ -21,7 +21,7 @@ Testing built-in bilevel solver
 
 ## bmibnb
 
-Testing built-in general global solver
+Testing built-in general global solver (seleted problems, stress tested in globlib suite)
 
 ## kktqp
 
@@ -56,5 +56,9 @@ Testing moment relaxation module
 ## mpt
 
 Testing multi-parametric programming and interface to mpt
+
+## globlib
+
+Testing BMIBNB on a larger suite of problems
 
 
