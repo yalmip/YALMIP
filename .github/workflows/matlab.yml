@@ -9,20 +9,16 @@ on:
     branches: [ develop ]
   pull_request:
     branches: [ develop ]
-
-  # Allows you to run this workflow manually from the Actions tab
+  
   workflow_dispatch:
 
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    name: Complete integration test
-    # The type of runner that the job will run on
+  
+  job1:
+    name: Complete integration (basics)
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
@@ -33,8 +29,7 @@ jobs:
           
       - name: Confirm
         run: ls -l
-      
-      # Sets up MATLAB on the GitHub Actions runner
+            
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
        
@@ -48,7 +43,41 @@ jobs:
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/operators'); assertSuccess(results);
+          
+      - name: Test misc
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/misc'); assertSuccess(results);
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Report (basics)                 # Name of the check run which will be created
+          path: '*.xml'               # Path to test results
+          reporter: java-junit        # Format of test results      
+          fail-on-error: 'false'             
+
+  job2:
+    name: Complete integration (modules)    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Confirm
+        run: ls -l
+            
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
       - name: Test optimizer module
         if: success() || failure() 
         uses: matlab-actions/run-command@v0
@@ -60,25 +89,7 @@ jobs:
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/robust'); assertSuccess(results);                 
-       
-      - name: Test BNB solver
-        if: success() || failure()       
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
-
-      - name: Test BMIBNB solver
-        if: success() || failure()       
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bmibnb'); assertSuccess(results);
-
-      - name: Test bilevel solver
-        if: success() || failure()       
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
-                  
+                
       - name: Test dualize
         if: success() || failure()       
         uses: matlab-actions/run-command@v0
@@ -103,17 +114,64 @@ jobs:
         with:
           command: addpath(genpath(pwd)); results = runxunittests('dev/tests/moment'); assertSuccess(results);
 
-      - name: Test misc
-        if: success() || failure()       
-        uses: matlab-actions/run-command@v0
-        with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/misc'); assertSuccess(results);
-
       - name: Test Report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    # run this step even if previous step failed
         with:
-          name: Report                 # Name of the check run which will be created
+          name: Report (modules)                 # Name of the check run which will be created
+          path: '*.xml'               # Path to test results
+          reporter: java-junit        # Format of test results      
+          fail-on-error: 'false'             
+
+
+  job3:
+    name: Complete integration (solvers)   
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Confirm
+        run: ls -l
+            
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+       
+      - name: Test BNB solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bnb'); assertSuccess(results);
+
+      - name: Test BMIBNB solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bmibnb'); assertSuccess(results);
+
+      - name: Test BILEVEL solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
+            
+      - name: Test CUTSDP solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/cutsdp'); assertSuccess(results);
+                      
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Report (solvers)      # Name of the check run which will be created
           path: '*.xml'               # Path to test results
           reporter: java-junit        # Format of test results      
           fail-on-error: 'false'             

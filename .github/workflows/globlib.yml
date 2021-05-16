@@ -5,6 +5,7 @@ on:
     branches: [ develop ]
   pull_request:
     branches: [ develop ]
+  if: "contains(github.event.head_commit.message, '[testgloblib]')" 
 
   workflow_dispatch:
 
