@@ -572,16 +572,6 @@ solver(i).supportsinitial = 1;
 solver(i).global = 1;
 i = i+1;
 
-solver(i) = qpsolver;
-solver(i).tag     = 'QUADPROG';
-solver(i).version = 'NONCONVEX';
-solver(i).checkfor= {'quadprog'};
-solver(i).call    = 'callquadprog';
-solver(i).objective.quadratic.nonconvex = 1;
-solver(i).supportsinitial = 1;
-solver(i).global = 0;
-i = i+1;
-
 solver(i) = lpsolver;
 solver(i).tag     = 'GLPK';
 solver(i).version = 'GLPKMEX-CC';
