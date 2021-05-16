@@ -20,6 +20,6 @@ F=[F,1<=objvar<=5.5];
 F=[F,1<=x2<=5.5];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-1.1771) <= 1e-1) 

@@ -44,6 +44,6 @@ F=[F,0<=x9<=200];
 F=[F,1<=x10<=3];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--400) <= 1e-2)

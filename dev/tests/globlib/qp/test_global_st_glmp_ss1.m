@@ -35,6 +35,6 @@ F=[F,0<=x1<=13];
 F=[F,0<=x2<=13];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--24.5714) <= 3e-2)

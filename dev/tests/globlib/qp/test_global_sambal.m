@@ -44,6 +44,6 @@ F=[F,-x3-x12+x16==0];
 F=[F,-x4-x9+x17==0];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','quadprog.Algorithm','interior-point-convex'))
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','quadprog.Algorithm','interior-point-convex'))
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-3.968220361763031) <= 1e-2) 

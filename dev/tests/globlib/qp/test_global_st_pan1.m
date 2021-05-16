@@ -27,6 +27,6 @@ F=[F,0<=x2];
 F=[F,0<=x3];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--5.2837) <= 1e-2)

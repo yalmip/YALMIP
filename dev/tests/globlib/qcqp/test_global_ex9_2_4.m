@@ -38,6 +38,6 @@ F=[F,0<=x8<=200];
 F=[F,0<=x9<=200];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-0.5) <= 1e-3)

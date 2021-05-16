@@ -27,7 +27,7 @@ F=[F,100<=x3<=200000];
 F=[F,100<=x4<=100000];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-726.6783) <= 1) 

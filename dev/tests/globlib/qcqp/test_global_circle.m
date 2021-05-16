@@ -28,6 +28,6 @@ F=[F,sqr(5.501896021-x1)+sqr(4.918207429-x2)-sqr(objvar)<=0];
 F=[F,0<=objvar];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.absgaptol',1e-3,'bmibnb.relgaptol',1e-3))
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.absgaptol',1e-3,'bmibnb.relgaptol',1e-3))
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-4.5742) <= 1e-2)

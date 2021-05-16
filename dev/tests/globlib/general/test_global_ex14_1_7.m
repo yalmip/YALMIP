@@ -48,7 +48,7 @@ F = F + ( x1*x3 - x2*x4 == 0);
 
 F = F + (0 <= [x1 x2 x3 x4 x5 x6 x7 x8 x9] <= 10);
 
-%sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.upper','fmincon','allownon',1));
+%sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.upper','fmincon'));
 %testCase.assertTrue(sol.problem == 0)
 %testCase.assertTrue(abs(value(objvar))<=1e-3)
 testCase.assertTrue(1 == 1)

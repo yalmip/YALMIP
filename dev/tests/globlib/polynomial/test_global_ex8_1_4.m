@@ -20,7 +20,7 @@ F = ([]);
 % Solve problem
 F = ([]);
 x = recover(objective);
-sol = optimize(F+[-100<=x<=100],objective,sdpsettings('solver','bmibnb'))
+sol = optimize(F+[-100<=x<=100],objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'))
 
 testCase.assertTrue((sol.problem == 3) | (sol.problem == 0))
 testCase.assertTrue(abs(value(objective)-0) <= 1e-2)

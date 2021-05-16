@@ -21,6 +21,6 @@ F=[F,100<=x1<=1000];
 
 % Gurobi has numericall issues leading to infeasibility during root node
 % tightening
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon','allownon',1,'bmibnb.roottight',0));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.roottight',0));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-0) <= 1e-3)

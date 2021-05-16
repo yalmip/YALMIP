@@ -19,7 +19,7 @@ F = ([]);
 F=[F,-2<=x1<=11];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)- -7.48731236490236) <= 1e-2) 

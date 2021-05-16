@@ -27,7 +27,7 @@ F=[F,0<=x4];
 F=[F,0<=x5];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-29.8944) <= 1e-2) 

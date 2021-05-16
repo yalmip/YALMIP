@@ -30,6 +30,6 @@ F=[F,0<=x5<=99];
 F=[F,0<=x6<=99];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--86768.55) <= 1e-2)

@@ -23,6 +23,6 @@ F=[F,-8<=x1<=10];
 F=[F,0<=x2<=10];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--1.187048598118708e+002) <= 1e-2) 

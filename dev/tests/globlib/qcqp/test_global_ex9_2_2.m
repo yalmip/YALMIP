@@ -47,6 +47,6 @@ F=[F,0<=x10<=20];
 F=[F,0<=x11<=20];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-100) <= 1)

@@ -103,6 +103,6 @@ F=[F,60000<=x30<=120000];
 F=[F,60000<=x31<=120000];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-4.3669e+006) <= 1e4)

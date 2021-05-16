@@ -41,7 +41,7 @@ F=[F,0<=x9<=1];
 F=[F,0<=x10<=1];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)--39) <= 1e-2)

@@ -13,7 +13,7 @@ F = F + (2*sqr(x1) + 4*x1*x2 - 26*x2 + 4*power(x2,3) - x3    <= 22);
 F = F + ((-2*sqr(x1)) - 4*x1*x2 + 26*x2 - 4*power(x2,3) - x3 <= -22);
 F = F + (5 >= x1 >= -5) + (-5 <= x2 <= 5);
 
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'))
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'))
 
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(objvar)-0) <= 1e-4)

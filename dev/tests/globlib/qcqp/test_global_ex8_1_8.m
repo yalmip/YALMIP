@@ -34,6 +34,6 @@ F=[F,1e-005<=x5<=16];
 F=[F,1e-005<=x6<=16];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--0.3888) <= 1e-3)

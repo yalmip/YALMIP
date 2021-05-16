@@ -41,7 +41,7 @@ F=[F,0<=x8<=500];
 F=[F,0<=x9<=500];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)- -750) <= 1e-1)

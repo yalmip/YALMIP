@@ -105,6 +105,6 @@ F=[F,0.05<=x32<=0.17589];
 F=[F,0.05<=x33<=0.20228];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--2.487467848213407) <= 1e-2)

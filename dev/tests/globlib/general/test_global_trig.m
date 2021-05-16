@@ -19,7 +19,7 @@ F=[F,5*sin(x1)-x1<=0];
 F=[F,-2<=x1<=5];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)--3.7625) <= 1e-2) 

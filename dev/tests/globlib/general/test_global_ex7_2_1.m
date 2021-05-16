@@ -44,7 +44,7 @@ F=[F,3<=x6<=12];
 F=[F,145<=x7<=162];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0 | sol.problem == 3);
 testCase.assertTrue(abs(value(objvar)-1.12100399602152301e+003) <= 200)

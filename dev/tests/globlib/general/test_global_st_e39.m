@@ -18,5 +18,5 @@ objective = -(-(-1/(0.1+power(x1-4,2)+power(x2-4,2))-1/(0.2+power(x1-1,2)+power(
 % Define constraints 
 F = ([]);
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem == 0)

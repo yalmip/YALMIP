@@ -40,6 +40,6 @@ F=[F,-7.6<=x7<=7];
 F=[F,-8.7<=x8<=8];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--1195.2256) <= 10)

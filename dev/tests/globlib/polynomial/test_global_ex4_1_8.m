@@ -21,7 +21,7 @@ F=[F,0<=x1<=2];
 F=[F,0<=x2<=3];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)- -16.7389) <= 1e-2) 

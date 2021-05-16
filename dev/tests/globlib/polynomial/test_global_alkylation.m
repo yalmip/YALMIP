@@ -48,6 +48,6 @@ F=[F,0.01<=x9<=4];
 F=[F,145<=x10<=162];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'))
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'))
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(objective)-  -1.768806963716253e+003) <= 1e-1) 

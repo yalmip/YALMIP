@@ -16,7 +16,7 @@ F = F + ( x1*x2*x3*x4*x5 - x6 <= 1);
 F = F + ( - x1*x2*x3*x4*x5 - x6 <= -1);
 F = F + ( -2 <= [x1 x2 x3 x4 x5 ] <= 2);
 
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(norm(value([x1 x2 x3  x4 x5 ])-[1 1 1 1 1]) <= 1e-5)

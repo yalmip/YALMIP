@@ -26,6 +26,6 @@ F=[F,-6*x1+x2+x3<=1.9];
 F=[F,0<=x2];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-0) <= 1e-3)

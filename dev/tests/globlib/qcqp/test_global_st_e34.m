@@ -33,6 +33,6 @@ F=[F,0<=x5<=0.028];
 F=[F,0<=x6<=0.0134];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-0.01562) <= 1e-2) 

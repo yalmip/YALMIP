@@ -27,6 +27,6 @@ F=[F,objvar-x2+1E-7*x3-1E-5*x5==0];
 F=[F,2*objvar-2*x2+1E-7*x3-0.01*x4-1E-5*x5+0.01*x6==0];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0 || sol.problem == 4)
 testCase.assertTrue(abs(value(objvar)-1) <= 1e-2)

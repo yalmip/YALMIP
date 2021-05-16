@@ -19,6 +19,6 @@ objective = -(-(1+sqr(1+x1+x2)*(19+3*sqr(x1)-14*x1+6*x1*x2-14*x2+3*sqr(x2)))*(30
 F = ([]);
 % Solve problem
 x = recover(objective);
-sol = optimize(F+[-10<=x<=10],objective,sdpsettings('solver','bmibnb'))
+sol = optimize(F+[-10<=x<=10],objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'))
 testCase.assertTrue(sol.problem==0 | sol.problem == 3)
 testCase.assertTrue(abs(value(objective)-3) <= 1e-2) 

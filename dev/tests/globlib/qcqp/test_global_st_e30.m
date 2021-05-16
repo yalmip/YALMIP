@@ -60,6 +60,6 @@ F=[F,0<=x13<=3];
 F=[F,0<=x14<=3];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--1.5811) <= 1e-2) 

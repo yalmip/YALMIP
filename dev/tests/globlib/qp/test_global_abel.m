@@ -63,5 +63,5 @@ F=[F,387.9==x1];
 F=[F,85.3==x9];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
 testCase.assertTrue(abs(value(objective)-2.251945831860312e+002) <= 1e-2)

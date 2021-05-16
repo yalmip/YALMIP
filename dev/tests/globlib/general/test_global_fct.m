@@ -42,7 +42,7 @@ F=[F,-10<=x11<=5];
 F=[F,-10<=x12<=5];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-0) <= 1e-2) 

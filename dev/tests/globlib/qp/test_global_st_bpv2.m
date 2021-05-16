@@ -30,6 +30,6 @@ F=[F,0<=x3<=5];
 F=[F,0<=x4<=5];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)--8) <= 1e-2) 

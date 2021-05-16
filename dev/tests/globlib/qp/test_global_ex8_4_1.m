@@ -71,6 +71,6 @@ F=[F,0<=x21<=10];
 F=[F,-2<=x22<=2];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-0.61857) <= 1e-2)

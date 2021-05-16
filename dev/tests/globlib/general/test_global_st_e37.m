@@ -26,6 +26,6 @@ F=[F,1==x4];
 F=[F,1==x5];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','bmibnb.maxiter',100));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.maxiter',100));
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(objective)-1.041720240470086e-03) <= 1e-2)

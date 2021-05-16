@@ -25,7 +25,7 @@ F=[F,37.5<=x2<=150];
 F=[F,45<=x3<=180];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)-3.1553e+003) <= 32)

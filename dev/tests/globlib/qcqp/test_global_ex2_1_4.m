@@ -33,7 +33,7 @@ F=[F,0<=x5<=1];
 F=[F,0<=x6<=2];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)--11) <= 1e-2)

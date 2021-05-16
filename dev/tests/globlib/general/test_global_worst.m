@@ -99,6 +99,6 @@ F=[F,0.0368<=x34<=0.0768];
 F=[F,0.0368<=x35<=0.0768];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','bmibnb.lpreduce',1));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.lpreduce',1));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-2.0762609e+007) <= 1e3)

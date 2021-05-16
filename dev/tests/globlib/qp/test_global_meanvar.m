@@ -35,6 +35,6 @@ F=[F,0<=x8<=1];
 F=[F,0<=x9<=1];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','quadprog.Algorithm','interior-point-convex'));
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objective)-5.2434) <= 1e-2)

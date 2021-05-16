@@ -24,5 +24,5 @@ F = ([]);
 F=[F,0<=x1<=6.2832,y==yy,z==zz,w==ww];
 
 % Solve problem
-sol = optimize(F,objective,sdpsettings('solver','bmibnb'));
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 testCase.assertTrue(abs(value(objective)--1.071) <= 1e-2)

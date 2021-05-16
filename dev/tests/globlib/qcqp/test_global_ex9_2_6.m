@@ -60,7 +60,7 @@ F=[F,0<=x16<=200];
 F=[F,0<=x17<=200];
 
 % Solve problem
-sol = optimize(F,objvar,sdpsettings('solver','bmibnb'))
+sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'))
 testCase.assertTrue(sol.problem==0)
 testCase.assertTrue(abs(value(objvar)--1) <= 1e-2)
 
