@@ -1,11 +1,11 @@
 function p = addImpliedSDP(p)
-if p.K.q(1)==0 && p.K.s(1) > 0
+if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
     % Search for rows where there is a constant, and a diagonal term 
-    % which thus has to be structly positive, we might leads us to a
+    % which thus has to be strictly positive, we might leads us to a
     % constraints of the type sum x_i >= 1, if only non-negative integer
     % variables are involved, entering with positive coefficient (and v.s)
     newF = [];
-    top = sum(p.K.q) + p.K.f + p.K.l + 1;
+    top = startofSDPCone(p.K);
     for i = 1:length(p.K.s)
         F = p.F_struc(top:top + p.K.s(i)^2-1,:);
         % Constant term in SDP
@@ -50,7 +50,7 @@ if p.K.q(1)==0 && p.K.s(1) > 0
     candidates = find(~any(p.F_struc(1:p.K.f + p.K.l,2:end),1));
     fixable = nan(1,length(candidates));   
     
-    top = sum(p.K.q) + p.K.f + p.K.l + 1;
+    top = startofSDPCone(p.K);
     for j = 1:length(p.K.s)
         F = p.F_struc(top:top + p.K.s(j)^2-1,:);
         for i = 1:length(candidates(:)')
@@ -72,25 +72,7 @@ if p.K.q(1)==0 && p.K.s(1) > 0
         top = top + p.K.s(j)^2;
     end
     p.adjustable = candidates(find(fixable));
-    for i = candidates(find(~isnan(fixable)))
-%         if fixable(i) == -1
-%             if ~isinf(p.lb(i))
-%                 %             p.ub(i) = p.lb(i);
-%                 %             p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,i+1)*p.lb(i);
-%                 %             p.F_struc(:,i+1) = 0;
-%                 %         else
-%                 %             % TODO whole row/column should be removed from the LMI!
-%             end
-%         elseif fixable(i) == 1
-%             if ~isinf(p.ub(i))
-%                 %             p.ub(i) = p.lb(i);
-%                 %             p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,i+1)*p.lb(i);
-%                 %             p.F_struc(:,i+1) = 0;
-%                 %         else
-%                 %             % TODO whole row/column should be removed from the LMI!
-%             end
-%         end
-        
+    for i = candidates(find(~isnan(fixable)))        
     end
 end
 
