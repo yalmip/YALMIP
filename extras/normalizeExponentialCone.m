@@ -69,13 +69,13 @@ if ~isempty(model.evalMap)
             return
         end
     end
-    % Check so there are no exp/log terms in quadratic or SDP cone
-    if sum(model.K.q) + sum(model.K.s) > 0
+    % Check so there are no exp/log-terms inside cones
+    if sum(model.K.q) + model.K.e + sum(model.K.p) + sum(model.K.s) > 0
         if nnz(model.F_struc(1+model.K.f+model.K.l:end,convexFunctions+1))+nnz(model.F_struc(1+model.K.f+model.K.l:end,concaveFunctions+1))>0
             output = createoutput([],[],[],23,model.solver.tag,[],[],0);
             return
         end
-    end
+    end 
     % Scalarize entropy operator
     if ~isempty(vectorentropy)
         for i = vectorentropy(:)'
