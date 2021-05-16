@@ -1,4 +1,4 @@
-function p = cleanuppermodel(p);
+function p = cleanuppermodel(p)
 
 % We might have created a bilinear model from an original polynomial model.
 % We should use the original model when we solve the upper bound problem.
