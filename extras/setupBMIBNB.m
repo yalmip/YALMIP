@@ -134,6 +134,9 @@ if temp_options.bmibnb.uppersdprelax
     temp_ProblemClass.constraint.inequalities.semidefinite.polynomial = 0;
     temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial = 0;
 end
+if isempty(options.bmibnb.uppersolver)
+    temp_options.avoidGlobalSolver = 1;
+end
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
 % if isempty(uppersolver) && temp_ProblemClass.constraint.inequalities.elementwise.polynomial
 %     % Maybe it is a polynomial problem and user wants a quadratic solver

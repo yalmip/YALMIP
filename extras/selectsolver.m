@@ -78,6 +78,15 @@ if  ~forced_choice && options.forceglobal
     end    
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'global optimization');
 end
+% Prune based on avoiding global solver (in BMIBNB we don't want that as
+% upper solver)
+if isfield(options,'avoidGlobalSolver')
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)
+        keep(i) = ~solvers(i).global;                         
+    end    
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'global optimization');
+end    
 
 % ************************************************
 % Prune based on objective
