@@ -33,13 +33,13 @@ showprogress('Calling IPOPT',model.options.showprogress);
 % but only expose the model in the original variables to the nonlinear
 % solver. 
 % model = compressLifted(model);
-
-Fupp = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
+cones = nnz(model.K.q)+model.K.e+nnz(model.K.p)+sum(model.K.s)
+Fupp = [ repmat(0,length(model.bnonlinineq)+cones,1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-Flow = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
+Flow = [ repmat(-inf,length(model.bnonlinineq)+cones,1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];

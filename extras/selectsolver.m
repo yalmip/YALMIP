@@ -261,10 +261,10 @@ if ProblemClass.constraint.inequalities.rotatedsecondordercone.nonlinear & ~forc
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'nonlinear rotated second-order cone constraints');
 end
-if ProblemClass.constraint.inequalities.powercone & ~forced_choice  & length(solvers)>0
+if ProblemClass.constraint.inequalities.powercone && ~forced_choice  && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.powercone;
+        keep(i) = solvers(i).powercone;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'power cone constraints');
 end  

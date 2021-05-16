@@ -41,12 +41,14 @@ model.options.knitro.JacobPattern = jacobiansparsityfromnonlinear(model,0);
 % Hessian of the Lagrangian
 usedinObjective = find(model.c | any(model.Q,2));
 if ~any(model.variabletype(usedinObjective)) & any(model.Q)
-    if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
-        H = model.Q(:,model.linearindicies);
-        H = H(model.linearindicies,:);
-        model.options.knitro.Hessian = 'user-supplied';
-        model.options.knitro.HessPattern = sparse(H | H);
-        model.options.knitro.HessFcn = @(x,l) 2*H;
+    if ~any(model.K.q) && ~any(model.K.e) && ~any(model.K.p) && ~any(model.K.s)
+        if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
+            H = model.Q(:,model.linearindicies);
+            H = H(model.linearindicies,:);
+            model.options.knitro.Hessian = 'user-supplied';
+            model.options.knitro.HessPattern = sparse(H | H);
+            model.options.knitro.HessFcn = @(x,l) 2*H;
+        end
     end
 end
 

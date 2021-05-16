@@ -49,7 +49,6 @@ emptysolver.constraint.inequalities.secondordercone.linear = 0;
 emptysolver.constraint.inequalities.secondordercone.nonlinear = 0;
 emptysolver.constraint.inequalities.rotatedsecondordercone.linear = 0;
 emptysolver.constraint.inequalities.rotatedsecondordercone.nonlinear = 0;
-emptysolver.constraint.inequalities.powercone = 0;
 
 emptysolver.constraint.complementarity.variable  = 0;
 emptysolver.constraint.complementarity.linear  = 0;
@@ -68,6 +67,8 @@ emptysolver.interval   = 0;
 emptysolver.parametric = 0;
 emptysolver.evaluation = 0;
 emptysolver.exponentialcone = 0;
+emptysolver.powercone = 0;
+
 emptysolver.uncertain  = 0;
 emptysolver.global = 0;
 
@@ -518,7 +519,7 @@ solver(i).call    = 'callmosek';
 solver(i).constraint.integer = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).exponentialcone = 1;
-solver(i).constraint.inequalities.powercone = 1;
+solver(i).powercone = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -528,7 +529,7 @@ solver(i).checkfor= {'mosekopt'};
 solver(i).call    = 'callmosek';
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).exponentialcone = 1;
-solver(i).constraint.inequalities.powercone = 1;
+solver(i).powercone = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -1072,6 +1073,8 @@ solver(i).dual = 1;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
+solver(i).exponentialcone = 1;
+solver(i).powercone = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
@@ -1322,6 +1325,8 @@ solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
+solver(i).exponentialcone = 1;
+solver(i).powercone = 1;
 i = i+1;
 
 
@@ -1401,6 +1406,8 @@ solver(i).dual = 0;
 solver(i).evaluation = 1;
 solver(i).supportsinitialNAN = 1;
 solver(i).supportsinitial = 1;
+solver(i).exponentialcone = 1;
+solver(i).powercone = 1;
 i = i+1;
 
 solver(i) = emptysolver;

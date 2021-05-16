@@ -9,7 +9,7 @@ end
 m = length(model.lb);
 allA=[model.Anonlinineq];
 if any(model.K.q)
-    top = 1 + model.K.f + model.K.l;
+    top = startofSOCPCone(model.K);
     allQ = [];
     for i = 1:length(model.K.q)
         allQ = [allQ;any(model.F_struc(top:top+model.K.q(i)-1,2:end))];
@@ -17,8 +17,26 @@ if any(model.K.q)
     end
     allA = [allA;allQ];
 end
+if any(model.K.e)
+    top = startofEXPCone(model.K);
+    allQ = [];
+    for i = 1:(model.K.e)
+        allQ = [allQ;any(model.F_struc(top:top+3-1,2:end))];
+        top = top + 3;
+    end
+    allA = [allA;allQ];
+end
+if any(model.K.p)
+    top = startofPOWCone(model.K);
+    allQ = [];
+    for i = 1:length(model.K.p)
+        allQ = [allQ;any(model.F_struc(top:top+model.K.p(i)-1,2:end))];
+        top = top + model.K.p(i);
+    end
+    allA = [allA;allQ];
+end
 if any(model.K.s)
-    top = 1 + model.K.f + model.K.l + sum(model.K.q);
+    top = startofSDPCone(model.K);
     allQ = [];
     for i = 1:length(model.K.s)
         s = any(model.F_struc(top:top+model.K.s(i)^2-1,2:end));

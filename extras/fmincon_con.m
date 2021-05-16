@@ -36,7 +36,7 @@ end
 
 % Append SOCP cones
 if any(model.K.q)
-    top = 1;
+    top = startofSOCPCone(model.K);
     z0 = model.F_struc*[1;xevaled];
     for i = 1:length(model.K.q)
         z = z0(top:top+model.K.q(i)-1);
@@ -47,7 +47,7 @@ end
 
 % Append EXP cones 
 if any(model.K.e)
-    top = 1 + sum(model.K.q);
+    top = startofEXPCone(model.K);
     % x3-x2*exp(x1/x2)>=0
     for i = 1:model.K.e        
         x = model.F_struc(top:top+2,:)*[1;xevaled];        
@@ -62,9 +62,23 @@ if any(model.K.e)
     end
 end
 
+% Append POW cones 
+if any(model.K.p)
+    top = startofPOWCone(model.K);
+    % x1^a x2^(1-a)>=norm(x(:end))
+    for i = 1:length(model.K.p)
+        n = model.K.p(i);
+        alpha = model.F_struc(top+n-1,1);
+        x = model.F_struc(top:top+n-2,:)*[1;xevaled];       
+        r = x(1)^alpha*x(2)^(1-alpha)-norm(x(3:end));
+        g = [g;-r];
+        top = top + n;          
+    end
+end
+
 % Append SDP cones (eigenvalues)
 if any(model.K.s)
-    top = 1 + sum(model.K.q);
+    top = startofSDPCone(model.K);
     for i = 1:length(model.K.s)
         n = model.K.s(i);
         X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
@@ -91,9 +105,11 @@ elseif isempty(model.evalMap) && (model.nonlinearinequalities==0) && (model.nonl
     dg_SOCP = computeSOCPDeriv(model,xevaled);
     % Linear EXP
     dg_EXP = computeEXPDeriv(model,xevaled);
+    % Linear POW
+    dg_POW = computePOWDeriv(model,xevaled);
     % Linear SDP
     dg_SDP = computeSDPDeriv(model,xevaled,1);
-    dg = [dg_SOCP;dg_EXP;dg_SDP];     
+    dg = [dg_SOCP;dg_EXP;dg_POW;dg_SDP];     
     dg = dg(:,model.linearindicies);      
     g = reorderEigenvalueG(g,model); 
     
@@ -224,6 +240,49 @@ if any(model.K.e)
             conederiv = [conederiv -(temp*dzdx)'];
         end
         top = top + 3;
+    end
+end
+conederiv = conederiv';
+
+function conederiv = computePOWDeriv(model,z,dzdx)
+conederiv = [];
+z = sparse(z(:));
+if any(model.K.p)
+    top = startofPOWCone(model.K);
+    for i = 1:length(model.K.p)
+        n = model.K.p(i);
+        c1 = model.F_struc(top,2:end);
+        c2 = model.F_struc(top+1,2:end);
+        c3 = model.F_struc(top+2:top+n-2,2:end);
+        alpha = model.F_struc(top+n-1,1);
+        x = model.F_struc(top:top+n-2,:)*[1;z];
+        x1 = x(1);x2 = x(2);x3 = x(3:end);
+        % x1^alpha*x2^(1-alpha) - norm(x3)
+        % (c1'*x + )^alpha*(c2'x+ )^(1-alpha) - norm(c3*x + )
+        % x3 - x2exp(x1/x2) >= 0
+        % d/dx = [-exp(x1) -(exp(x1/x2)-x1/x2*exp(x1/x2)) 1]       
+        if nargin == 2
+            c1=c1(model.linearindicies);
+            c2=c2(model.linearindicies);
+            c3=c3(:,model.linearindicies);
+            smoothed = sqrt(10^-10 + x3'*x3);
+            if x(1)*x(2)==0
+                a = 1;b = 1;
+            else
+                a = x1^(alpha-1)*x2^(1-alpha);
+                b = x1^alpha*x2^(-alpha);
+            end
+            temp = c1*alpha*a + (1-alpha)*c2*b - (x3'*c3)/smoothed;
+            conederiv = [conederiv -temp'];
+        else
+            c1=c1(model.linearindicies);
+            c2=c2(model.linearindicies);
+            c3=c3(:,model.linearindicies);
+            smoothed = sqrt(10^-10 + x3'*x3);
+            temp = c1*alpha*x1^(alpha-1)*x2^(1-alpha) + x1^alpha*(1-alpha)*c2*x2^(-alpha) - c3'*x3/smoothed;           
+            conederiv = [conederiv -(temp*dzdx)'];
+        end
+        top = top + n;
     end
 end
 conederiv = conederiv';
