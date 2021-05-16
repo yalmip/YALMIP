@@ -1,4 +1,4 @@
-function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds);
+function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds)
 %TIGHTENBOUNDS Internal function to perform bound tightening
 
 % Simple bound pre-processing (paper by Savelsbergh)

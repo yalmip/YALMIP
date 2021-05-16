@@ -1,4 +1,4 @@
-function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,aggresiveprune,allSolutions)
+function  output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,allSolutions)
 
 if all(relaxed_p.lb==relaxed_p.ub)
     x = relaxed_p.lb;
@@ -226,7 +226,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         dummy = p;
         dummy.lb = newlb;
         dummy.ub = newub;
-        output = bnb_solvelower(lowersolver,dummy,inf,lower,x_min,aggresiveprune,[]);        
+        output = bnb_solvelower(lowersolver,dummy,inf,lower,x_min,[]);        
     else
         if any(p.lb>p.ub+0.1)
             output.problem = 1;
