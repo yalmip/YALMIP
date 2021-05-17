@@ -10,6 +10,11 @@ n = size(A,2);
 m = size(A,1);
 % Scale b
 A = A ./ repmat(b,1,n);
+if n == 1
+    % Silly
+    V = [1/max(A) 1/min(A)];
+    return
+end
 % Lift and find rays
 k = convhulln([A;zeros(1,n)]);
 V = [];

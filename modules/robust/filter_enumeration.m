@@ -92,8 +92,10 @@ else
                 En = null(E);
                 x0 = (E\f);
                 % x = null(E)*z + x0, A*(null(E)*z + x0) <= b
+                b = full(b-A*x0);
+                A = full(A*En);                
                 try
-                    P = polytope(full(A*En),full(b-A*x0));
+                    P = polytope(A,b);
                 catch
                 end
             else
