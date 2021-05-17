@@ -54,7 +54,8 @@ ops = sdpsettings('verbose',0,'robust.auxreduce','enumeration');
 optimize([x+max(x+c'*[w1;w2],norm([x*w1 + A*[w1;w2]],2))+norm([x - A*[w1;w2]],1)<=t,uncertain([w1;w2]),A*[w1;w2] <= b],t,ops)
 o1 = value(t);
 
-v = extreme(polytope(A,b));
+v = [-.1 -.05 .15 -.1;
+     0 -0.05 -0.05 0.2]';
 C = [];
 for i = 1:size(v,1)
 C = [C,x+max(x+c'*v(i,:)',norm(x*v(i,1) + A*v(i,:)',2))+norm(x - A*v(i,:)',1)<=t];
@@ -74,11 +75,12 @@ t = sdpvar(1);
 A = [1 1;-1 0;0 -2;-1 -1;0 -1/2];
 b = [.1;.1;.1;.1;.1];
 c = randn(2,1);
-ops = sdpsettings('verbose',0,'robust.auxreduce','enumeration');
+ops = sdpsettings('verbose',1,'robust.auxreduce','enumeration');
 optimize([x+max(x+c'*[w1;w2],norm([x*w1 + A*[w1;w2]],1))+norm([x - A*[w1;w2]],1)<=t,uncertain([w1;w2]),A*[w1;w2] <= b],t,ops);
 o1 = value(t);
 
-v = extreme(polytope(A,b));
+v = [-.1 -.05 .15 -.1;
+     0 -0.05 -0.05 0.2]';
 C = [];
 for i = 1:size(v,1)
 C = [C,x+max(x+c'*v(i,:)',norm(x*v(i,1) + A*v(i,:)',1))+norm(x - A*v(i,:)',1)<=t];
@@ -161,7 +163,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1];
 W = [uncertain(w),norm(w,1)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0));
+optimize([C,W],-x,sdpsettings('verbose',0,'solver','coneprog'));
 testCase.assertTrue(abs(value(x)--1)<=1e-1)
 
 function test14(testCase)
@@ -180,7 +182,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1];
 W = [uncertain(w),norm(w,2)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0,'robust.auxreduce','projection'));
+optimize([C,W],-x,sdpsettings('verbose',1,'robust.auxreduce','projection','sedumi.free',0));
 testCase.assertTrue(abs(value(x)--1) <= 1e-1)
 
 function test16(testCase)
@@ -189,7 +191,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2)+norm(w,1) <= 1];
 W = [uncertain(w),norm(w,2)+norm(w,1)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0,'robust.auxreduce','projection'));
+optimize([C,W],-x,sdpsettings('verbose',0,'robust.auxreduce','projection','sedumi.free',0));
 testCase.assertTrue(abs(value(x)--1) <= 1e-1)
 
 function test17(testCase)
