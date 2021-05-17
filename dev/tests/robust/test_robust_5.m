@@ -180,7 +180,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1];
 W = [uncertain(w),norm(w,2)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0,'robust.auxreduce','projection'));
+optimize([C,W],-x,sdpsettings('verbose',1,'robust.auxreduce','projection','sedumi.free',0));
 testCase.assertTrue(abs(value(x)--1) <= 1e-1)
 
 function test16(testCase)
