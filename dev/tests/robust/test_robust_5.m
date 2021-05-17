@@ -163,7 +163,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1];
 W = [uncertain(w),norm(w,1)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0));
+optimize([C,W],-x,sdpsettings('verbose',0,'solver','coneprog'));
 testCase.assertTrue(abs(value(x)--1)<=1e-1)
 
 function test14(testCase)
@@ -191,7 +191,7 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2)+norm(w,1) <= 1];
 W = [uncertain(w),norm(w,2)+norm(w,1)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0,'robust.auxreduce','projection'));
+optimize([C,W],-x,sdpsettings('verbose',0,'robust.auxreduce','projection','sedumi.free',0));
 testCase.assertTrue(abs(value(x)--1) <= 1e-1)
 
 function test17(testCase)
