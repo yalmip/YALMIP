@@ -1,3 +1,5 @@
+[![Complete integration test](https://github.com/yalmip/YALMIP/actions/workflows/matlab.yml/badge.svg)](https://github.com/yalmip/YALMIP/actions/workflows/matlab.yml)
+
 YALMIP
 ======
 
