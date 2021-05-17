@@ -86,7 +86,7 @@ else
             % Bunch of try-catch definsive as this assumes MPT
             % If fails we try internal crappy enumerator
             P = [];
-            if K.f > 0
+            if any(K.f)
                 f = aux.F_struc(1:K.f,1);
                 E = -full(aux.F_struc(1:K.f,2:end));
                 En = null(E);
@@ -192,7 +192,7 @@ function vertices = pruneequalities(vertices,Zmodel)
 K = Zmodel.K;
 % The vertex enumeration was done without any equality constraints.
 % We know check all vertices so see if they satisfy equalities.
-if K.f > 0
+if any(K.f)
     Aeq = -Zmodel.F_struc(1:K.f,2:end);
     beq =  Zmodel.F_struc(1:K.f,1);
     feasible = sum(abs(Aeq*vertices - repmat(beq,1,size(vertices,2))),1) < 1e-6;

@@ -15,7 +15,7 @@ if ~isempty(ub)
     [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
 end
 
-if K.f > 0
+if any(K.f)
     b = -full(F_struc(1:K.f,1));
     A = F_struc(1:K.f,2:end);
     h = full(F_struc(1+K.f:end,1));        
@@ -29,7 +29,7 @@ else
 end
 
 dims.l = K.l;
-if K.q(1)==0
+if ~any(K.q)
     dims.q = [];
 else
     dims.q = K.q;

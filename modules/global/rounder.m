@@ -20,7 +20,7 @@ x(intvars(close)) = round(x(intvars(close)));
 
 if ismember('shifted round',p.options.bnb.rounding)
     % Pre-extract...    
-    if length(convars)==1 && length(p.K.s)==1 && p.K.s(1) > 0
+    if length(convars)==1 && length(p.K.s)==1 && any(p.K.s)
         H = p.F_struc(1+p.K.l+p.K.f:end,:);
         H0 = reshape(H(:,1),p.K.s(1),p.K.s(1));if nnz(H0)/numel(H0)>0.5;H0 = full(H0);end
         Hx = reshape(H(:,1+convars),p.K.s(1),p.K.s(1));if nnz(Hx)/numel(Hx)>0.5;Hx = full(Hx);end

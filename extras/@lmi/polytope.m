@@ -16,11 +16,11 @@ end
     
 [p,recoverdata,solver,diagnostic,F] = compileinterfacedata(X,[],[],[],options,0);
 
-if p.K.q(1) > 0 | p.K.s(1) > 0 | any(p.variabletype)
+if any(p.K.q) | any(p.K.s) | any(p.variabletype)
   error('Polytope can only be applied to MILP-representable constraints.')
 end
 
-if p.K.f > 0
+if any(p.K.f)
     try
         [P,x] = polyhedron(X,options);
         return

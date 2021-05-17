@@ -119,7 +119,7 @@ feasible = all(p.lb<=p.ub);
 % ********************************
 % Remove empty linear rows
 % ********************************
-if p.K.l > 0
+if any(p.K.l)
     empty_rows = find(~any(p.F_struc(p.K.f+1:p.K.f+p.K.l,2:end),2));
     if ~isempty(empty_rows)
         if all(p.F_struc(p.K.f+empty_rows,1)>=0)            
@@ -530,7 +530,7 @@ while go_on
         res = [res;p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]];
     end
     if (length(p.K.s)>1) | p.K.s>0
-        top = 1+p.K.f+p.K.l;
+        top = startofSOCPCone(p.K)
         for i = 1:length(p.K.s)
             n = p.K.s(i);
             X = p.F_struc(top:top+n^2-1,:)*[1;x];top = top+n^2;
@@ -782,8 +782,8 @@ while go_on
     % THESE ARE ONLY USED IN BOXREDUCE
     % *************************************
     function p = addsdpcut(p,x)
-    if p.K.s > 0
-        top = p.K.f+p.K.l+1;
+    if any(p.K.s)
+        top = startofSOCPCone(p.K);
         newcuts = 1;
         newF = [];
         for i = 1:length(p.K.s)

@@ -581,8 +581,8 @@ while goon && any(abs(p.ub(p.branch_variables)-p.lb(p.branch_variables))>p.optio
 end
 
 function p = addDiagonalSDPCuts(p)
-if ~isempty(p.K.s) && p.K.s(1) > 0
-    top = p.K.f+p.K.l+sum(p.K.q)+1;
+if any(p.K.s)
+    top = startofSDPCone(p.K);
     newF = [];
     newCut = 1;
     for i = 1:length(p.K.s)

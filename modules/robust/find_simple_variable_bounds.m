@@ -4,7 +4,7 @@ function [p,lower,upper] = find_simple_variable_bounds(p);
 % constraints. If the variable is involved in any other constraint, the
 % bound is set to inf
 
-if any(p.K.q > 0) | any(p.K.s > 0)
+if any(p.K.q) | any(p.K.s)
     lower = -inf(length(p.c),1);
     upper = inf(length(p.c),1);
 else

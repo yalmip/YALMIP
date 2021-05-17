@@ -21,7 +21,7 @@ else
     beq = [];
 end
 
-if K.l > 0
+if any(K.l)
     A = -F_struc(1+K.f:end,2:end);
     b = F_struc(1+K.f:end,1);
 else

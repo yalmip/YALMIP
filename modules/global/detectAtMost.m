@@ -3,7 +3,7 @@ atmostgroups = {};
 atmostbounds = [];
 atmostvariables = [];
 integers = unique([p.integer_variables p.binary_variables]);
-if p.K.l > 0 & ~isempty(integers)
+if any(p.K.l) & ~isempty(integers)
     nint = length(integers);
     Aineq = -p.F_struc(p.K.f + (1:p.K.l),2:end);
     bineq = p.F_struc(p.K.f + (1:p.K.l),1);

@@ -45,7 +45,7 @@ if p.options.bmibnb.cut.monomialtower
     p_cut = addMonomialTowerCuts(p_cut);
 end
 if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
-    if ~isempty(p_cut.K.s) & p_cut.K.s(1) > 0
+    if any(p_cut.K.s)
         if isequal(p_cut.solver.lowercall,'callmosek')
             % Mosek SDP module does not support binary
             p_cut.binary_variables = [];
@@ -288,12 +288,12 @@ end
 
 function p = pruneUnsupportedCuts(p)
 
-if p.K.s > 0 & ~p.solver.lowersolver.constraint.inequalities.semidefinite.linear
+if any(p.K.s) & ~p.solver.lowersolver.constraint.inequalities.semidefinite.linear
     % Remove SDP cuts
     error('FIXME')
 end
 
-if p.K.e > 0 & ~p.solver.lowersolver.exponentialcone
+if any(p.K.e) & ~p.solver.lowersolver.exponentialcone
     % Remove EXPCONE cuts
     p.F_struc(end-p.K.e*3+1:1:end,:) = [];    
     p.K.e = 0;

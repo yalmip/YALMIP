@@ -1,7 +1,7 @@
 function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
 
 % Extract alpha in power cone and remove from basis
-if model.K.p(1) > 0
+if any(model.K.p)
     top = model.K.f + model.K.l + sum(model.K.q) + 3*model.K.e;
     alpha = model.F_struc(top + cumsum(model.K.p),1);
     model.F_struc(top + cumsum(model.K.p),:) = [];
@@ -35,14 +35,14 @@ end
 
 [prob.qosubi,prob.qosubj,prob.qoval] = find(tril(sparse(2*model.Q)));
 
-if model.K.q(1)>0 || model.K.e > 0 || model.K.p(1) > 0
+if any(model.K.q) || any(model.K.e) || any(model.K.p)
     % Mosek crashes with empty lists, so only create if needed
     prob.cones.type = [];
     prob.cones.sub = [];
     prob.cones.subptr = [];
 end
 
-if model.K.q(1)>0
+if any(model.K.q)
     % Append new variables to represent SOCP cones
     nof_new = sum(model.K.q);
     nof_original = size(prob.a,2);
@@ -92,7 +92,7 @@ if nnz(model.K.e) > 0
     end
 end
 
-if model.K.p(1)>0
+if any(model.K.p)
     % Append new variables to represent POWER cones
     nof_new = sum(model.K.p);
     nof_original = size(prob.a,2);
@@ -121,7 +121,7 @@ if model.K.p(1)>0
     end
 end
 
-if model.K.s(1)>0
+if any(model.K.s)
     
     sdpRows = 1+model.K.f+model.K.l+3*model.K.e+sum(model.K.q)+sum(model.K.p):model.K.f+model.K.l+sum(model.K.q)+3*model.K.e+sum(model.K.p)+sum(model.K.s.^2);
     prob.blc(sdpRows) = prob.buc(sdpRows);

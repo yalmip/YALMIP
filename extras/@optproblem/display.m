@@ -23,7 +23,7 @@ end
     
 disp(['                          ' num2str((p.K.f)) ' equality constraints ']);
 disp(['                          ' num2str((p.K.l)) ' scalar inequalities ']);
-if p.K.s(1)>0
+if any(p.K.s)
     disp(['                          ' num2str(length(p.K.s)) ' semidefinite constraints ']);
 else
      disp(['                          ' num2str(p.K.s) ' semidefinite constraints ']);

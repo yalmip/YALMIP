@@ -41,7 +41,7 @@ else
     NegativeSemiVar = [];
 end
 
-if K.f > 0
+if any(K.f)
     Aeq = Aineq(1:K.f,:);
     beq = bineq(1:K.f);
     % Code around performance bugs in older version of MATLAB

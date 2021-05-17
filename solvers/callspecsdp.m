@@ -31,7 +31,7 @@ if K.l>0
     Dims = [Dims ones(1,K.l)];
     Nlmi = Nlmi + K.l;
 end
-if K.s(1)>0
+if any(K.s)
     for i = 1:length(K.s)
         trilindicies = [trilindicies;top + find(tril(ones(K.s(i))))];
         top = top + K.s(i)^2;

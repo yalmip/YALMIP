@@ -56,7 +56,7 @@ if isfield(K,'l')
 end
 
 if isfield(K,'s')
-    if K.s(1)>0
+    if any(K.s)
         for i = 1:length(K.s)
             [ix,iy,iv] = find([c(top:top+K.s(i)^2-1) At(top:top+K.s(i)^2-1,:)]);
             off = (ix-1)/(K.s(i)+1);

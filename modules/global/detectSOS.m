@@ -4,7 +4,7 @@ sosvariables = [];
 cardinalitygroups = {};
 cardinalityvariables = {};
 cardinalitysize = {};
-if p.K.f > 0 & ~isempty(p.binary_variables)
+if any(p.K.f) & ~isempty(p.binary_variables)
     nbin = length(p.binary_variables);
     Aeq = -p.F_struc(1:p.K.f,2:end);
     beq = p.F_struc(1:p.K.f,1);

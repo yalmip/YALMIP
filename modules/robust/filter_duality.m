@@ -167,7 +167,7 @@ for i = 1:length(b)
                 top = top + Zmodel.K.l;
             end
 
-            if Zmodel.K.q(1) > 0
+            if any(Zmodel.K.q)
                 if all(Zmodel.K.q == Zmodel.K.q(1)) && Zmodel.K.q(1)>2
                     % Complete vectorization possible
                     zeta = sdpvar(Zmodel.K.q(1),length(Zmodel.K.q),'full');

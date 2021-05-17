@@ -196,7 +196,7 @@ function groups = findSeparate(model)
 
 % This is an early bail-out to avoid any errors during the devlopment of
 % new features. Separable constraints are only support for Polya models
-if any(model.K.s > 0) %| any(model.K.q >0)
+if any(model.K.s) %| any(model.K.q >0)
     groups{1} = 1:size(model.F_struc,2)-1;
     return
 end
@@ -211,7 +211,7 @@ if model.K.f + model.K.l > 0
     top = top + model.K.f + model.K.l;
 end
 
-if any(model.K.q > 0)
+if any(model.K.q)
     for j = 1:length(model.K.q)
         A = model.F_struc(top:top+model.K.q(j)-1,2:end);top = top + model.K.q(j);
         A = sum(abs(A),1);
@@ -221,7 +221,7 @@ if any(model.K.q > 0)
     end
 end
 
-if any(model.K.s > 0)
+if any(model.K.s)
     for j = 1:length(model.K.s)
         A = model.F_struc(top:top+model.K.s(j)^2-1,2:end);top = top + model.K.s(j)^2;
         A = sum(abs(A),1);
@@ -254,7 +254,7 @@ for i = 1:length(uncertaintyGroups)
     newModels{i}.K.l = length(liIndex);
     newModels{i}.K.q = [];
     top = Zmodel.K.f+Zmodel.K.l+1;
-    if Zmodel.K.q(1)>0
+    if any(Zmodel.K.q)
         for j = 1:length(Zmodel.K.q)
             data_q = data(top:top+Zmodel.K.q(j)-1,:);
             if nnz(data_q(:,2:end))>0

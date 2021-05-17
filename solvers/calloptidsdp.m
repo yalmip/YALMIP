@@ -22,14 +22,14 @@ solvertime = toc(solvertime);
 
 % Create dual variable in internal format
 if options.saveduals  
-    if K.l > 0
+    if any(K.l)
         top = 1;
         D_struc = X{1};
     else
         top = 0;
         D_struc = [];
     end
-    if K.s(1) > 0
+    if any(K.s)
         for j = 1:length(K.s)
             n = K.s(j);
             Z = triu(ones(n));

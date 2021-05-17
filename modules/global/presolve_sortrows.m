@@ -1,6 +1,6 @@
 function p = presolve_sortrows(p)
 
-if p.K.f > 0 
+if any(p.K.f) 
     % Sort the equalities such that equalities with few terms are at the
     % top. This will improve bound propagation from equalities. If a tie,
     % place equality with least number of variables with infinite bound on

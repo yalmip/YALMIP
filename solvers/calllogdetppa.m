@@ -84,12 +84,12 @@ if K.l>0
     Slack = [Slack;Z{top}(:)];
     top = top + 1;
 end
-if K.q(1)>0
+if any(K.q)
     Dual = [Dual;X{top}(:)];
     Slack = [Slack;Z{top}(:)];
     top = top + 1;
 end
-if K.s(1)>0  
+if any(K.s)  
     % Messy format in SDPT3 to block and sort small SDPs
     u = blk(:,1);
     u = find([u{:}]=='s');
