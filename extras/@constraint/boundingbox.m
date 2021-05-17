@@ -1,4 +1,4 @@
-function V = extreme(P)
+function V = boundingbox(P)
 
 %BOUNDINGBOX Computes bounding box of a constraint
 %
