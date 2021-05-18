@@ -1,9 +1,9 @@
-function V = extreme(P)
-% extreme Computes vertices (very rudimentary implementation)
+function V = vertex(P)
+% VERTEX Computes vertices (very rudimentary implementation)
 %
-% V = extreme(F)
+% V = VERTEX(P)
 %
-% F : Constraint object defining a polytope
+% P : Constraint object defining a polytope
 %
 % See also CHEBYBALL, BOUNDINGBOX
 
@@ -20,10 +20,10 @@ end
 
 A = -p.F_struc(:,2:end);% Hx < K
 b = p.F_struc(:,1);
-if ~all(b) > 0
-    [x_c,R] = chebyball(A*x <= b);
+if all(b > 0)    
+	x_c = zeros(size(A,2),1);
 else
-    x_c = zeros(size(A,2),1);
+    [x_c,R] = chebyball(A*x <= b);
 end
 
 V = vertexenumerate(full(A),full(b),x_c);
