@@ -374,7 +374,7 @@ p = addImpliedSDP(p);
 % Resuse some code from cutsdp to add simple cuts required for SDP
 % feasibility for problems with some trivial symmetries
 % TODO: Clean up, refactor, generalize
-if p.K.f == 0 % Still to lazy to fix last insertion
+if ~any(p.K.f) % Still to lazy to fix last insertion
     top = startofSDPCone(p.K);
     p.F_struc = p.F_struc';
     for i = 1:length(p.K.s)

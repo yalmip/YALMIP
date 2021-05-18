@@ -90,7 +90,7 @@ if isempty(p.lb)
     p.lb = repmat(-inf,length(p.c),1);
 end
 if ~isempty(p.F_struc)
-    [lb,ub,used_rows] = findulb(p.F_struc,p.K);
+    [lb,ub,used_rows] = find_lp_bounds(p.F_struc,p.K);
     if ~isempty(used_rows)
         lower_defined = find(~isinf(lb));
         if ~isempty(lower_defined)

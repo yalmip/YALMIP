@@ -67,7 +67,7 @@ else
             % enumeration)
             % We might have x>=0, sum(x)=1, and this code simply extracts
             % the implied bounds x<=1
-            [lo,up] = findulb(Zmodel.F_struc(1:K.f + K.l,:),K);
+            [lo,up] = find_lp_bounds(Zmodel.F_struc(1:K.f + K.l,:),K);
             Zmodel.lb = lo;Zmodel.ub = up;
             Zmodel = propagate_bounds_from_equalities(Zmodel);
             up = Zmodel.ub;

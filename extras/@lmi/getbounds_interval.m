@@ -12,7 +12,7 @@ for i = 1:length(F.clauses)
         AB = getbase(X);
         K.l = prod(size(X));
         variables = getvariables(X);
-        [lb,ub,cand_rows] = findulb(AB,K);
+        [lb,ub,cand_rows] = find_lp_bounds(AB,K);
         LU(variables,1) = max([lb LU(variables,1)]')';
         LU(variables,2) = min([ub LU(variables,2)]')';
     elseif F.clauses{i}.type == 3

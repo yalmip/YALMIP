@@ -1,5 +1,5 @@
-function [lb,ub,cand_rows_eq,cand_rows_lp] = findulb(F_struc,K,lb,ub)
-%FINDULB Internal function to extract upper and lower variable bounds
+function [lb,ub,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,lb,ub)
+%find_lp_bounds Internal function to extract upper and lower variable bounds
 
 n = size(F_struc,2)-1;
 if nargin < 3

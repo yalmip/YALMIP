@@ -8,7 +8,7 @@ if any(p.K.q) | any(p.K.s)
     lower = -inf(length(p.c),1);
     upper = inf(length(p.c),1);
 else
-    [lower,upper,used_rows_eq,used_rows_lp] = findulb(p.F_struc,p.K);
+    [lower,upper,used_rows_eq,used_rows_lp] = find_lp_bounds(p.F_struc,p.K);
     used_rows_eq = used_rows_eq(~any(full(p.F_struc(used_rows_eq,1+find(p.variabletype~=0))),2)); 
     used_rows_lp = used_rows_lp(~any(full(p.F_struc(p.K.f + used_rows_lp,1+find(p.variabletype~=0))),2));
     if ~isempty(used_rows_lp)

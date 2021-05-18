@@ -46,7 +46,7 @@ removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
  
     if ~isempty(p.F_struc)
-        if ~isequal(p.K.l,0) & p.options.bnb.ineq2eq
+        if any(p.K.l) & p.options.bnb.ineq2eq
             affected = find(any(p.F_struc(:,1+find(removethese)),2));
         end
         p.F_struc(:,1)=p.F_struc(:,1)+p.F_struc(:,1+find(removethese))*p.lb(removethese);
@@ -191,7 +191,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
                 e = find(diag(X)==0);
                 if length(e)>0
                     Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
-                    for k = 1:length(e);
+                    for k = 1:length(e)
                         Z(:,e(k))=1;
                         Z(e(k),:)=1;
                     end            
@@ -218,7 +218,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         lb = p.lb;
         ub = p.ub;
     else
-        [lb,ub] = findulb(p.F_struc,p.K);
+        [lb,ub] = find_lp_bounds(p.F_struc,p.K);
     end
     newub = min(ub,p.ub);
     newlb = max(lb,p.lb);

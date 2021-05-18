@@ -16,7 +16,7 @@ showprogress('Calling Xpress',options.showprogress);
 
 if ~isempty(semicont_variables)
     % Bounds must be placed in LB/UB
-    [lb,ub,cand_rows_eq,cand_rows_lp] = findulb(F_struc,K,lb,ub);
+    [lb,ub,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,lb,ub);
     F_struc(K.f+cand_rows_lp,:)=[];
     F_struc(cand_rows_eq,:)=[];
     K.l = K.l-length(cand_rows_lp);

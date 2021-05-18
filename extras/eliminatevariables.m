@@ -286,7 +286,7 @@ if ~model.solver.objective.sigmonial & any(model.variabletype == 4)
         involved = [involved;find(m ~= fix(m) | m < 0)];
     end
     involved = unique(involved);
-    [lb,ub] = findulb(model.F_struc,model.K,model.lb,model.ub);
+    [lb,ub] = find_lp_bounds(model.F_struc,model.K,model.lb,model.ub);
     if all(lb(involved) == ub(involved))
         % Now add equality constraints to enforce       
         for i = signomials
