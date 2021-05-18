@@ -169,4 +169,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'KNITRO',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'KNITRO',solverinput,solveroutput,solvertime);

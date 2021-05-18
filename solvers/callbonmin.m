@@ -37,7 +37,7 @@ if ~isempty(model.lb)
         problem = 1;   
         solverinput = [];
         solveroutput = [];  
-        output = createoutput(model.lb*0,[],[],problem,'BONMIN',solverinput,solveroutput,0);
+        output = createOutputStructure(model.lb*0,[],[],problem,'BONMIN',solverinput,solveroutput,0);
         return
     end
 end
@@ -142,7 +142,7 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'BONMIN',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'BONMIN',solverinput,solveroutput,solvertime);
 
 
 % Code supplied by Jonatan Currie

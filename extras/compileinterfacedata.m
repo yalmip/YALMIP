@@ -961,7 +961,7 @@ if (K.f>0)
             % And we are done! Save the result
             % Note, no dual is saved
             yalmip('setSolution',solution);
-            p = checkset(F);
+            p = check(F);
             if any(p<1e-5)
                 diagnostic.info = yalmiperror(1,'YALMIP');
                 diagnostic.problem = 1;

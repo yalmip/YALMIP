@@ -10,11 +10,11 @@ F = (X>=0) + (cone(x(2:end),x(1))) + (trace(X)==x(1)+2*x(2)+3*x(3)+4)+(X(1,3)==8
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 
@@ -28,11 +28,11 @@ F = (X>=0) + (cone(x(2:end),1+x(1))) + (trace(X)==x(1)+2*x(2)+3*x(3)+4)+(X(1,3)=
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -54,11 +54,11 @@ F = (X>=0) + (cone(x(2:end),1+x(1))) + (trace(X)==x(1)+2*x(2)+3*x(3)+4)+(X(1,3)=
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -76,11 +76,11 @@ F = (X>=0) + (cone(1-x(2:end),1+x(1))) + (trace(X)==x(1)+2*x(2)+3*x(3)+4)+(X(1,3
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);

@@ -13,11 +13,11 @@ obj = trace(P)+y;
     
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -38,11 +38,11 @@ obj = trace(P)+y;
     
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
 testCase.assertTrue(abs(obj1 - obj2) <= 1e-3);
@@ -61,11 +61,11 @@ obj = trace(P)+y;
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -86,11 +86,11 @@ obj = trace(P);
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -111,11 +111,11 @@ obj = trace(P)+y;
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -135,11 +135,11 @@ obj = trace(P)+y+t;
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -159,11 +159,11 @@ obj = trace(P)+y+t;
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -185,11 +185,11 @@ obj = trace(P)+y+t;
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
@@ -210,11 +210,11 @@ obj = trace(P)+y+t;
 
 sol1  = optimize(F,obj,sdpsettings('verbose',0));
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1,'verbose',0));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);

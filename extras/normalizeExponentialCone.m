@@ -46,33 +46,33 @@ if ~isempty(model.evalMap)
                 % Standard interface, return solver not applicable
                 % This should not be able to happen as we check this
                 % earlier
-                output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
+                output = createOutputStructure([],[],[],-4,model.solver.tag,[],[],0);
                 return
         end
     end
     % Check that all exp/log enter in a convex fashion
     if any(model.K.f)
         if nnz(data.A(1:model.K.f,convexFunctions))>0 || nnz(data.A(1:model.K.f,concaveFunctions))>0
-            output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+            output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
             return
         end
     end
     % Check sign in objective on exp/log terms
     if any(data.c(convexFunctions) < 0) || any(data.c(concaveFunctions) > 0)
-        output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+        output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
         return
     end
     % Check sign in elementwise inequalities on exp/log terms
     if any(model.K.l)
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,convexFunctions)>0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,concaveFunctions)<0)
-            output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+            output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
             return
         end
     end
     % Check so there are no exp/log-terms inside cones
     if sum(model.K.q) + model.K.e + sum(model.K.p) + sum(model.K.s) > 0
         if nnz(model.F_struc(1+model.K.f+model.K.l:end,convexFunctions+1))+nnz(model.F_struc(1+model.K.f+model.K.l:end,concaveFunctions+1))>0
-            output = createoutput([],[],[],23,model.solver.tag,[],[],0);
+            output = createOutputStructure([],[],[],23,model.solver.tag,[],[],0);
             return
         end
     end 

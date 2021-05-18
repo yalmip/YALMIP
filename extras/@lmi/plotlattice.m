@@ -72,7 +72,7 @@ for i = x
                 else
                     assign(X,[i;j]);
                 end
-                p = checkset(F);
+                p = check(F);
                 if min(p) >= 0
                     if ThreeD
                         l = plot3(i,j,k,'or','MarkerSize',size,'MarkerFaceColor','yellow');

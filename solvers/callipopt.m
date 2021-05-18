@@ -56,7 +56,7 @@ if ~isempty(model.lb)
         problem = 1;   
         solverinput = [];
         solveroutput = [];  
-        output = createoutput(model.c*0,[],[],problem,'IPOPT',solverinput,solveroutput,0);
+        output = createOutputStructure(model.c*0,[],[],problem,'IPOPT',solverinput,solveroutput,0);
         return
     end
 end
@@ -173,4 +173,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);

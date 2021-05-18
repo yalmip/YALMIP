@@ -70,8 +70,7 @@ timing.lpsolve = 0;
 timing.heuristics = 0;
 if ~isempty(p.F_struc)
     if any(isnan(p.F_struc) | isinf(p.F_struc))
-        output = yalmip_default_output;
-        output.problem = 1;
+        output = createOutputStructure(1);        
         output.solved_nodes = 0;
         output.Primal       = zeros(length(p.c),1);
         output.infostr      = yalmiperror(output.problem,'BNB');
@@ -403,7 +402,7 @@ p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_evaluations(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_bounds_from_monomials(p);
-output = yalmip_default_output;
+output = createOutputStructure(0);
 
 % Detect complementary constraints
 p.complementary = [];
@@ -544,8 +543,7 @@ end
 
 x_min = dediagonalize(p,x_min);
 
-output = yalmip_default_output;
-output.problem = problem;
+output = createOutputStructure(problem);
 output.solved_nodes = solved_nodes;
 output.Primal        = zeros(length(p.kept),1);
 output.Primal(p.kept(1:n_in))= x_min(1:n_in);

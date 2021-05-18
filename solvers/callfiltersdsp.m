@@ -118,6 +118,6 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'filterSD',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'filterSD',solverinput,solveroutput,solvertime);
 
 

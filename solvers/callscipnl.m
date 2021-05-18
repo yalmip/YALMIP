@@ -139,7 +139,7 @@ if ~isempty(x)
 end
 
 % Standard interface
-output = createoutput(x,[],[],problem,'SCIP-NL',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,[],[],problem,'SCIP-NL',solverinput,solveroutput,solvertime);
 
 
 

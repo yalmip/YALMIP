@@ -29,14 +29,14 @@ end
 ops.sos.model = 1;
 solvesos(F,obj,ops,pv);
 obj1 = value(obj);
-p1s = checkset(F(find(is(F,'sos'))));
-p1e = checkset(F(find(~is(F,'sos'))));
+p1s = check(F(find(is(F,'sos'))));
+p1e = check(F(find(~is(F,'sos'))));
 
 ops.sos.model = 2;
 solvesos(F,obj,ops,pv);
 obj2 = value(obj);
-p2s = checkset(F(find(is(F,'sos'))));
-p2e = checkset(F(find(~is(F,'sos'))));
+p2s = check(F(find(is(F,'sos'))));
+p2e = check(F(find(~is(F,'sos'))));
 
 fail = 0;
 

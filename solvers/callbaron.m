@@ -127,7 +127,7 @@ if ~isempty(x)
 end
 
 % Standard interface
-output = createoutput(x,[],[],problem,'BARON',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,[],[],problem,'BARON',solverinput,solveroutput,solvertime);
 
 
 

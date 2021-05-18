@@ -123,7 +123,7 @@ P = toeplitz(randn(n,1)*100)+randn(n,n)*5;
 Z = intvar(n,n,'toeplitz');
 t = sdpvar(n,n,'full');
 e = P(:)-Z(:);
-ops = sdpsettings('solver','bnb','verbose',0);
+ops = sdpsettings('solver','bnb','verbose',1);
 
 F = (-t(:) <= P(:)-Z(:) <= t(:));
 obj = sum(sum(t));

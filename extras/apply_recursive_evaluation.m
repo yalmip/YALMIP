@@ -83,9 +83,7 @@ if isfield(p.evalMap{1},'prearg')
         end
     end
 else
-    for i = indicies
-        %arguments = {p.evalMap{i}.fcn,x(p.evalMap{i}.variableIndex)};
-        %arguments = {arguments{:},p.evalMap{i}.arg{2:end-1}};
+    for i = indicies        
         % Append argument with function name, and remove trailing
         % artificial argument
         arguments =  {p.evalMap{i}.fcn,p.evalMap{i}.arg{1:end-1}};
@@ -104,21 +102,3 @@ else
         end
     end
 end
-
-% function out = prod_monomials(x,rows,cols,vals,n)
-% %Hint: compile this function to a mex-file.
-% out = ones(1, n);
-% for r = 1:length(rows)
-% 	row = rows(r);
-% 	val = vals(r);
-% 	if val == 1
-% 		out(row) = out(row) * x(cols(r));
-% 	elseif val == -1
-% 		out(row) = out(row) / x(cols(r));
-% 	elseif val == -2
-% 		xc = x(cols(r));
-% 		out(row) = out(row) / (xc*xc);
-% 	else
-% 		out(row) = out(row) * x(cols(r))^val;
-% 	end
-% end

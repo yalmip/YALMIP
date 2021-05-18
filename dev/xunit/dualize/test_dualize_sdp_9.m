@@ -13,11 +13,11 @@ obj = trace(P)+y+t;
 
 sol1  = optimize(F,obj);
 obj1 = value(obj);
-p1   = checkset(F);
+p1   = check(F);
 
 sol2 = optimize(F,obj,sdpsettings('dualize',1));
 obj2 = value(obj);
-p2   = checkset(F);
+p2   = check(F);
 
 assert(sol1.problem == 0);
 assert(sol2.problem == 0);
