@@ -508,7 +508,16 @@ solver(i).tag     = 'MOSEK';
 solver(i).version = 'LP/QP';
 solver(i).checkfor= {'mosekopt'};
 solver(i).call    = 'callmosek';
+i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'MOSEK';
+solver(i).version = 'LP/QP-INTEGER';
+solver(i).checkfor= {'mosekopt'};
+solver(i).call    = 'callmosek';
 solver(i).constraint.integer = 1;
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -516,10 +525,22 @@ solver(i).tag     = 'MOSEK';
 solver(i).version = 'CONE';
 solver(i).checkfor= {'mosekopt'};
 solver(i).call    = 'callmosek';
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).exponentialcone = 1;
+solver(i).powercone = 1;
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'MOSEK';
+solver(i).version = 'CONE-INTEGER';
+solver(i).checkfor= {'mosekopt'};
+solver(i).call    = 'callmosek';
 solver(i).constraint.integer = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).exponentialcone = 1;
 solver(i).powercone = 1;
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
