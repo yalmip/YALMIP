@@ -1,6 +1,6 @@
 function p_lp = addTrivialActivationCuts(p,p_lp)
-if p.K.s(1) > 0
-    top = p.K.f + p.K.l+sum(p.K.q)+1;
+if any(p.K.s)
+    top = startofSDPCone(p.K);
     for k = 1:length(p.K.s)
         index = top:top+p.K.s(k)^2-1;
         F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);

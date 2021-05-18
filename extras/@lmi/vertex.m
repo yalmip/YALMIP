@@ -14,7 +14,7 @@ if anyCones(p.K) || any(p.variabletype) || any(p.binary_variables) || any(p.inte
   error('EXTREME can only be applied to LP-representable constraints.')
 end
 
-if p.K.f > 0
+if any(p.K.f)
     error('EXTREME currently not working with equalities')
 end
 

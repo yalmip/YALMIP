@@ -1,6 +1,6 @@
 function p = createsdpcut(p,x)
-if p.K.s > 0
-    top = p.K.f+p.K.l+sum(p.K.q)+1;
+if any(p.K.s)
+    top = startofSDPCone(p.K);
     newcuts = 1;
     newF = [];    
     for i = 1:length(p.K.s)

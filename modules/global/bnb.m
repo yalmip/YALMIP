@@ -374,7 +374,7 @@ p = addImpliedSDP(p);
 % Resuse some code from cutsdp to add simple cuts required for SDP
 % feasibility for problems with some trivial symmetries
 % TODO: Clean up, refactor, generalize
-if p.K.f == 0 % Still to lazy to fix last insertion
+if ~any(p.K.f) % Still to lazy to fix last insertion
     top = startofSDPCone(p.K);
     p.F_struc = p.F_struc';
     for i = 1:length(p.K.s)
@@ -1101,57 +1101,6 @@ if strcmp(p.options.bnb.method,'depthbreadth') & (upper<inf)
 end
 if strcmp(p.options.bnb.method,'depthest') & (upper<inf)
     p.options.bnb.method = 'est';
-end
-
-function res = resids(p,x)
-res = [];
-if p.K.f>0
-    res = -abs(p.F_struc(1:p.K.f,:)*[1;x]);
-end
-if p.K.l>0
-    res = [res;p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]];
-end
-if (length(p.K.q)>1) | p.K.q>0
-    top = 1+p.K.f+p.K.l;
-    for i = 1:length(p.K.q)
-        n = p.K.q(i);
-        q = p.F_struc(top:top+n-1,:)*[1;x];top = top+n;
-        res = [res;q(1) - norm(q(2:end))];
-    end
-end
-if (length(p.K.s)>1) | p.K.s>0
-    top = 1+p.K.f+p.K.l+sum(p.K.q);
-    for i = 1:length(p.K.s)
-        n = p.K.s(i);
-        X = p.F_struc(top:top+n^2-1,:)*[1;x];top = top+n^2;
-        X = reshape(X,n,n);
-        res = [res;min(eig(X))];
-    end
-end
-res = [res;min([p.ub-x;x-p.lb])];
-
-function [x_min,upper] = Uinitializesolution(p);
-
-x_min = zeros(length(p.c),1);
-upper = inf;
-if p.options.usex0
-    z = p.x0;
-    residual = resids(p,z);
-    relaxed_feasible = all(residual(1:p.K.f)>=-1e-8) & all(residual(1+p.K.f:end)>=-1e-6);
-    if relaxed_feasible & all(z(p.integer_variables)==fix(z(p.integer_variables))) & all(z(p.binary_variables)==fix(z(p.binary_variables)))
-        upper = computecost(p.f,p.c,p.Q,z,p);
-        x_min = z;
-    end
-else
-    p.x0 = zeros(length(p.c),1);
-    x = p.x0;
-    z = evaluate_nonlinear(p,x);
-    residual = resids(p,z);
-    relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);
-    if relaxed_feasible
-        upper = computecost(p.f,p.c,p.Q,z,p);
-        x_min = x;
-    end
 end
 
 function p = copyNode(p,node);

@@ -1,6 +1,6 @@
 function p = extractBounds(p)
 if ~isempty(p.F_struc)
-    [lb,ub,used_rows_eq,used_rows_lp] = findulb(p.F_struc,p.K);
+    [lb,ub,used_rows_eq,used_rows_lp] = find_lp_bounds(p.F_struc,p.K);
     if ~isempty(used_rows_lp)
         used_rows_lp = used_rows_lp(~any((p.F_struc(p.K.f + used_rows_lp,1+p.nonlinear)),2));
         if ~isempty(used_rows_lp)

@@ -20,9 +20,9 @@ for i = 1:length(F.LMIid)
         K.l = prod(size(X));
         variables = getvariables(X);
         if is_interval(i)
-            [lb,ub,cand_rows] = findulb_interval(AB,K);
+            [lb,ub,cand_rows] = find_lp_bounds_interval(AB,K);
         else
-            [lb,ub,cand_rows] = findulb(AB,K);            
+            [lb,ub,cand_rows] = find_lp_bounds(AB,K);            
         end
         LU(variables,1) = max([lb LU(variables,1)]')';
         LU(variables,2) = min([ub LU(variables,2)]')';  
@@ -32,9 +32,9 @@ for i = 1:length(F.LMIid)
         K.l = prod(size(X));
         variables = getvariables(X);
         if is_interval(i)
-            [lb,ub,cand_rows] = findulb_interval(AB,K);
+            [lb,ub,cand_rows] = find_lp_bounds_interval(AB,K);
         else
-            [lb,ub,cand_rows] = findulb(AB,K);            
+            [lb,ub,cand_rows] = find_lp_bounds(AB,K);            
         end
         LU(variables,1) = max([lb LU(variables,1)]')';
         LU(variables,2) = min([ub LU(variables,2)]')';  
@@ -53,9 +53,9 @@ for i = 1:length(F.LMIid)
         K.l = 2*prod(size(X));
         variables = getvariables(X);
         if is_interval(i)
-            [lb,ub,cand_rows] = findulb_interval(AB,K);
+            [lb,ub,cand_rows] = find_lp_bounds_interval(AB,K);
         else
-            [lb,ub,cand_rows] = findulb(AB,K);            
+            [lb,ub,cand_rows] = find_lp_bounds(AB,K);            
         end
         LU(variables,1) = max([lb LU(variables,1)]')';
         LU(variables,2) = min([ub LU(variables,2)]')';

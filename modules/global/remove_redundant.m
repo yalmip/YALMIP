@@ -23,7 +23,7 @@ if p.options.bmibnb.lpreduce
     end
 end
 
-if p.K.f > 0
+if any(p.K.f)
     b = p.F_struc(1:p.K.f,1);
     A = -p.F_struc(1:p.K.f,2:end);
     s1 = ((A>0).*A*(p.ub-p.lb) - (b-A*p.lb) <1e-6);

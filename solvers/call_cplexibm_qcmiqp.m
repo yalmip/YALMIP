@@ -5,7 +5,7 @@ function output = call_cplexibm_qcmiqp(interfacedata)
 % Bug in 12.6 regarding display options. Hence, we turn it on and then run
 % silently by redirecting output instead
 interfacedata.options.cplex.Display = 'on';
-if isempty(interfacedata.K.q) | interfacedata.K.q(1)==0
+if ~any(interfacedata.K.q)
     output = call_cplexibm_miqp(interfacedata);
     return
 end

@@ -123,7 +123,7 @@ else
             top = top + n;
         end
     end
-    if p_cut.K.s(1) > 0
+    if any(p_cut.K.s)
         top = 1 + p_cut.K.f + p_cut.K.l + sum(p_cut.K.q);
         for i = 1:length(p_cut.K.s)
             n = p_cut.K.s(i);

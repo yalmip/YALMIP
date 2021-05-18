@@ -71,7 +71,7 @@ end
 %% Extract better bounds from model
 % *************************************************************************
 if ~isempty(p.F_struc)
-    [lb,ub,used_rows_eq,used_rows_lp] = findulb(p.F_struc,p.K);
+    [lb,ub,used_rows_eq,used_rows_lp] = find_lp_bounds(p.F_struc,p.K);
     if ~isempty([used_rows_eq(:);used_rows_lp(:)])
         lower_defined = find(~isinf(lb));
         if ~isempty(lower_defined)
@@ -226,7 +226,7 @@ if p.options.cutsdp.verbose
 end
 
 if p.options.cutsdp.verbose
-    if p.K.s(1)>0
+    if any(p.K.s)
         disp(' Node    Phase        Cone infeas   Integrality infeas  Lower bound  Upper bound  LP cuts  Elapsed time');
     else
         disp(' Node    Phase        Cone infeas   Integrality infeas  Lower bound  Upper bound  LP cuts  Elapsed time');
@@ -283,7 +283,7 @@ end
 % Experimental stuff for variable fixing
 % *************************************************************************
 if p.options.cutsdp.nodefix & (p.K.s(1)>0)
-    top=1+p.K.f+p.K.l+sum(p.K.q);
+    top = startofSDPCone(p.K);
     for i=1:length(p.K.s)
         n=p.K.s(i);
         for j=1:size(p.F_struc,2)-1;
@@ -553,7 +553,7 @@ function [p_lp,worstinfeasibility,infeasible_sdp_cones,eig_computation_failure] 
 worstinfeasibility = infeasibility_in;
 eig_computation_failure = 0;
 infeasible_sdp_cones = zeros(1,length(p.K.s));
-if p.K.s(1)>0
+if any(p.K.s)
     % Solution found by MILP solver
     xsave = x;
     infeasibility = -1;
@@ -705,9 +705,9 @@ function [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infe
 infeasible_socp_cones = zeros(1,length(p.K.q));
 % Only add these cuts if solver doesn't support SOCP cones
 if ~p.solver.lower.constraint.inequalities.secondordercone.linear
-    if p.K.q(1)>0
+    if any(p.K.q)
         % Add cuts
-        top = p.K.f+p.K.l+1;
+        top = startofSOCPCone(p.K);
         for i = 1:1:length(p.K.q)
             n = p.K.q(i);
             X = p.F_struc(top:top+n-1,:)*[1;x];
@@ -743,8 +743,8 @@ if ~p.solver.lower.constraint.inequalities.secondordercone.linear
 end
 
 function p_lp = addActivationCuts(p,p_lp)
-if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) == length(p.c)
-    top = p.K.f + p.K.l+sum(p.K.q)+1;
+if p.options.cutsdp.activationcut && any(p.K.s) && length(p.binary_variables) == length(p.c)
+    top = startofSDPCone(p.K);
     for k = 1:length(p.K.s)
         F0 = p.F_struc(top:top+p.K.s(k)^2-1,1);
         F0 = reshape(F0,p.K.s(k),p.K.s(k));
@@ -785,8 +785,8 @@ if p.options.cutsdp.activationcut && p.K.s(1) > 0 && length(p.binary_variables) 
 end
 
 function p_lp = addDiagonalCuts(p,p_lp)
-if p.K.s(1)>0
-    top = p.K.f+p.K.l+sum(p.K.q)+1;
+if any(p.K.s)
+    top = startofSDPCone(p.K);
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         newF=[];
@@ -826,8 +826,8 @@ if p.K.s(1)>0
 end
 
 function p_lp = addSOCPCut(p,p_lp)
-if p.K.q(1) > 0
-    top = p.K.f+p.K.l+1;
+if any(p.K.q)
+    top = startofSOCPCone(p.K);
     for i = 1:length(p.K.q)
         n = p.K.q(i);
         newF = p.F_struc(top,:);

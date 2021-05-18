@@ -328,7 +328,7 @@ if strcmpi(solver.version,'geometric') || (strcmpi(solver.tag,'bnb') && strcmpi(
         check = setdiff(check,interfacedata.aux_variables);
         check = setdiff(check,interfacedata.evalVariables);
         check = setdiff(check,interfacedata.extended_variables);
-        [lb,ub] = findulb(interfacedata.F_struc,interfacedata.K);
+        [lb,ub] = find_lp_bounds(interfacedata.F_struc,interfacedata.K);
         if ~all(lb(check)>=0)
             % User appears to have explictly selected a GP solver
             userdirect = ~isempty(strfind(options.solver,'geometric')) || ~isempty(strfind(options.solver,'mosek')) || ~isempty(strfind(options.solver,'gpposy'));

@@ -46,7 +46,7 @@ removethese = p.lb==p.ub;
 if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(lowersolver,'callfmincongp') & ~isequal(lowersolver,'callgpposy')
  
     if ~isempty(p.F_struc)
-        if ~isequal(p.K.l,0) & p.options.bnb.ineq2eq
+        if any(p.K.l) & p.options.bnb.ineq2eq
             affected = find(any(p.F_struc(:,1+find(removethese)),2));
         end
         p.F_struc(:,1)=p.F_struc(:,1)+p.F_struc(:,1+find(removethese))*p.lb(removethese);
@@ -104,7 +104,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         p.K.l =  p.K.l - nnz(zero_row > p.K.f);
         p.K.f =  p.K.f - nnz(zero_row <= p.K.f);
     end
-    if p.K.l > 0
+    if any(p.K.l)
          zero_row = find(~any(p.F_struc(1+p.K.f:p.K.f+p.K.l,2:end),2));
          if ~isempty(zero_row)
              lhs = p.F_struc(p.K.f + zero_row,1);
@@ -121,8 +121,8 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
     end
     
     % Remove zero rows in SOCP cone
-	if p.K.q(1) > 0
-         top = 1 + p.K.f + p.K.l;
+	if any(p.K.q)
+         top = startofSOCPCone(p.K);
          for j = 1:length(p.K.q)
              m = p.K.q(j);
              M = p.F_struc(top:top+m-1,:);
@@ -137,7 +137,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
     end
                  
 %     if relaxed_p.K.q(1) > 0
-%         top = 1 + p.K.f + p.K.l;
+%         top = startofSOCPCone(p.K);
 %         dels = zeros(sum(p.K.q),1);
 %         deli = zeros(length(p.K.q),1);
 %         for j = 1:length(p.K.q)
@@ -168,8 +168,8 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
 %         end
 %     end
     
-    if p.K.s(1) > 0
-        top = 1 + p.K.f + p.K.l + sum(p.K.q);
+    if any(p.K.s)
+        top = startofSDPCone(p.K);
         newEqualities = [];
         for j = 1:length(p.K.s)
             X = p.F_struc(top:top + p.K.s(j)^2-1,:); 
@@ -191,7 +191,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
                 e = find(diag(X)==0);
                 if length(e)>0
                     Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
-                    for k = 1:length(e);
+                    for k = 1:length(e)
                         Z(:,e(k))=1;
                         Z(e(k),:)=1;
                     end            
@@ -218,7 +218,7 @@ if nnz(removethese)>0 & all(p.variabletype == 0) & isempty(p.evalMap)% ~isequal(
         lb = p.lb;
         ub = p.ub;
     else
-        [lb,ub] = findulb(p.F_struc,p.K);
+        [lb,ub] = find_lp_bounds(p.F_struc,p.K);
     end
     newub = min(ub,p.ub);
     newlb = max(lb,p.lb);

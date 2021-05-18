@@ -6,7 +6,7 @@ function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_dual(model)
 
 param = model.options.mosek;
 % Extract alpha in power cone and remove from basis
-if model.K.p(1) > 0
+if any(model.K.p)
     top = model.K.f + model.K.l + sum(model.K.q) + 3*model.K.e;
     alpha = model.F_struc(top + cumsum(model.K.p),1);
     model.F_struc(top + cumsum(model.K.p),:) = [];
@@ -23,14 +23,14 @@ prob.bux = inf(size(prob.a,2),1);
 top = model.K.f+model.K.l;
 prob.blx(1+model.K.f:model.K.f+model.K.l) = 0;
 
-if model.K.q(1)>0 || model.K.e > 0 || model.K.p(1) > 0
+if any(model.K.q) || any(model.K.e) || any(model.K.p)
     prob.cones.type = [];
     prob.cones.subptr = [];
     prob.cones.sub = [];
     prob.cones.conepar = [];
 end
 
-if model.K.q(1)>0
+if any(model.K.q)
     nq = length(model.K.q);
     top0 = top;
     for i = 1:length(model.K.q)
@@ -42,7 +42,7 @@ if model.K.q(1)>0
     end
 end
 
-if model.K.e>0
+if any(model.K.e)
     for i = 1:model.K.e
         prob.cones.conepar = [prob.cones.conepar 0];
         prob.cones.type = [prob.cones.type(:)' 3];
@@ -52,7 +52,7 @@ if model.K.e>0
     end
 end
 
-if model.K.p(1)>0    
+if any(model.K.p)    
     prob.cones.conepar = [prob.cones.conepar full(alpha(:))'];
     for i = 1:length(model.K.p)
         prob.cones.type = [prob.cones.type(:)' 5];
@@ -62,7 +62,7 @@ if model.K.p(1)>0
     end
 end
 
-if model.K.s(1)>0
+if any(model.K.s)
    prob = appendMosekSDPdata(model.F_struc,model.K,prob);
 end
 

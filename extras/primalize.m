@@ -68,18 +68,18 @@ end
 
 Fdual = ([]);
 xvec = [];
-if model.K.f > 0
+if any(model.K.f)
     t = sdpvar(model.K.f,1);
     xvec = [xvec;t];
 end
 
-if model.K.l > 0
+if any(model.K.l)
     x = sdpvar(model.K.l,1);
     xvec = [xvec;x];
     Fdual = Fdual + (x>=0);
 end
 
-if model.K.q(1) > 0
+if any(model.K.q)
     for i = 1:length(model.K.q)
         x = sdpvar(model.K.q(i),1);
         xvec = [xvec;x];
@@ -87,7 +87,7 @@ if model.K.q(1) > 0
     end
 end
 
-if model.K.s(1)>0
+if any(model.K.s)
     for i = 1:length(model.K.s)
         X{i} = sdpvar(model.K.s(i),model.K.s(i));
         xvec = [xvec;X{i}(:)];

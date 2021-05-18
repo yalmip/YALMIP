@@ -1,8 +1,8 @@
-function [lb,ub,cand_rows] = findulb_interval(F_struc,K)
-%FINDULB Internal function to extract upper and lower variable bounds
+function [lb,ub,cand_rows] = find_lp_bounds_interval(F_struc,K)
+%find_lp_bounds Internal function to extract upper and lower variable bounds
 
 % special code for the interval data case, to avoid overhead in the default
-% function findulb 
+% function find_lp_bounds 
 
 n = size(F_struc,2)-1;
 lb = -inf*ones(n,1);

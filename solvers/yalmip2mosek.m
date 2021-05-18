@@ -56,7 +56,7 @@ end
 
 [prob.qosubi,prob.qosubj,prob.qoval] = find(tril(sparse(2*Q)));
 
-if K.q(1)>0
+if any(K.q)
     nof_new = sum(K.q);
     prob.a = [prob.a [spalloc(K.f,nof_new,0);spalloc(K.l,nof_new,0);speye(nof_new)]];
     %prob.a(1+K.f+K.l:end,1:length(c)) = prob.a(1+K.f+K.l:end,1:length(c));

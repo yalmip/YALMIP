@@ -86,7 +86,7 @@ elseif output.problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.co
 end
 
 function p = pruneSDPCone(p)
-if ~isempty(p.K.s) || p.K.s(1) > 0 && p.options.bmibnb.uppersdprelax
+if any(p.K.s) && p.options.bmibnb.uppersdprelax
     if ~p.solver.uppersolver.constraint.inequalities.semidefinite.linear
         p.F_struc(end-sum(p.K.s.^2)+1:end,:) = [];
         p.K.s = 0;

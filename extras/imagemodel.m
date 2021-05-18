@@ -74,12 +74,12 @@ vecF = model.F_struc*[1;y];
 K = model.K;
 Fimage = ([]);
 start = 1;
-if model.K.l > 0
+if any(model.K.l)
     Fimage = Fimage + (vecF(start:start+K.l-1) >= 0);
     start = start + K.l;
 end
 
-if model.K.q(1) > 0
+if any(model.K.q)
     for i = 1:length(model.K.q)
         z = vecF(start:start+K.q(i)-1)
         Fimage = Fimage + (cone(z(2:end),z(1)));
@@ -87,7 +87,7 @@ if model.K.q(1) > 0
     end
 end
 
-if model.K.s(1)>0
+if any(model.K.s)
     for i = 1:length(model.K.s)
         z = vecF(start:start+K.s(i)^2-1);
         Fimage = Fimage + (reshape(z,K.s(i),K.s(i)));

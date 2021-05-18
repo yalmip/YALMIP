@@ -19,7 +19,7 @@ c = model.c;
 % be treated as (Ax+b)'*(ax+b) <= (c'*x+d)^2,  c'*x+d >= 0
 if any(K.q)
     aux = [];
-    top = 1 + K.f + K.l;
+    top = startofSOCPCone(K);
     for i = 1:length(K.q)
         row = model.F_struc(top,:);
         if any(row(2:end))
@@ -79,7 +79,7 @@ if ~isempty(ub) && ~isempty(lb)
 end
 
 % Extract linear and nonlinear inequality constraints
-if model.K.l>0
+if any(model.K.l)
     A = -model.F_struc(1:model.K.l,2:end);
     b = model.F_struc(1:model.K.l,1);
     

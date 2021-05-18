@@ -163,7 +163,7 @@ end
 u = u(:);
 D_struc = u(1:1:K.l);
 if length(K.s)>0
-    if K.s(1)>0
+    if any(K.s)
         pos = K.l+1;
         for i = 1:length(K.s)
             temp = zeros(K.s(i),K.s(i));

@@ -21,7 +21,7 @@ model.lb = lb;
 model.ub = ub;
 model.f = c;
 
-if K.s(1)>0
+if any(K.s)
     top = 1 + K.l + K.f;
     for j = 1:length(K.s)
         n = K.s(j);

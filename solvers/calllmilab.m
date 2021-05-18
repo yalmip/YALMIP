@@ -35,7 +35,7 @@ if K.l>0
 end
 
 % The LMIs
-if K.s(1)>0        
+if any(K.s)        
     for i = 1:length(K.s)
         n = K.s(i);
         lmiterm([-lmicount 1 1 0],full(reshape(F_struc(top:top+n^2-1,1),n,n)));

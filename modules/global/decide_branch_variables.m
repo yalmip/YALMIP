@@ -1,7 +1,7 @@
 function vars = decide_branch_variables(p)
 
 if size(p.bilinears,1)==0
-    if p.K.s(1)>0
+    if any(p.K.s)
         if any(p.K.s>p.K.rank)
             vars = p.linears;
             return

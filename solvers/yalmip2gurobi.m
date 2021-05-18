@@ -75,7 +75,7 @@ end
 
 if ~isempty(semicont_variables)
     % Bounds must be placed in LB/UB
-    [LB,UB,cand_rows_eq,cand_rows_lp] = findulb(F_struc,K,LB,UB);
+    [LB,UB,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,LB,UB);
     F_struc(K.f+cand_rows_lp,:)=[];
     F_struc(cand_rows_eq,:)=[];
     K.l = K.l-length(cand_rows_lp);

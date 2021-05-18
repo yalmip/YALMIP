@@ -51,7 +51,7 @@ if ~isempty(model.evalMap)
         end
     end
     % Check that all exp/log enter in a convex fashion
-    if model.K.f > 0
+    if any(model.K.f)
         if nnz(data.A(1:model.K.f,convexFunctions))>0 || nnz(data.A(1:model.K.f,concaveFunctions))>0
             output = createoutput([],[],[],19,model.solver.tag,[],[],0);
             return
@@ -63,7 +63,7 @@ if ~isempty(model.evalMap)
         return
     end
     % Check sign in elementwise inequalities on exp/log terms
-    if model.K.l > 0
+    if any(model.K.l)
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,convexFunctions)>0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,concaveFunctions)<0)
             output = createoutput([],[],[],19,model.solver.tag,[],[],0);
             return
@@ -231,7 +231,7 @@ if ~isempty(model.evalMap)
     model.c = data.c;
     model.K = cones;   
     % Put back the POWER+SDP cone in place
-    if model.K.s(1)>0 || model.K.p(1)>0
+    if any(model.K.s) || any(model.K.p)
         if size(sdpData,2) < size(model.F_struc,2)
             sdpData(end,size(model.F_struc,2)) = 0;
         end

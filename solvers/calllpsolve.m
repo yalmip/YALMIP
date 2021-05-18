@@ -22,7 +22,7 @@ else
         UB = ones(n,1)*inf;;
     else
         %LP_SOLVE FAILS IF BOUNDS NOT EXPLICIT
-        [LB,UB,used_rows] = findulb(F_struc,K);
+        [LB,UB,used_rows] = find_lp_bounds(F_struc,K);
         LB(isinf(LB)) = -1e12;
         UB(isinf(UB)) = 1e12;
         F_struc(K.f+used_rows,:)=[];

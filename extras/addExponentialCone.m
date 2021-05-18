@@ -36,7 +36,7 @@ if ~isempty(model.evalMap)
         end
     end
     % Check that all exp/log enter in a convex fashion
-    if model.K.f > 0
+    if any(model.K.f)
        if nnz(data.A(1:model.K.f,convexFunctions))>0 || nnz(data.A(1:model.K.f,concaveFunctions))>0
           output = createoutput([],[],[],19,model.solver.tag,[],[],0);
              return
@@ -46,7 +46,7 @@ if ~isempty(model.evalMap)
         output = createoutput([],[],[],19,model.solver.tag,[],[],0);
         return
     end
-    if model.K.l > 0
+    if any(model.K.l)
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,convexFunctions)<0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,concaveFunctions)>0)
              output = createoutput([],[],[],19,model.solver.tag,[],[],0);
              return

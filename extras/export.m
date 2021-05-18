@@ -176,7 +176,7 @@ switch lower(solver.tag)
 
     case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
         try
-            if interfacedata.K.s(1)>0
+            if any(interfacedata.K.s)
                 model.prob = yalmip2SDPmosek(interfacedata);
             else
                 model.prob = yalmip2mosek(interfacedata);

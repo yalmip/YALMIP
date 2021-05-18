@@ -114,7 +114,7 @@ output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solver
 
 function [model,x0,H] = removeequalitiesinmodel(model)
 
-if model.K.f > 0
+if any(model.K.f)
     % Extract the inequalities
     A_equ = model.F_struc(1:model.K.f,2:end);
     b_equ = -model.F_struc(1:model.K.f,1);
