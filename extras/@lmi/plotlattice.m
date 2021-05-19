@@ -3,10 +3,8 @@ function varargout = plotlattice(varargin)
 %
 % p = plotlattice(C,which,c,size,options)
 %
-% Note that only convex sets C in R^2 are supported.
-%
 % C    :  Constraint object
-% which:  'inner' or 'outer'
+% which:  'inner' (default) or 'outer'
 % color:  color [double] ([r g b] format) or char from 'rymcgbk'
 % size :  Size of marker
 % options: options structure from sdpsettings
@@ -16,11 +14,13 @@ function varargout = plotlattice(varargin)
 % plotlattice(x1^2+x2^2 <= 1.5,'outer','yellow');
 % plotlattice(x1^2+x2^2 <= 1.5,'inner','black');
 
+h = ishold;
+hold on
 F = varargin{1};
 if nargin > 1
     which = varargin{2};
 else
-    which = 'outer';
+    which = 'inner';
 end
 if nargin > 2
     color = varargin{3};
@@ -54,7 +54,7 @@ if ThreeD
 else
     z = 1;
 end
-
+V = [];
 for i = x
     for j = y
         for k = z
@@ -66,18 +66,21 @@ for i = x
                     l = plot(i,j,'or','MarkerSize',size);
                 end
                 set(l,'MarkerFaceColor',color);
+                V = [V [i;j;k]];
             case 'inner'
                 if ThreeD
-                    assign(X,[i;j;k]);
+                    assign(X,[i;j;k]);                    
                 else
-                    assign(X,[i;j]);
+                    assign(X,[i;j]);                    
                 end
                 p = check(F);
                 if min(p) >= 0
                     if ThreeD
                         l = plot3(i,j,k,'or','MarkerSize',size,'MarkerFaceColor','yellow');
+                        V = [V [i;j;k]];
                     else
                         l = plot(i,j,'or','MarkerSize',size,'MarkerFaceColor','yellow');
+                        V = [V [i;j]];
                     end
                     set(l,'MarkerFaceColor',color);
                 end
@@ -86,4 +89,10 @@ for i = x
         end
         end
     end
+end
+if ~h
+    hold off;
+end
+if nargout > 0
+    varargout{1} = V;
 end
