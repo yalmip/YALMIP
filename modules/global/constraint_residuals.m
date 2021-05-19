@@ -45,7 +45,7 @@ if any(p.K.p)
     for i = length(p.K.p)
         zi = r(top:top + p.K.p(i)-1);top = top + p.K.p(i);
         a = zi(end);        
-        detailed.q = [detailed.p;zi(1)^a*zi(2)^(1-a) - norm(zi(3:end-1))];
+        detailed.p = [detailed.p;zi(1)^a*zi(2)^(1-a) - norm(zi(3:end-1))];
     end
     res = [res;detailed.p];
 end

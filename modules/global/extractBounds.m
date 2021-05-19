@@ -15,8 +15,7 @@ if ~isempty(p.F_struc)
             p.F_struc(p.K.f + used_rows_lp,:)=[];
             p.K.l = p.K.l - length(used_rows_lp);
         end
-    end
-    
+    end    
     if ~isempty(used_rows_eq)
         used_rows_eq = used_rows_eq(~any(full(p.F_struc(used_rows_eq,1+p.nonlinear)),2));
         if ~isempty(used_rows_eq)

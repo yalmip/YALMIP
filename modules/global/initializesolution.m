@@ -23,6 +23,7 @@ else
             end
         end
     end
+    p = correctEXPConeClosureInitial(p);
     x = p.x0;
     z = evaluate_nonlinear(p,x);
     z = propagateAuxilliary(p,z);
@@ -61,13 +62,12 @@ else
     if ~isempty(p.binary_variables)
         p.x0(p.binary_variables) = round(p.x0(p.binary_variables));
     end
-    
+    p = correctEXPConeClosureInitial(p);
     x = p.x0;
     x(isinf(x))=eps;
     x(isnan(x))=eps;
     z = evaluate_nonlinear(p,x);
-    z = propagateAuxilliary(p,z);
-    
+    z = propagateAuxilliary(p,z);    
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);
     if relaxed_feasible & ( p.f+p.c'*z+z'*p.Q*z < upper)

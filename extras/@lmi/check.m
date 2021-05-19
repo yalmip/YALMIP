@@ -132,7 +132,15 @@ for j = 1:nlmi
         case 20
             res(j,1) = F0(1)^F0(end)*F0(2)^(1-F0(end)) - norm(F0(3:end-1));
         case 21
-            res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
+            if F0(2)==0
+                if F0(1)>0
+                    res(j,1) = -inf;
+                else
+                    res(j,1) = F0(3);
+                end
+            else
+                res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
+            end
         case 54
             res(j,1) = inf;
             for k = 1:size(F0,2)

@@ -261,13 +261,13 @@ if ProblemClass.constraint.inequalities.rotatedsecondordercone.nonlinear & ~forc
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'nonlinear rotated second-order cone constraints');
 end
-if ProblemClass.constraint.inequalities.powercone && ~forced_choice  && length(solvers)>0
-    keep = ones(length(solvers),1);
-    for i = 1:length(solvers)                      
-        keep(i) = solvers(i).powercone;
-    end
-    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'power cone constraints');
-end  
+% if ProblemClass.constraint.inequalities.powercone && ~forced_choice  && length(solvers)>0
+%     keep = ones(length(solvers),1);
+%     for i = 1:length(solvers)                      
+%         keep(i) = solvers(i).powercone;
+%     end
+%     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'power cone constraints');
+% end  
 
 % ******************************************************
 % Prune based on element-wise inequality constraints
@@ -449,6 +449,16 @@ keep = ones(length(solvers),1);
 if ~forced_choice  & length(solvers)>0
     for i = 1:length(solvers)
         keep(i) = (ProblemClass.exponentialcone <= solvers(i).exponentialcone) || (ProblemClass.exponentialcone <= solvers(i).evaluation);
+    end
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'exponential cones');
+end
+% ******************************************************
+% Power cone representable 
+% ******************************************************
+keep = ones(length(solvers),1);
+if ~forced_choice  & length(solvers)>0
+    for i = 1:length(solvers)
+        keep(i) = (ProblemClass.constraint.inequalities.powercone <= solvers(i).powercone) || (ProblemClass.constraint.inequalities.powercone <= solvers(i).evaluation);
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'exponential cones');
 end

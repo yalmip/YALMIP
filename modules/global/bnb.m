@@ -84,10 +84,16 @@ if isempty(p.lb)
 end
 p.feasible = 1;
 
+%% *******************************
+% Could be some nonlinear terms 
+% (although these problems are recommended to be solved using BMIBNB
+p = compile_nonlinear_table(p);
+
 % ********************************
 %% Extract bounds from model
 % ********************************
-p = extractBounds(p);
+p = bounds_from_cones_to_lp(p);
+p = presolve_bounds_from_modelbounds(p,1);
 
 % ********************************
 %% Presolve trivial SDP stuff (zero in diagonal)
@@ -95,25 +101,17 @@ p = extractBounds(p);
 p = detectRedundantInfeasibleSDPRows(smashFixed(p));
 
 % ********************************
-%% ADD CONSTRAINTS 0<x<1 FOR BINARY
+%% ADD CONSTRAINTS 0<=x<=1 FOR BINARY
 % and clean integer bounds et
 % ********************************
 p = update_integer_bounds(p);
 p = update_semicont_bounds(p);
 
 %% *******************************
-% Could be some nonlinear terms (although these problems are recommended to
-% be solved using BMIBNB
-p = compile_nonlinear_table(p);
-p = propagate_bounds_from_monomials(p);
-
-%% *******************************
 % PRE-SOLVE (nothing fancy coded)
 % % *******************************
+p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
-%[p,pss] = propagate_bounds_from_qualities(p);
-
-% Silly redundancy
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 

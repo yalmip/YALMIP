@@ -19,4 +19,5 @@ if any(isnan(model.x0)) & ~all(isnan(model.x0))
         end
     end
 end
+model = correctEXPConeClosureInitial(model);
 model.x0(isnan(model.x0))=0;

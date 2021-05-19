@@ -67,7 +67,13 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
         return
     end
     
-    % We do this last, as the SOCP/SDP presolve might add trivial
+    [p,infeasible] = detectRedundantInfeasibleEXPRows(p);
+    if infeasible
+        output = createOutputStructure(1);
+        return
+    end
+    
+    % We do this last, as the SOCP/EXP/SDP presolve might add trivial
     % equalities from presolving 0 >= norm(z) etc
     p = removeEmptyLPRows(p);
     [p,infeasible] = detectRedundantInfeasibleLPRows(p);

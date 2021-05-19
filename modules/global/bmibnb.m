@@ -108,7 +108,7 @@ end
 p.feasible = 1;
 
 % *************************************************************************
-% Ensure that bond propagation is performed
+% Ensure that bound propagation is performed
 % *************************************************************************
 p.changedbounds = 1;
 
