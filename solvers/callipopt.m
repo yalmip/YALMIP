@@ -110,7 +110,7 @@ end
 % If quadratic objective and no nonlinear constraints, we can supply an
 % Hessian of the Lagrangian
 usedinObjective = find(model.c | any(model.Q,2));
-if ~any(model.variabletype(usedinObjective)) & any(model.Q)
+if ~any(model.variabletype(usedinObjective)) & any(any(model.Q))
     if  ~anyCones(model.K) && length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
         H = model.Q(:,model.linearindicies);
         H = H(model.linearindicies,:);
