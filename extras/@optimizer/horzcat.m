@@ -9,6 +9,8 @@ end
 % FIXME: Check will be strengthened
 for i = 1:nargin
     if isa(varargin{i},'optimizer') && isequal(varargin{i}.diminOrig,varargin{1}.diminOrig)
+    elseif isa(varargin{i},'optimizer') && isequal(varargin{i}.diminOrig,{[0 0]}) && isempty(varargin{1}.diminOrig)
+    elseif isa(varargin{i},'optimizer') && isequal(varargin{1}.diminOrig,{[0 0]}) && isempty(varargin{i}.diminOrig)
     else
         error('The optimizer objects do not match')
     end
