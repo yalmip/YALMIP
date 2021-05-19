@@ -1,4 +1,4 @@
-function p = addLinearCut(p,row)
+function p = addInequality(p,row)
 if ~anyCones(p.K)
     % Just append in the end
     p.F_struc = [p.F_struc;row];

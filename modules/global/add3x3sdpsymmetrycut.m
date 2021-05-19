@@ -23,6 +23,6 @@ for j = 1:length(p.sdpsymmetry)
                 end
             end
         end
-        p_lp = addLinearCut(p_lp,newF);
+        p_lp = addInequality(p_lp,newF);
     end
 end

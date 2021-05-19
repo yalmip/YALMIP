@@ -22,7 +22,6 @@ sol = optimize(F,obj,ops);
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(obj) - 6.168422746718130e+002) <= 1e-5);
 
-
 function test_minlp(testCase)
 randn('seed',12345);
 rand('seed',12345);
@@ -36,7 +35,6 @@ constraints = (A*x <= b) + (integer(x));
 sol = optimize(constraints,obj,sdpsettings('solver','bnb','bnb.solver','fmincon','verbose',0));
 
 testCase.assertTrue(sol.problem == 0);
-
 
 function test_miqp(testCase)
 rand('seed',1234);
@@ -59,7 +57,6 @@ sol = optimize((residuals <= 50),obj,ops);
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(obj) - 1.605058709613011e+003) <= 1e-5);
 
-
 function test_misdp(testCase)
 % Test two regression bugs
 % 1. quadratic costs in binary SDP
@@ -67,7 +64,7 @@ function test_misdp(testCase)
 
 X = sdpvar(3,3);
 obj = trace((X-2*eye(3))*(X-2*eye(3))');
-sol = optimize((X<=3*eye(3)) + ((X>=eye(3)) | (X<=-eye(3))) + (-50 <= X(:) <= 50),obj,sdpsettings('verbose',0));
+sol = optimize((X<=3*eye(3)) + ((X>=eye(3)) | (X<=-eye(3))) + (-50 <= X(:) <= 50),obj,sdpsettings('verbose',0,'debug',1));
 
 testCase.assertTrue(sol.problem==0);
 testCase.assertTrue(abs(value(obj)) <= 1e-5);
@@ -109,7 +106,6 @@ cc(2*Sen_n+1:3*Sen_n)=Z;
 cc(3*Sen_n+1:end)=Z;
 obj=cc*X;
 sol = optimize(F,obj,sdpsettings('solver','bnb','verbose',0));
-
 
 function test_micones(testCase)
 randn('seed',123456);
@@ -163,8 +159,6 @@ sol = optimize(F,obj,ops);
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(obj) - 3.352603420494530e+002) <= 2e-4);
 
-
-
 function test_migp(testCase)
 x = sdpvar(7,1);
 
@@ -206,22 +200,41 @@ testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(all(abs(value(x) - [ 2     3     3     3     2     3     3]') <= 1e-3));
 testCase.assertTrue(abs(value(D)-(8+1/3)) <= 1e-3);
 
+function test_presolve(testCase)
+
+intvar x y z
+sol = optimize([x==0,cone([x;y-1;y+1])],z,sdpsettings('solver','bnb'));
+testCase.assertTrue(sol.problem == 1);
+
+sol = optimize([x==0,cone([z;y-1;y+1])],z,sdpsettings('solver','bnb'));
+testCase.assertTrue(sol.problem == 0);
+testCase.assertTrue(abs(value(z)-2) <= 1e-3);
+
+sol = optimize([x==0,[x y;y x]>=0],x,sdpsettings('solver','bnb'));
+testCase.assertTrue(sol.problem == 0);
+testCase.assertTrue(abs(value(x)-0) <= 1e-3);
+
+sol = optimize([x==0,[x y;y x]>=0,cone([y;z-1;z+1])],x,sdpsettings('solver','bnb'));
+testCase.assertTrue(sol.problem == 1);
 
 function test_diw(testCase)
 [F,h] = loadsdpafile('diw_15.dat-s');
 sol = optimize(F,h,sdpsettings('solver','bnb'));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - -95) <= 1e-2);
+
 function test_colon(testCase)
 [F,h] = loadsdpafile('coloncancer_1_100_5.dat-s')
 sol = optimize(F,h,sdpsettings('solver','bnb'));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 127.47) <= 1e-2);
+
 function test_clique(testCase)
 [F,h] = loadsdpafile('clique_20_k3_6_7.dat-s')
 sol = optimize(F,h,sdpsettings('solver','bnb'));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 147) <= 1e-2);
+
 function test_bar(testCase)
 [F,h] = loadsdpafile('2x3_3bars.dat-s')
 sol = optimize(F,h,sdpsettings('solver','bnb'));

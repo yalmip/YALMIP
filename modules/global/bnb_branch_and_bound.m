@@ -158,7 +158,7 @@ if ~any(p.K.f) % Still to lazy to fix last insertion
     p = detect3x3SymmetryGroups(p);
     pp = p;pp.F_struc = [];pp.K.l = 0;pp.K.f = 0;pp.K.s = 0;
     [p,pp] = addSymmetryCuts(p,pp);
-    p = addLinearCut(p,pp.F_struc);
+    p = addInequality(p,pp.F_struc);
     p.semidefinite=[];
 end
 

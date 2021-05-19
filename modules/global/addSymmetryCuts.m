@@ -24,7 +24,7 @@ for j = 1:length(p.sdpsymmetry)
                     newF = [newF;b a];                  
                 end
             end
-            p_lp = addLinearCut(p_lp,newF);
+            p_lp = addInequality(p_lp,newF);
             % Delete, won't need these in the future
             p.sdpsymmetry{j}.dataBlock = [];
             p.sdpsymmetry{j}.variables = [];

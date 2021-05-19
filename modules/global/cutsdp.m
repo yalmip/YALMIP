@@ -364,7 +364,7 @@ while goon
         
     % Add upper bound constraint, speeds up the MILP solver slightly somtimes    
     if ~isinf(upper) && (nnz(p_lp.Q)==0)
-        p_lp = addLinearCut(p_lp,[upper -p_lp.c']);     
+        p_lp = addInequality(p_lp,[upper -p_lp.c']);     
     end
     
     p_lp.options = standard_options;
@@ -917,17 +917,11 @@ if ~isempty(prevRem)
     % again, add them and define them as very likely to be kept
     Violated_Here = find((prevRem*[1;output.Primal] <= 0));
     if ~isempty(Violated_Here)
-        p_lp = addLinearCut(p_lp,prevRem(Violated_Here,:));
-%        p_lp.F_struc = [p_lp.F_struc;prevRem(Violated_Here,:)];
-%        p_lp.K.l = p_lp.K.l + length(Violated_Here);
+        p_lp = addInequality(p_lp,prevRem(Violated_Here,:));
         activity = [activity(:);ones(length(Violated_Here),1)*-20];      
         prevRem(Violated_Here,:)=[];
     end
 end
-
-function p = addLinearCut(p,row);
-p.F_struc = [p.F_struc;row];
-p.K.l = p.K.l + size(row,1);
 
 
 function p = adjustSolverPrecision(p)
@@ -1047,7 +1041,7 @@ for j = 1:length(p.sdpsymmetry)
                 end
             end
         end
-        p_lp = addLinearCut(p_lp,newF);
+        p_lp = addInequality(p_lp,newF);
     end
 end
     
@@ -1078,7 +1072,7 @@ for j = 1:length(p.sdpsymmetry)
                     newF = [newF;b a];                  
                 end
             end
-            p_lp = addLinearCut(p_lp,newF);
+            p_lp = addInequality(p_lp,newF);
             % Delete, won't need these in the future
             p.sdpsymmetry{j}.dataBlock = [];
             p.sdpsymmetry{j}.variables = [];

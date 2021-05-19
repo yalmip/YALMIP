@@ -13,13 +13,13 @@ if any(x0 == 0)
             % Look for zero diagonal. This means we can move all
             % nonzero elements to a zero equality
             e = find(diag(X)==0);
-            if length(e)>0
+            if any(e)
                 Z = spalloc(p.K.s(j),p.K.s(j),length(e)*2*p.K.s(j));
                 for k = 1:length(e)
                     Z(:,e(k))=1;
                     Z(e(k),:)=1;
                 end
-                m1 = find(Z(:)); % To be removed
+                m1 = find(Z(:));      % To be removed
                 m2 = find(triu(Z,1)); % To be moved
                 equalityRows = p.F_struc(top + m2 - 1,:);
                 p.F_struc(top + m1 - 1,:) = [];

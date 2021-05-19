@@ -92,7 +92,7 @@ p = extractBounds(p);
 % ********************************
 %% Presolve trivial SDP stuff (zero in diagonal)
 % ********************************
-p = presolveTrivialSDP(p);
+p = detectRedundantInfeasibleSDPRows(smashFixed(p));
 
 % ********************************
 %% ADD CONSTRAINTS 0<x<1 FOR BINARY
