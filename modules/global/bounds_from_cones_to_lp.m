@@ -2,7 +2,7 @@ function p = bounds_from_cones_to_lp(p)
 
 if any(p.K.e)
     % x3 >= x2*exp(x1/x2) so x2>=0
-    top = startofPEXPCone(p.K);
+    top = startofEXPCone(p.K);
     newInequalities = [];
     for i = 1:p.K.e
         newInequalities = [newInequalities;p.F_struc(top+1,:)];
