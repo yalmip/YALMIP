@@ -159,6 +159,7 @@ sol = optimize(F,obj,ops);
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(obj) - 3.352603420494530e+002) <= 2e-4);
 
+function test_miexoticcones(testCase)
 sdpvar x y z
 sol = optimize([expcone([pi*x;y;z]),-5<=[x y]<=5, z<=10],-x-y-z,sdpsettings('solver','bnb','bnb.solver','fmincon'))
 testCase.assertTrue(sol.problem == 0);
