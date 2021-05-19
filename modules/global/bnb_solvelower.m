@@ -42,10 +42,10 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
  
     % Fixed variables, so let us try to presolve as muh as possible
     % (needed often in SDPs etc where solvers are less robust to weird
-    % models having no interior etc)
-    idx = find(removethese);
+    % models having no interior etc)    
     p = smashFixed(p,'delete');
-    p = smashQPOjective(p,idx);    
+    p = smashQPOjective(p,removethese);    
+    idx = find(removethese);
     p.lb(idx)=[];
     p.ub(idx)=[];
     if ~isempty(p.x0)

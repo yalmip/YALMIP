@@ -167,14 +167,19 @@ else
 end
 
 function [R,p] = factorize(A)
-[R,p]=chol(A);
-if p
-    % Low rank problems?
-    if all(eig(full(A)) >= -1e-12)
-        [u,s,v] = svd(full(A));
-        r = find(diag(s)>1e-12);
-        R = (u(:,r)*sqrt(s(r,r)))';
-        R(abs(R)<eps) = 0;
-        p = 0;
+if isempty(A)
+    R = [];
+    p = 1;
+else
+    [R,p]=chol(A);
+    if p
+        % Low rank problems?
+        if all(eig(full(A)) >= -1e-12)
+            [u,s,v] = svd(full(A));
+            r = find(diag(s)>1e-12);
+            R = (u(:,r)*sqrt(s(r,r)))';
+            R(abs(R)<eps) = 0;
+            p = 0;
+        end
     end
 end

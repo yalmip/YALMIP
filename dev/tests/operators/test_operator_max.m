@@ -25,8 +25,7 @@ sol = optimize([sort(x) == y, loc == 3],x'*x)
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(x(3))-1) <= 1e-4);
 
-
-function test2(testCase)
+function test3(testCase)
 sdpvar x y
 obj = -x-y;
 F = (max([x^2+y^2 x+y]) <= 3);
