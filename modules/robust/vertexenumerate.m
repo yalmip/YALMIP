@@ -17,6 +17,9 @@ if n == 1
 end
 % Lift and find rays
 k = convhulln([A;zeros(1,n)]);
+if any(k(:)>size(A,1))
+    error('Polytope is unbounded');
+end
 V = [];
 % Find solutions
 rhs = ones(n,1);

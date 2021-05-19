@@ -7,7 +7,11 @@ function [P,x] = polytope(x,v)
 %
 % Note that it is not projected to x but lives in (x,s)
 %
-% See also VERTEX, BOUNDINGBOX, CHEBYBALL
+% See also VERTEX, BOUNDINGBOX, CHEBYBALL, constraint/polytope
+
+if ~isa(x,'sdpvar')
+    error('First argument should be an SDPVAR');
+end
 
 if size(v,2)==length(x)
     warning('Dimension of appears flipped, so I transposed it');

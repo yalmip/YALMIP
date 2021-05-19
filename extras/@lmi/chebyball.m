@@ -10,10 +10,12 @@ function varargout = chebyball(F,ops)
 %
 % If only one output is requested, only the symbolic constraint is returned
 % C = chebyball(F)
+%
+% If the set is empty, R=inf is returned
 
 [model,recoverdata,diagnostic,p] = export(F,[],[],[],[],0);
 if any(p.K.q) | any(p.K.s) | any(p.variabletype) | ~isempty(p.binary_variables) | ~isempty(p.integer_variables)
-    error('Polytope can only be applied to linear elementwise constraints.')
+    error('Chebyball can only be applied to linear elementwise constraints.')
 end
 
 A = -p.F_struc(:,2:end);
@@ -31,8 +33,8 @@ sol = solvesdp(A*x+r*sqrt(sum(A.^2,2))<=b,-r,ops);
 xc = double(x);
 R = double(r);
 C = (x-xc)'*(x-xc) <= R^2;
-if sol.problem == 1;
-    R = 0;
+if sol.problem == 1
+    R = -inf;
 elseif sol.problem == 2
     R = inf;
 end
