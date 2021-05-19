@@ -14,7 +14,7 @@ function varargout = chebyball(F,ops)
 % If the set is empty, R=inf is returned
 
 [model,recoverdata,diagnostic,p] = export(F,[],[],[],[],0);
-if any(p.K.q) | any(p.K.s) | any(p.variabletype) | ~isempty(p.binary_variables) | ~isempty(p.integer_variables)
+if any(p.K.q) || any(p.K.s) || any(p.variabletype) | ~isempty(p.binary_variables) || ~isempty(p.integer_variables)
     error('Chebyball can only be applied to linear elementwise constraints.')
 end
 
@@ -28,7 +28,7 @@ if nargin < 2
     ops = sdpsettings('verbose',0);
 end
 
-sol = solvesdp(A*x+r*sqrt(sum(A.^2,2))<=b,-r,ops);
+sol = optimize(A*x+r*sqrt(sum(A.^2,2))<=b,-r,ops);
 
 xc = double(x);
 R = double(r);

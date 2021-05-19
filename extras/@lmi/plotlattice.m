@@ -17,25 +17,25 @@ function varargout = plotlattice(varargin)
 h = ishold;
 hold on
 F = varargin{1};
-if nargin > 1
+if nargin > 1 && ~isempty(varargin{2})
     which = varargin{2};
 else
     which = 'inner';
 end
-if nargin > 2
+if nargin > 2 && ~isempty(varargin{3})
     color = varargin{3};
 else
     color = 'yellow';
 end
-if nargin > 3
+if nargin > 3 && ~isempty(varargin{4})
     size = varargin{4};
 else
     size = 5;
 end
-if nargin > 4    
+if nargin > 4   
     ops = varargin{5};
     if ~isempty(ops)
-        ops = sdpsettings(ops,'relax',2,'verbose',0);
+        ops = sdpsettings(ops,'verbose',0);
     else
         ops = sdpsettings('relax',2,'verbose',0);    
     end
@@ -55,7 +55,7 @@ else
     z = 1;
 end
 V = [];
-for i = x
+for i = x    
     for j = y
         for k = z
         switch which

@@ -19,7 +19,7 @@ function V = boundingbox(P)
 %  [B,L,U] = boundingbox(F,[],x)
 % B will now be the box [L <= x <= U] (infinite bounds not included)
 %
-% See also EXTREME, CHEBYBALL
+% See also VERTEX, CHEBYBALL, POLYTOPE
 
 if nargin < 2
     ops = sdpsettings('verbose',0);
