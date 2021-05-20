@@ -50,12 +50,12 @@ if any(model.K.e)
     top = startofEXPCone(model.K);
     % x3-x2*exp(x1/x2)>=0
     for i = 1:model.K.e        
-        x = model.F_struc(top:top+2,:)*[1;xevaled];        
-        if x(2)==0
+        X = model.F_struc(top:top+2,:)*[1;xevaled];        
+        if X(2)==0
             % Eeew, nasty closure let's hope for the best
-            r = x(3);
+            r = X(3);
         else
-            r = x(3) - x(2)*exp(x(1)/x(2));
+            r = X(3) - X(2)*exp(X(1)/X(2));
         end
         g = [g;-r];
         top = top + 3;          
@@ -69,8 +69,8 @@ if any(model.K.p)
     for i = 1:length(model.K.p)
         n = model.K.p(i);
         alpha = model.F_struc(top+n-1,1);
-        x = model.F_struc(top:top+n-2,:)*[1;xevaled];       
-        r = x(1)^alpha*x(2)^(1-alpha)-norm(x(3:end));
+        X = model.F_struc(top:top+n-2,:)*[1;xevaled];       
+        r = X(1)^alpha*X(2)^(1-alpha)-norm(X(3:end));
         g = [g;-r];
         top = top + n;          
     end
@@ -129,7 +129,10 @@ elseif isempty(model.evalMap) & (model.nonlinearinequalities || model.nonlineare
     end  
     if any(model.K.e)
         dg = [dg;computeEXPDeriv(model,xevaled,newdxx)];
-    end     
+    end 
+    if any(model.K.p)
+        dg = [dg;computePOWDeriv(model,xevaled,newdxx)];
+    end      
     if any(model.K.s)
         dg_SDP = computeSDPDeriv(model,xevaled,newdxx);               
         dg = [dg;dg_SDP]; 
@@ -150,6 +153,9 @@ else
     end    
     if any(model.K.e)
         dg = [dg;computeEXPDeriv(model,xevaled,dx)];
+    end 
+    if any(model.K.p)
+        dg = [dg;computePOWDeriv(model,xevaled,dx)];
     end     
     if any(model.K.s)
         dg_SDP = computeSDPDeriv(model,xevaled,dx);                       
@@ -203,10 +209,6 @@ if any(model.K.q)
             % -c'*x - d + ||Ax+b||>=0
             e = A*z + b;
             
-            % smoothed = sqrt(10^-10 + e'*e);
-            % aux = z'*(A'*A-c*c')*dzdx+(b'*A-d*c')*dzdx;
-            % conederiv = [conederiv ((-dzdx'*c+aux'/smoothed)')'];
-
             smoothed = sqrt(10^-10 + e'*e);
             temp = (-c'+(A'*(b + A*z))'/smoothed);
             conederiv = [conederiv (temp*dzdx)'];
@@ -226,7 +228,7 @@ if any(model.K.e)
         c2 = model.F_struc(top+1,2:end);
         c3 = model.F_struc(top+1,2:end);
         x = model.F_struc(top:top+2,:)*[1;z];
-        x1 = x(1);x2 = x(2);x3 = x(2);
+        x1 = x(1);x2 = x(2);x3 = x(3);
         % x3 - x2exp(x1/x2) >= 0
         % d/dx = [-exp(x1) -(exp(x1/x2)-x1/x2*exp(x1/x2)) 1]       
         if nargin == 2
@@ -260,27 +262,24 @@ if any(model.K.p)
         % x1^alpha*x2^(1-alpha) - norm(x3)
         % (c1'*x + )^alpha*(c2'x+ )^(1-alpha) - norm(c3*x + )
         % x3 - x2exp(x1/x2) >= 0
-        % d/dx = [-exp(x1) -(exp(x1/x2)-x1/x2*exp(x1/x2)) 1]       
+        % d/dx = [-exp(x1) -(exp(x1/x2)-x1/x2*exp(x1/x2)) 1]  
+        if x(1)*x(2)==0
+            a = 1;b = 1;
+        else
+            a = x1^(alpha-1)*x2^(1-alpha);
+            b = x1^alpha*x2^(-alpha);
+        end
         if nargin == 2
             c1=c1(model.linearindicies);
             c2=c2(model.linearindicies);
             c3=c3(:,model.linearindicies);
-            smoothed = sqrt(10^-10 + x3'*x3);
-            if x(1)*x(2)==0
-                a = 1;b = 1;
-            else
-                a = x1^(alpha-1)*x2^(1-alpha);
-                b = x1^alpha*x2^(-alpha);
-            end
+            smoothed = sqrt(10^-15 + x3'*x3);            
             temp = c1*alpha*a + (1-alpha)*c2*b - (x3'*c3)/smoothed;
             conederiv = [conederiv -temp'];
         else
-            c1=c1(model.linearindicies);
-            c2=c2(model.linearindicies);
-            c3=c3(:,model.linearindicies);
-            smoothed = sqrt(10^-10 + x3'*x3);
-            temp = c1*alpha*x1^(alpha-1)*x2^(1-alpha) + x1^alpha*(1-alpha)*c2*x2^(-alpha) - c3'*x3/smoothed;           
-            conederiv = [conederiv -(temp*dzdx)'];
+            smoothed = sqrt(10^-15 + x3'*x3);
+            temp = c1*alpha*a + (1-alpha)*c2*b - (x3'*c3)/smoothed;                       
+            conederiv = [conederiv -(temp*dzdx)'];           
         end
         top = top + n;
     end

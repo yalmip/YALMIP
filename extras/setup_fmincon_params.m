@@ -100,7 +100,11 @@ end
 
 % Structure for fast evaluation of monomial terms in differentiation
 if isempty(model.evalMap) && (model.nonlinearinequalities || model.nonlinearequalities || model.nonlinearcones) && ~isfield(model,'fastdiff')
-    allA = [model.Anonlineq;model.Anonlinineq];
+%     allA = [model.Anonlineq;model.Anonlinineq];
+%     if anyCones(model.K)
+%         allA = [allA;model.F_struc(startofSOCPCone(model.K):end,2:end)];
+%         allA = allA(any(allA,2),:);
+%     end    
     dgAll = [];
     n = length(model.c);
     linearindicies = model.linearindicies;

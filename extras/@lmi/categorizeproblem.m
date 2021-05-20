@@ -275,6 +275,10 @@ for i = 1:Counter
                                 problem.constraint.inequalities.secondordercone.nonlinear = 1;
                             case 5
                                 problem.constraint.inequalities.rotatedsecondordercone.nonlinear = 1;
+                            case {21,22}
+                                problem.exponentialcone = 1;                                
+                            case {20,58}
+                                 problem.constraint.inequalities.powercone = 1;
                             case 55
                                 problem.constraint.complementarity.nonlinear = 1;
                             otherwise
