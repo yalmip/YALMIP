@@ -17,19 +17,7 @@ c = model.c;
 
 % Pick out the positive conditions from cones ||Ax+b|| <= c'*x+d which will
 % be treated as (Ax+b)'*(ax+b) <= (c'*x+d)^2,  c'*x+d >= 0
-if any(K.q)
-    aux = [];
-    top = startofSOCPCone(K);
-    for i = 1:length(K.q)
-        row = model.F_struc(top,:);
-        if any(row(2:end))
-            aux = [aux;row];
-        end
-        top = top + model.K.q(i);
-    end
-    model.F_struc = [model.F_struc(1:K.f+K.l,:);aux;model.F_struc(K.f+K.l+1:end,:)];
-    model.K.l = model.K.l + size(aux,1);
-end
+model = bounds_from_cones_to_lp(model);
 
 if isempty(model.evaluation_scheme)
     model = build_recursive_scheme(model);
