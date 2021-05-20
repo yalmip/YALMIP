@@ -13,26 +13,27 @@ testCase.assertTrue(abs(value(b)) <= 1e-4);
 
 function test2(testCase)
 % Test for feature #313
-
+n = 3;
 yalmip('clear')
-y = (1:4)';
-x = intvar(4,1);
+y = (1:n)';
+x = intvar(n,1);
 s = sort(x);
 sol = optimize([s == y],x'*x,sdpsettings('solver','bnb'))
+testCase.assertTrue(sol.problem == 0)
 
 yalmip('clear')
-y = (1:4)';
-x = intvar(4,1);
+y = (1:n)';
+x = intvar(n,1);
 [val,loc] = max(x);
 s = sort(x);
-sol = optimize([s == y, loc == 4],x'*x,sdpsettings('solver','bnb'))
+sol = optimize([s == y, loc == n],x'*x,sdpsettings('solver','bnb'))
 testCase.assertTrue(sol.problem == 0)
-testCase.assertTrue(abs(value(x(3))-3) <= 1e-4);
+testCase.assertTrue(abs(value(x(n))-n) <= 1e-4);
 
 [val,loc] = min(x);
-sol = optimize([sort(x) == y, loc == 3],x'*x)
+sol = optimize([sort(x) == y, loc == n],x'*x)
 testCase.assertTrue(sol.problem == 0)
-testCase.assertTrue(abs(value(x(3))-1) <= 1e-4);
+testCase.assertTrue(abs(value(x(n))-1) <= 1e-4);
 
 function test3(testCase)
 sdpvar x y
