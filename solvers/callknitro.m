@@ -169,4 +169,4 @@ else
 end
 
 % Standard interface
-output = createOutputStructure(x,D_struc,[],problem,'KNITRO',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,yalmiperror(problem,model.solver.tag),solverinput,solveroutput,solvertime);
