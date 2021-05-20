@@ -1,4 +1,4 @@
-function error_string = yalmiperror(errorcode,solver)
+function error_string = yalmiperror(errorcode,solver,flag)
 %YALMIPERROR Creates YALMIP error message based on error code
 %
 %   s = YALMIPERROR(ID) gives a textual description of an error
@@ -9,93 +9,131 @@ function error_string = yalmiperror(errorcode,solver)
 %   See also OPTIMIZE
 
 if nargin ==0
-    for i = -12:23
-        disp(['    ' num2str(i) ' ' yalmiperror(i)]);   
+    for i = -12:24
+        disp(['    ' num2str(i) ' ' yalmiperror(i)]);
     end
     return
 end
 
-if nargin==1
+if nargin==1 || nargin == 3
     solver = '';
 else
     solver = ['(' strrep(solver,'+','') ')'];
 end
 
-switch errorcode
-case -12
-  error_string = ['Solver license cannot be located ' solver];          
-case -11 
-  error_string = ['Solver license expired ' solver];          
-case -10
-  error_string = ['NaN in model data (<a href="yalmip.github.io/naninmodel">learn to debug</a>)' solver];          
-case -9
-  error_string = ['Specified solver not recognized ' solver];          
-case -8
-  error_string = ['Problem does not satisfy geometric programming rules'];      
-case -7
-  error_string = ['Solver does not return error codes ' solver];
-case -6
-  error_string = ['Search space not bounded ' solver];
-case -5 
-  error_string = ['License problems in solver ' solver];
- case -4
-  error_string = ['Solver not applicable ' solver];    
-case -3
-  error_string = ['Solver not found ' solver];
- case -2
-  error_string = 'No suitable solver';
- case -1
-  error_string = ['Unknown error (<a href="yalmip.github.io/tutorial/inside/debug">learn to debug</a>) ' solver];
- case 0
-  error_string = ['Successfully solved ' solver ];
- case 1
-  error_string = ['Infeasible problem (<a href="yalmip.github.io/debugginginfeasible">learn to debug</a>) ' solver ];
- case 2
-  error_string = ['Unbounded objective function (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ];
- case 3
-  error_string = ['Maximum iterations or time limit exceeded ' solver ];
- case 4
-  error_string = ['Numerical problems (<a href="yalmip.github.io/inside/debuggingnumerics">learn to debug</a>)' solver ];
- case 5
-  error_string = ['Lack of progress (<a href="yalmip.github.io/inside/debuggingnumerics">learn to debug</a>)' solver ];
- case 6
-  error_string = ['Initial solution infeasible ' solver ];
- case 7
-  error_string = ['YALMIP called solver with incorrect input ' solver ];
- case 8
-  error_string = ['Feasibility cannot be determined ' solver ];	
- case 9
-  error_string = ['Unknown problem (<a href="yalmip.github.io/tutorial/inside/debug">learn to debug</a>) ' solver ];
- case 10
-  error_string = ['bigM failed, increase sp.Mfactor ' solver ];
- case 11
-  error_string = ['Other identified error ' solver ]; 
- case 12
-  error_string = ['Either infeasible or unbounded (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ]; 
- case 13
-  error_string = ['YALMIP cannot determine status in solver ' solver ]; 
- case 14
-  error_string = ['Model creation failed (<a href="yalmip.github.io/inside/debuggingcreationfailed">learn to debug</a>)' solver ]; 
- case 15
-  error_string = ['Infeasible or unbounded problem (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ]; 
- case 16
-  error_string = ['User terminated ' solver ]; 
- case 17
-  error_string = ['Presolve recovery failed ' solver ]; 
- case 18
-  error_string = ['Missing non-negativity bounds in GP formulation ' solver ];         
- case 19
-  error_string = ['Convexity requirements not met ' solver ];           
-case 20
-  error_string = ['Solver complains about bad data (<a href="yalmip.github.io/inside/debuggingnumerics">learn to debug</a>) ' solver ];
-case 21
-  error_string = ['Failed to initialize bisection space (probably infeasible)' solver ];              
-case 22
-  error_string = ['Ill-posed problem according to solver ' solver ];              
-case 23
-  error_string = ['Unsupported mixed cone ' solver ];              
-     
- otherwise
+% No link?
+if nargin < 3
+    flag = 0;
 end
 
-	
+switch errorcode
+    case -12
+        error_string = ['Solver license cannot be located ' solver];
+    case -11
+        error_string = ['Solver license expired ' solver];
+    case -10
+        if flag
+            error_string = ['NaN in model data ' solver];
+        else
+            error_string = ['NaN in model data (<a href="yalmip.github.io/naninmodel">learn to debug</a>)' solver];
+        end
+    case -9
+        error_string = ['Specified solver not recognized ' solver];
+    case -8
+        error_string = ['Problem does not satisfy geometric programming rules'];
+    case -7
+        error_string = ['Solver does not return error codes ' solver];
+    case -6
+        error_string = ['Search space not bounded ' solver];
+    case -5
+        error_string = ['License problems in solver ' solver];
+    case -4
+        error_string = ['Solver not applicable ' solver];
+    case -3
+        error_string = ['Solver not found ' solver];
+    case -2
+        error_string = 'No suitable solver';
+    case -1
+        if flag
+            error_string = ['Unknown error  ' solver];
+        else
+            error_string = ['Unknown error (<a href="yalmip.github.io/tutorial/inside/debug">learn to debug</a>) ' solver];
+        end
+    case 0
+        error_string = ['Successfully solved ' solver ];
+    case 1
+        if flag
+            error_string = ['Infeasible problem ' solver ];
+        else
+            error_string = ['Infeasible problem (<a href="yalmip.github.io/debugginginfeasible">learn to debug</a>) ' solver ];
+        end
+    case 2
+        if flag
+            error_string = ['Unbounded objective function ' solver ];
+        else
+            error_string = ['Unbounded objective function (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ];
+        end
+    case 3
+        error_string = ['Maximum iterations or time limit exceeded ' solver ];
+    case 4
+        if flag
+            error_string = ['Numerical problems ' solver ];
+        else
+            error_string = ['Numerical problems (<a href="yalmip.github.io/inside/debuggingnumerics">learn to debug</a>) ' solver ];
+        end
+    case 5
+        if flag
+            error_string = ['Lack of progress ' solver ];
+        else
+            error_string = ['Lack of progress (<a href="yalmip.github.io/inside/debuggingnumerics">learn to debug</a>)' solver ];
+        end
+    case 6
+        error_string = ['Initial solution infeasible ' solver ];
+    case 7
+        error_string = ['YALMIP called solver with incorrect input ' solver ];
+    case 8
+        error_string = ['Feasibility cannot be determined ' solver ];
+    case 9
+        error_string = ['Unknown problem (<a href="yalmip.github.io/tutorial/inside/debug">learn to debug</a>) ' solver ];
+    case 10
+        error_string = ['bigM failed, increase sp.Mfactor ' solver ];
+    case 11
+        error_string = ['Other identified error ' solver ];
+    case 12
+        if flag
+            error_string = ['Either infeasible or unbounded ' solver ];
+        else
+            error_string = ['Either infeasible or unbounded (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ];
+        end
+    case 13
+        error_string = ['YALMIP cannot determine status in solver ' solver ];
+    case 14
+        error_string = ['Model creation failed (<a href="yalmip.github.io/inside/debuggingcreationfailed">learn to debug</a>)' solver ];
+    case 15
+        if flag
+            error_string = ['Infeasible or unbounded problem ' solver ];
+        else
+            error_string = ['Infeasible or unbounded problem (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ];
+        end
+    case 16
+        error_string = ['User terminated ' solver ];
+    case 17
+        error_string = ['Presolve recovery failed ' solver ];
+    case 18
+        error_string = ['Missing non-negativity bounds in GP formulation ' solver ];
+    case 19
+        error_string = ['Convexity requirements not met ' solver ];
+    case 20
+        error_string = ['Solver complains about bad data (<a href="yalmip.github.io/inside/debuggingnumerics">learn to debug</a>) ' solver ];
+    case 21
+        error_string = ['Failed to initialize bisection space (probably infeasible)' solver ];
+    case 22
+        error_string = ['Ill-posed problem according to solver ' solver ];
+    case 23
+        error_string = ['Unsupported mixed cone ' solver ];
+    case 24
+        error_string = ['Infeasible in presolve ' solver ];
+                
+    otherwise
+end
+

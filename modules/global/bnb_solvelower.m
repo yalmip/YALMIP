@@ -5,7 +5,7 @@ if all(relaxed_p.lb==relaxed_p.ub)
     if checkfeasiblefast(relaxed_p,relaxed_p.lb,relaxed_p.options.bnb.feastol)
         output.problem = 0;
     else
-        output.problem = 1;
+        output.problem = 24;
     end
     output.Primal = x;
     return
@@ -25,7 +25,11 @@ if ~isinf(upper) && nnz(p.Q)==0 && isequal(p.K.m,0) && ~any(p.variabletype)
         % All integer objective coefficients and all integer
         % variables, we must find a solution which is at least
         % 1 better than current upper bound
-        p = addInequality(p,[upper-1-p.f -p.c']);
+        if upper == lower + 1
+            p = addEquality(p,[upper-1-p.f -p.c']);
+        else
+            p = addInequality(p,[upper-1-p.f -p.c']);        
+        end
     end
 end
 
@@ -57,37 +61,48 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
        
     [p,infeasible] = detectRedundantInfeasibleSOCPRows(p);
     if infeasible
-        output = createOutputStructure(1);
+        output = createOutputStructure(24);
         return
     end
     
     [p,infeasible] = detectRedundantInfeasibleSDPRows(p);
     if infeasible
-        output = createOutputStructure(1);
+        output = createOutputStructure(24);
         return
     end
     
     [p,infeasible] = detectRedundantInfeasibleEXPRows(p);
     if infeasible
-        output = createOutputStructure(1);
+        output = createOutputStructure(24);
         return
     end
     
+    [p,infeasible] = detectRedundantInfeasiblePOWRows(p);
+    if infeasible
+        output = createOutputStructure(24);
+        return
+    end
+        
     % We do this last, as the SOCP/EXP/SDP presolve might add trivial
     % equalities from presolving 0 >= norm(z) etc
     p = removeEmptyLPRows(p);
     [p,infeasible] = detectRedundantInfeasibleLPRows(p);
     if infeasible
-        output = createOutputStructure(1);
+        output = createOutputStructure(24);
         return
     end
                      
     % Derive bounds from this presolved model, and if we detect new fixed
     % variables, apply recursively   
     if ~isempty(p.F_struc)
-        [lb,ub] = find_lp_bounds(p.F_struc,p.K);    
+        [lb,ub] = find_lp_bounds(p.F_struc,p.K,p.lb,p.ub);    
         p.ub = min(ub,p.ub);
         p.lb = max(lb,p.lb);
+    end
+    
+    if any(p.lb > p.ub)
+        output = createOutputStructure(24);
+        return
     end
     
     if any(p.lb == p.ub) 
@@ -95,7 +110,7 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
         output = bnb_solvelower(lowersolver,p,inf,lower,x_min,[]);
     elseif any(p.lb > p.ub-p.options.bnb.feastol)
         % Infeasible
-        output = createOutputStructure(1);
+        output = createOutputStructure(24);
         return
     else
         % Solve relaxation
@@ -110,5 +125,5 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
     output.Primal=x;
 else
     p.solver = p.solver.lower;
-    output = feval(lowersolver,p);    
+    output = feval(lowersolver,p);        
 end

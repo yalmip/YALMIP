@@ -5,7 +5,7 @@ global newmodel
 newmodel = 1;
 
 model.dense = 0;
-if ~model.equalitypresolved
+if ~(model.equalitypresolved || model.presolved)
     model = propagate_bounds_from_equalities(model);
 end
 

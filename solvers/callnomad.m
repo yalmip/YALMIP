@@ -1,7 +1,5 @@
 function output = callnomad(model)
 
-%model.presolveequalities = 1;
-%model.equalitypresolved = 0;
 model = yalmip2nonlinearsolver(model);
 
 % Nomad does not need derivatives, so let us inform our callbacks that we

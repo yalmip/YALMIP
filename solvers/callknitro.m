@@ -143,7 +143,7 @@ switch exitflag
         problem = 1;
     case {-101,-300}
         problem = 2;
-    case {-400,-401}
+    case {-202,-400,-401,-410}
         problem = 3;
     otherwise
         problem = 11;

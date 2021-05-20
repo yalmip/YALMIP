@@ -201,8 +201,8 @@ if p.options.bnb.verbose
 end
 if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
 
-while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) & (solved_nodes < p.options.bnb.maxiter) & (isinf(lower) | gap>p.options.bnb.gaptol)
-        
+while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
+
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
@@ -277,10 +277,8 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
                 output.Primal = zeros(length(p.c),1);
             end
             x  = setnonlinearvariables(p,output.Primal);
-            if(p.K.l>0) & any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
-                output.problem = 1;
-          %  elseif output.problem == 5 & ~checkfeasiblefast(p,x,p.options.bnb.feastol)
-          %      output.problem = 1;
+            if(p.K.l>0) && any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
+                output.problem = 1; 
             end
         end
     end
@@ -333,7 +331,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
         end
     end
             
-    if output.problem==0 | output.problem==3 | output.problem==4 | output.problem==5
+    if output.problem==0 || output.problem==3 || output.problem==4 || output.problem==5
         cost = computecost(f,c,Q,x,p);
         
         if output.problem~=1
@@ -374,7 +372,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
     feasible = 1;
     
     switch output.problem
-        case {-1,3,4,5}
+        case {-1,3,4,5,11}
             % Solver behaved weird. Make sure we continue digging
             keep_digging = 1;
             feasible = 1;
@@ -388,7 +386,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             if can_use_ceil_lower
                 lower = ceil(lower-1e-8);
             end
-        case {1,12,-4,22}
+        case {1,12,-4,22,24}
             keep_digging = 0;
             cost = inf;
             feasible = 0;
@@ -511,31 +509,24 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
         stack = mergeStack(stack,tempstack);    
     end
         
-     if stackLength(stack)>0
+    if stackLength(stack)>0
         lower = stackLower(stack);
         if can_use_ceil_lower
-            lower = ceil(lower);
+            lower = ceil(lower-1e-8);
         end
     end
-            
-    % **********************************
-    % Get a new node to solve
-    % **********************************
+    
+    % Close current and proceed to next if gap large
+    gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
     [node,stack] = pull(stack,p.options.bnb.method,x_min,upper);
     if ~isempty(node)
         p = copyNode(p,node);
-    end
-    
-    if isempty(node)
+    else
         % There are no nodes left
         if ~isinf(upper)
             gap = 0;
         end
-    else
-        % We pulled a new node from stack, so there are nodes left
-        gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
-    end
-    
+    end    
     if isnan(gap)
         gap = inf;
     end
@@ -563,7 +554,7 @@ while unknownErrorCount < 10 & ~isempty(node) & (etime(clock,bnbsolvertime) < p.
             if lastUpper > upper
                 fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),'-> Found improved solution!');
             else
-                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),yalmiperror(output.problem));
+                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),yalmiperror(output.problem,'',1));
             end
         end
     end
