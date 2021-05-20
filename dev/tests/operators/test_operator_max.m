@@ -13,10 +13,19 @@ testCase.assertTrue(abs(value(b)) <= 1e-4);
 
 function test2(testCase)
 % Test for feature #313
-y = (1:3)';
-x = intvar(3,1);
+
+yalmip('clear')
+y = (1:4)';
+x = intvar(4,1);
+s = sort(x);
+sol = optimize([s == y],x'*x,sdpsettings('solver','bnb'))
+
+yalmip('clear')
+y = (1:4)';
+x = intvar(4,1);
 [val,loc] = max(x);
-sol = optimize([sort(x) == y, loc == 3],x'*x)
+s = sort(x);
+sol = optimize([s == y, loc == 4],x'*x,sdpsettings('solver','bnb'))
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(x(3))-3) <= 1e-4);
 

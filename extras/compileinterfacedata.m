@@ -1126,6 +1126,7 @@ interfacedata.variabletype = variabletype;
 interfacedata.integer_variables   = integer_variables;
 interfacedata.binary_variables    = binary_variables;
 interfacedata.semicont_variables    = semicont_variables;
+interfacedata.implied_integer = [];
 interfacedata.semibounds = [];
 interfacedata.uncertain_variables = [];
 interfacedata.parametric_variables= parametric_variables;

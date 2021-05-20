@@ -44,6 +44,7 @@ if ismember('shifted round',p.options.bnb.rounding)
                 % or minimizing largest.                  
                 % With x fixed, smallest t can be computed by gevp
                 % TODO: Support and loop over several LMIs
+                % Use precalculation in detectmonotoneobjectiveresponse
                 if length(convars) == 1 && length(p.K.s)==1 && p.K.s(1)>0                    
                     Hy = H0 + reshape(Hz*xtemp(intvars),p.K.s(1),p.K.s(1));
                     s = eig(full(Hx),full(Hy));

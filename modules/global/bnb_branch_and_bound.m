@@ -1,6 +1,6 @@
 function [x_min,solved_nodes,lower,upper,profile,diagnostics] = bnb_branch_and_bound(p)
 
-% *******************************
+%% *******************************
 % We don't need this
 % *******************************
 p.options.savesolveroutput = 0;
@@ -9,45 +9,47 @@ p.options.dimacs = 0;
 diagnostics = 0;
 bnbsolvertime = clock;
 
-% *******************************
+%% *******************************
 % Tracking performance etc
 % *******************************
 profile.local_solver_time = 0;
 
-% *************************************************************************
+%% *************************************************************************
 % We save this to re-use some stuff in fmincon
 % *************************************************************************
 p.options.savesolverinput = 1;
 
-% *******************************
-%% SET-UP ROOT PROBLEM
+%% *******************************
+% SET-UP ROOT PROBLEM
 % *******************************
 p.depth = 0;
 p.lower = NaN;
 [p,x_min,upper] = initializesolution(p,[],inf);
 
+%%
 % See if there is structure which can be exploited to improve primal
 % heuristics. If all objective variables only enter SDPs and LPs through
 % positive coefficients (and diagonal in SDP), the we can try a bisection
 % on these, if the combinatorial stuff is feasible
-p = detectMonotoneSDPObjective(p);
+% FIXME: Exploit
+% p = detectMonotoneSDPObjective(p);
 
-% *******************************
-%% Global stuff
+%% *******************************
+% Global stuff
 % *******************************
 lower = NaN;
 stack = stackCreate;
 
-% *******************************
-%% Create function handle to solver
+%% *******************************
+% Create function handle to solver
 % *******************************
 lowersolver = p.solver.lower.call;
 uppersolver = p.options.bnb.uppersolver;
 
 p.corig = p.c;
 
-% *******************************
-%% INVARIANT PROBLEM DATA
+%% *******************************
+% INVARIANT PROBLEM DATA
 % *******************************
 c = p.corig;
 Q = p.Q;
@@ -92,20 +94,21 @@ if p.options.bnb.presolve
     p.c = savec;
 end
 
-% ************************************************
+%%************************************************
 % Some hacks to speed up solver calls
 % Only track solver-time if user wants profile
 % ************************************************
 p.getsolvertime = p.options.bnb.profile;
 
-% *******************************
+%%*******************************
 %% DISPLAY HEADER
 % *******************************
 originalDiscrete = [p.integer_variables(:);p.binary_variables(:)];
 originalBinary   = p.binary_variables(:);
 
-if nnz(Q)==0 & (nnz(p.c-fix(p.c))==0) & isequal(p.K.m,0)
+if nnz(Q-fix(Q))==0 && (nnz(p.c-fix(p.c))==0) && isequal(p.K.m,0)
     can_use_ceil_lower = all(ismember(find(p.c),originalDiscrete));
+    can_use_ceil_lower = can_use_ceil_lower && all(ismember(find(any(Q,2)),originalDiscrete));
 else
     can_use_ceil_lower = 0;
 end
@@ -277,7 +280,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 output.Primal = zeros(length(p.c),1);
             end
             x  = setnonlinearvariables(p,output.Primal);
-            if(p.K.l>0) && any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
+            if (p.K.l>0) && any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
                 output.problem = 1; 
             end
         end
@@ -354,7 +357,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                             [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
                             lower = min(lower,stacklower);
                         end
-                    elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4;
+                        [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);
+                    elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4
                         % Yet another solution with same value
                         allSolutions = [allSolutions x_min1];
                     end                
@@ -384,7 +388,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             end            
         case 0
             if can_use_ceil_lower
-                lower = ceil(lower-1e-8);
+                lower = ceil(lower-1e-6);
             end
         case {1,12,-4,22,24}
             keep_digging = 0;
@@ -406,7 +410,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             x_min = x;
             upper = cost;
             allSolutions = x_min;
-            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);            
+            [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);
         end
         p = adaptivestrategy(p,upper,solved_nodes);
         keep_digging = 0;
@@ -512,7 +517,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     if stackLength(stack)>0
         lower = stackLower(stack);
         if can_use_ceil_lower
-            lower = ceil(lower-1e-8);
+            lower = ceil(lower-1e-6);
         end
     end
     
@@ -973,3 +978,27 @@ node1.pid = pid;
 node1.sosgroups = p1.sosgroups;
 node1.sosvariables = p1.sosvariables;
 node1.atmost = p1.atmost;
+
+function [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack)
+if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))==0
+    d = diag(p.Q);
+    if all(d)>=0
+        i = find(d);
+        U = sqrt(upper./d(i));
+        p.lb(i) = max(p.lb(i),-U);
+        p.ub(i) = min(p.ub(i),U);
+        p = update_integer_bounds(p);
+        fake.integer_variables = p.integer_variables;
+        fake.binary_variables = p.binary_variables;
+        fake.implied_integers = p.implied_integers;
+        for j = 1:length(stack.nodes)                        
+            stack.nodes{j}.lb(i) = max(stack.nodes{j}.lb(i),-U);
+            stack.nodes{j}.ub(i) = min(stack.nodes{j}.ub(i),U);
+            fake.lb =  stack.nodes{j}.lb;
+            fake.ub =  stack.nodes{j}.ub;
+            fake = update_integer_bounds(fake);
+            stack.nodes{j}.lb = fake.lb;
+            stack.nodes{j}.ub = fake.ub;
+        end
+    end
+end

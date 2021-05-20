@@ -118,6 +118,11 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
         p.solver.subversion = p.solver.lower.subversion;
         output = feval(lowersolver,p);
     end
+    if output.problem == 1 || output.problem == 24
+        output.Primal = [];
+        return
+	end
+
     % Recover
     x=relaxed_p.c*0;
     x(removethese)=relaxed_p.lb(removethese);

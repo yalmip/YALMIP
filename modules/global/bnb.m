@@ -107,6 +107,12 @@ p = detectRedundantInfeasibleSDPRows(smashFixed(p));
 p = update_integer_bounds(p);
 p = update_semicont_bounds(p);
 
+if any(p.lb > p.ub+1e-6)
+    output = createOutputStructure(1);
+    output.infostr = yalmiperror(1,'BNB');
+    return
+end
+
 %% *******************************
 % PRE-SOLVE (nothing fancy coded)
 % % *******************************
@@ -114,6 +120,7 @@ p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
+p = propagate_impliedintegers_from_equalities(p);
 
 % *******************************
 %% Display logics
