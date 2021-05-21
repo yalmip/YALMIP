@@ -83,9 +83,11 @@ if any(model.K.s)
         n = model.K.s(i);
         X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
         X = full(reshape(X,n,n));
-        [d,v] = eig(X);        
-        v = sdpLayer.f(diag(v));
-        v = v.*(1./(1 + 0.1*((1:n)-1))');
+        [d,v] = eig(X); 
+        v = diag(v);
+        if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
+            v = cumsum(v);
+        end
         % These will reordered later
         g = [g;-v(1:min(n,sdpLayer.n))];
         top = top + n^2;          
@@ -171,12 +173,15 @@ end
 if model.nonlinearinequalities || anyCones(model.K)
     dg = dg';   
 end
-%  x = sdpvar(2,1);
-%  plot(g + dg'*(x-xevaled(1:2))<=0,x,[],[],sdpsettings('plot.shade',.1))
+% hold on
+% x = sdpvar(2,1);
+% plot([g + dg'*(x-xevaled(1:2))<=0,-3<=x<=3],x,'y',[],sdpsettings('plot.shade',.1))
 % plot(xevaled(1),xevaled(2),'+b')
 % drawnow
 % axis([-2 2 -2 2])
-% 1
+% dg
+% xevaled
+% 1;
 
 function conederiv = computeSOCPDeriv(model,z,dzdx)
 conederiv = [];
@@ -297,19 +302,51 @@ for i = 1:length(model.K.s)
     n = model.K.s(i);
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
-    [d,v] = eig(X);    
+    [d,v] = eig(X);
     newSDPblock = [];
+    nZeroVectors = length(find(abs(diag(v))<=1e-8));
+    try
+    if any(nZeroVectors)
+        if ~isempty(sdpLayer.nullVectors{i}) 
+            tt = [];            
+            for ee = 1:size(sdpLayer.nullVectors{i},2)
+                tt = [tt sdpLayer.nullVectors{i}(:,ee)'*X*sdpLayer.nullVectors{i}(:,ee)];
+            end
+            notok = find(tt >= 2e-6);
+            if any(notok)
+                'Prune'
+                sdpLayer.nullVectors{i}(:,find(notok))=[];
+            end
+        end
+        if isempty(sdpLayer.nullVectors{i})        
+            sdpLayer.nullVectors{i} = d(:,1:nZeroVectors);
+           'New batch'
+        elseif  nZeroVectors > size(sdpLayer.nullVectors{i},2) 
+            'Expanding'
+            S = [sdpLayer.nullVectors{i} d(:,nZeroVectors+1:end)];
+            S = null(S');
+            %S = null(sdpLayer.nullVectors{i}');
+            sdpLayer.nullVectors{i} = [sdpLayer.nullVectors{i} S(:,1:(nZeroVectors-size(sdpLayer.nullVectors{i},2)))];
+        elseif nZeroVectors < size(sdpLayer.nullVectors{i},2)  
+            'Contracting'
+        end
+        'Using'
+        d(:,1:nZeroVectors) = sdpLayer.nullVectors{i}(:,1:nZeroVectors);        
+    end
+    catch
+        'Fail'
+    end
     for m = 1:min(sdpLayer.n,model.K.s(i))
         newrow = [];
         for j = 1:size(B,2)
             newrow = [newrow d(:,m)'*reshape(B(top:top+n^2-1,j),n,n)*d(:,m)];
-        end
-       % newrow = reshape(d(:,m)*d(:,m)',[],1)'*B(top:top+n^2-1,:);
-        newrow = newrow*sdpLayer.df(v(m,m));
-        nerow = newrow/(1+0.1*m);
+        end        
         newSDPblock = [newSDPblock;newrow];  
         newcuts = newcuts + 1;
-    end     
+    end    
+    if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
+        newSDPblock = cumsum(newSDPblock);
+    end
     if ~isempty(sdpLayer.oldGradient{i}) 
         [reordering] = matchGradientRows(newSDPblock,sdpLayer.oldGradient{i});
         newSDPblock = newSDPblock(reordering,:);                        
@@ -343,13 +380,11 @@ newdxx = model.fastdiff.newdxx;
 newdxx(model.fastdiff.linear_in_newdxx) = zzz;
 
 function r = matchGradientRows(X,Y)
-
-C = distancematrix(X,Y);
+C = distanceMatrix(X,Y);
 [r,m,u] = matchpairs(C,1e12);
 r = r(:,1);
 
-function C = distancematrix(X,Y)
-
+function C = distanceMatrix(X,Y)
 C = zeros(size(X,1));
 for i = 1:size(X,1)
     for j = 1:size(X,1)
@@ -357,7 +392,7 @@ for i = 1:size(X,1)
     end
 end
 
-function  g = reorderEigenvalueG(g,model);
+function  g = reorderEigenvalueG(g,model)
 global sdpLayer
 if ~isempty(sdpLayer.reordering{1})
     g_nonsdp = g(1:end-sum(min(sdpLayer.n,model.K.s)));

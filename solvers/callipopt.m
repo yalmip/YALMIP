@@ -78,11 +78,10 @@ latest_x_f = [];
 latest_x_g = [];
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.nullVectors = cell(length(model.K.s),1);
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 sdpLayer.n  = inf;
-sdpLayer.f = @(x)(1*x);
-sdpLayer.df = @(x)(1);
 
 funcs.objective = @(x)ipopt_callback_f(x,model);
 funcs.gradient = @(x)ipopt_callback_df(x,model);

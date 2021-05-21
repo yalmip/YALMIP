@@ -57,11 +57,10 @@ global latest_x_xevaled
 global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.nullVectors = cell(length(model.K.s),1);
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 sdpLayer.n  = inf;
-sdpLayer.f = @(x)(x);
-sdpLayer.df = @(x)(1);
 
 if sdpLayer.n > max(model.K.s)
     sdpLayer.n  = inf;
@@ -137,7 +136,7 @@ D_struc = [];
 % Check, currently not exhaustive...
 problem = 0;
 switch exitflag
-    case 0
+    case {0,-101}
         problem = 0;
     case {-200,-204,-205,-515}
         problem = 1;

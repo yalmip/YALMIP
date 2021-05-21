@@ -70,15 +70,8 @@ latest_xevaled = [];
 latest_x_xevaled = [];
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
+sdpLayer.nullVectors = cell(length(model.K.s),1);
 sdpLayer.n  = inf;
-sdpLayer.f = @(x)((x>=0).*(1*x) + (x<0).*(3*x));
-sdpLayer.df = @(x)((x>=0)*1 + (x<0)*3);
-% sdpLayer.f = @(x)((x>=0).*x + (x<0).*(1/2-(1.5*x-1).^2/2));
-% sdpLayer.df = @(x)((x>=0).*1 + (x<0).*(-(1.5*x-1)));
-%sdpLayer.f = @(x)((x>=0).*x + (x<0).*(x-(exp(-5*x)-1)))
-%sdpLayer.df = @(x)((x>=0).*1 + (x<0).*(1+5*exp(-5*x)));
-sdpLayer.f = @(x)(x);
-sdpLayer.df = @(x)(1);
 
 showprogress('Calling FMINCON',model.options.showprogress);
 
