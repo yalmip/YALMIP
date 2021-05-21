@@ -66,7 +66,7 @@ end
 lb  = model.lb(:)';
 ub = model.ub(:)';
 
-if ~model.options.usex0
+if ~model.options.warmstart
     model.x0 = (lb+ub)/2;
     model.x0(isinf(ub)) = lb(isinf(ub))+1;
     model.x0(isinf(lb)) = ub(isinf(lb))-1;

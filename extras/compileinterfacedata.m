@@ -647,7 +647,7 @@ if convertQuadraticObjective
         f = quad_info.f;
         F = F + lmi(cone([2*R*x;1-(t-f)],1+t-f));
         h = t+c'*x;
-        if options.usex0
+        if options.warmstart
             xx = value(x);
             ff = norm(quad_info.R*xx)^2+f;
             if ~isnan(ff)
@@ -1004,7 +1004,7 @@ end
 %% Setup the initial solution
 % *************************************************************************
 x0 = [];
-if options.usex0
+if options.warmstart
     if solver.supportsinitial == 0
         error(['You have specified an initial point, but the selected solver (' solver.tag ') does not support warm-starts through YALMIP']);
     end
@@ -1157,6 +1157,9 @@ end
 interfacedata.ProblemClass = ProblemClass;
 interfacedata.dualized = is(F,'dualized');
 interfacedata.presolved = 0;
+if interfacedata.options.usex0==1
+    interfacedata.options.warmstart=1;
+end
 
 % *************************************************************************
 %% GENERAL DATA EXCANGE TO RECOVER SOLUTION AND UPDATE YALMIP VARIABLES

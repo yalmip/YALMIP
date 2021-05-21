@@ -43,7 +43,7 @@ if isfield(options.linprog,'LargeScale')
     end
 end
 
-if ~options.usex0
+if ~options.warmstart
     x0 = [];
 end
 

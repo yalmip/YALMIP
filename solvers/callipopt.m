@@ -102,7 +102,7 @@ if ~isempty(Fupp)
     funcs.jacobianstructure = @() Z;
 end
 
-if ~model.options.usex0
+if ~model.options.warmstart
     x0 = create_trivial_initial(model);
 end
 

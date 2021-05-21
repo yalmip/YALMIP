@@ -38,7 +38,7 @@ p.options = pruneOptions(p.options);
 % ********************************
 %% Always try to warm-start
 % ********************************
-p.options.usex0 = 1;
+p.options.warmstart = 1;
 
 % Arg, new format
 p.options.cutsdp.feastol = -p.options.cutsdp.feastol;

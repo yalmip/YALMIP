@@ -83,7 +83,7 @@ end
 % and check for some obsoleted stuff
 if ~isempty(properties)
     if isequal(properties{1}.model,'callback')
-        [F_normalizing,normalizer,argument] = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);
+        [F_normalizing,normalizer,argument] = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.warmstart);
         F = F + F_normalizing;
         if ~isempty(normalizer)
             if ~isempty(properties{1}.domain)

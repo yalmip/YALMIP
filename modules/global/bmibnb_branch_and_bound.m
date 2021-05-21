@@ -906,7 +906,7 @@ if isempty(p.evalMap) && ~any(p.variabletype > 2) && ~p.diagonalized
                 x = sdpvar(length(r),1);                
                 % FIXME: Use lower level setup
                 ops = p.options;
-                ops.usex0 = 0;
+                ops.warmstart = 0;
                 ops.solver = p.solver.sdpsolver.tag;
                 ops.verbose = max(ops.verbose-1,0);
                 sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);

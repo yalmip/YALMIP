@@ -172,7 +172,7 @@ end
 
 param = model.options.mosek;
 
-if model.options.usex0 && ~isempty(model.x0) && ~any(model.K.s)
+if model.options.warmstart && ~isempty(model.x0) && ~any(model.K.s)
 	prob.sol.int.xx = nan(length(prob.c),1);
 	prob.sol.int.xx(model.integer_variables) = model.x0(model.integer_variables);
 end

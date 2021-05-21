@@ -97,7 +97,7 @@ switch model.options.verbose
     otherwise
         pen.ioptions(3) = 3;
 end
-if model.options.usex0
+if model.options.warmstart
     pen.ioptions(8) = 0;
 else
     pen.ioptions(8) = 1;

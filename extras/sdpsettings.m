@@ -293,10 +293,12 @@ i = paramstart;
 if rem(nargin-i+1,2) ~= 0
     error('Arguments must occur in name-value pairs.');
 end
-expectval = 0;                          % start expecting a name, not a value
+usex0wasused = 0;
+warmstartwasused = 0;
+expectval = 0; % start expecting a name, not a value
 while i <= nargin
     arg = varargin{i};
-
+    
     if ~expectval
         if ~ischar(arg)
             error(sprintf('Expected argument %d to be a string property name.', i));
@@ -304,6 +306,14 @@ while i <= nargin
 
         lowArg = strtrim(lower(arg));
 
+        if strcmp(lowArg,'usex0')
+            usex0wasused = 1;
+            warmstartwasused = 0;
+        elseif strcmp(lowArg,'warmstart')
+            usex0wasused = 0;
+            warmstartwasused = 1;
+        end
+        
         j = strmatch_octavesafe(lowArg,names);
         if isempty(j)                       % if no matches
             error(sprintf('Unrecognized property name ''%s''.', arg));
@@ -327,7 +337,13 @@ while i <= nargin
         eval(['options.' Names{j} '= arg;']);
         expectval = 0;
     end
-    i = i + 1;
+    i = i + 1;    
+end
+
+if usex0wasused
+    options.warmstart = options.usex0;
+elseif warmstartwasused
+     options.usex0 = options.warmstart;
 end
 
 if isequal(options.solver,'swarm')
@@ -342,6 +358,8 @@ if isa(options.verbose,'char')
     error('Verbosity level should be an non-negative integer.');
 end
 
+options.warmstart = options.warmstart;
+
 
 function [solverops] = trytoset(solver)
 
@@ -354,20 +372,6 @@ try
 catch
     solverops = optimset;
 end
-
-% if isequal(solver, 'quadprog') && isfield(solverops, 'Algorithm') && ~isempty(solverops.Algorithm)
-%     solverops.Algorithm = 'active-set';
-% end
-%
-% if  any(strcmp(solvernames,'LargeScale'))
-%     if isequal(solver, 'quadprog')
-%         solverops.LargeScale = 'off';
-%     end
-% else
-%     solvernames{end+1} = 'LargeScale';
-%     solverops.LargeScale = 'off';
-% end
-
 
 
 function cNames = recursivefieldnames(options,append)
@@ -411,7 +415,7 @@ function options = setup_core_options
 options.solver = '';
 options.verbose = 1;
 options.debug = 0;
-options.usex0 = 0;
+options.warmstart = 0;
 options.savedebug = 0;
 options.slayer.algorithm = 'convex';
 options.slayer.m = inf;
@@ -437,6 +441,7 @@ options.shift = 0;
 options.dimacs = 0;
 options.beeponproblem = [-5 -4 -3 -2 -1];
 options.mosektaskfile = '';
+options.usex0 = 0;
 
 function bisection = setup_bisection_options
 bisection.absgaptol = 1e-5;

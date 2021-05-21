@@ -307,7 +307,7 @@ end
 x0 = evaluate_nonlinear(p,p.x0);
 upper_residual = resids(p,x0);
 x0_feasible = all(upper_residual(1:p.K.f)>=-options.bmibnb.eqtol) & all(upper_residual(1+p.K.f:end)>=options.bmibnb.pdtol);
-if p.options.usex0 & x0_feasible
+if p.options.warmstart & x0_feasible
     x_min = x0;
     upper = p.f+p.c'*x0+x0'*Q*x0;
 end
@@ -1001,7 +1001,7 @@ while go_on
     p_upper.options.saveduals = 0;
     
     % Solve upper bounding problem
-    p_upper.options.usex0 = 1;
+    p_upper.options.warmstart = 1;
     output = feval(uppersolver,p_upper);
     % Project into the box (numerical issue)
     output.Primal(output.Primal<p_upper.lb) = p_upper.lb(output.Primal<p_upper.lb);

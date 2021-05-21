@@ -1,6 +1,6 @@
 function [p,x_min,upper] = initializesolution(p,x_min,upper)
 
-if p.options.usex0
+if p.options.warmstart
     x = p.x0;
     z = evaluate_nonlinear(p,x);
     residual = constraint_residuals(p,z);
