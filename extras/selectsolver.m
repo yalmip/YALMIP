@@ -555,7 +555,14 @@ if ~isempty(solver)
             solver.constraint.inequalities.elementwise.quadratic.convex = 1;
             solver.constraint.inequalities.elementwise.quadratic.nonconvex = 1;
             solver.constraint.inequalities.elementwise.polynomial = 1;
-            solver.constraint.inequalities.elementwise.sigmonial = 1;            
+            solver.constraint.inequalities.elementwise.sigmonial = 1;
+            solver.constraint.inequalities.secondordercone.linear = 1;
+            solver.constraint.inequalities.semidefinite.linear = 1;
+            solver.constraint.inequalities.semidefinite.quadratic = 1;
+            solver.constraint.inequalities.semidefinite.polynomial = 1;
+            solver.constraint.inequalities.semidefinite.nonlinear = 1;
+            solver.exponentialcone = 1;
+            solver.powercone = 1;
             solver.dual = 1;
             solver.evaluation = 1;
         end
