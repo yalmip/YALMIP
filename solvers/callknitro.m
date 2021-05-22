@@ -58,6 +58,7 @@ global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
 sdpLayer.nullVectors = cell(length(model.K.s),1);
+sdpLayer.eigenVectors = cell(length(model.K.s),1);
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 sdpLayer.n  = inf;
@@ -79,10 +80,12 @@ end
 
 showprogress('Calling KNITRO',model.options.showprogress);
 
-% FMINCON callbacks can be used, except that we must ensure the model is
-% sent to the callbacks also (KNITRO only sends x)
-funcs.objective = @(x)fmincon_fun_liftlayer(x,model);
-funcs.constraints = @(x)fmincon_con_liftlayer(x,model);
+% FMINCON callbacks can be used, except that we 
+% must ensure the model is sent to the callbacks also 
+% KNITRO also calls twice, so we compute everything in first
+% and then save stuff
+funcs.constraints = @(x)knitro_callback_g(x,model);
+funcs.objective = @(x)knitro_callback_f(x,model);
 
 switch model.options.verbose
     case 0
