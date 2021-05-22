@@ -1,10 +1,14 @@
-function V = vertex(P)
+function V = vertex(varargin)
 % VERTEX Computes vertices (very rudimentary implementation)
 %
-% V = vertex(P)
+% V = VERTEX(P)
 %
 % P : Constraint object defining a polytope
 %
-% See also CHEBYBALL, BOUNDINGBOX
+% With a second argument x the projection of the vertices
+% to the x-space is returned.
+%
+% See also CHEBYBALL, BOUNDINGBOX, POLYTOPE
 
-V = vertex(lmi(P));
+varargin{1} = lmi(varargin{1});
+V = vertex(varargin{:});

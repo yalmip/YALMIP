@@ -1,13 +1,13 @@
-function [P,x] = polytope(x,v)
+function [P,x] = polytope(v,x)
 % polytope  Creates a constraint defining a polytope from vertices
 %
-% P = polytope(x,v)
+% P = polytope(v,x)
 %
 % Short for P = [x == v*s, sum(s==1), s >= 0]
 %
 % Note that it is not projected to x but lives in (x,s)
 %
-% See also VERTEX, BOUNDINGBOX, CHEBYBALL, constraint/polytope
+% See also VERTEX, BOUNDINGBOX, CHEBYBALL, POLYTOPE
 
 if ~isa(x,'sdpvar')
     error('First argument should be an SDPVAR');
