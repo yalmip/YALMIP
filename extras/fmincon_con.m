@@ -303,54 +303,96 @@ for i = 1:length(model.K.s)
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
     [d,v] = eig(X);
+    if ~isempty(sdpLayer.eigenVectors)
+        use = zeros(1,n);
+        used = zeros(1,size(sdpLayer.eigenVectors{i},2));
+        for j = 1:n
+            for k = 1:size(sdpLayer.eigenVectors{i},2)
+                s = norm(X*sdpLayer.eigenVectors{i}(:,k)-v(j,j)*sdpLayer.eigenVectors{i}(:,k));
+                if s <= 1e-12
+                    if ~used(k) && ~use(j)
+                        use(j) = k;
+                        used(k) = 1;
+                    end
+                end
+            end
+        end
+        sdpLayer.eigenVectors{i} = [sdpLayer.eigenVectors{i} d];
+    else
+        sdpLayer.eigenVectors{i} = d;
+    end
+    %  use
+%    if any( find(use))
+%        disp(use)
+%    end
+    d(:,find(use)) = sdpLayer.eigenVectors{i}(:,use(find(use)));
+    %   if size(sdpLayer.eigenVectors{i},2) > 5*n
+    %       sdpLayer.eigenVectors{i} = sdpLayer.eigenVectors{i}(:,end-5*n:end);
+    %   end
     newSDPblock = [];
     nZeroVectors = length(find(abs(diag(v))<=1e-8));
     try
-    if any(nZeroVectors)
-        if ~isempty(sdpLayer.nullVectors{i}) 
-            tt = [];            
-            for ee = 1:size(sdpLayer.nullVectors{i},2)
-                tt = [tt sdpLayer.nullVectors{i}(:,ee)'*X*sdpLayer.nullVectors{i}(:,ee)];
+        if any(nZeroVectors)
+            if ~isempty(sdpLayer.nullVectors{i})
+                tt = [];
+                for ee = 1:size(sdpLayer.nullVectors{i},2)
+                    tt = [tt sdpLayer.nullVectors{i}(:,ee)'*X*sdpLayer.nullVectors{i}(:,ee)];
+                end
+                notok = find(tt >= 2e-6);
+                if any(notok)
+                   % 'Prune'
+                    sdpLayer.nullVectors{i}(:,find(notok))=[];
+                end
             end
-            notok = find(tt >= 2e-6);
-            if any(notok)
-                'Prune'
-                sdpLayer.nullVectors{i}(:,find(notok))=[];
+            if isempty(sdpLayer.nullVectors{i})
+                sdpLayer.nullVectors{i} = d(:,1:nZeroVectors);
+                %'New batch'
+            elseif  nZeroVectors > size(sdpLayer.nullVectors{i},2)
+                %'Expanding'
+                S = [sdpLayer.nullVectors{i} d(:,nZeroVectors+1:end)];
+                S = null(S');
+                %S = null(sdpLayer.nullVectors{i}');
+                sdpLayer.nullVectors{i} = [sdpLayer.nullVectors{i} S(:,1:(nZeroVectors-size(sdpLayer.nullVectors{i},2)))];
+            elseif nZeroVectors < size(sdpLayer.nullVectors{i},2)
+                %'Contracting'
             end
+            %  'Using'
+            d(:,1:nZeroVectors) = sdpLayer.nullVectors{i}(:,1:nZeroVectors);
         end
-        if isempty(sdpLayer.nullVectors{i})        
-            sdpLayer.nullVectors{i} = d(:,1:nZeroVectors);
-           'New batch'
-        elseif  nZeroVectors > size(sdpLayer.nullVectors{i},2) 
-            'Expanding'
-            S = [sdpLayer.nullVectors{i} d(:,nZeroVectors+1:end)];
-            S = null(S');
-            %S = null(sdpLayer.nullVectors{i}');
-            sdpLayer.nullVectors{i} = [sdpLayer.nullVectors{i} S(:,1:(nZeroVectors-size(sdpLayer.nullVectors{i},2)))];
-        elseif nZeroVectors < size(sdpLayer.nullVectors{i},2)  
-            'Contracting'
-        end
-        'Using'
-        d(:,1:nZeroVectors) = sdpLayer.nullVectors{i}(:,1:nZeroVectors);        
-    end
     catch
-        'Fail'
+        %  'Fail'
     end
+    pre_reordering = 1:n;
+    %     if any(abs(diff(diag(v))) <=1e-6)
+    %         groupStart = 1;
+    %         vv = diag(v);
+    %         while groupStart < n
+    %             thisGroup = find(abs(vv(groupStart+1:end)-vv(groupStart))<=1e-6);
+    %             if any(thisGroup)
+    %                 members = [groupStart groupStart+thisGroup(:)'];
+    %                 [~,loc] = sort((1:n)*abs(d(:,members)));
+    %                 pre_reordering(members) = members(loc);
+    %                 groupStart = groupStart + length(members);
+    %             else
+    %                 groupStart = groupStart + 1;
+    %             end
+    %         end
+    %     end
     for m = 1:min(sdpLayer.n,model.K.s(i))
         newrow = [];
-        for j = 1:size(B,2)
-            newrow = [newrow d(:,m)'*reshape(B(top:top+n^2-1,j),n,n)*d(:,m)];
-        end        
-        newSDPblock = [newSDPblock;newrow];  
+        newrow = oneSDPGradient(d(:,m),B(top:top+n^2-1,:));
+        newSDPblock = [newSDPblock;newrow];
         newcuts = newcuts + 1;
-    end    
+    end
     if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
         newSDPblock = cumsum(newSDPblock);
     end
-    if ~isempty(sdpLayer.oldGradient{i}) 
+    if ~isempty(sdpLayer.oldGradient{i})
         [reordering] = matchGradientRows(newSDPblock,sdpLayer.oldGradient{i});
-        newSDPblock = newSDPblock(reordering,:);                        
+        newSDPblock = newSDPblock(reordering,:);
+        reordering = reordering(pre_reordering);
     end
+    %  newSDPblock
     sdpLayer.oldGradient{i} = newSDPblock;
     sdpLayer.reordering{i} = reordering;
     newF = [newF;newSDPblock];
@@ -405,4 +447,11 @@ if ~isempty(sdpLayer.reordering{1})
     end
     g_sdp = g_sdp(reordering);
     g = [g_nonsdp;g_sdp];
+end
+
+function newrow = oneSDPGradient(d,B,top)
+n = size(d,1);
+newrow = [];
+for j = 1:size(B,2)
+    newrow = [newrow d'*reshape(B(:,j),n,n)*d];
 end

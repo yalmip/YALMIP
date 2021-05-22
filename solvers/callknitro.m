@@ -54,9 +54,13 @@ end
 
 global latest_xevaled
 global latest_x_xevaled
+global latest_x_g
+global latest_x_f
 global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+latest_x_g = [];
+latest_x_f = [];
 sdpLayer.nullVectors = cell(length(model.K.s),1);
 sdpLayer.eigenVectors = cell(length(model.K.s),1);
 sdpLayer.oldGradient = cell(length(model.K.s),1);

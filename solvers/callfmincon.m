@@ -71,6 +71,7 @@ latest_x_xevaled = [];
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 sdpLayer.nullVectors = cell(length(model.K.s),1);
+sdpLayer.eigenVectors = cell(length(model.K.s),1);
 sdpLayer.n  = inf;
 
 showprogress('Calling FMINCON',model.options.showprogress);
