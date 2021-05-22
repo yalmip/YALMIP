@@ -489,7 +489,6 @@ bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = -1;
 bmibnb.onlyrunupperinroot = 0;
-bmibnb.uppersdprelax = 1;
 bmibnb.uppersdprelaxmethod = 'element';
 bmibnb.lowerpsdfix =  -1;
 bmibnb.vartol = 1e-3;
