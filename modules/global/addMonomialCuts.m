@@ -24,10 +24,10 @@ if any(p.originalModel.variabletype==3)
                     else
                         [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));
                     end
-                    p.F_struc(end+1:end+length(b),1) = b;
-                    p.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
-                    p.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
-                    p.K.l = p.K.l+length(b);
+                    p_cut.F_struc(end+1:end+length(b),1) = b;
+                    p_cut.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
+                    p_cut.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
+                    p_cut.K.l = p_cut.K.l+length(b);
                 else
                     if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0 & ~isinf(p.lb(monom_variable)) & ~isinf(p.ub(monom_variable))
                         
