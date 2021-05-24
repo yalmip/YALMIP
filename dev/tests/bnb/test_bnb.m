@@ -64,7 +64,7 @@ function test_misdp(testCase)
 
 X = sdpvar(3,3);
 obj = trace((X-2*eye(3))*(X-2*eye(3))');
-sol = optimize((X<=3*eye(3)) + ((X>=eye(3)) | (X<=-eye(3))) + (-50 <= X(:) <= 50),obj,sdpsettings('verbose',0,'debug',1));
+sol = optimize((X<=3*eye(3)) + ((X>=eye(3)) | (X<=-eye(3))) + (-50 <= X(:) <= 50),obj,sdpsettings('verbose',0,'debug',1,'sedumi.free',0));
 
 testCase.assertTrue(sol.problem==0);
 testCase.assertTrue(abs(value(obj)) <= 1e-5);
