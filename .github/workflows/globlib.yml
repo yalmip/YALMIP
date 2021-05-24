@@ -27,7 +27,7 @@ jobs:
       - name: Nonconvex QP
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/qp'); assertSuccess(results);
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/globlib/qp'); assertSuccess(results);
 
       - name: QP report
         uses: dorny/test-reporter@v1.4.3
@@ -56,7 +56,7 @@ jobs:
       - name: Nonconvex QCQP
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/qcqp'); assertSuccess(results);
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/globlib/qcqp'); assertSuccess(results);
 
       - name: QCQP report
         uses: dorny/test-reporter@v1.4.3
@@ -85,7 +85,7 @@ jobs:
       - name: Polynomial
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/polynomial'); assertSuccess(results);
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/globlib/polynomial'); assertSuccess(results);
 
       - name: Polynomial report
         uses: dorny/test-reporter@v1.4.3
@@ -114,7 +114,7 @@ jobs:
       - name: General nonlinear
         uses: matlab-actions/run-command@v0
         with:
-          command: addpath(genpath(pwd)); results = runxunittests('dev/tests/globlib/general'); assertSuccess(results);
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/globlib/general'); assertSuccess(results);
 
       - name: General nonlinear report
         uses: dorny/test-reporter@v1.4.3
