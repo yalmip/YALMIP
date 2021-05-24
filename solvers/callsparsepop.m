@@ -107,8 +107,6 @@ else
     Primal = [];
 end
 
-infostr = yalmiperror(problem,model.solver.tag);
-
 % Save ALL data sent to solver
 if options.savesolverinput
     solverinput.obj = obj;
@@ -132,7 +130,7 @@ else
 end
 
 % Standard interface
-output = createOutputStructure(Primal,[],[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,[],[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 
 function [lb,ub,cand_rows_eq,cand_rows_lp] = findlinearulb(F_struc,K,lb,ub,linearvariables)
 %FINDULB Internal function to extract upper and lower variable bounds

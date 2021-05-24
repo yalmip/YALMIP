@@ -90,8 +90,6 @@ switch info.status
         status = 9;
 end
 
-infostr = yalmiperror(problem,model.solver.tag);
-
 % Save ALL data sent to solver
 if model.options.savesolverinput
     solverinput = scsmodel;
@@ -110,7 +108,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 
 function [model,x0,H] = removeequalitiesinmodel(model)
 

@@ -89,7 +89,6 @@ else
         end
     end
 end
-infostr = yalmiperror(problem,'LINPROG');       
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -114,4 +113,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

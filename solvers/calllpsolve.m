@@ -146,8 +146,6 @@ switch result
         problem = -1;
 end
         
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 % Save all data sent to solver?
 if options.savesolverinput
 	solverinput.A = A;
@@ -171,4 +169,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

@@ -97,8 +97,6 @@ else
     end
 end
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 if options.savesolveroutput
     solveroutput.obj = obj;
     solveroutput.X = X;
@@ -121,7 +119,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 
 function [F_struc,K] = deblock(F_struc,K);

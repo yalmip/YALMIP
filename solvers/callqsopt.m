@@ -53,8 +53,7 @@ switch STATUS
     otherwise
         problem = -1;
 end
-infostr = yalmiperror(problem,'QSOPT');	
-
+	
 % Save all data sent to solver?
 if options.savesolverinput
 	solverinput = [];	
@@ -100,5 +99,5 @@ else
     solveroutput = solveroutput;
 end
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 

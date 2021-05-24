@@ -217,7 +217,6 @@ switch info.termcode
     otherwise
         problem = -1; % Unknown error
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolveroutput
     solveroutput.obj = obj;
@@ -244,7 +243,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function [F_struc,K] = deblock(F_struc,K);
 X = any(F_struc(end-K.s(end)^2+1:end,:),2);

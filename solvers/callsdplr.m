@@ -123,8 +123,6 @@ x = -y_s;
 % No error codes currently...
 problem = 0;
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 % Save ALL data sent to solver
 if options.savesolverinput
     solverinput.A = F_struc(:,2:end);
@@ -146,7 +144,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function [D,V] = getfactors(Fi)
 if nnz(Fi)>0

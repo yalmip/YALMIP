@@ -70,12 +70,11 @@ else
             problem = 3;
         otherwise
             problem = 1;
-    end
-    infostr = yalmiperror(problem,'MAXDET');	
+    end    
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,[],solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,[],solveroutput,solvertime);
 
 function [x0,z0,w0,problem,infostr,solveroutput] = callmaxdetphase1(F_struc,F_blksz, G_struc,G_blksz, c, options);
 

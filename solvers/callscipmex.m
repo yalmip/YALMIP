@@ -148,7 +148,5 @@ else
 	solveroutput = [];
 end
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

@@ -84,8 +84,6 @@ switch output.cplexstatus
         problem = -1;
 end
 
-infostr = yalmiperror(problem,'CPLEX-IBM');
-
 % Save all data sent to solver?
 if options.savesolverinput
     solverinput.model = model;
@@ -109,7 +107,7 @@ if isempty(x)
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function [x,fval,exitflag,output,lambda] = localSolverCall(model)
 

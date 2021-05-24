@@ -107,7 +107,6 @@ switch info(1)
     otherwise
         problem = -1; % Unknown error
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 % always save output
 if options.savesolveroutput
@@ -137,7 +136,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,Slack,problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,Slack,problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 
 function [blk,A,C,b]=sedumi2vsdp(Cin,Ain,c,K);

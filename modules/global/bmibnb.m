@@ -152,7 +152,6 @@ end
 % semidefinite constraints. No reason to spend nodes on finding these and
 % we do it early to enable detection of variable bounds
 % *************************************************************************
-%p = addDiagonalSDPCuts(p);
 p = bounds_from_cones_to_lp(p);
 
 % *************************************************************************

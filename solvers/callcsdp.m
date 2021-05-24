@@ -1,4 +1,4 @@
-function output = callcsdp(interfacedata);
+function output = callcsdp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -48,7 +48,6 @@ case 4
 otherwise
     problem = 9;
 end 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
@@ -71,4 +70,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,Dual,z_s,problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,Dual,z_s,problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

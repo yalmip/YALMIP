@@ -58,7 +58,6 @@ switch OUT.how
     otherwise
         problem = -1;
 end
-infostr = yalmiperror(problem,'CDD');
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -75,4 +74,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(OUT.xopt,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(OUT.xopt,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

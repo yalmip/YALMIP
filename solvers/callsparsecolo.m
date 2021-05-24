@@ -98,7 +98,6 @@ switch  lower(interfacedata.solver.sdpsolver.tag)
         end
         
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolveroutput
     solveroutput.obj = obj;
@@ -125,7 +124,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 
 function problem = sedumicode(info,options)

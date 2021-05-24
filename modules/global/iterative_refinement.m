@@ -101,7 +101,6 @@ Primal = y_s;
 Dual   = x_s;
 
 problem = info.problem;
-infostr = yalmiperror(problem,model.solver.tag);
 
 if (problem > 0) && (options.verbose >= 1)
     disp(infostr(1:find(infostr=='(',1,'first')-1));
@@ -127,9 +126,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
-
-
+output = createOutputStructure(Primal,Dual,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 return;
 
 

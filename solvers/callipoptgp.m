@@ -153,8 +153,6 @@ end
 % Internal format for duals, not supported yet
 D_struc = [];
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 if interfacedata.options.savesolverinput
     solverinput.A = [];
     solverinput.b = [];
@@ -174,4 +172,4 @@ else
 end
 
 % Standard interface
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
