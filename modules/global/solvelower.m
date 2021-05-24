@@ -20,7 +20,7 @@ if p.options.bmibnb.cut.bilinear
 end
 
 if p.options.bmibnb.cut.normbound
- % 	p_cut = addNormBoundCut(p_cut);
+	p_cut = addNormBoundCut(p_cut);
 end
 if p.options.bmibnb.cut.evalvariable
     p_cut = addEvalVariableCuts(p_cut);

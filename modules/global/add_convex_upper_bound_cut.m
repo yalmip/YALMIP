@@ -1,6 +1,6 @@
 function p = add_convex_upper_bound_cut(p,upper,x_min)
 
-if any(p.variabletype == 2) && ~any(p.variabletype > 2) && ~isinf(upper)
+if any(p.variabletype == 2) && ~any(p.variabletype > 2) && ~isinf(upper) && ~any(p.c(p.evalVariables))
     x = x_min(p.linears);
     n = length(x);
     if ~isempty(p.shiftedQP) && ~any(p.shiftedQP.c(find(p.variabletype)))
@@ -38,7 +38,7 @@ end
 
 function p = add_convex_upper_bound_original(p,upper,x_min)
 
-if any(p.originalModel.variabletype == 3) && ~any(p.originalModel.variabletype > 3 )
+if any(p.originalModel.variabletype == 3) && ~any(p.originalModel.variabletype > 3 ) && ~any(p.originalModel.c(p.originalModel.evalVariables))
    % We might have a polynomial which has been rewritten
    % for the relaxations as a quadratic model
    % Maybe it is convex in original form
