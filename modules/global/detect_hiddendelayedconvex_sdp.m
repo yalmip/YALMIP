@@ -12,7 +12,7 @@ if any(p.K.s)
         possible_q = find((f(:,1)<0) & (sum(f|f,2)==2))
         possible_constant = find((f(:,1)>0) & (sum(f|f,2)==1));
         for j = possible_q(:)'
-            q = find(f(j,2:end))
+            q = find(f(j,2:end));
             if f(j,q+1) > 0 && p.variabletype(q)==2
                 y = p.QuadraticsList(q);
                 for k = possible_constant(:)'
