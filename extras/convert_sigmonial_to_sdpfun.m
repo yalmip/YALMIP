@@ -186,6 +186,12 @@ if xL<0 & xU>0
     Ay = [];
     b = [];
     return
+elseif fU-fL < 1e-4
+    % We're basically empty
+    Ax = [];
+    Ay = [];
+    b = [];
+    return
 end
 
 average_derivative = (fU-fL)/(xU-xL);

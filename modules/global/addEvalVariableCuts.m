@@ -163,7 +163,13 @@ else
     [z,ii,jj]=unique(z);
     fz = fz(ii);
 end
-
+if max(fz)-min(fz) < 1e-4
+    Ax = [];
+    Ay = [];
+    b = [];
+    K = [];
+    return
+end
 [Ax,Ay,b] = convexhullFromSampled(z,fz,xL,xU);
 removeThese = find(any(isnan([Ax Ay b]),2) | any(isinf([Ax Ay b]),2));
 Ax(removeThese,:) = [];
