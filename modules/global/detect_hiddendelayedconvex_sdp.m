@@ -9,7 +9,7 @@ if any(p.K.s)
         m = size(p.F_struc,2);
         digindex = top + find(speye(p.K.s(i)))-1;
         f = p.F_struc(digindex,:);
-        possible_q = find((f(:,1)<0) & (sum(f|f,2)==2))
+        possible_q = find((f(:,1)<0) & (sum(f|f,2)==2));
         possible_constant = find((f(:,1)>0) & (sum(f|f,2)==1));
         for j = possible_q(:)'
             q = find(f(j,2:end));
