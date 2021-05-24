@@ -71,7 +71,7 @@ testCase.assertTrue(sol.problem == 0)
 
 function test_acosh(testCase)
 sdpvar x
-sol = optimize([-1 <= x <= 1], (acosh(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
+sol = optimize([-5 <= x <= 5], (acosh(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
 testCase.assertTrue(sol.problem == 0)
 
 %% sin functions
