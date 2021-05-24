@@ -21,3 +21,16 @@ if any(p.K.p)
     end
     p = addInequality(p,newInequalities);
 end
+
+if any(p.K.s)
+    % Diagonals are non-negative
+    top = startofSDPCone(p.K);
+    newInequalities = [];
+    for i = 1:length(p.K.s)
+        n = p.K.s(i);
+        index = top + find(speye(n))-1;        
+        newInequalities = [newInequalities;p.F_struc(index,:)];
+        top = top + n^2;
+    end
+    p = addInequality(p,newInequalities);
+end

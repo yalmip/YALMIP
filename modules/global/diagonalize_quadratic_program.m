@@ -132,6 +132,12 @@ if p.options.bmibnb.diagonalize == -1
     % If the model lacks bounds, these relaxations will
     % fail at this point, as bound propagation hasn't been performed yet.
     % Add fake bounds and see which performs best on fake model       
+    p.socpcuts.F_struc = [];
+    pnew.socpcuts.F_struc = [];
+    p.delayedconvex = [];
+    pnew.delayedconvex = [];
+    p.upper=inf;
+    pnew.upper=inf;
     [output1,cost1,~,timing] = solvelower(fakeBounds(defineQuadratics(fakeLowerModel(pnew))),p.options,p.solver.lowersolver.call,[],[],timing);
     [output2,cost2,~,timing] = solvelower(fakeBounds(fakeLowerModel(p)),p.options,p.solver.lowersolver.call,[],[],timing);
     [upper_cost1,x_u1] = quickCost(pnew,output1.Primal);

@@ -92,7 +92,8 @@ p.EqualityConstraintState = ones(p.K.f,1);
 p.lpcuts = p.F_struc(1+p.K.f:1:p.K.l+p.K.f,:);
 p.cutState = ones(p.K.l,1);
 p.cutState(p.KCut.l,1) = 0; % Don't use to begin with
-
+p.socpcuts = emptyNumericalModel;
+p.delayedconvex = emptyNumericalModel;
 % *************************************************************************
 % INITIALITAZION
 % *************************************************************************
@@ -106,6 +107,15 @@ stack   = [];
 solved_nodes = 0;
 numGlobalSolutions = 0;
 balanceIndicator = 1;
+
+if p.options.bmibnb.plot
+    p.plotter.x = sdpvar(length(p.c),1);
+    p.plotter.ops = p.options;
+    p.plotter.ops.solver = '';
+    p.plotter.ops.plot.shade = 0.1;
+else
+    p.plotter = [];
+end
 
 % *************************************************************************
 % Silly hack to speed up solver calls
@@ -253,7 +263,18 @@ while go_on
     
     % Any upper bond yet...
     [p,stack] = generateBoundFromSDP(p,upper,stack);
-
+    
+    % Maybe bound propagation took us to a good region
+    if options.bmibnb.cut.hiddensdpconvex
+        p = add_delayedsdpconvexity(p);
+    end
+    
+    % Debug with plot
+    if p.options.bmibnb.plot
+        plotNodeModel(p);%[p.lpcuts*[1;p.plotter.x]>=0,p.lb<=p.plotter.x<=p.ub,p.c'*p.plotter.x<=upper],p.plotter.x(1:2),'b',[],p.plotter.ops)
+        drawnow
+    end
+    
     % *********************************************************************
     % SOLVE LOWER AND UPPER
     % *********************************************************************
@@ -329,20 +350,20 @@ while go_on
             end
             output.problem = 3;
         end
-                              
+        
         switch output.problem
             case 1 % Infeasible
-                 if length(info_text)==0
+                if length(info_text)==0
                     info_text = 'Infeasible node in lower solver';
-                 else
-                    info_text = [info_text ' | ' 'Infeasible in lower solver'];                    
-                 end                                        
+                else
+                    info_text = [info_text ' | ' 'Infeasible in lower solver'];
+                end
                 keep_digging = 0;
                 cost = inf;
                 feasible = 0;
-
+                
             case {0,2,3,4} % (disregard numerical problems)
-
+                
                 % Unbounded
                 if output.problem == 2
                     cost = -inf;
@@ -367,20 +388,19 @@ while go_on
                 else
                     lower = min(lower,cost);
                 end
-
+                
                 relgap = 100*(upper-lower)/(1+abs(upper));
                 relgap_too_big = (isinf(lower) | isnan(relgap) | relgap>options.bmibnb.relgaptol);
                 if cost<upper-1e-5 & relgap_too_big
-
+                    
                     z = evaluate_nonlinear(p,x);
-
+                    
                     % Manage cuts etc
-                    % Why? Lower bound solver is SDP solver
                     p = createsdpcut(p,z);
                     p = addlpcuts(p,x);
-
+                    
                     oldCount = numGlobalSolutions;
-                    if numGlobalSolutions < p.options.bmibnb.numglobal && (rem(solved_nodes,balanceIndicator)==0)  
+                    if numGlobalSolutions < p.options.bmibnb.numglobal && (rem(solved_nodes,balanceIndicator)==0)
                         tstart = tic;
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
                         timing.heuristics = timing.heuristics + toc(tstart);
@@ -396,13 +416,13 @@ while go_on
                         if length(info_text)==0 &&  length(info_text2)>0
                             info_text = info_text2;
                         elseif  length(info_text2)>0 && ~isequal(info_text,info_text2)
-                            info_text = [info_text ' | ' info_text2];                       
+                            info_text = [info_text ' | ' info_text2];
                         end
                         if ~isequal(p.solver.uppersolver.tag,'none') & ~p.options.bmibnb.onlyrunupperinroot
                             if upper > p.options.bmibnb.target
-                                if options.bmibnb.lowertarget > lower                                         
-                                    [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);                                    
-                                    p.counter.uppersolved = p.counter.uppersolved + 1;                                    
+                                if options.bmibnb.lowertarget > lower
+                                    [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);
+                                    p.counter.uppersolved = p.counter.uppersolved + 1;
                                     if size(solution_hist,1)>1
                                         if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
                                             solution_hist = [solution_hist x_min(p.originallinears(:))];
@@ -413,7 +433,7 @@ while go_on
                                 end
                             end
                         end
-                        if upper < p.upper                              
+                        if upper < p.upper
                             p = propagate_bounds_from_upper(p,upper);
                         end
                     end
@@ -432,7 +452,7 @@ while go_on
         feasible = 0;
     end
     solved_nodes = solved_nodes+1;
-
+    
     % ************************************************
     % PRUNE SUBOPTIMAL REGIONS BASED ON UPPER BOUND
     % ************************************************
@@ -459,12 +479,12 @@ while go_on
     else
         lower = min(lower,cost);
     end
-
+    
     % ************************************************
     % CONTINUE SPLITTING?
     % ************************************************
     if ~isempty(p.branch_variables) && keep_digging && max(p.ub(p.branch_variables)-p.lb(p.branch_variables))>options.bmibnb.vartol && upper > lower
-        node = [];        
+        node = [];
         spliton = branchvariable(p,options,x);
         if ismember(spliton,p.complementary)
             i = find(p.complementary(:,1) == spliton);
@@ -485,7 +505,7 @@ while go_on
                 node = updateonenonlinearbound(node,spliton);
                 if all(node.lb <= node.ub)
                     node.branchwidth=[];
-                    stack = push(stack,node);                 
+                    stack = push(stack,node);
                 end
             end
             if gap_over_v2
@@ -497,12 +517,12 @@ while go_on
                 node = updateonenonlinearbound(node,spliton);
                 if all(node.lb <= node.ub)
                     node.branchwidth=[];
-                    stack = push(stack,node);                 
+                    stack = push(stack,node);
                 end
-            end     
+            end
         end
         if isempty(node)
-            if ismember(spliton,union(p.binary_variables,p.integer_variables)) 
+            if ismember(spliton,union(p.binary_variables,p.integer_variables))
                 if p.lb(spliton) == floor(x(spliton)) || p.ub(spliton) == ceil(x(spliton))
                     center1 = floor(-1/2+(p.lb(spliton) + p.ub(spliton))/2);
                     center2 = ceil((p.lb(spliton) + p.ub(spliton))/2);
@@ -525,16 +545,20 @@ while go_on
                     stack = push(stack,node2);
                 end
             else
-                bounds  = partition(p,options,spliton,x);           
-                for i = 1:length(bounds)-1                 
+                bounds  = partition(p,options,spliton,x);
+                for i = 1:length(bounds)-1
                     if isnan(bounds(i))
-                        node = savetonode(p,spliton,bounds(i+1),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                        
+                        node = savetonode(p,spliton,bounds(i+1),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                     elseif isnan(bounds(i+1))
-                        node = savetonode(p,spliton,bounds(i),bounds(i),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                        
+                        node = savetonode(p,spliton,bounds(i),bounds(i),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                     else
-                        node = savetonode(p,spliton,bounds(i),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);                    
+                        node = savetonode(p,spliton,bounds(i),bounds(i+1),-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                     end
                     node.bilinears = p.bilinears;
+                    if options.bmibnb.cut.hiddensdpconvex
+                        node = add_delayedsdpconvexity(node,spliton);
+                    end
+                    node = propagate_quadratic_disjoints(node,spliton);
                     node = updateonenonlinearbound(node,spliton);
                     node.branchwidth = [p.ub(spliton)-p.lb(spliton)];
                     if all(node.lb <= node.ub)
@@ -547,15 +571,15 @@ while go_on
             lower = min([stack.lower]);
         end
     end
-
+    
     if ~isempty(p)
         counter = p.counter;
     end
     % ************************************************
     %  Pick and create a suitable node
-    % ************************************************    
+    % ************************************************
     [p,stack] = selectbranch(p,options,stack,x_min,upper);
-        
+    
     if isempty(p)
         if ~isinf(upper)
             relgap = 0;
@@ -589,8 +613,8 @@ while go_on
     upper_hist = [upper_hist upper];
 end
 
-if options.bmibnb.verbose>0   
-    fprintf(['* Finished.  Cost: ' num2str(upper) ' (lower bound: ' num2str(lower) ', relative gap ' num2str(relgap) '%%)\n']);    
+if options.bmibnb.verbose>0
+    fprintf(['* Finished.  Cost: ' num2str(upper) ' (lower bound: ' num2str(lower) ', relative gap ' num2str(relgap) '%%)\n']);
     if ~time_ok
         fprintf(['* Termination due to time limit \n']);
     elseif ~iter_ok
@@ -634,12 +658,12 @@ if ~isempty(stack)
             [i,j] = max(vol);
             p=stack(j);
             stack = stack([1:1:j-1 j+1:1:end]);
-
+            
         case 'best'
             [i,j]=min([stack.lower]);
             p=stack(j);
             stack = stack([1:1:j-1 j+1:1:end]);
-
+            
         otherwise
     end
 else
@@ -678,7 +702,7 @@ else
     lower = upper;
 end
 
-function node = savetonode(p,spliton,bounds1,bounds2,direction,x,cost,EqualityConstraintState,InequalityConstraintState,cutState);
+function node = savetonode(p,spliton,bounds1,bounds2,direction,x,cost,EqualityConstraintState,InequalityConstraintState,cutState)
 node.lb = p.lb;
 node.ub = p.ub;
 node.lb(spliton) = bounds1;
@@ -688,7 +712,9 @@ node.ub(p.integer_variables) = floor(node.ub(p.integer_variables));
 node.lb(p.binary_variables) = ceil(node.lb(p.binary_variables));
 node.ub(p.binary_variables) = floor(node.ub(p.binary_variables));
 node.complementary = p.complementary;
-
+node.quadraticdisjoints = p.quadraticdisjoints;
+node.hiddendelayedconvex = p.hiddendelayedconvex;
+node.delayedconvex = p.delayedconvex;
 if direction == -1
     node.dpos = p.dpos-1/(2^sqrt(p.depth));
 else
@@ -698,6 +724,7 @@ node.spliton = spliton;
 node.depth = p.depth+1;
 node.x0 = x;
 node.lpcuts = p.lpcuts;
+node.socpcuts = p.socpcuts;
 node.lower = cost;
 node.InequalityConstraintState = InequalityConstraintState;
 node.EqualityConstraintState = EqualityConstraintState;
@@ -725,10 +752,10 @@ end
 function spliton = branchvariable(p,options,x)
 % Split if box is too narrow
 width = abs(p.ub(p.branch_variables)-p.lb(p.branch_variables));
-if isempty(p.bilinears) | ~isempty(p.evalMap) | any(p.variabletype > 2)%(min(width)/max(width) < 0.1) | (size(p.bilinears,1)==0) %
+if isempty(p.bilinears) || ~isempty(p.evalMap) || any(p.variabletype > 2)%(min(width)/max(width) < 0.1) | (size(p.bilinears,1)==0) %
     [i,j] = max(width);
     spliton = p.branch_variables(j);
-    if ~isempty(p.spliton) & p.spliton == spliton
+    if ~isempty(p.spliton) && p.spliton == spliton
         all_candidates = find(width == width(j));
         if length(all_candidates)>1
             spliton = p.branch_variables(all_candidates(2));
@@ -737,7 +764,7 @@ if isempty(p.bilinears) | ~isempty(p.evalMap) | any(p.variabletype > 2)%(min(wid
 else
     res = x(p.bilinears(:,1))-x(p.bilinears(:,2)).*x(p.bilinears(:,3));
     if all(res == 0)
-        % Can happen if lower bound computation failed.  
+        % Can happen if lower bound computation failed.
         if isempty(p.spliton)
             spliton = p.branch_variables(1);
             return
@@ -754,7 +781,7 @@ else
     [ii,jj] = sort(abs(res));
     v1 = p.bilinears(jj(end),2);
     v2 = p.bilinears(jj(end),3);
-
+    
     acc_res1 = sum(abs(res(find((p.bilinears(:,2)==v1) |  p.bilinears(:,3)==v1))));
     acc_res2 = sum(abs(res(find((p.bilinears(:,2)==v2) |  p.bilinears(:,3)==v2))));
     
@@ -769,9 +796,9 @@ else
     else
         if (~ismember(v2,p.branch_variables) | (acc_res1>acc_res2)) & ismember(v1,p.branch_variables)
             spliton = v1;
-        elseif ~ismember(v1,p.branch_variables)& ismember(v2,p.branch_variables)
+        elseif ~ismember(v1,p.branch_variables) & ismember(v2,p.branch_variables)
             spliton = v2;
-        else            
+        else
             [i,j] = max(width);
             spliton = p.branch_variables(j);
         end
@@ -805,7 +832,7 @@ for i = 1:length(p.evalMap)
     end
 end
 if ~isempty(p.possibleSol) && any(spliton == p.possibleSol(:,1))
-    % Simple box-cnstrained min x'*Q*x with negative element Q_ii will
+    % Simple box-constrained min x'*Q*x with negative element Q_ii will
     % have optimal point at bound
     bounds = [p.lb(spliton) nan p.ub(spliton)];
     return
@@ -817,10 +844,10 @@ switch options.bmibnb.branchrule
         if isinf(L) | isinf(U)
             Ltemp = max(min(-1,x(spliton)-1),L);
             Utemp = min(max(1,x(spliton)+1),U);
-            bounds = [L (Ltemp + Utemp)/2 U];             
+            bounds = [L (Ltemp + Utemp)/2 U];
         elseif ~isempty(x_min)
             x = x(spliton);
-            bounds = [L 0.5*max(L,min(x_min(spliton),U))+0.5*(L+U)/2 U];            
+            bounds = [L 0.5*max(L,min(x_min(spliton),U))+0.5*(L+U)/2 U];
         else
             bounds = [L (L+U)/2 U];
         end
@@ -847,7 +874,7 @@ switch options.bmibnb.branchmethod
         [node,stack] = pull(stack,'best',x_min,upper);
     case 'best-estimate'
         [node,stack] = pull(stack,'best-estimate',x_min,upper,[],cost_improvements);
-
+        
     otherwise
         [node,stack] = pull(stack,'best',x_min,upper);
 end
@@ -869,6 +896,8 @@ else
     p.cutState = node.cutState;
     p.feasible = 1;
     p.branchwidth = node.branchwidth;
+    p.delayedconvex = node.delayedconvex;
+    p.hiddendelayedconvex = node.hiddendelayedconvex;
 end
 
 function p = addShiftedQP(p)
@@ -903,7 +932,7 @@ if isempty(p.evalMap) && ~any(p.variabletype > 2) && ~p.diagonalized
             end
             
             if (p.options.bmibnb.lowerpsdfix == -1 || p.options.bmibnb.lowerpsdfix == 1) && length(e) <= 500 && ~isempty(p.solver.sdpsolver)
-                x = sdpvar(length(r),1);                
+                x = sdpvar(length(r),1);
                 % FIXME: Use lower level setup
                 ops = p.options;
                 ops.warmstart = 0;
@@ -983,7 +1012,7 @@ if isempty(p.evalMap) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 
         if nnz(p.F_struc(:,1+p.nonlinears)) > 0
             j = [];
         end
-    end   
+    end
     if ~isempty(j)
         % Solution must be at bounds, so we keep this info for later branching
         p.possibleSol = [j(:) p.lb(j) p.ub(j)];
@@ -996,7 +1025,7 @@ if isempty(p.evalMap) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 
             var = [var j(i)];
             nonlin = [nonlin p.bilinears(find(p.bilinears(:,2) == j(i) & p.bilinears(:,3) == j(i)),1)];
             L = p.lb(var(end));
-            U = p.ub(var(end));            
+            U = p.ub(var(end));
             p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
             p.f = p.f - L*U*p.c(nonlin(end));
             p.c(nonlin(end)) = 0;
@@ -1020,7 +1049,7 @@ function [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_m
 
 [output,cost,p,timing] = solvelower(p,options,lowersolver,x_min,upper,timing);
 ptemp=p;
-if output.problem == 12    
+if output.problem == 12
     % Solver cannot judge if infeasible or unbounded. Solve feasibility
     % problem to figure out
     ptemp.c = ptemp.c*0;
@@ -1066,7 +1095,7 @@ elseif output.problem == 4 && p.options.bmibnb.cut.quadratic
             p.options.bmibnb.cut.quadratic = 0;
         end
         if output.problem == 0
-            output.problem = 2; 
+            output.problem = 2;
         end
     end
 end
@@ -1089,7 +1118,7 @@ end
 
 
 function p = propapagate_bounds_from_concavity(p)
-if ~isempty(p.possibleSol)    
+if ~isempty(p.possibleSol)
     k = p.possibleSol(:,1);
     i = find(p.lb(k) > max(p.possibleSol(:,2)));
     if ~isempty(i)
@@ -1114,7 +1143,7 @@ for k = 1:length(p.branch_variables)
     p2 = propagate_bounds_from_monomials(p2);
     p1 = propagate_bounds_from_monomials(p1);
     j = setdiff(1:length(p1.lb),i);
-    vol(i) = mean((p2.ub(j)-p2.lb(j)))+ mean((p1.ub(j)-p1.lb(j)));    
+    vol(i) = mean((p2.ub(j)-p2.lb(j)))+ mean((p1.ub(j)-p1.lb(j)));
 end
 [~,loc] = min(vol);
 j = p.branch_variables(loc);

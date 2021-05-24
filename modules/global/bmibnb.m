@@ -63,6 +63,13 @@ end
 % solver options
 p.options = pruneOptions(p.options);
 
+% We will fake QP-support in Mosek SDP
+if strcmpi(p.solver.lowersolver.tag,'mosek')
+    if any(p.K.s)
+       p.solver.lowersolver.objective.quadratic.convex = 1;
+    end
+end
+
 timing.total = tic;
 timing.uppersolve = 0;
 timing.lowersolve = 0;
@@ -143,9 +150,10 @@ end
 % *************************************************************************
 % Add diagonal cuts from if we are going to use a cutting strategi for
 % semidefinite constraints. No reason to spend nodes on finding these and
-% we do it eary to enable detection of variable bounds
+% we do it early to enable detection of variable bounds
 % *************************************************************************
-p = addDiagonalSDPCuts(p);
+%p = addDiagonalSDPCuts(p);
+p = bounds_from_cones_to_lp(p);
 
 % *************************************************************************
 % Save information about the applicability of some bound propagation
@@ -165,6 +173,8 @@ p = compile_nonlinear_table(p);
 if p.options.bmibnb.verbose>0
 	disp('* -Extracting bounds from model');   
 end
+p = detect_quadratic_disjoints(p);
+p = detect_hiddendelayedconvex_sdp(p);
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p,1);
 
@@ -578,33 +588,6 @@ while goon && any(abs(p.ub(p.branch_variables)-p.lb(p.branch_variables))>p.optio
     i = i+1;
 end
 
-function p = addDiagonalSDPCuts(p)
-if any(p.K.s)
-    top = startofSDPCone(p.K);
-    newF = [];
-    newCut = 1;
-    for i = 1:length(p.K.s)
-        n = p.K.s(i);
-        for m = 1:n
-            e = zeros(n,1);e(m)=1;
-            % FIXME: Trivial to vectorize
-            for j = 1:size(p.F_struc,2)
-                newF(newCut,j)= e'*reshape(p.F_struc(top:top+n^2-1,j),n,n)*e;
-            end
-            if ~any(newF(newCut,2:end))
-                newF = newF(1:end-1,:);
-            else
-                newCut = newCut + 1;
-            end
-        end
-        top = top+n^2;
-    end
-    
-    if ~isempty(newF)
-        p.K.l = p.K.l + size(newF,1);
-        p.F_struc = [p.F_struc(1:p.K.f,:);newF;p.F_struc(1 + p.K.f:end,:)];
-    end
-end
 
 function x = dediagonalize(p,x);
 if isempty(p.V)
