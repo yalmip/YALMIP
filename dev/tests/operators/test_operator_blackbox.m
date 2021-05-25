@@ -39,7 +39,7 @@ function test_sort(testCase)
 n = 3;
 m = 10;
 w = sdpvar(n,1);
-p = (m:-1:1)/10;
+p = (m:-1:1)'/10;
 R = reshape(1:m*n,m,n);
 w0 = (1:n)';
 f = @(w)(sort(R*w,'descend')'*p);
