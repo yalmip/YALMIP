@@ -12,7 +12,15 @@ L = -inf;
 U = inf;
 if ~isempty(p.evalMap{i}.properties.bounds)
     % A bound generator is available!
-    [L,U] = feval(p.evalMap{i}.properties.bounds,xL,xU,p.evalMap{i}.arg{2:end-1});
+    try
+        % Default operators return [L,U]
+        [L,U] = feval(p.evalMap{i}.properties.bounds,xL,xU,p.evalMap{i}.arg{2:end-1});
+    catch
+        % but to use anonymous functions in blackbox we support 
+        [LU] = feval(p.evalMap{i}.properties.bounds,xL,xU);
+        L = LU(1);
+        U = LU(2);
+    end
 else
     if isa(p.evalMap{i}.properties.monotonicity,'char')
         monotonicity = p.evalMap{i}.properties.monotonicity;
