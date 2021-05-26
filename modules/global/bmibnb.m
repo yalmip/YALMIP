@@ -173,6 +173,7 @@ if p.options.bmibnb.verbose>0
 	disp('* -Extracting bounds from model');   
 end
 p = detect_quadratic_disjoints(p);
+p = detect_quadratic_disjoints_generalized(p);
 p = detect_hiddendelayedconvex_sdp(p);
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p,1);
