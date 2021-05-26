@@ -342,10 +342,9 @@ R=(S(r,r)).^0.5*V(:,r)';
 % 1 - (t-c'*tx-f)
 % 2*R*x(used)
 p.F_struc(1,end+1) = 0;
-p.c = p.c*0;
-p.c(end+1) = 1;
 p.lb(end+1) = -inf;
 p.ub(end+1) = inf;
+p.c(end+1) = 0;
 p.Q = [];
 q = emptyNumericalModel;
 q.F_struc = spalloc(2+size(R,1),size(p.F_struc,2),0);
@@ -357,7 +356,9 @@ q.F_struc(2,2:end) = p.c(:)';
 q.F_struc(2,end) = -1;
 q.F_struc(3:end,1 + used) = 2*R;
 q.K.q = 2 + size(R,1);
-
+% Now change objective
+p.c = p.c*0;
+p.c(end) = 1;
 p = mergeNumericalModels(p,q);
 output = callmosek(p);
 if ~isempty(output.Primal)
