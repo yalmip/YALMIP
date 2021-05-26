@@ -71,6 +71,8 @@ p = presolveOneMagicRound(p);
 
 % Copied from solvelower
 p_cut = p;
+p_cut = propagate_bounds_from_monomials(p_cut);
+p_cut = propagate_bounds_from_evaluations(p_cut);
 p_cut = addNormBoundCut(p_cut);
 p_cut = addBilinearVariableCuts(p_cut);
 p_cut = addEvalVariableCuts(p_cut);
