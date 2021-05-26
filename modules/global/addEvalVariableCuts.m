@@ -54,13 +54,13 @@ if ~isempty(p.evalMap)
                     K.f = 0;
                     K.l = length(b);
                 else
-                    K.l = length(b);
+                    K.l = length(b)-K.f;
                 end
                 F_structemp = zeros(size(b,1),length(p.c)+1);
                 F_structemp(:,1+y) = -Ay;
                 F_structemp(:,1+x) = -Ax;
                 F_structemp(:,1) = b;
-                localModel = createNumericalModel(F_structemp,K);
+                localModel = createNumericalModel(F_structemp,K);                
                 pcut = mergeNumericalModels(pcut,localModel);             
             end
         end
