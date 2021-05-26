@@ -166,7 +166,13 @@ jobs:
         uses: matlab-actions/run-command@v0
         with:
           command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/cutsdp'); assertSuccess(results);
-                      
+
+      - name: Test SLAYER solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/slayer'); assertSuccess(results);
+                                    
       - name: Test Report
         uses: dorny/test-reporter@v1.4.3
         if: success() || failure()    # run this step even if previous step failed
