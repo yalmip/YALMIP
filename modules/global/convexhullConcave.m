@@ -4,10 +4,10 @@ function [Ax,Ay,b,K] = convexhullConcave(varargin)
 % Two upper bounds from tangents
 % y < f(xL) + (x-xL)*df(xL)
 % y < f(xU) + (x-xL)*df(xU)
-% lower bound from conneting extreme points
+% lower bound from connecting extreme points
 % y > f(xU)(x-xL)/(xU-xL) +  f(xL)(xU-x)/(xU-xL)
-% can be wrtitten as
-% Ax*x + Ay*y < b
+% can be written as
+% Ax*x + Ay*y <= b
 
 if rem(nargin,3)
     error('The convex hull generator assumes n triplets (x,f,df).')
@@ -16,6 +16,17 @@ m = nargin/3;
 x = [varargin{(1:m)}]';
 f = [varargin{(1:m)+m}]';
 df = [varargin{(1:m)+2*m}]';
+
+if df(1) == df(end)
+    % This is a linear function
+    % return y = f(1) + df*(x-x(1))
+    Ax = df(1);
+    Ay = -1;
+    b = df(1)*x(1)-f(1);
+    K.f = 1;
+    K.l = 0;
+    return
+end
 
 if all(diff(x)>=0) | all(diff(x(~isinf(x))))>=0 % Support [0 inf inf]
     Ay = -[-ones(m,1);1];
@@ -47,3 +58,6 @@ if ~isempty(j)
 end
 K.f = 0;
 K.l = length(b);
+if 0
+  sdpvar x y;plot(Ax*x+Ay*y <= b);
+end
