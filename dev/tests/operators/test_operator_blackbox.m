@@ -1,4 +1,4 @@
-function tests = test_operator_sdpfun
+function tests = test_operator_blackbox
 tests = functiontests(localfunctions);
 
 function test_base(testCase)

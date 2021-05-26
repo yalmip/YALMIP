@@ -109,16 +109,16 @@ switch class(varargin{1})
         
         operator = varargin{end};        
         if isempty(operator.bounds)
-            canDeriveBoundsFromMonotone = strcmpi(operator.monotinicty,'increasing') || strcmpi(operator.monotinicty,'decreasing');            
-            if ~canDriveBoundsFromMonotone            
-                operator.bounds = @bounds;
+            canDeriveBoundsFromMonotone = strcmpi(operator.monotonicity,'increasing') || strcmpi(operator.monotonicity,'decreasing');            
+            if ~canDeriveBoundsFromMonotone            
+                operator.bounds = @(xL,xU)(bounds(xL,xU,varargin{4}));
             end
         end
         if isempty(operator.convexhull)
             canDeriveHullFromVexity = strcmpi(operator.convexity,'concave') || strcmpi(operator.convexity,'convex');
             canDeriveHullFromVexity = canDeriveHullFromVexity && ~isempty(operator.derivative);
             if ~canDeriveHullFromVexity
-                operator.convexhull = @convexhull;
+                operator.convexhull = @(xL,xU)(convexhull(xL,xU,varargin{4}));
             end
         end
         
@@ -157,7 +157,7 @@ else
     b = [];
 end
 
-function [L,U] = bounds(xL,xU,varargin)
+function LU = bounds(xL,xU,varargin)
 % Note, properties are appended when blackbox
 % operator is used. Should be exploited
 if length(xL)==1 && ~isinf(xL) & ~isinf(xU)
@@ -176,3 +176,4 @@ else
     L = -inf;
     U = inf;
 end
+LU = [L U];
