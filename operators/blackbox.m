@@ -63,8 +63,11 @@ if ~isa(varargin{1},'char') && any(strcmp(cellfun(@class,varargin,'UniformOutput
                         case 'convexhull'
                             operator.bound  = varargin{reading+1};
                             reading = reading + 2;
+                        case 'stationary'
+                            operator.stationary  = varargin{reading+1};
+                            reading = reading + 2;                            
                         otherwise
-                            error('Property no recognized')
+                            error('Property not recognized')
                     end
                 otherwise
             end
@@ -104,12 +107,19 @@ switch class(varargin{1})
         
     case 'char' % YALMIP sends 'model' when it wants the epigraph or hypograph
         
-        operator = varargin{end};
+        operator = varargin{end};        
         if isempty(operator.bounds)
-            operator.bounds = @bounds;
+            canDeriveBoundsFromMonotone = strcmpi(operator.monotinicty,'increasing') || strcmpi(operator.monotinicty,'decreasing');            
+            if ~canDriveBoundsFromMonotone            
+                operator.bounds = @bounds;
+            end
         end
         if isempty(operator.convexhull)
-            operator.convexhull = @convexhull;
+            canDeriveHullFromVexity = strcmpi(operator.convexity,'concave') || strcmpi(operator.convexity,'convex');
+            canDeriveHullFromVexity = canDeriveHullFromVexity && ~isempty(operator.derivative);
+            if ~canDeriveHullFromVexity
+                operator.convexhull = @convexhull;
+            end
         end
         
         varargout{1} = [];

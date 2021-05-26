@@ -244,6 +244,7 @@ while go_on
             propagators{j}.time(end+1) = tic;
             p = feval(propagators{j}.fun,p);
             p = propapagate_bounds_from_concavity(p);
+            p = propagate_bounds_from_monomials(p);
             propagators{j}.time(end) = toc(uint64(propagators{j}.time(end)));
             volAfter = branchVolume(p,openVariables);
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
@@ -270,8 +271,8 @@ while go_on
     end
     
     % Debug with plot
-    if p.options.bmibnb.plot
-        plotNodeModel(p);%[p.lpcuts*[1;p.plotter.x]>=0,p.lb<=p.plotter.x<=p.ub,p.c'*p.plotter.x<=upper],p.plotter.x(1:2),'b',[],p.plotter.ops)
+    if p.feasible && p.options.bmibnb.plot
+        plotNodeModel(p);
         drawnow
     end
     
@@ -331,15 +332,6 @@ while go_on
             [output,cost,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);            
         end
         
-%         if output.problem == 0 && cost < upper
-%             pp = p;pp.K.f = 1;
-%             for i = 1:length(p.branch_variables)
-%                 pp.F_struc = [0 p.shiftedQP.Q(i,:)];
-%                 [output2,cost2,pw,timing2] = solvelower_safelayer(pp,options,lowersolver,x_min,upper,timing);
-%                 display([upper cost cost2 cost2>upper])
-%             end                
-%         end
-
         if output.problem == -1
             % We have no idea what happened. 
             % Behave as if it worked, so we can branch as see if things
@@ -827,6 +819,14 @@ for i = 1:length(p.evalMap)
                     bounds = [p.lb(spliton) p.evalMap{i}.properties.inflection(1) p.ub(spliton)];
                     return
                 end
+            end
+        end
+    end
+    if ~isempty(p.evalMap{i}.properties.stationary)
+        if isequal(spliton, p.evalMap{i}.variableIndex)
+            if (p.evalMap{i}.properties.stationary > p.lb(spliton)) && (p.evalMap{i}.properties.stationary < p.ub(spliton))
+                bounds = [p.lb(spliton) p.evalMap{i}.properties.stationary p.ub(spliton)];
+                return
             end
         end
     end

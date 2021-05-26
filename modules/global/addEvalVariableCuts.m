@@ -76,9 +76,17 @@ K = p.evalMap{i}.oldhull.K;
 function [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
 
 try
-    [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+    if strcmpi(p.evalMap{i}.fcn,'blackbox')
+        [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU);
+    else
+        [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+    end
 catch
-    [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+    if strcmpi(p.evalMap{i}.fcn,'blackbox')
+        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU);
+    else
+        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+    end
     if ~isempty(Ax)
         problem = find(any(isinf([Ax Ay b]),2) | any(isnan([Ax Ay b]),2));
         Ax(problem,:) = [];
