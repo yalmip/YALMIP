@@ -125,6 +125,7 @@ p = presolveSOS(p);
 p = smashFixed(p);
 p = propagate_bounds_from_qualities(p);
 
+p.options.allowsmashing = 1;
 poriginal = p;
 p.cuts = [];
 pid = 0;
@@ -171,6 +172,7 @@ allSolutions = [];
 sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
+numericalProblemsCount= 0;
 
 % Generalized upper solver format
 upperSolversList = strsplit(uppersolver,',');
@@ -252,8 +254,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             else
                 output.problem = -1;
             end
-        end
-                
+        end                       
+        
         if output.problem == 9
             unknownErrorCount = unknownErrorCount + 1;
         end

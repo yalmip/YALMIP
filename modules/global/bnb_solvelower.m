@@ -35,14 +35,14 @@ end
 
 % Exclusion cuts for negated binaries based on some optimal solutions
 if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)   
-    for i = 1:min(size(allSolutions,2),10);
+    for i = 1:min(size(allSolutions,2),10)
         [b,a] = exclusionCut(allSolutions(:,end-i+1),-1);
         p = addInequality(p,[b a]);        
     end    
 end
 
 removethese = p.lb==p.ub;
-if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap)
+if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.options.allowsmashing
  
     % Fixed variables, so let us try to presolve as muh as possible
     % (needed often in SDPs etc where solvers are less robust to weird
