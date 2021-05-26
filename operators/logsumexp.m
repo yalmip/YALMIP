@@ -65,7 +65,7 @@ function [L, U] = bounds(xL,xU)
 L = log(sum(exp(xL)));
 U = log(sum(exp(xU)));
 
-function [Ax, Ay, b] = convexhull(xL,xU)
+function [Ax, Ay, b, K] = convexhull(xL,xU)
 % Ax*x + Ay*y < b
 % Use lower cut from center point
 c = (xL + xU)/2;
@@ -108,3 +108,5 @@ shift = -min(xL)+log(n^(1/(n-1)));
 Ay = [Ay;1];
 Ax = [Ax;-ones(1,n)];
 b = [b;log(exp(-shift)) + n*(shift)];
+K.f = 0;
+K.l = length(b);

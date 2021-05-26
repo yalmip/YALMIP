@@ -1,7 +1,7 @@
 function pcut = addEvalVariableCuts(p)
 
 pcut = p;
-if ~isempty(p.evalMap) 
+if ~isempty(p.evalMap)
     pcut = emptyNumericalModel;
     for i = 1:length(p.evalMap)
         y = p.evalVariables(i);
@@ -31,12 +31,12 @@ if ~isempty(p.evalMap)
                         % use the sample-based instead
                         [Ax,Ay,b,K,p] = convexhullSampled(xL,xU,p,i);
                     end
-                end    
+                end
                 if remove_auto_generated_convexhull
                     p.evalMap{i}.properties.convexhull = [];
                 end
-            elseif ~(any(isinf(xL)) | any(isinf(xU)))               
-               [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);               
+            elseif ~(any(isinf(xL)) | any(isinf(xU)))
+                [Ax,Ay,b,K] = convexhullSampled(xL,xU,p,i);
             else
                 Ax = [];
                 Ay = [];
@@ -44,24 +44,20 @@ if ~isempty(p.evalMap)
                 K = [];
             end
             if ~isempty(b)
-                %FIXME nan in equality will fail
                 removeThese = find(any(isnan([Ax Ay b]),2) | any(isinf([Ax Ay b]),2));
-                Ax(removeThese,:) = [];
-                Ay(removeThese,:) = [];
-                b(removeThese) = [];
-                if isempty(K)
-                    % Compatibility with old code
-                    K.f = 0;
-                    K.l = length(b);
-                else
-                    K.l = length(b)-K.f;
+                if any(removeThese)
+                    Ax(removeThese,:) = [];
+                    Ay(removeThese,:) = [];
+                    b(removeThese) = [];
+                    K.l = K.l - nnz(removeThese > K.f);
+                    K.f = K.f - nnz(removeThese <= K.f);
                 end
                 F_structemp = zeros(size(b,1),length(p.c)+1);
                 F_structemp(:,1+y) = -Ay;
                 F_structemp(:,1+x) = -Ax;
                 F_structemp(:,1) = b;
-                localModel = createNumericalModel(F_structemp,K);                
-                pcut = mergeNumericalModels(pcut,localModel);             
+                localModel = createNumericalModel(F_structemp,K);
+                pcut = mergeNumericalModels(pcut,localModel);
             end
         end
     end
@@ -78,25 +74,20 @@ K = p.evalMap{i}.oldhull.K;
 
 function [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
 
-try
-    if strcmpi(p.evalMap{i}.fcn,'blackbox')
-        [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU);
-    else
-        [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+if strcmpi(p.evalMap{i}.fcn,'blackbox')
+    [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU);
+else
+    [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
+end
+if ~isempty(Ax)
+    removeThese = find(any(isinf([Ax Ay b]),2) | any(isnan([Ax Ay b]),2));
+    if any(removeThese)
+        Ax(removeThese,:) = [];
+        Ay(removeThese,:) = [];
+        b(removeThese) = [];
+        K.l = K.l - nnz(removeThese > K.f);
+        K.f = K.f - nnz(removeThese <= K.f);
     end
-catch
-    if strcmpi(p.evalMap{i}.fcn,'blackbox')
-        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU);
-    else
-        [Ax,Ay,b]=feval(p.evalMap{i}.properties.convexhull,xL,xU, p.evalMap{i}.arg{2:end-1});
-    end
-    if ~isempty(Ax)
-        problem = find(any(isinf([Ax Ay b]),2) | any(isnan([Ax Ay b]),2));
-        Ax(problem,:) = [];
-        Ay(problem,:) = [];
-        b(problem) = [];
-    end
-    K = [];
 end
 p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
 
@@ -123,29 +114,28 @@ z = linspace(xL,xU,100);
 if isequal(p.evalMap{i}.fcn,'power_internal2')
     % Special code for automatically converting sigmonial
     % terms to be solvable with bmibnb
-    fz = feval(p.evalMap{i}.fcn,z,p.evalMap{i}.arg{2});    
+    fz = feval(p.evalMap{i}.fcn,z,p.evalMap{i}.arg{2});
 else
     arg = p.evalMap{i}.arg;
-    arg{1} = z;    
+    arg{1} = z;
     vectorized = 1;
     fz = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
     if length(fz) ~= length(z)
         % Operator is not vectorized?
         vectorized = 0;
         fz = [];
-        for k = 1:length(z)        
-            arg{1} = z(k);    
+        for k = 1:length(z)
+            arg{1} = z(k);
             fz = [fz real(feval(p.evalMap{i}.fcn,arg{1:end-1}))];
         end
     end
-    if length(fz) ~= length(z)        
+    if length(fz) ~= length(z)
         Ax = [];
         Ay = [];
         b = [];
         K = [];
         return
     end
-    % end
     [minval,minpos] = min(fz);
     [maxval,maxpos] = max(fz);
     xtestmin = linspace(z(max([1 minpos-5])),z(min([100 minpos+5])),100);
@@ -159,13 +149,13 @@ else
         fz = [fz(:);fz1(:);fz2(:)];
     else
         fz1 = [];
-        for k = 1:length(xtestmin)        
-            arg{1} = xtestmin(k);    
+        for k = 1:length(xtestmin)
+            arg{1} = xtestmin(k);
             fz1 = [fz1 real(feval(p.evalMap{i}.fcn,arg{1:end-1}))];
         end
         fz2 = [];
-        for k = 1:length(xtestmax)        
-            arg{1} = xtestmax(k);    
+        for k = 1:length(xtestmax)
+            arg{1} = xtestmax(k);
             fz2 = [fz2 real(feval(p.evalMap{i}.fcn,arg{1:end-1}))];
         end
     end
@@ -181,12 +171,11 @@ if max(fz)-min(fz) < 1e-4
     K = [];
     return
 end
-[Ax,Ay,b] = convexhullFromSampled(z,fz,xL,xU);
+[Ax,Ay,b,K] = convexhullFromSampled(z,fz,xL,xU);
 removeThese = find(any(isnan([Ax Ay b]),2) | any(isinf([Ax Ay b]),2));
 Ax(removeThese,:) = [];
 Ay(removeThese,:) = [];
 b(removeThese) = [];
-K = [];
-
+K.l = K.l - length(removeThese);%[];
 p = saveOldHull(xL,xU,Ax,Ay,b,K,p,i);
 

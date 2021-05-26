@@ -49,20 +49,8 @@ if all(n4'*Z - d4 <= 0)
     Ax = [Ax;n4(1:2)'];
     Ay = [Ay;n4(3)];
 end
-
-if 0
-    sdpvar x(2,1) z
-    box=[min([x1 x2 x3 x4],[],2) <= x <= max([x1 x2 x3 x4],[],2),-50 <=z <= max([f1 f2 f3 f4])]
-    P = [n3'*[x;z] <= d3,
-        z >= f1 + (x-x1)'*df1,
-        z >= f2 + (x-x2)'*df2,
-        z >= f3 + (x-x3)'*df3,
-        z >= f4 + (x-x4)'*df4,
-        z >= f5 + (x-x5)'*df5,
-        box]
-    plot([Ax*x + Ay*z <= b])
-    plot(P,[x;z],[],1000)
-end
+K.f = 0;
+K.l = length(b);
 
 function [n,d] = ceiling(p1,p2,p3);
 n = cross(p1 - p2, p1 - p3);

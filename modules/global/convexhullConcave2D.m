@@ -51,6 +51,8 @@ if all(n4'*Z - d4 >= 0)
     Ax = [Ax;-n4(1:2)'];
     Ay = [Ay;-n4(3)];
 end
+K.f = 0;
+K.l = length(b);
 
 function [n,d] = ceiling(p1,p2,p3)
 n = cross(p1 - p2, p1 - p3);

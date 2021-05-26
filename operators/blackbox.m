@@ -130,7 +130,7 @@ switch class(varargin{1})
         error([upper(mfilename) ' called with weird argument']);
 end
 
-function [Ax,Ay,b] = convexhull(xL,xU,varargin)
+function [Ax,Ay,b,K] = convexhull(xL,xU,varargin)
 % Note, properties are appended when blackbox
 % operator is used. Should be exploited
 if length(xL)==1 && ~(isinf(xL) || isinf(xU))
@@ -151,10 +151,13 @@ if length(xL)==1 && ~(isinf(xL) || isinf(xU))
     Ax = [-k1;k2;-k3;k4];
     Ay = [1;-1;1;-1];
     b =  [k1*(-z(1)) + fz(1);-(k2*(-z(1)) + fz(1));k3*(-z(end)) + fz(end);-(k4*(-z(end)) + fz(end))];
+    K.f = 0;
+    K.l = length(b);
 else
     Ax = [];
     Ay = [];
     b = [];
+    K = [];
 end
 
 function LU = bounds(xL,xU,varargin)

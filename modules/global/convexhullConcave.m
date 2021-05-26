@@ -1,6 +1,6 @@
 function [Ax,Ay,b,K] = convexhullConcave(varargin)
 
-%function [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU)
+%function [Ax,Ay,b, K] = convexhullConcave(xL,xU,fL,fU,dfL,dfU)
 % Two upper bounds from tangents
 % y < f(xL) + (x-xL)*df(xL)
 % y < f(xU) + (x-xL)*df(xU)
@@ -43,12 +43,11 @@ if all(diff(x)>=0) | all(diff(x(~isinf(x))))>=0 % Support [0 inf inf]
         Ax(end-1)=[];
         Ay(end-1) = [];
         b(end-1) = [];
-    end     
-    
+    end  
 else
     Ax = [];
     Ay = [];
-    b = [];
+    b = [];    
 end
 j = find(any(isnan([Ax Ay b]),2));
 if ~isempty(j)

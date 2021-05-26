@@ -129,7 +129,7 @@ else
     end
 end
 
-function [Ax, Ay, b] = power_convexhull(xL,xU,power)
+function [Ax, Ay, b, K] = power_convexhull(xL,xU,power)
 x2 = (xL + xU)/4;
 x1 = (3*xL + xU)/4;
 x3 = (xL + 3*xU)/4;
@@ -144,9 +144,9 @@ df2 = power*x2^(power-1);
 df3 = power*x3^(power-1);
 dfU = power*xU^(power-1);
 if power > 1 | power < 0
-    [Ax,Ay,b] = convexhullConvex(xL,x1,x2,x3,xU,fL,f1,f2,f3,fU,dfL,df1,df2,df3,dfU);
+    [Ax,Ay,b,K] = convexhullConvex(xL,x1,x2,x3,xU,fL,f1,f2,f3,fU,dfL,df1,df2,df3,dfU);
 else
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
+    [Ax,Ay,b,K] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
 end
 if ~isempty(Ax)
     if isinf(Ax(1))

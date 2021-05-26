@@ -69,7 +69,7 @@ L = sum(L);
 U = sum(U);
 
 
-function [Ax, Ay, b] = convexhull(xL,xU)
+function [Ax, Ay, b, K] = convexhull(xL,xU)
 
 if length(xL)==1
     xM = (xU+xL)/2;
@@ -79,7 +79,7 @@ if length(xL)==1
     df1 = derivative(xL);
     df2 = derivative(xM);
     df3 = derivative(xU);
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,f1,f2,f3,df1,df2,df3);
+    [Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,f1,f2,f3,df1,df2,df3);
 
 elseif length(xL)==2
     x1 = [xL(1);xL(2)];
@@ -100,9 +100,10 @@ elseif length(xL)==2
     df4 = derivative(x4);
     df5 = derivative(x5);
     
-    [Ax,Ay,b] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
+    [Ax,Ay,b,K] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
 else
     Ax = [];
     Ay = [];
     b = [];
+    K = [];
 end

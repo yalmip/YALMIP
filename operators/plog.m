@@ -73,7 +73,7 @@ else
     U = max([x1 x2 x3 x4]);
 end
 
-function [Ax,Ay,b] = convexhull(xL,xU)
+function [Ax,Ay,b,K] = convexhull(xL,xU)
 
 x1 = [xL(1);xL(2)];
 x2 = [xU(1);xL(2)];
@@ -93,4 +93,4 @@ df3 = derivative(x3);
 df4 = derivative(x4);
 df5 = derivative(x5);
 
-[Ax,Ay,b] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
+[Ax,Ay,b,K] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
