@@ -37,7 +37,7 @@ if any(p.K.s)
                             r/sqrt(c)];
                         L.F_struc(1,1+y)=-1;
                         L.K.q = 3;
-                        p.hiddendelayedconvex.variable = [p.hiddendelayedconvex.variable [y;0;0]]
+                        p.hiddendelayedconvex.variable = [p.hiddendelayedconvex.variable [y;0;0]];
                         p.hiddendelayedconvex.modelup{end+1}=U;
                         p.hiddendelayedconvex.modeldown{end+1}=L;                            
                     end
