@@ -44,6 +44,7 @@ if ~isempty(p.evalMap)
                 K = [];
             end
             if ~isempty(b)
+                %FIXME nan in equality will fail
                 removeThese = find(any(isnan([Ax Ay b]),2) | any(isinf([Ax Ay b]),2));
                 Ax(removeThese,:) = [];
                 Ay(removeThese,:) = [];
@@ -51,6 +52,8 @@ if ~isempty(p.evalMap)
                 if isempty(K)
                     % Compatibility with old code
                     K.f = 0;
+                    K.l = length(b);
+                else
                     K.l = length(b);
                 end
                 F_structemp = zeros(size(b,1),length(p.c)+1);
