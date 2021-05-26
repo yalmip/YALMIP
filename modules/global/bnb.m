@@ -116,11 +116,18 @@ end
 %% *******************************
 % PRE-SOLVE (nothing fancy coded)
 % % *******************************
+p = presolve_integer_coefficients(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_impliedintegers_from_equalities(p);
+p = presolve_integer_coefficients(p);
+
+if ~p.feasible
+    output = createOutputStructure([],[],[],1,yalmiperror(1,'BNB'),[],[],0);    
+    return
+end
 
 % *******************************
 %% Display logics
