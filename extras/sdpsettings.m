@@ -315,6 +315,10 @@ while i <= nargin
         end
         
         j = strmatch_octavesafe(lowArg,names);
+        % Try to expand to solver options
+        if isempty(j)
+            j = strmatch_octavesafe([options.solver '.' lowArg],names);
+        end
         if isempty(j)                       % if no matches
             error(sprintf('Unrecognized property name ''%s''.', arg));
         elseif length(j) > 1                % if more than one match
