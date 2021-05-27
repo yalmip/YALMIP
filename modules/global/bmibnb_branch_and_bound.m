@@ -820,8 +820,8 @@ for i = 1:length(p.evalMap)
                 inflections = p.evalMap{i}.properties.inflection;
             end
             for k = 1:length(inflections)/2
-                if (inflections(2*k) > p.lb(spliton)) && (inflections(2*k) < p.ub(spliton))
-                    bounds = [p.lb(spliton) inflections(1) p.ub(spliton)];
+                if (inflections(2*k-1) > p.lb(spliton)) && (inflections(2*k-1) < p.ub(spliton))
+                    bounds = [p.lb(spliton) inflections(2*k-1) p.ub(spliton)];
                     return
                 end
             end
@@ -843,8 +843,11 @@ for i = 1:length(p.evalMap)
                     bounds = [p.lb(spliton) xS p.ub(spliton)];
                 end
             else
-                if (p.evalMap{i}.properties.stationary > p.lb(spliton)) && (p.evalMap{i}.properties.stationary < p.ub(spliton))
-                    bounds = [p.lb(spliton) p.evalMap{i}.properties.stationary p.ub(spliton)];
+                xS = p.evalMap{i}.properties.stationary;
+                if any(xS > p.lb(spliton) & xS < p.ub(spliton))
+                    [~,loc] = min(abs((p.lb(spliton)+p.ub(spliton))/2-xS));
+                    xS = xS(loc);                
+                    bounds = [p.lb(spliton) xS p.ub(spliton)];
                     return
                 end
             end
