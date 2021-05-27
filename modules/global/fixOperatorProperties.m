@@ -52,4 +52,28 @@ for i = 1:length(p.evalMap)
     end
     % Save possibly updated properties
     p.evalMap{i}.properties = properties;
+    
+    if isempty(p.evalMap{i}.properties.f_upper)
+        if isequal(p.evalMap{i}.properties.convexity,'convex')
+            f = makefunction(p.evalMap{i}.fcn);
+            f_upper = @(z,xL,xU)(f(xL) + (z-xL)*(f(xU)-f(xL))/(xU-xL));            
+            df_upper = @(z,xL,xU)((f(xU)-f(xL))/(xU-xL));            
+            p.evalMap{i}.properties.f_upper = f_upper;
+            p.evalMap{i}.properties.df_upper = df_upper;
+        end
+    end
+    if isempty(p.evalMap{i}.properties.f_lower)
+         if isequal(p.evalMap{i}.properties.convexity,'concave')
+            f = makefunction(p.evalMap{i}.fcn);
+            f_lower = @(z,xL,xU)(f(xL) + (z-xL)*(f(xU)-f(xL))/(xU-xL));            
+            df_lower = @(z,xL,xU)((f(xU)-f(xL))/(xU-xL));            
+            p.evalMap{i}.properties.f_lower = f_lower;
+            p.evalMap{i}.properties.df_lower = df_lower;
+        end
+    end
+end
+
+function f = makefunction(f)
+if isa(f,'char')
+    f = eval(['@(x)(' f '(x))']);
 end
