@@ -66,21 +66,33 @@ else
             L = p.evalMap{i}.properties.range(1);                        
         end
     elseif isequal(p.evalMap{i}.properties.convexity,'convex') && ~isempty(p.evalMap{i}.properties.stationary)
-        L = p.evalMap{i}.properties.stationary(2);
+        stationary_x = p.evalMap{i}.properties.stationary(1);
         arg = p.evalMap{i}.arg;
         arg{1} = xL;
-        U1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        val_left = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
         arg{1} = xU;
-        U2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
-        U = max(U1,U2);
+        val_right = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        if xL >= stationary_x || xU <= stationary_x
+            L = min(val_left,val_right)
+        else
+            arg{1} = stationary_x;
+            L = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        end
+        U = max(val_left,val_right);
     elseif isequal(p.evalMap{i}.properties.convexity,'concave') && ~isempty(p.evalMap{i}.properties.stationary)
-        U = p.evalMap{i}.properties.stationary(2);
+        stationary_x = p.evalMap{i}.properties.stationary(1);
         arg = p.evalMap{i}.arg;
         arg{1} = xL;
-        L1 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        val_left = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
         arg{1} = xU;
-        L2 = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
-        L = min(L1,L2);
+        val_right = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        if xL >= stationary_x || xU <= stationary_x
+            U = max(val_left,val_right);
+        else
+            arg{1} = stationary_x;
+            U = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
+        end
+        L = min(val_left,val_right);
     else
         % To get some kind of bounds, we just sample the function
         % and pick the min and max from there. This only works for

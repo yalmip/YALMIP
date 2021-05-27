@@ -110,7 +110,9 @@ switch class(varargin{1})
         operator = varargin{end};        
         if isempty(operator.bounds)
             canDeriveBoundsFromMonotone = strcmpi(operator.monotonicity,'increasing') || strcmpi(operator.monotonicity,'decreasing');            
-            if ~canDeriveBoundsFromMonotone            
+            canDeriveBoundsFromConvex = strcmpi(operator.convexity,'convex') || strcmpi(operator.convexity,'concave');
+            canDeriveBoundsFromConvex = canDeriveBoundsFromConvex && ~isempty(operator.stationary);
+            if ~(canDeriveBoundsFromMonotone || canDeriveBoundsFromConvex)           
                 operator.bounds = @(xL,xU)(bounds(xL,xU,varargin{4}));
             end
         end
