@@ -249,6 +249,8 @@ string = strrep(string,'-1*','-');
 string = strrep(string,'+1*','+');
 
 function s = baronify(s)
+s = strrep(s,'+1*','+');
+s = strrep(s,'-1*','-');
 s = strrep(s,'sqrtm_internal','sqrt');
 s = strrep(s,'cabs','abs');
 % YALMIP catches log(1+z) and implements internal model slog(z) 
