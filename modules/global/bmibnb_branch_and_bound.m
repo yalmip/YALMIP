@@ -814,9 +814,14 @@ for i = 1:length(p.evalMap)
     end
     if ~isempty(p.evalMap{i}.properties.inflection)
         if isequal(spliton, p.evalMap{i}.variableIndex)
-            for k = 1:length(p.evalMap{i}.properties.inflection)/2
-                if (p.evalMap{i}.properties.inflection(2*k) > p.lb(spliton)) && (p.evalMap{i}.properties.inflection(2*k) < p.ub(spliton))
-                    bounds = [p.lb(spliton) p.evalMap{i}.properties.inflection(1) p.ub(spliton)];
+            if isa(p.evalMap{i}.properties.inflection,'function_handle')
+                inflections = p.evalMap{i}.properties.inflection(p.lb(spliton),p.ub(spliton));
+            else
+                inflections = p.evalMap{i}.properties.inflection;
+            end
+            for k = 1:length(inflections)/2
+                if (inflections(2*k) > p.lb(spliton)) && (inflections(2*k) < p.ub(spliton))
+                    bounds = [p.lb(spliton) inflections(1) p.ub(spliton)];
                     return
                 end
             end
@@ -824,9 +829,24 @@ for i = 1:length(p.evalMap)
     end
     if ~isempty(p.evalMap{i}.properties.stationary)
         if isequal(spliton, p.evalMap{i}.variableIndex)
-            if (p.evalMap{i}.properties.stationary > p.lb(spliton)) && (p.evalMap{i}.properties.stationary < p.ub(spliton))
-                bounds = [p.lb(spliton) p.evalMap{i}.properties.stationary p.ub(spliton)];
-                return
+            if isa(p.evalMap{i}.properties.stationary,'function_handle')
+                try
+                    [xS,~] = feval(p.evalMap{i}.properties.stationary,p.lb(spliton),p.ub(spliton));
+                catch
+                    [xSfS] = feval(p.evalMap{i}.properties.stationary,p.lb(spliton),p.ub(spliton));
+                    xS=xSfS(1);
+                    fS=xSfS(2);
+                end
+                if ~isempty(xS) && any(xS > p.lb(spliton) & xS < p.ub(spliton))
+                    [~,loc] = min(abs((p.lb(spliton)+p.ub(spliton))/2-xS));
+                    xS = xS(loc);
+                    bounds = [p.lb(spliton) xS p.ub(spliton)];
+                end
+            else
+                if (p.evalMap{i}.properties.stationary > p.lb(spliton)) && (p.evalMap{i}.properties.stationary < p.ub(spliton))
+                    bounds = [p.lb(spliton) p.evalMap{i}.properties.stationary p.ub(spliton)];
+                    return
+                end
             end
         end
     end
@@ -1100,7 +1120,7 @@ elseif output.problem == 4 && p.options.bmibnb.cut.quadratic
     end
 end
 
-function [p,stack] = generateBoundFromSDP(p,upper,stack);
+function [p,stack] = generateBoundFromSDP(p,upper,stack)
 if ~isinf(upper) && ~isempty(p.boundGenerator.optimizer)
     [r2,diagnostics] = p.boundGenerator.optimizer(upper);
     if diagnostics == 0

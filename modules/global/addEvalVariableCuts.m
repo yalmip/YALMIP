@@ -65,14 +65,14 @@ if ~isempty(p.evalMap)
     pcut = mergeNumericalModels(p,pcut);
 end
 
-function [Ax,Ay,b,K] = getOldHull(p,i);
+function [Ax,Ay,b,K] = getOldHull(p,i)
 
 Ax = p.evalMap{i}.oldhull.Ax;
 Ay = p.evalMap{i}.oldhull.Ay;
 b = p.evalMap{i}.oldhull.b;
 K = p.evalMap{i}.oldhull.K;
 
-function [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i);
+function [Ax,Ay,b,K,p] = updateHull(xL,xU,p,i)
 
 if strcmpi(p.evalMap{i}.fcn,'blackbox')
     [Ax,Ay,b,K]=feval(p.evalMap{i}.properties.convexhull,xL,xU);
@@ -136,6 +136,14 @@ else
         K = [];
         return
     end
+    if isa(p.evalMap{i}.properties.stationary,'function_handle')
+        [xS,fS] = feval(p.evalMap{i}.properties.stationary,xL,xU);
+        if ~isempty(xS)
+            % Add stationary points to the list of samples
+            z = [z xS(:)'];
+            fz = [fz fS(:)'];
+        end
+    end    
     [minval,minpos] = min(fz);
     [maxval,maxpos] = max(fz);
     xtestmin = linspace(z(max([1 minpos-5])),z(min([100 minpos+5])),100);

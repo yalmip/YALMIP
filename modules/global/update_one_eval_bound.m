@@ -73,7 +73,7 @@ else
         arg{1} = xU;
         val_right = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
         if xL >= stationary_x || xU <= stationary_x
-            L = min(val_left,val_right)
+            L = min(val_left,val_right);
         else
             arg{1} = stationary_x;
             L = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));

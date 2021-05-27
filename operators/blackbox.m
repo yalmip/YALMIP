@@ -113,14 +113,16 @@ switch class(varargin{1})
             canDeriveBoundsFromConvex = strcmpi(operator.convexity,'convex') || strcmpi(operator.convexity,'concave');
             canDeriveBoundsFromConvex = canDeriveBoundsFromConvex && ~isempty(operator.stationary);
             if ~(canDeriveBoundsFromMonotone || canDeriveBoundsFromConvex)           
-                operator.bounds = @(xL,xU)(bounds(xL,xU,varargin{4}));
+                operator.bounds = @(xL,xU)(bounds(xL,xU,varargin{4},operator));
+                %operator.bounds = @(xL,xU)(bounds(xL,xU,varargin{4}));
             end
         end
         if isempty(operator.convexhull)
             canDeriveHullFromVexity = strcmpi(operator.convexity,'concave') || strcmpi(operator.convexity,'convex');
             canDeriveHullFromVexity = canDeriveHullFromVexity && ~isempty(operator.derivative);
             if ~canDeriveHullFromVexity
-                operator.convexhull = @(xL,xU)(convexhull(xL,xU,varargin{4}));
+                operator.convexhull = @(xL,xU)(convexhull(xL,xU,varargin{4},operator));
+                %operator.convexhull = @(xL,xU)(convexhull(xL,xU,varargin{4}));
             end
         end
         
@@ -136,8 +138,26 @@ function [Ax,Ay,b,K] = convexhull(xL,xU,varargin)
 % Note, properties are appended when blackbox
 % operator is used. Should be exploited
 if length(xL)==1 && ~(isinf(xL) || isinf(xU))
-    z = linspace(xL,xU,100);
-    fz = feval(varargin{1},z);%,varargin{1:end-2});
+    N = 100;
+    z = linspace(xL,xU,N);
+    
+    xS = [];   
+    operator = varargin{end};
+    if ~isempty(operator.stationary)
+        % N.B stationarity does not mean min/max as 
+        % we have no knowledge of convexity. If we had
+        % this would have been exploited further up
+        if isa(operator.stationary,'function_handle')
+            % FIXME Add support
+        else
+            xS_ = operator.stationary;            
+            loc = find((xS_ > xL) & (xS_ < xU));
+            xS = xS_(loc);  
+        end
+    end
+    z = sort([z xS]);
+    
+    fz = feval(varargin{1},z);
     % create 4 bounding planes
     % f(z) < k1*(x-XL) + f(xL)
     % f(z) > k2*(x-XL) + f(xL)
@@ -166,13 +186,42 @@ function LU = bounds(xL,xU,varargin)
 % Note, properties are appended when blackbox
 % operator is used. Should be exploited
 if length(xL)==1 && ~isinf(xL) & ~isinf(xU)
-    xtest = linspace(xL,xU,100);
-    values = feval(varargin{1},xtest);
+    operator = varargin{end};
+    % FIXME: Add bisection, faster than sampling
+    %if strcmp(operator.convexity,'convex')    
+    %    LU = bisection_convex(xL,xU,varargin{1});
+    %elseif strcmp(operator.convexity,'concave')
+    %    LU = bisection_concave(xL,xU,varargin{1});
+    %end
+    N = 100;
+    xtest = linspace(xL,xU,N);    
+    xS = [];   
+    if ~isempty(operator.stationary)
+        % Stationarity does not mean min/max as 
+        % we have no knowledge of convexity. If we had
+        % this it would have been exploited further up
+        if isa(operator.stationary,'function_handle')
+            % FIXME Add support
+        else
+            xS_ = operator.stationary;
+            loc = ((xS_ > xL) & (xS_ < xU));
+            xS = xS_(loc);            
+        end
+    end    
+    if xL<0 && xU > 0
+        % Origin is often a critical point
+        xS = [xS 0];        
+    end
+    xtest = [xtest xS];
+    xtest = sort(xtest);
+    values = feval(varargin{1},xtest);       
     [minval,minpos] = min(values);
     [maxval,maxpos] = max(values);
     % Concentrate search around the extreme regions
-    xtestmin = linspace(xtest(max([1 minpos-5])),xtest(min([100 minpos+5])),100);
-    xtestmax = linspace(xtest(max([1 maxpos-5])),xtest(min([100 maxpos+5])),100);
+    xtestmin = linspace(xtest(max([1 minpos-5])),xtest(min([N minpos+5])),N);
+    xtestmax = linspace(xtest(max([1 maxpos-5])),xtest(min([N maxpos+5])),N);
+    xtestmin = [xtestmin xS];
+    xtestmax = [xtestmax xS];
     values1 = feval(varargin{1},xtestmin);
     values2 = feval(varargin{1},xtestmax);
     L = min([values1 values2]);
@@ -182,3 +231,14 @@ else
     U = inf;
 end
 LU = [L U];
+
+
+function LU = bisection_convex(xL,xU,f)
+fL = feval(f,xL);
+fU = feval(f,xL);
+LU(2) = max(fL,fU);
+
+function LU = bisection_concave(xL,xU,f)
+fL = feval(f,xL);
+fU = feval(f,xL);
+LU(1) = min(fL,fU);
