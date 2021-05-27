@@ -25,10 +25,12 @@ for i = 1:length(p.evalMap)
             % Since convexity is known, we can append a convex hull method
             if isempty(properties.convexhull) && ~isempty(properties.derivative)
                 if isequal(vexity,'convex')
-                    f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    %f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    f0 = p.evalMap{i}.properties.function;
                     f = @(xL,xU)createConvexHullMethodConvex(xL,xU,f0,properties.derivative);
                 elseif isequal(vexity,'concave')
-                    f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    %f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    f0 = p.evalMap{i}.properties.function;
                     f = @(xL,xU)createConvexHullMethodConcave(xL,xU,f0,properties.derivative);
                 else
                     f = [];
@@ -55,7 +57,8 @@ for i = 1:length(p.evalMap)
     
     if isempty(p.evalMap{i}.properties.f_upper)
         if isequal(p.evalMap{i}.properties.convexity,'convex')
-            f = makefunction(p.evalMap{i}.fcn);
+            %f = makefunction(p.evalMap{i}.fcn);
+            f = p.evalMap{i}.properties.function;
             f_upper = @(z,xL,xU)(f(xL) + (z-xL)*(f(xU)-f(xL))/(xU-xL));            
             df_upper = @(z,xL,xU)((f(xU)-f(xL))/(xU-xL));            
             p.evalMap{i}.properties.f_upper = f_upper;
@@ -64,7 +67,8 @@ for i = 1:length(p.evalMap)
     end
     if isempty(p.evalMap{i}.properties.f_lower)
          if isequal(p.evalMap{i}.properties.convexity,'concave')
-            f = makefunction(p.evalMap{i}.fcn);
+            %f = makefunction(p.evalMap{i}.fcn);
+            f = p.evalMap{i}.properties.function;
             f_lower = @(z,xL,xU)(f(xL) + (z-xL)*(f(xU)-f(xL))/(xU-xL));            
             df_lower = @(z,xL,xU)((f(xU)-f(xL))/(xU-xL));            
             p.evalMap{i}.properties.f_lower = f_lower;

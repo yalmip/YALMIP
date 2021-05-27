@@ -87,6 +87,13 @@ if ~isempty(p.F_struc)
     end
 end
 
+% Make the evaluation structure a bit more unified
+% by embedding all trailing arguments and creating
+% short-hand propert to evaluate function value
+for i = 1:length(p.evalMap)
+    p.evalMap{i}.properties.function = @(x)(feval(p.evalMap{i}.fcn,x,p.evalMap{i}.arg{2:end-1}));
+end
+
 p.nonshiftedQP.Q =[];
 p.nonshiftedQP.c =[];
 p.nonshiftedQP.f =[];
