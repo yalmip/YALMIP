@@ -15,7 +15,7 @@ switch class(varargin{1})
         operator.bounds     = @bounds;     
         operator.stationary = @stationary; 
         operator.inflection = @inflection;
-        operator.periodic = pi/2; 
+        operator.periodic = pi; 
         operator.derivative = @(x)(cos(x));
         operator.range = [-1 1];
                
