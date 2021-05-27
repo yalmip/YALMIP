@@ -1,4 +1,4 @@
-function tests = test_global_abel
+function tests = test_bmibnb_weird5
 tests = functiontests(localfunctions);
 
 function test1(testCase)

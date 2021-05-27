@@ -1,4 +1,4 @@
-function tests = test_regress_weird4
+function tests = test_bmibnb_weird4
 tests = functiontests(localfunctions);
 
 function test1(testCase)
