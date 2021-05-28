@@ -1,4 +1,4 @@
-function plotNodeModel(p)
+function plotNodeModel(p,color,shade)
 
 P = [p.lpcuts;
     p.F_struc(p.K.f+1:p.K.f+p.K.l,:)]*[1;p.plotter.x]>=0;
@@ -15,4 +15,11 @@ if any(p.K.q)
         top = top + p.K.q(i);
     end
 end
-plot(P,p.plotter.x(1:2),'b',[],p.plotter.ops)
+if nargin < 2
+    color = 'b';
+end
+if nargin >= 3
+    p.plotter.ops.plot.shade = shade;
+end
+hold on
+plot(P,p.plotter.x(1:2),color,[],p.plotter.ops)

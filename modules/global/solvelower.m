@@ -66,15 +66,16 @@ end
 if p.options.bmibnb.cut.convexupperbound && ~isinf(p.upper)
     xc = [(p.lb+p.ub)/2];
     if ~any(isinf(xc)) && ~any(isnan(xc))
-        p_cut = add_convex_upper_bound_cut(p_cut,p.upper,xc);
+       % p_cut = add_convex_upper_bound_cut_generalized(p_cut,p.upper,xc);
     end
-    xx = zeros(length(p.c),1);
-    xx(1:length(xmin)) = xmin;
- 	p_cut = add_convex_upper_bound_cut(p_cut,p.upper,xx);
+  %  xx = zeros(length(p.c),1);
+  %  xx(1:length(xmin)) = xmin;
+ %	p_cut = add_convex_upper_bound_cut(p_cut,p.upper,xx);
 end
 
 if p.options.bmibnb.plot
-    plotNodeModel(p_cut)
+    plotNodeModel(p_cut,'g')
+    axis([-3 3 -5 5])
     drawnow
 end
 

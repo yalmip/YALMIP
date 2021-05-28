@@ -171,7 +171,15 @@ if any(options.bmibnb.strengthscheme < 1) || any(options.bmibnb.strengthscheme >
 end
 
 p.quadraticCutFailure = 0;
+p.upper = upper;
 while go_on
+    
+    % Debug with plot
+    pin = p;
+    if p.feasible && p.options.bmibnb.plot
+        plotNodeModel(p,'b');
+        drawnow
+    end
     
     % Reduce the number of upper bound calls if solver
     % spends to much time in upper solver
@@ -272,7 +280,10 @@ while go_on
     
     % Debug with plot
     if p.feasible && p.options.bmibnb.plot
-        plotNodeModel(p);
+        plotNodeModel(p,'b');
+        drawnow
+    elseif ~p.feasible && p.options.bmibnb.plot
+         plotNodeModel(pin,'r',1);
         drawnow
     end
     
@@ -444,6 +455,20 @@ while go_on
         feasible = 0;
     end
     solved_nodes = solved_nodes+1;
+    
+      % Debug with plot
+    if p.options.bmibnb.plot
+        if ~keep_digging
+            if p.feasible
+                plotNodeModel(pin,'y',1);
+            else
+                plotNodeModel(pin,'r',1);
+            end
+            drawnow   
+        else
+           plotNodeModel(p,'g',1); 
+        end
+    end
     
     % ************************************************
     % PRUNE SUBOPTIMAL REGIONS BASED ON UPPER BOUND
