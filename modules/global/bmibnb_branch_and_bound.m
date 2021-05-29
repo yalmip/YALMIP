@@ -270,6 +270,9 @@ while go_on
         solution_hist = x_min(p.originallinears(:));
     end
     
+    % Maybe we managed to get rid of a disjoint forbidden region
+    p = propagate_forbidden_region(p);
+        
     % Any upper bond yet...
     [p,stack] = generateBoundFromSDP(p,upper,stack);
     
@@ -575,7 +578,7 @@ while go_on
                     if options.bmibnb.cut.hiddensdpconvex
                         node = add_delayedsdpconvexity(node,spliton);
                     end
-                    node = propagate_quadratic_disjoints(node,spliton);
+                    node = propagate_quadratic_disjoints(node,spliton);                    
                     node = updateonenonlinearbound(node,spliton);
                     node.branchwidth = [p.ub(spliton)-p.lb(spliton)];
                     if all(node.lb <= node.ub)
@@ -596,6 +599,7 @@ while go_on
     %  Pick and create a suitable node
     % ************************************************
     [p,stack] = selectbranch(p,options,stack,x_min,upper);
+    p = propagate_forbidden_region(p);
     
     if isempty(p)
         if ~isinf(upper)

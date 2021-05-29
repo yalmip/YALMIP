@@ -30,10 +30,12 @@ else
     
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
-    for i = 1:length(p.evalMap)
-        if ~isempty(p.evalMap{i}.properties.forbidden)
-            if z(p.evalMap{i}.variableIndex) > p.evalMap{i}.properties.forbidden(1) && z(p.evalMap{i}.variableIndex) < p.evalMap{i}.properties.forbidden(2)
-                relaxed_feasible = 0;
+    if relaxed_feasible
+        for i = 1:length(p.evalMap)
+            if ~isempty(p.evalMap{i}.properties.forbidden)
+                if z(p.evalMap{i}.variableIndex) > p.evalMap{i}.properties.forbidden(1) && z(p.evalMap{i}.variableIndex) < p.evalMap{i}.properties.forbidden(2)
+                    relaxed_feasible = 0;
+                end
             end
         end
     end

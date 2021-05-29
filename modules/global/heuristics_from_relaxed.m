@@ -11,6 +11,16 @@ eq_ok = all(relaxed_residual(1:p_upper.K.f)>=-p_upper.options.bmibnb.eqtol);
 iq_ok = all(relaxed_residual(1+p_upper.K.f:end)>=-p_upper.options.bmibnb.pdtol);
 
 relaxed_feasible = eq_ok & iq_ok;
+if relaxed_feasible
+    for i = 1:length(p_upper.evalMap)
+        if ~isempty(p_upper.evalMap{i}.properties.forbidden)
+            if z(p_upper.evalMap{i}.variableIndex) > p_upper.evalMap{i}.properties.forbidden(1) && z(p_upper.evalMap{i}.variableIndex) < p_upper.evalMap{i}.properties.forbidden(2)
+                relaxed_feasible = 0;
+            end
+        end
+    end
+end
+    
 info_text = '';
 if relaxed_feasible
     this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
