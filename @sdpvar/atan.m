@@ -10,7 +10,7 @@ switch class(varargin{1})
         operator = CreateBasicOperator('increasing','callback');        
         operator.derivative = @(x)((1+x.^2).^-1);        
         operator.inverse = @(x)(tan(x));
-        operator.inflection = [0 -1];
+        operator.inflection = [-inf 1 0 -1];
         operator.range = [-pi/2 pi/2];
         
         varargout{1} = [];

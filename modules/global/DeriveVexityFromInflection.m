@@ -7,15 +7,16 @@ if isa(properties.inflection,'function_handle')
         vexity = 'none';
         return
     end
-	inflections = [-inf data(1:2:end) inf];
+    data = [data inf];	
 else
     data = properties.inflection;
-    inflections = [-inf data(1:2:end) inf];
+    data = [data inf];    
 end
-convex = [-data(2:2:end)  data(end)];
+convex = [data(2:2:end-1)];
+points = data(1:2:end);
 vexity = 'none';
-for k = 1:length(inflections)
-    if xL >= inflections(k) && xU <= inflections(k+1)        
+for k = 1:length(points)-1
+    if xL >= points(k) && xU <= points(k+1)        
         if convex(k) == 1
             vexity = 'convex';
             return

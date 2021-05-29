@@ -21,6 +21,9 @@ properties = assertProperty(properties,'domain',[-inf inf]);
 properties = assertProperty(properties,'stationary',[]);
 properties = assertProperty(properties,'inflection',[]);
 properties = assertProperty(properties,'singularity',[]);
+properties = assertProperty(properties,'discontinuity',[]);
+properties = assertProperty(properties,'forbidden',[]);
+properties = assertProperty(properties,'degree',[]);
 properties = assertProperty(properties,'replace',[]);
 if isa(properties.definiteness,'char')
     switch properties.definiteness

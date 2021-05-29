@@ -9,7 +9,7 @@ for i = 1:length(p.evalMap)
             
     properties = p.evalMap{i}.properties;
     % Can convexity be fixed for xL <= x <= xL?
-    if any(xL<xU) && (isa(properties.convexity,'function_handle') | isequal(properties.convexity,'none'))
+    if any(xL<xU) && (isa(properties.convexity,'function_handle') || ~isempty(properties.inflection) || strcmp(properties.convexity,'none'))
         vexity = 'none';
         % User-supplied code to derive convexity
         if isa(properties.convexity,'function_handle')
@@ -75,9 +75,4 @@ for i = 1:length(p.evalMap)
             p.evalMap{i}.properties.df_lower = df_lower;
         end
     end
-end
-
-function f = makefunction(f)
-if isa(f,'char')
-    f = eval(['@(x)(' f '(x))']);
 end

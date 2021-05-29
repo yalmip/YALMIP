@@ -19,7 +19,7 @@ switch class(varargin{1})
         operator = CreateBasicOperator('increasing','positive','callback');        
         operator.derivative = @(x)logistic(x).*(1-logistic(x));
         operator.inverse    = @(x)(log(x)-log(1-x));
-        operator.inflection = [0 -1];
+        operator.inflection = [-inf 1 0 -1];
         operator.range = [0 1];
 
         varargout{1} = [];

@@ -10,7 +10,9 @@ switch class(varargin{1})
         operator = CreateBasicOperator('positive','callback');   
         operator.convexity = @convexity;
         operator.bounds = @bounds;
-
+        operator.forbidden = [-1 1];        
+        operator.singularity = [-1 1];  
+        
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};

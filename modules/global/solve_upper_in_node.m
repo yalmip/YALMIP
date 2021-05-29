@@ -14,7 +14,14 @@ z = apply_recursive_evaluation(p_upper,output.Primal);
 
 [upper_residual,~,feasibility] = constraint_residuals(p_upper,z);
 feasible = ~isempty(z) & ~any(isnan(z)) & all(upper_residual(1:p_upper.K.f)>=-p.options.bmibnb.eqtol) & all(upper_residual(1+p_upper.K.f:end)>=-p.options.bmibnb.pdtol);
-
+for i = 1:length(p.evalMap)
+    if any(p.evalMap{i}.properties.forbidden)
+        if any(z(p.evalMap{i}.variableIndex) >p.evalMap{i}.properties.forbidden(1) & z(p.evalMap{i}.variableIndex) < p.evalMap{i}.properties.forbidden(2))
+            feasible = 0;
+            break
+        end
+    end
+end
 if feasible
     this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
     if isequal(p_upper.K.f,0) && isequal(p_upper.K.l,0) && isequal(p_upper.K.q,0) && isequal(p_upper.K.s,0) 

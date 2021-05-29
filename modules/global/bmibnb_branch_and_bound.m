@@ -831,8 +831,12 @@ x = x_min;
 for i = 1:length(p.evalMap)
     if ~isempty(p.evalMap{i}.properties.singularity)
         if isequal(spliton, p.evalMap{i}.variableIndex)
-            if (p.evalMap{i}.properties.singularity > p.lb(spliton)) && (p.evalMap{i}.properties.singularity < p.ub(spliton))
-                bounds = [p.lb(spliton) p.evalMap{i}.properties.singularity p.ub(spliton)];
+            included = (p.evalMap{i}.properties.singularity > p.lb(spliton)) & (p.evalMap{i}.properties.singularity < p.ub(spliton));
+            if any(included)                
+                position = find(included);
+                position = position(1);                
+                position = p.evalMap{i}.properties.singularity(position);
+                bounds = [p.lb(spliton) position p.ub(spliton)];
                 return
             end
         end
@@ -843,9 +847,10 @@ for i = 1:length(p.evalMap)
                 inflections = p.evalMap{i}.properties.inflection(p.lb(spliton),p.ub(spliton));
             else
                 inflections = p.evalMap{i}.properties.inflection;
-            end
+            end        
+            % Find first non-infinite inflection point in interval
             for k = 1:length(inflections)/2
-                if (inflections(2*k-1) > p.lb(spliton)) && (inflections(2*k-1) < p.ub(spliton))
+                if ~isinf(inflections(2*k-1)) && (inflections(2*k-1) > p.lb(spliton)) && (inflections(2*k-1) < p.ub(spliton))
                     bounds = [p.lb(spliton) inflections(2*k-1) p.ub(spliton)];
                     return
                 end

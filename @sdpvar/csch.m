@@ -11,7 +11,7 @@ switch class(varargin{1})
         operator.monotonicity = @monotonicity;                        
         operator.derivative = @(x)(-coth(x).*csch(x));
         operator.singularity = 0;
-        operator.inflection = [0 1];
+        operator.inflection = [-inf -1 0 1];
                
         varargout{1} = [];
         varargout{2} = operator;

@@ -12,7 +12,8 @@ switch class(varargin{1})
         operator.bounds = @bounds;
         operator.derivative = @(x)(-(1 + x.^2).^-1);
         operator.range = [-pi/2 pi/2];
-        operator.inflection = [0 1];
+        operator.inflection = [-inf -1 0 1];
+        operator.discontinuity = [0 -pi/2 pi/2];
 
         varargout{1} = [];
         varargout{2} = operator;

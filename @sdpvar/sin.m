@@ -83,8 +83,13 @@ spots = spots(rem(spots,2)==0);
 dir = double(abs(rem(spots/2,2))==1);
 dir(dir==0)=-1;
 xS = spots*pi/2;
-inflections = reshape([xS;dir],1,[]);
-
+if isempty(xS)
+    inflections = [];
+else
+    xS = [-inf xS];
+    dir = [-dir(1) dir];
+    inflections = reshape([xS;dir],1,[]);
+end
 function [xS,fS] = stationary(xL,xU)
 r = floor(xU/(pi/2));
 t = ceil(xL/(pi/2));
