@@ -1,4 +1,4 @@
-function varargout = acoth(varargin)
+function varargout = acsc(varargin)
 
 switch class(varargin{1})
 
@@ -7,9 +7,11 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = CreateBasicOperator('callback','convex','positive','decreasing');        
-        operator.derivative = @(x)(1./(1-x.^2));                        
-        operator.domain = [1 inf];
+        operator = CreateBasicOperator('callback');
+        operator.derivative = @(x)(-1./(x.*sqrt(x.^2-1)));
+        operator.forbidden = [-1 1];
+        operator.inflection = [-inf -1 1 1];
+        operator.range = [-pi/2 pi/2];
         
         varargout{1} = [];
         varargout{2} = operator;

@@ -53,7 +53,7 @@ else
         if isnan(U)            
             U = p.evalMap{i}.properties.range(2);            
         end
-    elseif strcmpi(p.evalMap{i}.properties.monotonicity,'decreasing')
+    elseif strcmpi(monotonicity,'decreasing')
         arg = p.evalMap{i}.arg;
         arg{1} = xL;
         U = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
@@ -119,16 +119,14 @@ else
             L = min([values1 values2]);
             U = max([values1 values2]);
             if ~isempty(p.evalMap{i}.properties.singularity)
-                if xL <= p.evalMap{i}.properties.singularity && xU >= p.evalMap{i}.properties.singularity
-                    arg = p.evalMap{i}.arg;                                    
-                    arg{1} = p.evalMap{i}.properties.singularity-1/inf;
-                    values = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
-                    L = min(L,values);
-                    U = max(U,values);
-                    arg{1} = p.evalMap{i}.properties.singularity+1/inf;
-                    values = real(feval(p.evalMap{i}.fcn,arg{1:end-1}));
-                    L = min(L,values);
-                    U = max(U,values);
+                included = (p.evalMap{i}.properties.singularity(1:3:end) >= xL) & (p.evalMap{i}.properties.singularity(1:3:end) <= xU);
+                if any(included)
+                    for position = find(included)
+                        leftVal =  p.evalMap{i}.properties.singularity(1 + 3*(position-1)+1);
+                        rightVal =  p.evalMap{i}.properties.singularity(1 + 3*(position-1)+2);
+                        L = min([L leftVal rightVal]);
+                        U = max([U leftVal rightVal]);
+                    end
                 end
             end
         end

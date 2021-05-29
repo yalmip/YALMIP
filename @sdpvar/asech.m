@@ -11,6 +11,7 @@ switch class(varargin{1})
         operator.monotonicity = @monotonicity;        
         operator.bounds = @bounds;        
         operator.derivative = @(x)(1./(x.*(x.^2-1).^0.5));
+        operator.singularity = [0 inf inf];
 
         varargout{1} = [];
         varargout{2} = operator;

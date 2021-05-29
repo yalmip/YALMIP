@@ -22,6 +22,11 @@ sdpvar x
 sol = optimize([-1 <= x <= 1], (erfcx(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
 testCase.assertTrue(sol.problem == 0)
 
+function test_expint(testCase)
+sdpvar x
+sol = optimize([-1 <= x <= 1], (expint(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
+testCase.assertTrue(sol.problem == 0)
+
 %% Gamma functions
 function test_gamma(testCase)
 sdpvar x
@@ -166,10 +171,9 @@ sol = optimize([-1 <= x <= 1], (csc(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmib
 testCase.assertTrue(sol.problem == 0)
 
 function test_acsc(testCase)
-% Disconnected domain!
-%sdpvar x
-%sol = optimize([-1 <= x <= 1], (acsc(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
-%testCase.assertTrue(sol.problem == 0)
+sdpvar x
+sol = optimize([-10 <= x <= 10], (acsc(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
+testCase.assertTrue(sol.problem == 0)
 
 function test_csch(testCase)
 sdpvar x
@@ -192,12 +196,6 @@ sol = optimize([-1 <= x <= 10], (beta(x-1/pi,.5) - 2)^2,sdpsettings('solver','bm
 testCase.assertTrue(sol.problem == 0)
 
 sol = optimize([-1 <= x <= 10], (beta(2,x-1/pi) - 2)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
-testCase.assertTrue(sol.problem == 0)
-
-
-function test_expint(testCase)
-sdpvar x
-sol = optimize([-1 <= x <= 1], (expint(x-1/pi) - 1/pi)^2,sdpsettings('solver','bmibnb','bmibnb.uppersolver','fmincon'));
 testCase.assertTrue(sol.problem == 0)
 
 function test_sqrtm(testCase)

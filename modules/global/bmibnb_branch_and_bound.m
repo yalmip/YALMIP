@@ -835,11 +835,11 @@ x = x_min;
 for i = 1:length(p.evalMap)
     if ~isempty(p.evalMap{i}.properties.singularity)
         if isequal(spliton, p.evalMap{i}.variableIndex)
-            included = (p.evalMap{i}.properties.singularity > p.lb(spliton)) & (p.evalMap{i}.properties.singularity < p.ub(spliton));
+            included = (p.evalMap{i}.properties.singularity(1:3:end) > p.lb(spliton)) & (p.evalMap{i}.properties.singularity(1:3:end) < p.ub(spliton));
             if any(included)                
                 position = find(included);
                 position = position(1);                
-                position = p.evalMap{i}.properties.singularity(position);
+                position = p.evalMap{i}.properties.singularity(1 + 3*(position-1));
                 bounds = [p.lb(spliton) position p.ub(spliton)];
                 return
             end

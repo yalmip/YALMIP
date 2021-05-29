@@ -8,9 +8,9 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('callback');
-        operator.monotonicity = @monotonicity;                        
+        operator.monotonicity = @(xL,xU)decreasing_except_at(xL,xU,0);
         operator.derivative = @(x)(-coth(x).*csch(x));
-        operator.singularity = 0;
+        operator.singularity = [0 -inf inf];
         operator.inflection = [-inf -1 0 1];
                
         varargout{1} = [];
