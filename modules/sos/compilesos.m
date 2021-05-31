@@ -124,7 +124,9 @@ end
 if ~isempty(yalmip('extvariables'))
     [F_parametric,failure] = expandmodel(F_parametric,obj,options);
     F_parametric = expanded(F_parametric,1);
-    obj = expanded(obj,1);    
+    if ~isa(obj,'logdet')
+        obj = expanded(obj,1);    
+    end
     if failure
         error('Could not expand the model');
     end
@@ -225,7 +227,7 @@ end
 %% IMAGE OR KERNEL REPRESENTATION?
 % ************************************************
 noRANK = all(isinf(ranks));
-options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData);
+options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData,obj);
 
 switch options.sos.model
     case 'auto'
