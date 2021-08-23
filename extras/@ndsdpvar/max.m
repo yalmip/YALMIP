@@ -3,7 +3,9 @@ function Y = max(X,aux,workdim)
 
 switch nargin
     case 1
-        workdim = 1;
+        xdim = size(X);
+        workdim=find(xdim>1,1);
+
     case 2
         Y = max(reshape(X,[],1),reshape(aux,[],1));
         Y = reshape(Y,size(X));
@@ -22,8 +24,5 @@ if workdim > length(xdim)
     error('Index exceeds matrix dimensions.');
 end
 
-newdim = xdim;
-newdim = circshift(xdim',-(workdim-1))';
-newdim(1)=1;
+newdim(workdim)=1;
 Y = reshape(max(reshape(shiftdim(X,workdim-1),xdim(workdim),[])),newdim);
-Y = shiftdim(Y,length(xdim)-workdim+1);
