@@ -200,7 +200,7 @@ while i <= length(Fi)
         if TypeofConstraint(i) == 2
 
             % remove constraint of the type set(0 >= 0)
-            B = getbase(thisFi);            
+            B = getbase(thisFi(:));            
             if ~noprune
                 Bv = B(:,2:end);
                 notused = find((~any(Bv,2)) & (B(:,1)>=0));
