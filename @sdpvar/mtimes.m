@@ -96,7 +96,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % Requires that the involved variables never have been used
             % before in a nonlinear expression. By exploiting this fact, we
             % can avoid using findhash, which typically is the bottle-neck.
-            if (mx == ny) && (nx == 1) && (my == 1) && isequal(X.lmi_variables,Y.lmi_variables)
+            if (nx == 1) && (my == 1) && isequal(X.lmi_variables,Y.lmi_variables)
                 % Looks like w'Qw or similiar
                 % Check that no nonlinear have been defined before, and that
                 % the arguments are linear.
