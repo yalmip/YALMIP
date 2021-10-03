@@ -43,3 +43,4 @@ model.ub = ub;
 model.xtype = ivars;
 model.sos = sos;
 model.x0 = [];
+model.H = [];
