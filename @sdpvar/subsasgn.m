@@ -129,7 +129,9 @@ try
                          
                 y.dim(1) = size(subX,1);
                 y.dim(2) = size(subX,2);
-                y = clean(y);
+                if ~isempty(x_lmi_variables)
+                    y = clean(y);
+                end
                 if isa(y,'sdpvar')
                     % Reset info about conic terms
                     y.conicinfo = [0 0];                    
