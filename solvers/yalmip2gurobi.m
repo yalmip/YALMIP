@@ -192,6 +192,11 @@ if ~isempty(nonconvexdata)
         old2retained( retained_indices(ri_index) ) = ri_index;
     end
     
+    if ~isempty(K.sos)
+        for i = 1:length(K.sos.variables)
+            model.sos(i).index = full(old2retained(model.sos(i).index));
+        end
+    end
     
     map = [];
     for j = 1:length(monomials)
