@@ -3,7 +3,7 @@ function p = addFromProbedBinary(p)
 % For a nonlinear operator, the envelope model is tighter on a smaller
 % domain. Search for (binary d implies x >= L) and then compute bounds on 
 % f(x) on that domain, and add implies(d, L <= f(x) <= U)
-if ~isempty(p.binary_variables)
+if ~isempty(p.binary_variables) && ~isempty(p.F_struc)
     newCuts = zeros(0,size(p.F_struc,2));
     b = p.F_struc(:,1);
     A = p.F_struc(:,2:end);
