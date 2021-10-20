@@ -6,9 +6,9 @@ yalmip('setbounds',1:nv,L,U);
 % This is a hack to avoid bound propagation when this function is
 % called from optimizer.m
 if isfield(options,'avoidequalitybounds')
-    LU = getbounds(F,0);
+    LU = getbounds(lmi(F),0);
 else
-    LU = getbounds(F,[],[L U]);
+    LU = getbounds(lmi(F),[],[L U]);
 end
 % In models with nonconvex terms including x, but where bounds only are
 % set on abs(x), we have to use the bound on abs(x) to improve the
