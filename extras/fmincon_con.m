@@ -307,8 +307,11 @@ for i = 1:length(model.K.s)
         use = zeros(1,n);
         used = zeros(1,size(sdpLayer.eigenVectors{i},2));
         for j = 1:n
+            if ~isempty(sdpLayer.eigenVectors{i})
+                Xv = X*sdpLayer.eigenVectors{i};
+            end
             for k = 1:size(sdpLayer.eigenVectors{i},2)
-                s = norm(X*sdpLayer.eigenVectors{i}(:,k)-v(j,j)*sdpLayer.eigenVectors{i}(:,k));
+                s = norm(Xv(:,k)-v(j,j)*sdpLayer.eigenVectors{i}(:,k));
                 if s <= 1e-12
                     if ~used(k) && ~use(j)
                         use(j) = k;
@@ -318,6 +321,9 @@ for i = 1:length(model.K.s)
             end
         end
         sdpLayer.eigenVectors{i} = [sdpLayer.eigenVectors{i} d];
+        if size(sdpLayer.eigenVectors{i},2) > 10*size(sdpLayer.eigenVectors{i},1)
+            sdpLayer.eigenVectors{i} = sdpLayer.eigenVectors{i}(:,end-10*size(sdpLayer.eigenVectors{i},1):end);
+        end        
     else
         sdpLayer.eigenVectors{i} = d;
     end
