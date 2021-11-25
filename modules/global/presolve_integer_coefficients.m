@@ -9,10 +9,10 @@ p.isinteger(p.integer_variables) = 1;
 if any(p.K.f)
     for i = 1:p.K.f
         r = find(p.F_struc(i,2:end));
-        if all(p.isinteger(r))
+        if any(r) && all(p.isinteger(r))            
             a = p.F_struc(i,1+r);
             if all(fix(a)==a)
-                % Integer coefficients row
+                % Integer coefficients row               
                 m = abs(gcdfactor(a));
                 if m~=1
                     p.F_struc(i,:) = p.F_struc(i,:)/m;

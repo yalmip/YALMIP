@@ -116,6 +116,7 @@ end
 %% *******************************
 % PRE-SOLVE (nothing fancy coded)
 % % *******************************
+p = presolve_empty_rows(p);
 p = presolve_integer_coefficients(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
