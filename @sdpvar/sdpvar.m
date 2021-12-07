@@ -46,11 +46,13 @@ function sys = sdpvar(varargin)
 %   See also INTVAR, BINVAR, methods('sdpvar'), SEE
 
 superiorto('double');
-try 
+if exist('gem')
+try
  superiorto('sgem');
  superiorto('gem');
 catch
- % GEM not in path
+ % Problem with GEM
+end
 end
 if nargin==0
     sys = sdpvar(1,1);
