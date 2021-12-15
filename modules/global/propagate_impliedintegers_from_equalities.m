@@ -18,6 +18,6 @@ if any(p.K.f)
     end
     p.implied_integers = unique(implied_integers);
 else
-    p.impliedintegers = [];
+    p.implied_integers = [];
 end
       
