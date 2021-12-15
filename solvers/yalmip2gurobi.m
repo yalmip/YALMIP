@@ -44,6 +44,18 @@ if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
     interfacedata.Q(nonlinearMonoms,:) = [];
     interfacedata.lb(nonlinearMonoms) = [];
     interfacedata.ub(nonlinearMonoms) = [];
+    % remap indicies for integer indicies
+    oldvars = 1:n;
+    oldvars(nonlinearMonoms) = [];
+    if ~isempty(binary_variables)
+        [~,binary_variables] = ismember(binary_variables,oldvars);
+    end
+    if ~isempty(integer_variables)
+        [~,integer_variables] = ismember(integer_variables,oldvars);
+    end
+    if ~isempty(semicont_variables)
+        [~,semicont_variables] = ismember(semicont_variables,oldvars);
+    end       
     if ~isempty(x0)
         x0(nonlinearMonoms) = [];
     end
