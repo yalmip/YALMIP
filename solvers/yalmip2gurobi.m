@@ -141,7 +141,7 @@ if ~isempty(semicont_variables)
         A(:,semicont_variables(NegativeSemiVar)) = -A(:,semicont_variables(NegativeSemiVar));
         c(semicont_variables(NegativeSemiVar)) = -c(semicont_variables(NegativeSemiVar));
         if ~isempty(x0)
-            x0(NegativeSemiVar) = -NegativeSemiVar;
+            x0(semicont_variables(NegativeSemiVar)) = -x0(semicont_variables(NegativeSemiVar));
         end
     end
 end
