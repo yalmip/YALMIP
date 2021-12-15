@@ -70,7 +70,11 @@ if ~isempty(model.F_struc)
     model.F_struc(:,1) = model.F_struc(:,1)+model.F_struc(:,1+removethese)*value;
     model.F_struc(:,1+removethese) = [];
     model.F_struc = model.F_struc*diag(sparse([1;monomgain]));
+else
+    % Clean up 0-dim row
+    model.F_struc = [];
 end
+
 infeasible = 0;
 if any(model.K.f)
     candidates = find(~any(model.F_struc(1:model.K.f,2:end),2));
