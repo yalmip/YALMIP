@@ -98,7 +98,7 @@ else
     elseif p.solver.lowersolver.objective.quadratic.convex 
         % If we have a QP solver, we can at least try to strengthen the
         % relaxation by using the positive diagonal terms
-        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);
+        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);        
     end
     
     fixed = p_cut.lb >= p_cut.ub;
@@ -301,8 +301,15 @@ else
                 end
             else
                 try
-                    tstart = tic;                    
-                    output = feval(lowersolver,removenonlinearity(p_cut));
+                    tstart = tic;   
+                    
+                     if strcmpi(p_cut.solver.lowersolver.tag,'mosek') && any(p_cut.K.s) && nnz(p_cut.Q)>0
+                        output = moseksdpqpshim(removenonlinearity(p_cut));
+                     else
+                        output = feval(lowersolver,removenonlinearity(p_cut));
+                     end
+            
+                   % output = feval(lowersolver,removenonlinearity(p_cut));
                     psave.counter.lowersolved = psave.counter.lowersolved + 1;
                     timing.lowersolve = timing.lowersolve + toc(tstart);
                 catch
