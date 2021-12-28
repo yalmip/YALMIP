@@ -379,8 +379,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     
     switch output.problem
         case {-1,3,4,5,11}
-            % Solver behaved weird. Make sure we continue digging
-            keep_digging = 1;
+            % Solver behaved weird. Make sure we continue digging if possible          
+            keep_digging = length(integer_variables)>0 || length(binary_variables)>0 || length(semicont_variables)>0;
             feasible = 1;
             cost = lower;
             x = p.lb + (p.ub-p.lb)*(1/pi);
