@@ -652,12 +652,17 @@ end
 if length(shift > 0)
     b = b + Fbase_X(1:end-1,:)*shift;
 end
+obj_offset = 0;
 if length(x)>0
     % Arrgh
     base = getbase(x);
     constant = base(:,1);
     base = base(:,2:end);[i,j,k] = find(base);
     b = b + Fbase_x(1:end-1,:)*constant(i);
+    if ~isempty(obj)
+      S = getbase([obj x]);      
+      obj_offset = -sum(S(2:end,1).*sum(repmat(S(1,2:end),size(S,1)-1,1).*S(2:end,2:end),2));
+    end
 end
 
 start = 0;
@@ -843,7 +848,7 @@ if n_free > 0
     end
 end
 
-objdual = b'*y;
+objdual = b'*y + obj_offset;
 if auto
     for i = 1:length(X)
         yalmip('associatedual',getlmiid(Fdual(i)),X{i});
