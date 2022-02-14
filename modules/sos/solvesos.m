@@ -111,7 +111,7 @@ end
 
 [F,obj,m,everything,modeltype] = compilesos(F,obj,options,params,candidateMonomials);
 
-if isempty(everything)
+if isempty(everything) || ~isfield(everything,'p')
     % compilesos has detected trivially infeasible
     sol.yalmipversion = yalmip('version');
     sol.matlabversion = version;
