@@ -158,8 +158,10 @@ else %Integer power of scalar
                 end
         end
     end
-    y.extra.createTime = definecreationtime;
-    y.extra.opname='';
+    if isa(y,'sdpvar')
+        y.extra.createTime = definecreationtime;
+        y.extra.opname='';
+    end
 end
 
 
