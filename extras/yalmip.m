@@ -744,6 +744,8 @@ switch varargin{1}
 		
 		internal_sdpvarstate.containsSemivar = false;
         
+        gemInPath('clear');
+        
     case 'cleardual'
         if nargin==1
             internal_setstate.duals_index = [];
@@ -1255,6 +1257,10 @@ switch varargin{1}
 		
 	case 'containsSemivar'
 		varargout = {internal_sdpvarstate.containsSemivar};
+    
+    case 'gemInPath'
+        varargout{1} = gemInPath;
+    
     otherwise
         if isa(varargin{1},'char')
             disp(['The command ''' varargin{1} ''' is not valid in YALMIP.m']);
@@ -1263,30 +1269,55 @@ switch varargin{1}
         end
 end
 
+end
+
 function h = create_vecisdouble(x)
-B = getbase(x);
-h = ~any(B(:,2:end),2);
+    B = getbase(x);
+    h = ~any(B(:,2:end),2);
+end
 
 function h = create_trivial_hash(x)
-try
-    h = sum(getvariables(x)) + sum(sum(getbase(x)));
-catch
-    h = 0;
+    try
+        h = sum(getvariables(x)) + sum(sum(getbase(x)));
+    catch
+        h = 0;
+    end
 end
 
 function h = create_trivial_vechash(x)
-try
-    B = getbase(x);
-    h = sum(B')'+(B | B)*[0;getvariables(x)'];    
-catch
-    h = 0;
+    try
+        B = getbase(x);
+        h = sum(B')'+(B | B)*[0;getvariables(x)'];    
+    catch
+        h = 0;
+    end
 end
 
 function X = firstSDPVAR(List)
-X = [];
-for i = 1:length(List)
-    if isa(List{i},'sdpvar')
-        X = List{i};
-        break
+    X = [];
+    for i = 1:length(List)
+        if isa(List{i},'sdpvar')
+            X = List{i};
+            break
+        end
     end
+end
+
+function result = gemInPath(varargin)
+    persistent gemFound
+    
+    if nargin >= 1
+        switch varargin{1}
+            case 'clear'
+                gemFound = [];
+            otherwise
+                disp(['Invalid command for gemInPath in YALMIP.m']);
+        end
+        return;
+    end
+    
+    if isempty(gemFound)
+        gemFound = (exist('gem', 'class') == 8);
+    end
+    result = gemFound;
 end
