@@ -32,6 +32,8 @@ jobs:
             
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
+        with:
+          release: R2020a
        
       - name: Test core
         uses: matlab-actions/run-command@v0
@@ -77,7 +79,9 @@ jobs:
             
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
-       
+        with:
+          release: R2020a
+              
       - name: Test optimizer module
         if: success() || failure() 
         uses: matlab-actions/run-command@v0
@@ -142,7 +146,9 @@ jobs:
             
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
-       
+        with:
+          release: R2020a
+              
       - name: Test BNB solver
         if: success() || failure()       
         uses: matlab-actions/run-command@v0

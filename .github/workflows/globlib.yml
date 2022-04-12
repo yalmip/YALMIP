@@ -23,7 +23,9 @@ jobs:
       
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
-       
+        with:
+          release: R2020a
+              
       - name: Nonconvex QP
         uses: matlab-actions/run-command@v0
         with:
@@ -52,7 +54,9 @@ jobs:
       
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
-       
+        with:
+          release: R2020a
+              
       - name: Nonconvex QCQP
         uses: matlab-actions/run-command@v0
         with:
@@ -81,7 +85,9 @@ jobs:
       
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
-       
+        with:
+          release: R2020a
+              
       - name: Polynomial
         uses: matlab-actions/run-command@v0
         with:
@@ -110,7 +116,9 @@ jobs:
       
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
-       
+        with:
+          release: R2020a
+              
       - name: General nonlinear
         uses: matlab-actions/run-command@v0
         with:
