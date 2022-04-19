@@ -96,7 +96,7 @@ switch info.exitflag
     case -7
         problem = 9;
     case {10,11}
-        problem = 3;
+        problem = 4;
     otherwise
         problem = 9;
 end
