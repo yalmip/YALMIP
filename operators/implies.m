@@ -51,6 +51,10 @@ Y = varargin{2};
 
 if isempty(X)
     varargout{1} = [];
+elseif isa(X,'double') && isequal(X,0)
+    varargout{1} = [];
+elseif isa(X,'double') && isequal(X,1)
+    varargout{1} = Y;
 end
 
 switch class(X)
