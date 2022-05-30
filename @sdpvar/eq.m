@@ -10,7 +10,11 @@ if isa(Y,'blkvar')
 end
 
 try
-    y = constraint(X,'==',Y);
+    if ishermitian(X) && ishermitian(Y)
+        y = constraint(triu(X),'==',triu(Y));
+    else
+        y = constraint(X,'==',Y);
+    end
 catch
     error(lasterr)
 end
