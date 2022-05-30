@@ -553,15 +553,18 @@ for blk = 1:length(n)
                 [uu,oo,pp] = unique(Y(:));
                 BasisReal = sparse(1:n(blk)^2,pp+1,1);
                 
-                BasisImag = [spalloc(n(blk)^2,n(blk)*(n(blk)-1)/2,n(blk))];
-                l = 1;
-                for i=1:n(blk)
-                    for j=i+1:n(blk),
-                        BasisImag(i+(j-1)*n(blk),l)=sqrt(-1);
-                        BasisImag(j+(i-1)*n(blk),l)=-sqrt(-1);
-                        l = l+1;
-                    end
+                % Remove diagonal, flip signs, and complexify
+                BasisImag = BasisReal;
+                BasisImag(:,1) = [];
+                index = [1];
+                for i = 1:n(blk)-1
+                    index = [index index(end)+n(blk)-i+1];
                 end
+                BasisImag(:,index) = [];
+                [i,j,s] = find(BasisImag);
+                s(1:2:end)=-1;
+                BasisImag = sparse(i,j,s*sqrt(-1),size(BasisImag,1),size(BasisImag,2));
+                               
                 tbasis = [BasisReal BasisImag];
                 basis{blk} = tbasis;
             end
