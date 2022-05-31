@@ -1,4 +1,4 @@
-function [upper,x_min] = rounder(prelaxed,upper,x,p,relaxedoutput)
+function [upper,x_min] = rounder(prelaxed,upper,x,p,relaxedoutput,lower)
 % function [upper,x_min] = rounder(p,relaxedsolution,prelaxed)
 
 % Extremely simple heuristic for finding integer solutions.
@@ -27,15 +27,24 @@ if ismember('shifted round',p.options.bnb.rounding)
         Hz = H(:,1 + intvars);if nnz(Hz)/numel(Hz)>0.5;Hz = full(Hz);end
     end
     % Round, update nonlinear terms, and compute feasibility
-    for tt = -.5:0.1:0.5
+    for tt = -.4:0.05:0.4
         xtemp = x;xtemp(intvars) = round(xtemp(intvars)+tt);
-        xtemp(p.binary_variables(:)) = min(1,xtemp(p.binary_variables(:)));
-        xtemp(p.binary_variables(:)) = max(0,xtemp(p.binary_variables(:)));
-        xtemp = fix_semivar(p,xtemp);  
-        xtemp = fix_atmost(p,xtemp,x);
+        xtemp = min(xtemp,p.ub);
+        xtemp = max(xtemp,p.lb);
+        
+        if ~isempty(prelaxed.binaryProduct)
+        xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
+        end
+                
+        xtemp = fix_semivar(p,xtemp);          
+        %xtemp = fix_atmost(p,xtemp,x);
+                if ~isempty(prelaxed.binaryProduct)
+
+        xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
+                end
         xtemp = setnonlinearvariables(p,xtemp);        
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
-        if upperhere < upper
+        if upperhere < upper && upperhere >= lower
             if checkfeasiblefast(p,xtemp,p.options.bnb.feastol)%res>-p.options.bnb.feastol
                 x_min = xtemp;
                 upper =upperhere;               

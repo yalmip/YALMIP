@@ -96,6 +96,17 @@ p = bounds_from_cones_to_lp(p);
 p = presolve_bounds_from_modelbounds(p,1);
 
 % ********************************
+%% Data loaded with wrong type?
+% ********************************
+if ~isempty(p.integer_variables)
+    binary_integer = find(p.ub(p.integer_variables)<=1 & p.lb(p.integer_variables)>=0);
+    if ~isempty(binary_integer)
+        p.binary_variables = union(p.binary_variables,p.integer_variables(binary_integer));        
+        p.integer_variables(binary_integer) = [];
+    end
+end
+
+% ********************************
 %% Presolve trivial SDP stuff (zero in diagonal)
 % ********************************
 p = detectRedundantInfeasibleSDPRows(smashFixed(p));
@@ -118,6 +129,7 @@ end
 % % *******************************
 p = presolve_empty_rows(p);
 p = presolve_integer_coefficients(p);
+p = presolve_implied_binaryproduct(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_bounds_from_monomials(p);
@@ -236,5 +248,55 @@ if p.options.savesolveroutput
 else
     output.solveroutput =[];
 end
-%% --
 
+
+function p = presolve_implied_binaryproduct(p)
+% presolve y = x1*x2 where x1 x2 binary
+% thus y is binary
+p.binaryProduct = [];
+return
+ff = p.F_struc(1+p.K.f:p.K.f+p.K.l,:);
+% Search for y >= x1 + x2 - 1
+candidates = find(sum(abs(ff),2) == 4 & sum(ff,2) == 0 & ff(:,1)==1);
+lower_and = {};
+for i = 1:length(candidates)
+    row = p.F_struc(candidates(i),2:end);
+    xx = find(row==-1);
+    yy = find(row==1);
+    if length(xx)==2 && length(yy)==1
+        if all(ismember(xx,p.binary_variables))
+            lower_and{end+1}.x = xx;
+            lower_and{end}.y = yy;
+        end
+    end
+end
+for i = 1:length(lower_and)
+    x = lower_and{i}.x;
+    y = lower_and{i}.y;
+    y_bounded_by_x1 = 0;
+    q = find(ff(:,1) == 0 & ff(:,x(1)+1)==1);
+    for j = 1:length(q)
+        s = ff(q(j),2:end);
+        s(x(1))=0;
+        % y + sum z <= x1   (z non-negative)
+        if all(s<=0) & s(y)==-1 & all(p.lb(find(s))>=0)
+          y_bounded_by_x1 = 1;
+          break
+        end
+    end
+    q = find(ff(:,1) == 0 & ff(:,x(2)+1)==1);
+    for j = 1:length(q)
+        s = ff(q(j),2:end);
+        s(x(2))=0;
+        if all(s<=0) && s(y) && all(p.lb(find(s)) >=0)
+          y_bounded_by_x2 = 1;
+          break
+        end
+    end
+    if y_bounded_by_x1 && y_bounded_by_x2
+        p.binary_variables = union(p.binary_variables,y);
+        p.binaryProduct = [p.binaryProduct;y x(:)'];        
+        % we have  y >= x1+x2-1, y + positives<=x1, y + positives<=x2
+        % 1 and x2 binary, hence y=x1*x2 and binary
+    end
+end

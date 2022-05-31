@@ -41,6 +41,14 @@ if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)
     end    
 end
 
+for i = 1:length(p.cardinalityvariables)
+    used = p.cardinalityvariables{i};
+    L = p.lb(used);
+    if sum(L) == p.cardinalitysize{i}
+        p.ub(used(p.lb(used) < p.ub(used) )) = 0;  
+    end
+end
+
 removethese = p.lb==p.ub;
 if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.options.allowsmashing
  
@@ -49,7 +57,14 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.opt
     % models having no interior etc)    
     p = smashFixed(p,'delete');
     p = smashQPOjective(p,removethese);    
-    idx = find(removethese);
+    idx = find(removethese);    
+    
+    % FIX: should be updated
+    % safe fix now where we just remove
+    p.cardinalityvariables = [];
+    p.cardinalitygroups = [];
+    %p.atmost.groups = [];
+    
     p.lb(idx)=[];
     p.ub(idx)=[];
     if ~isempty(p.x0)

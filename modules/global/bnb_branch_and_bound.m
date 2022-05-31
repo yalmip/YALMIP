@@ -208,11 +208,16 @@ if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lo
 
 while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
 
+%     for i = 1:length(p.binaryProduct)
+%         p.lb(p.binaryProduct{i}.y) = max(p.lb(p.binaryProduct{i}.y),min(p.lb(p.binaryProduct{i}.x)));
+%         p.ub(p.binaryProduct{i}.y) = min(p.ub(p.binaryProduct{i}.y),max(p.ub(p.binaryProduct{i}.x)));
+%     end
+    
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
     binary_variables = p.binary_variables;
-    
+
     % ********************************************
     % SO ARE SEMI VARIABLES
     % ********************************************
@@ -223,7 +228,16 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % ********************************************
     keep_digging = 1;
     message = '';
-    
+     
+%     for i = 1:length(p.atmost.groups)
+%         j = p.atmost.groups{i};       
+%         if any(p.lb(j)==1)
+%             fixed = j(find(p.lb(j)==1));
+%             zerov = setdiff(j,fixed);
+%             p.ub(zerov) = 0;
+%         end        
+%     end
+     
     % *************************************
     % SOLVE NODE PROBLEM
     % *************************************
@@ -350,7 +364,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))                              
                 for k = 1:length(upperSolversList)                    
-                    [upper1,x_min1] = feval(upperSolversList{k},p,upper,x,poriginal,output);
+                    [upper1,x_min1] = feval(upperSolversList{k},p,upper,x,poriginal,output,lower);
                     if upper1 < upper
                         x_min = x_min1;
                         allSolutions = [allSolutions x_min1];
@@ -411,7 +425,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         if (cost<upper) & feasible
             x_min = x;
             upper = cost;
-            allSolutions = x_min;
+            allSolutions = [allSolutions x_min];
             [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);            
             [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);
         end
@@ -468,7 +482,60 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         pid = pid + 1;
         node0 = newNode(p0,globalindex,'down',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
         pid = pid + 1;
-                       
+%          
+%         for j = 1:length(p.binaryProduct)
+%             xx = p.binaryProduct{j}.x;
+%             yy = p.binaryProduct{j}.y;
+%             if any(p0.ub(xx)==0)
+%                 if p0.lb(yy)==1
+%                     p0_feasible = 0;
+%                     break
+%                 else
+%                     p0.ub(yy) = 0;
+%                 end
+%             end
+%             if any(p1.ub(xx)==0)
+%                  if p1.lb(yy)==1
+%                     p1_feasible = 0;
+%                     break
+%                  else
+%                      p1.ub(yy) = 0;
+%                  end
+%             end
+%             if all(p0.lb(xx)==1)
+%                  if p0.ub(yy)==0
+%                     p0_feasible = 0;
+%                     break
+%                 else
+%                 p0.lb(yy)=1;
+%                  end
+%             end
+%             if all(p1.lb(xx)==1)
+%                 if p1.ub(yy)==0
+%                     p1_feasible = 0;
+%                     break
+%                 else
+%                 p1.lb(yy)=1;
+%                 end
+%             end
+%             if p0.lb(yy)==1
+%                 if any(p0.ub(xx)==0)
+%                    p0_feasible = 0;
+%                     break  
+%                 else
+%                   p0.lb(xx) = 1;
+%                 end
+%             end
+%             if p1.lb(yy)==1
+%                 if any(p1.ub(xx)==0)
+%                    p1_feasible = 0;
+%                     break  
+%                 else
+%                   p1.lb(xx) = 1;
+%                 end
+%             end
+%         end
+        
         if ismember(globalindex,p.atmost.variables)
             for j = 1:length(p.atmost.groups)
                 xy = p.atmost.groups{j};
@@ -601,9 +668,9 @@ switch options.bnb.branchrule
         nint = find(abs(x(all_variables)-round(x(all_variables)))>options.bnb.inttol);
         [val,index] = min(abs(x(nint)));
         index = nint(index);
-    case 'max'
-        %[val,index] = max((abs(x(all_variables)-round(x(all_variables)))));
-        [val,index] = max((1 + min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables)))));
+    case 'max'        
+        indic = (1 + min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
+        [val,index] = max(indic);
     otherwise
         error('Branch-rule not supported')
 end

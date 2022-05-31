@@ -30,3 +30,47 @@ end
 p.atmost.groups = atmostgroups;
 p.atmost.bounds = atmostbounds;
 p.atmost.variables = atmostvariables;
+%p = presolve_AtmostFromBinaryproduct(p)
+
+function p = presolve_AtmostFromBinaryproduct(p)
+% presolve y = x1*x2 where x1 x2 binary
+% thus y is binary
+ff = p.F_struc(1+p.K.f:p.K.f+p.K.l,:);
+% Search for y >= x1 + x2 - 1
+candidates = find(sum(abs(ff),2) == 4 & sum(ff,2) == 0 & ff(:,1)==1);
+lower_and = {};
+for i = 1:length(candidates)
+    row = p.F_struc(candidates(i),2:end);
+    xx = find(row==-1);
+    yy = find(row==1);
+    if length(xx)==2 && length(yy)==1
+        if all(ismember(xx,p.binary_variables))
+            lower_and{end+1}.x = xx;
+            lower_and{end}.y = yy;
+        end
+    end
+end
+for i = 1:length(lower_and)
+    x = lower_and{i}.x;
+    y = lower_and{i}.y;
+    y_bounded_by_x1 = 0;
+    q = find(ff(:,1) == 0 & ff(:,x(1)+1)==1);
+    for j = 1:length(q)
+        s = ff(q(j),2:end);
+        s(x(1))=0;
+        % y + sum z <= x1   (z non-negative)
+        if all(s<=0) & s(y)==-1 & all(p.lb(find(s))>=0)
+          p.atmost.groups{end+1} = find(s);
+          p.atmost.bounds(end+1) = 1;          
+        end
+    end
+    q = find(ff(:,1) == 0 & ff(:,x(2)+1)==1);
+    for j = 1:length(q)
+        s = ff(q(j),2:end);
+        s(x(2))=0;
+        if all(s<=0) && s(y) && all(p.lb(find(s)) >=0)
+          p.atmost.groups{end+1} = find(s);
+          p.atmost.bounds(end+1) = 1;   
+        end
+    end   
+end
