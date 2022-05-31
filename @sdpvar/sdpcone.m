@@ -1,4 +1,4 @@
-function y = sdpcone(varargin)
+function y = sdpcone(y)
 %SDPCONE Low-level operator to define several SDP constraints in vectorized
 %form
 %
