@@ -120,6 +120,10 @@ else
                     x_c = zeros(size(A,2),1);
                 end
                 vertices = vertexenumerate(A,b,x_c);
+                % This simply gives "nicer" models sometimes
+                % First step in cleaning below too
+                really_integer = abs(vertices(:)-round(vertices(:)))<eps;
+                vertices(really_integer) = round(vertices(really_integer));                
             end
             % Map back to original variables
             vertices = repmat(x0,1,size(vertices,2)) + En*vertices;
