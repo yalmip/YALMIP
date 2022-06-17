@@ -11,7 +11,7 @@ if ~isempty(p.binary_variables) && ~isempty(p.F_struc)
     A(:,p.binary_variables) = 0;
     probedBoundsL = [];
     probedBoundsU = [];
-    for i = p.K.f + 1:p.K.f +p.K.l
+    for i = p.K.f + 1:p.K.f + p.K.l
         [~,ix,valx] = find(A(i,:));
         if length(ix) == 1
             [~,id,vald] = find(D(i,:));

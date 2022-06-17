@@ -55,7 +55,7 @@ p_upper = compile_quadraticslist(p_upper);
 p = addConcavityInfo(p);
 
 % Some simple probing
-% p = addFromProbedBinary(p);
+p = addFromProbedBinary(p);
 
 % *************************************************************************
 % Add constraints obtained from multiplying linear constraints with 
