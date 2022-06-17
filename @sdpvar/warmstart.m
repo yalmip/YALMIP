@@ -1,5 +1,17 @@
-function assign(X,value,ls)
-%Obsolete, see WARMSTART
+function warmstart(X,value,ls)
+%WARMSTART Assigns a numerical value to an sdpvar
+%
+% WARMSTART(X,x0) Tries to set the free variables in X so that
+%                 value(X)=x0. Notice that other variables
+%                 sharing the same free variables will be affected.
+%                 If the assignment is infeasible, an error message
+%                 will be issued.
+%
+% WARMSTART(X,x0,1) Least square assignment.
+%
+% After assigning values to decision variables, these can be communicated
+% to the solver as an initial guess by turning on the option 'warmstart' in
+% the options structure sent to optimize.
 
 if nargin<3
     ls = 0;
