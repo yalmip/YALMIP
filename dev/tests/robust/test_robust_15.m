@@ -21,7 +21,7 @@ W = cone([1;chol(S)*w]);
 sol = optimize([M,W,uncertain(w)],x(1),sdpsettings('verbose',1))
 value(x)
 
-testCase.assertTrue(sol.problem == 0);
+testCase.assertTrue((sol.problem == 0) || (sol.problem == 4));
 testCase.assertTrue(abs(value(x(1))--0.4) <= 1e-3);
 
 

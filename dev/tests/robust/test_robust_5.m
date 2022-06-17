@@ -163,7 +163,8 @@ x = sdpvar(1);
 w = sdpvar(2,1);
 C = [x+norm(w,2) <= 1];
 W = [uncertain(w),norm(w,1)<=2];
-optimize([C,W],-x,sdpsettings('verbose',0,'solver','coneprog'));
+optimize([C,W],-x,sdpsettings('verbose',1,'solver','coneprog'))
+value(x)
 testCase.assertTrue(abs(value(x)--1)<=1e-1)
 
 function test14(testCase)
