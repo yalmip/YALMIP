@@ -1,6 +1,6 @@
 function p = detectAndAdd3x3AtmostGroups(p)
 
-if ~isempty(p.atmost)
+if ~isempty(p.atmost) && length(p.atmost.groups)>0
     newAtmost = {};
     top = startofSDPCone(p.K);
     for sdp = 1:length(p.K.s)

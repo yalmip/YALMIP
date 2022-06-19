@@ -32,5 +32,8 @@ if any(p.K.s)
         newInequalities = [newInequalities;p.F_struc(index,:)];
         top = top + n^2;
     end
+    newInequalities = unique(newInequalities,'rows');
+    relevant = any(newInequalities(:,2:end),2);
+    newInequalities = newInequalities(relevant,:);
     p = addInequality(p,newInequalities);
 end
