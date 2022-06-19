@@ -37,17 +37,24 @@ if ismember('shifted round',p.options.bnb.rounding)
         end
                 
         xtemp = fix_semivar(p,xtemp);
-        xtemp = fix_atmost(p,xtemp,x);
-        
-        if ~isempty(prelaxed.binaryProduct)            
-        	xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
+        % Too expensive to keep doing. Perhaps
+        % option on problems with problems to find feasible
+        if 0
+            xtemp = fix_atmost(p,xtemp,x);
+            if ~isempty(prelaxed.binaryProduct)
+                xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
+            end
         end
         
-        for i = 1:length(p.downForce)
-            forcing = p.downForce{i}.forcing;
-            forced = p.downForce{i}.forced;
-            if xtemp(forcing)==0
-                xtemp(forced)=0;
+        % Too expensive to keep doing. Perhaps
+        % option on problems with problems to find feasible
+        if 0
+            for i = 1:length(p.downForce)
+                forcing = p.downForce{i}.forcing;
+                forced = p.downForce{i}.forced;
+                if xtemp(forcing)==0
+                    xtemp(forced)=0;
+                end
             end
         end
         

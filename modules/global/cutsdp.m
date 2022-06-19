@@ -233,6 +233,10 @@ if p.options.cutsdp.verbose
     end
 end
 
+% p = smashFixed(p);
+% p = detectAtMost(p);
+% p = detectAndAdd3x3AtmostGroups(p);
+
 % Rhs of SOCP has to be non-negative
 if ~p.solver.lower.constraint.inequalities.secondordercone.linear
     p_lp = addSOCPCut(p,p_lp);

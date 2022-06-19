@@ -11,7 +11,7 @@ if ~isempty(p.atmost)
             i = [top_local top_local+1 top_local+2 top_local+n top_local+n+1 top_local+n+2 top_local+2*n top_local+2*n+1 top_local + 2*n+2];
             % Extract 3x3
             F_local = p.F_struc(i,:);
-            r0 = F_local([1 5 9],2:end)
+            r0 = F_local([1 5 9],2:end);
             if nnz(r0) ==  0
                 % Extract non-diagonal
                 r1 = F_local(2,2:end);
@@ -29,7 +29,7 @@ if ~isempty(p.atmost)
                             xtest = zeros(length(p.c),1);
                             xtest(v1(1))=1;xtest(v2(1))=1;xtest(v3(1))=1;
                             Xtest = F_local*[1;xtest];
-                            Xtest = reshape(Xtest,3,3)
+                            Xtest = reshape(Xtest,3,3);
                             if min(eig(Xtest)) < -1e-10
                                 newAtmost{end+1} = unique([atmostGroup1 atmostGroup2 atmostGroup3]);
                             end                            
