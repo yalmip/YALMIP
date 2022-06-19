@@ -125,28 +125,6 @@ p = presolveSOS(p);
 p = smashFixed(p);
 p = propagate_bounds_from_qualities(p);
 
-% for i = 1:length(p.atmost.groups)
-%     x = p.atmost.groups{i};
-%     if p.atmost.bounds(i)==1
-%         v = [];r = [];
-%         for j = 1:length(x)
-%             k1 = find(p.binaryProduct(:,2)==x(j));
-%             k2 = find(p.binaryProduct(:,3)==x(j));
-%             k = [k1;k2];
-%             if ~isempty(k)
-%                 r = [r length(k)*0+1]
-%                 v = [v;k(1)]               
-%             end
-%         end
-% %         p.atmost.groups{end+1} = p.binaryProduct(v,1);
-% %         p.atmost.bounds(end+1) = 1;
-% %         row = zeros(1,1+length(p.c));
-% %         row(1+p.atmost.groups{end})=-1;
-% %         row(1) = max(r);
-% %         p = addInequality(p,row);
-%     end
-% end
-
 p.options.allowsmashing = 1;
 poriginal = p;
 p.cuts = [];
@@ -226,19 +204,6 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % ********************************************
     binary_variables = p.binary_variables;
     
-%     cost0_ = sum(p.c(find(p.lb == 1)));
-%     ct = zeros(1,length(p.c));
-%     ct(p.lb==1) = p.c(p.lb==1);
-%     for i = 1:length(p.upForce)
-%         if p.lb(p.upForce{i}.forcing)==1
-%             possible = find(p.ub(p.upForce{i}.forced)==1);
-%             forced = p.upForce{i}.forced(possible);
-%             [minc,cloc] = min(p.c(forced));
-%             ct(forced(cloc)) = minc;            
-%         end
-%     end
-%     sum(ct)
-
     % ********************************************
     % SO ARE SEMI VARIABLES
     % ********************************************
@@ -625,8 +590,7 @@ if isempty(index) | ~isempty(p.semicont_variables)
     if isempty(val)
         whatsplit = 'semi';
         index = index2;
-    elseif val2>val
-        % index = p.semicont_variables(index);
+    elseif val2>val        
         whatsplit = 'semi';
         index = index2;
     end

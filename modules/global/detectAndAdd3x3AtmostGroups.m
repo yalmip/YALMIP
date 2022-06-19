@@ -39,6 +39,7 @@ if ~isempty(p.atmost) && length(p.atmost.groups)>0
             end
             top_local = top_local + n + 1;
         end
+        top = top + p.K.s(sdp)^2
     end
     for i = 1:length(newAtmost)
         row = zeros(1,length(p.c)+1);
