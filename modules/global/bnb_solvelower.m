@@ -130,8 +130,8 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.opt
     else
         % Solve relaxation
         p.solver.version = p.solver.lower.version;
-        p.solver.subversion = p.solver.lower.subversion;
-        output = feval(lowersolver,p);
+        p.solver.subversion = p.solver.lower.subversion;               
+        output = feval(lowersolver,p);        
     end
     if output.problem == 1 || output.problem == 24
         output.Primal = [];

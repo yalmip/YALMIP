@@ -33,15 +33,24 @@ if ismember('shifted round',p.options.bnb.rounding)
         xtemp = max(xtemp,p.lb);
         
         if ~isempty(prelaxed.binaryProduct)
-        xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
+            xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
         end
                 
-        xtemp = fix_semivar(p,xtemp);          
-        %xtemp = fix_atmost(p,xtemp,x);
-                if ~isempty(prelaxed.binaryProduct)
-
-        xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
-                end
+        xtemp = fix_semivar(p,xtemp);
+        xtemp = fix_atmost(p,xtemp,x);
+        
+        if ~isempty(prelaxed.binaryProduct)            
+        	xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
+        end
+        
+        for i = 1:length(p.downForce)
+            forcing = p.downForce{i}.forcing;
+            forced = p.downForce{i}.forced;
+            if xtemp(forcing)==0
+                xtemp(forced)=0;
+            end
+        end
+        
         xtemp = setnonlinearvariables(p,xtemp);        
         upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);
         if upperhere < upper && upperhere >= lower

@@ -125,6 +125,28 @@ p = presolveSOS(p);
 p = smashFixed(p);
 p = propagate_bounds_from_qualities(p);
 
+% for i = 1:length(p.atmost.groups)
+%     x = p.atmost.groups{i};
+%     if p.atmost.bounds(i)==1
+%         v = [];r = [];
+%         for j = 1:length(x)
+%             k1 = find(p.binaryProduct(:,2)==x(j));
+%             k2 = find(p.binaryProduct(:,3)==x(j));
+%             k = [k1;k2];
+%             if ~isempty(k)
+%                 r = [r length(k)*0+1]
+%                 v = [v;k(1)]               
+%             end
+%         end
+% %         p.atmost.groups{end+1} = p.binaryProduct(v,1);
+% %         p.atmost.bounds(end+1) = 1;
+% %         row = zeros(1,1+length(p.c));
+% %         row(1+p.atmost.groups{end})=-1;
+% %         row(1) = max(r);
+% %         p = addInequality(p,row);
+%     end
+% end
+
 p.options.allowsmashing = 1;
 poriginal = p;
 p.cuts = [];
@@ -145,26 +167,16 @@ end
 p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
 poriginal.noninteger_variables = p.noninteger_variables;
 
+% Trivial stuff in SDP cone, such as constant non-zero in row forcing
+% diagonal to be non-zero
 p = addImpliedSDP(p);
 
 % Resuse some code from cutsdp to add simple cuts required for SDP
 % feasibility for problems with some trivial symmetries
-% TODO: Clean up, refactor, generalize
-if ~any(p.K.f) % Still to lazy to fix last insertion
-    top = startofSDPCone(p.K);
-    p.F_struc = p.F_struc';
-    for i = 1:length(p.K.s)
-        p.semidefinite{i}.F_struc = p.F_struc(:,top:top+p.K.s(i)^2-1)';
-        top = top + p.K.s(i)^2;
-    end
-    p.F_struc = p.F_struc';
-    p.sdpsymmetry = [];
-    p = detect3x3SymmetryGroups(p);
-    pp = p;pp.F_struc = [];pp.K.l = 0;pp.K.f = 0;pp.K.s = 0;
-    [p,pp] = addSymmetryCuts(p,pp);
-    p = addInequality(p,pp.F_struc);
-    p.semidefinite=[];
-end
+p = detectAndAdd3x3SymmetryGroups(p);
+
+% Detect some more simple cuts
+p = detectAndAdd3x3AtmostGroups(p);
 
 feasibilityHistory = [];
 % Save of all optimal solutions
@@ -204,19 +216,28 @@ if p.options.bnb.verbose
         
     end
 end
+
 if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
 
 while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
-
-%     for i = 1:length(p.binaryProduct)
-%         p.lb(p.binaryProduct{i}.y) = max(p.lb(p.binaryProduct{i}.y),min(p.lb(p.binaryProduct{i}.x)));
-%         p.ub(p.binaryProduct{i}.y) = min(p.ub(p.binaryProduct{i}.y),max(p.ub(p.binaryProduct{i}.x)));
-%     end
-    
+        
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
     binary_variables = p.binary_variables;
+    
+%     cost0_ = sum(p.c(find(p.lb == 1)));
+%     ct = zeros(1,length(p.c));
+%     ct(p.lb==1) = p.c(p.lb==1);
+%     for i = 1:length(p.upForce)
+%         if p.lb(p.upForce{i}.forcing)==1
+%             possible = find(p.ub(p.upForce{i}.forced)==1);
+%             forced = p.upForce{i}.forced(possible);
+%             [minc,cloc] = min(p.c(forced));
+%             ct(forced(cloc)) = minc;            
+%         end
+%     end
+%     sum(ct)
 
     % ********************************************
     % SO ARE SEMI VARIABLES
@@ -228,16 +249,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % ********************************************
     keep_digging = 1;
     message = '';
-     
-%     for i = 1:length(p.atmost.groups)
-%         j = p.atmost.groups{i};       
-%         if any(p.lb(j)==1)
-%             fixed = j(find(p.lb(j)==1));
-%             zerov = setdiff(j,fixed);
-%             p.ub(zerov) = 0;
-%         end        
-%     end
-     
+        
     % *************************************
     % SOLVE NODE PROBLEM
     % *************************************
@@ -308,7 +320,6 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % THIS WILL BE INTIAL GUESS FOR CHILDREN
     % **************************************
     p.x0 = x;
-    
     % *************************************
     % ANY INTEGERS? ROUND?
     % *************************************
@@ -458,10 +469,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         
         % **********************************
         % CREATE NEW PROBLEMS
-        % **********************************
-        p0_feasible = 1;
-        p1_feasible = 1;
-        
+        % ********************************** 
         switch whatsplit
             case 'binary'
                 [p0,p1,index] = binarysplit(p,x,index,cost,[],sosgroups,sosvariables);
@@ -477,99 +485,19 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                                         
             otherwise
         end
-                
+        
+        [p0,p0_feasible] = propagate_binary_product(p0);
+        [p1,p1_feasible] = propagate_binary_product(p1);
+        p0 = propagate_atmost(p0);
+        p1 = propagate_atmost(p1);
+        p0 = propagate_downforce(p0);
+        p1 = propagate_downforce(p1);
+     
         node1 = newNode(p1,globalindex,'up',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
         pid = pid + 1;
         node0 = newNode(p0,globalindex,'down',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
         pid = pid + 1;
-%          
-%         for j = 1:length(p.binaryProduct)
-%             xx = p.binaryProduct{j}.x;
-%             yy = p.binaryProduct{j}.y;
-%             if any(p0.ub(xx)==0)
-%                 if p0.lb(yy)==1
-%                     p0_feasible = 0;
-%                     break
-%                 else
-%                     p0.ub(yy) = 0;
-%                 end
-%             end
-%             if any(p1.ub(xx)==0)
-%                  if p1.lb(yy)==1
-%                     p1_feasible = 0;
-%                     break
-%                  else
-%                      p1.ub(yy) = 0;
-%                  end
-%             end
-%             if all(p0.lb(xx)==1)
-%                  if p0.ub(yy)==0
-%                     p0_feasible = 0;
-%                     break
-%                 else
-%                 p0.lb(yy)=1;
-%                  end
-%             end
-%             if all(p1.lb(xx)==1)
-%                 if p1.ub(yy)==0
-%                     p1_feasible = 0;
-%                     break
-%                 else
-%                 p1.lb(yy)=1;
-%                 end
-%             end
-%             if p0.lb(yy)==1
-%                 if any(p0.ub(xx)==0)
-%                    p0_feasible = 0;
-%                     break  
-%                 else
-%                   p0.lb(xx) = 1;
-%                 end
-%             end
-%             if p1.lb(yy)==1
-%                 if any(p1.ub(xx)==0)
-%                    p1_feasible = 0;
-%                     break  
-%                 else
-%                   p1.lb(xx) = 1;
-%                 end
-%             end
-%         end
-        
-        if ismember(globalindex,p.atmost.variables)
-            for j = 1:length(p.atmost.groups)
-                xy = p.atmost.groups{j};
-                if p.atmost.bounds(j)==1 && any(xy == globalindex)
-                    if ~(node0.lb(globalindex)==0 && node0.ub(globalindex)==0)
-                        % The variable has been fixed to a non-zero value
-                        % Hence, its sister has to be set to 0
-                        sisters = xy(xy~=globalindex);
-                        for k = sisters
-                            if node0.lb(k) > 0 || node0.ub(k) < 0
-                                p0_feasible = 0;
-                                break
-                            else
-                                node0.lb(k) = 0;
-                                node0.ub(k) = 0;
-                            end                            
-                        end
-                    end
-                    if ~(node1.lb(globalindex)==0 && node1.ub(globalindex)==0)
-                        sisters = xy(xy~=globalindex);
-                        for k = sisters
-                            if node1.lb(k) > 0 || node1.ub(k) < 0
-                                p1_feasible = 0;
-                                break
-                            else
-                                node1.lb(k) = 0;
-                                node1.ub(k) = 0;
-                            end                            
-                        end
-                    end
-                end
-            end
-        end
-        
+            
         % Make sure we don't push trivially poor stuff to stack, so reuse
         % pruning code by creating temporary stacks first
         tempstack = stackCreate;
@@ -748,20 +676,11 @@ if length(friends) > 1
     p1.lb(friends)=0;
 end
 
-p1.binary_variables = new_binary;%p0.binary_variables;%setdiff1D(p1.binary_variables,variable);
-%p1.binary_variables = setdiff(p1.binary_variables,friends);
+p1.binary_variables = new_binary;
 p1.lower = lower;
 p1.depth = p.depth+1;
 
-% % *****************************
-% % PROCESS MOST PROMISING FIRST
-% % (p0 in top of stack)
-% % *****************************
-if x(variable)>0.5
-    pt=p1;
-    p1=p0;
-    p0=pt;
-end
+
 
 function [p0,p1] = integersplit(p,x,index,lower,options,x_min)
 
