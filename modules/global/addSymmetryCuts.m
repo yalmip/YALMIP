@@ -5,7 +5,14 @@ for j = 1:length(p.sdpsymmetry)
         % We can enumerate easily infeasibles
         excludes = [];
         n = sqrt(size(p.sdpsymmetry{j}.dataBlock,1));
-        combs = -dec2decbin(0:2^length(p.sdpsymmetry{j}.variables{1})-1,length(p.sdpsymmetry{j}.variables{1}))';
+        vars = p.sdpsymmetry{j}.variables{1};
+        % Now enumerate, for historical reasons
+        % also accept {-1,0}-models so translate and scale
+        L = p.lb(vars);
+        U = p.ub(vars);
+        combs = dec2decbin(0:2^length(vars)-1,length(vars))';
+        combs = repmat(L,1,size(combs,2)) + repmat(U-L,1,size(combs,2)).*combs;
+        combs = unique(combs','rows')';
         for i = 1:size(combs,2)
             if min(eig(reshape(p.sdpsymmetry{j}.dataBlock*[1;combs(:,i)],n,n))) < -abs(p_lp.options.bnb.feastol)
                 excludes = [excludes combs(:,i)];

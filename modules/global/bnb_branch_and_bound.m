@@ -137,11 +137,12 @@ p.fixdir = '';
 lastUpper = upper;
 oldp = p;
 
-if length(p.integer_variables) == length(p.c)
+if length(p.integer_variables)+length(p.binary_variables) == length(p.c)
     p.all_integers = 1;
 else
     p.all_integers = 0;
 end
+
 p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
 poriginal.noninteger_variables = p.noninteger_variables;
 

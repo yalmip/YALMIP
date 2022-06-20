@@ -107,8 +107,11 @@ if ~isempty(p.integer_variables)
 end
 
 % ********************************
-%% Presolve trivial SDP stuff (zero in diagonal)
+%% Wrong encoding in some historical files causing sign-switch on binary
 % ********************************
+[p,negated_binary] = detectNegatedBinary(p);
+
+% Remove some garbage
 p = detectRedundantInfeasibleSDPRows(smashFixed(p));
 
 % ********************************
@@ -207,6 +210,10 @@ bnbsolvertime = clock;
 [x_min,solved_nodes,lower,upper,profile,diagnostics] = bnb_branch_and_bound(p);
 bnbsolvertime =  etime(clock,bnbsolvertime);
 output.solvertime = setuptime + bnbsolvertime;
+
+if ~isempty(x_min) && ~isempty(negated_binary)
+    x_min(negated_binary) = -x_min(negated_binary);
+end
 
 % **********************************
 %% CREATE SOLUTION

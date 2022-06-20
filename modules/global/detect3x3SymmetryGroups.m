@@ -1,8 +1,16 @@
 function p = detect3x3SymmetryGroups(p)
 
+% Normally we would do this on models with binary variables
+% but there were some weird models where everything was modelled
+% using integers in {-1,0}, so accept that too
 good = zeros(1,length(p.c));
-good(p.integer_variables) = 1;
-good( (p.lb ~= -1) | (p.ub ~=0)) = 0;
+good(p.binary_variables) = 1;
+if ~isempty(p.integer_variables)
+    flipped_binary = find(p.lb(p.integer_variables)==-1 & p.ub(p.integer_variables)== 0);
+    if ~isempty(flipped_binary)
+        good(p.integer_variables(flipped_binary))=1;
+    end
+end    
 if any(good)
     groups = {};
     for j = 1:length(p.K.s)
