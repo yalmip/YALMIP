@@ -1,4 +1,4 @@
-function p = detectAndAdd3x3SymmetryGroups(p)
+function [p,pp] = detectAndAdd3x3SymmetryGroups(p,pp,clearStructure)
 
 % Put in format for the detector
 top = startofSDPCone(p.K);
@@ -11,9 +11,13 @@ p.F_struc = p.F_struc';
 p.sdpsymmetry = [];
 % Find
 p = detect3x3SymmetryGroups(p);
-% Create
-pp = p;pp.F_struc = [];pp.K.l = 0;pp.K.f = 0;pp.K.s = 0;
+% Create unless sent
+if nargin < 2
+    pp = p;pp.F_struc = [];pp.K.l = 0;pp.K.f = 0;pp.K.s = 0;
+end
 [p,pp] = addSymmetryCuts(p,pp);
 % Add
 p = addInequality(p,pp.F_struc);
-p.semidefinite=[];
+if nargin == 3 && clearStructure == 1
+    p.semidefinite=[];
+end
