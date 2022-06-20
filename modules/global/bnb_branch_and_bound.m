@@ -198,7 +198,7 @@ end
 if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
 
 while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
-        
+         
     % ********************************************
     % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
     % ********************************************
@@ -450,14 +450,19 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                                         
             otherwise
         end
-        
+                
         [p0,p0_feasible] = propagate_binary_product(p0);
         [p1,p1_feasible] = propagate_binary_product(p1);
-        p0 = propagate_atmost(p0);
-        p1 = propagate_atmost(p1);
-        p0 = propagate_downforce(p0);
-        p1 = propagate_downforce(p1);
-     
+        
+%        [p0,p0_feasible] = pruneOnForcedObjective(p0,upper,p0_feasible);
+%        [p1,p1_feasible] = pruneOnForcedObjective(p1,upper,p1_feasible);
+        if p0_feasible;p0 = propagate_atmost(p0);end
+        if p1_feasible;p1 = propagate_atmost(p1);end
+        [p0,p0_feasible] = propagate_downforce(p0,p1_feasible);
+        [p1,p1_feasible] = propagate_downforce(p1,p1_feasible);
+        [p0,p0_feasible] = propagate_upforce(p0,p1_feasible);
+        [p1,p1_feasible] = propagate_upforce(p1,p1_feasible);
+
         node1 = newNode(p1,globalindex,'up',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
         pid = pid + 1;
         node0 = newNode(p0,globalindex,'down',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
@@ -953,4 +958,39 @@ if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))=
             stack.nodes{j}.ub = fake.ub;
         end
     end
+end
+
+function [p,p_feasible] = pruneOnForcedObjective(p,upper,p_feasible)
+if 0%~isinf(upper)
+    if all(p.c >= 0) && nnz(p.Q)==0
+        % Find those forced to be 1
+        % (if they are continuous etc does matter
+        % will not influence)
+        alreadyFixed = find(p.lb==1);
+        % If they are forced to 0, some other has to be activated
+        p.c(p.lb==0 & p.ub==0) = inf;
+        if ~isempty(alreadyFixed)
+            cost_given = sum(p.c(alreadyFixed));
+        else
+            cost_given = 0;
+        end
+        % Now study what cost might become if a
+        % forcing variable is set to 1
+        for i = 1:length(p.upForce)            
+            if p.ub(p.upForce{i}.forcing) == 1
+                forced = p.upForce{i}.forced;
+                if ~any(p.lb(forced)==1)
+                    % This cost is already included
+                    forced = setdiff(forced,alreadyFixed);
+                    if min(p.c(forced))+cost_given>upper  
+                        % This forcing variable mut be kept 0
+                        p.ub(p.upForce{i}.forcing)=0;                
+                    end
+                end
+            end
+        end        
+    end
+end
+if any(p.lb > p.ub)
+    p_feasible = 1;
 end
