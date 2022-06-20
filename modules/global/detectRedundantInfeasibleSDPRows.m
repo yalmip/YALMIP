@@ -38,6 +38,8 @@ if any(p.K.s)
         end
         top = top + p.K.s(j)^2;
     end
-    p = addEquality(p,newEqualities);
+    if ~isempty(newEqualities)
+        p = addEquality(p,newEqualities);
+    end
     p.K.s(p.K.s == 0) = [];
 end

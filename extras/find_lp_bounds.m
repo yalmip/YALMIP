@@ -1,5 +1,9 @@
-function [lb,ub,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,lb,ub)
+function [lb,ub,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,lb,ub,sloppy)
 %find_lp_bounds Internal function to extract upper and lower variable bounds
+
+if nargin < 5
+    sloppy = 0;
+end
 
 n = size(F_struc,2)-1;
 if nargin < 3
@@ -25,7 +29,7 @@ end
 if (K.l ~=0)
     A = -F_struc(K.f+1:K.f+K.l,2:end);
     b = F_struc(K.f+1:K.f+K.l,1);
-    [lb,ub,cand_rows_lp] = localBoundsFromInequality(A,b,lb,ub);    
+    [lb,ub,cand_rows_lp] = localBoundsFromInequality(A,b,lb,ub,sloppy);    
 end
 
 if isfield(K,'q') && nnz(K.q) > 0
@@ -36,7 +40,7 @@ if isfield(K,'q') && nnz(K.q) > 0
     [lb,ub] = localBoundsFromInequality(A,b,lb,ub);    
 end
 
-function [lb,ub,cand_rows_lp] = localBoundsFromInequality(A,b,lb,ub);
+function [lb,ub,cand_rows_lp] = localBoundsFromInequality(A,b,lb,ub,sloppy)
 n = size(A,2);
 cand_rows_lp = find(sum(A~=0,2)==1);
 if ~isempty(cand_rows_lp)
@@ -44,13 +48,22 @@ if ~isempty(cand_rows_lp)
     s_pos = find(kk>0);
     s_neg = find(kk<=0);
     if ~isempty(s_pos)
-        for s = 1:length(s_pos)
-            ub(jj(s_pos(s)),1) = full(min(ub(jj(s_pos(s))),b(cand_rows_lp(ii(s_pos(s))))./kk(s_pos(s))));
+        if sloppy
+            % Allow sloppy check which might miss if there are several
+            ub(jj(s_pos),1) = full(min(ub(jj(s_pos)),b(cand_rows_lp(ii(s_pos)))./kk(s_pos)));
+        else
+            for s = 1:length(s_pos)
+                ub(jj(s_pos(s)),1) = full(min(ub(jj(s_pos(s))),b(cand_rows_lp(ii(s_pos(s))))./kk(s_pos(s))));
+            end
         end
     end
     if ~isempty(s_neg)
-        for s = 1:length(s_neg)
-            lb(jj(s_neg(s)),1) = full(max(lb(jj(s_neg(s))),b(cand_rows_lp(ii(s_neg(s))))./kk(s_neg(s))));
+        if sloppy
+            lb(jj(s_neg),1) = full(max(lb(jj(s_neg)),b(cand_rows_lp(ii(s_neg)))./kk(s_neg)));
+        else
+            for s = 1:length(s_neg)
+                lb(jj(s_neg(s)),1) = full(max(lb(jj(s_neg(s))),b(cand_rows_lp(ii(s_neg(s))))./kk(s_neg(s))));
+            end
         end
     end
 end

@@ -3,35 +3,41 @@ p_feasible = 1;
 if isempty(p.binaryProduct)
     return
 end
+
 % y = x1 & x2 detected in presolve so tighten
-for i = 1:length(p.binaryProduct)
-    y = p.binaryProduct(i,1);
-    x1 = p.binaryProduct(i,2);
-    x2 = p.binaryProduct(i,3);
-    % x1 and x2 are true, hence y is true
-    if p.lb(x1)==1 && p.lb(x2)==1
-        if p.ub(y)==0
-            p_feasible = 0;
-            return
-        else
-            p.lb(y) = 1;
-        end
-    end
-    % x1 or x2 are false, hence y is false
-    if p.ub(x1)==0 || p.ub(x2)==0
-        if p.lb(y)==1
-            p_feasible = 0;
-            return
-        else
+% Any ovious inconsistency?
+x1_true = p.lb(p.binaryProduct(:,2))==1; 
+x2_true = p.lb(p.binaryProduct(:,3))==1;
+x1_false = p.ub(p.binaryProduct(:,2))==0; 
+x2_false = p.ub(p.binaryProduct(:,3))==0;
+y_false = p.ub(p.binaryProduct(:,1))==0;
+y_true = p.lb(p.binaryProduct(:,1))==1;
+
+if any(x1_true & x2_true & y_false)
+    p_feasible = 0;
+    return
+end
+if any((x1_false | x2_false) & y_true)
+    p_feasible = 0;
+    return
+end
+
+if any(x1_true & x2_true & ~y_true) | any(y_true & ~(x1_true & x2_true))
+    for i = 1:length(p.binaryProduct)
+        % Convoluted code to avoid rare reference
+        if x1_true(i)
+            if x2_true(i)
+                y = p.binaryProduct(i,1);
+                p.lb(y) = 1;
+            end
+        elseif (x1_false(i) || x2_false(i)) & ~y_false(i)
+            y = p.binaryProduct(i,1);
             p.ub(y) = 0;
         end
-    end
-    % y is true, hence x1 and x2 are tru
-    if p.lb(y) == 1
-        if p.ub(x1)==0 || p.ub(x2)==0
-            p_feasible = 0;
-            return
-        else
+        if y_true(i)
+            y = p.binaryProduct(i,1);
+            x1 = p.binaryProduct(i,2);
+            x2 = p.binaryProduct(i,3);
             p.lb(x1) = 1;
             p.lb(x2) = 1;
         end

@@ -110,7 +110,7 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.opt
     % Derive bounds from this presolved model, and if we detect new fixed
     % variables, apply recursively   
     if ~isempty(p.F_struc)
-        [lb,ub] = find_lp_bounds(p.F_struc,p.K,p.lb,p.ub);    
+        [lb,ub] = find_lp_bounds(p.F_struc,p.K,p.lb,p.ub,1);    
         p.ub = min(ub,p.ub);
         p.lb = max(lb,p.lb);
     end
