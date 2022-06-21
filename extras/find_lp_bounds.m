@@ -37,7 +37,7 @@ if isfield(K,'q') && nnz(K.q) > 0
     top = cumsum([1 K.q(1:end-1)]);
     A = -F_struc(K.f+K.l+top,2:end);
     b = F_struc(K.f+K.l+top,1);
-    [lb,ub] = localBoundsFromInequality(A,b,lb,ub);    
+    [lb,ub] = localBoundsFromInequality(A,b,lb,ub,sloppy);    
 end
 
 function [lb,ub,cand_rows_lp] = localBoundsFromInequality(A,b,lb,ub,sloppy)
