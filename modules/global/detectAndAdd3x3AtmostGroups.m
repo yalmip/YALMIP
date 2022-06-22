@@ -48,5 +48,6 @@ if ~isempty(p.atmost) && length(p.atmost.groups)>0
         p = addInequality(p,row);
         p.atmost.groups{end+1} = newAtmost{i};
         p.atmost.bounds(end+1) = 2;
+        p.atmost.variables = unique([p.atmost.variables newAtmost{i}]);
     end
 end
