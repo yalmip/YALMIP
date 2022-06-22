@@ -45,7 +45,7 @@ if any(model.K.q) && any(model.K.q == 0)
     model.K.q(model.K.q==0)=[];
 end
 
-if ~isempty(model.sigmonial_variables) | isequal(model.solver.version,'GEOMETRIC')
+if ~isempty(model.sigmonial_variables) || isequal(model.solver.version,'GEOMETRIC')
     [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_geometric(model);          
 else
     [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);        
