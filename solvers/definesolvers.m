@@ -946,6 +946,14 @@ solver(i).supportsinitial = 1;
 solver(i).global = 0;
 i = i+1;
 
+solver(i) = lpsolver;
+solver(i).tag     = 'CONEPROG';
+solver(i).version = '';
+solver(i).checkfor= {'coneprog'};
+solver(i).call    = 'callconeprog';
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+i = i+1;
+
 solver(i) = sdpsolver;
 solver(i).tag     = 'LMILAB';
 solver(i).version = '';
@@ -1048,14 +1056,6 @@ solver(i).checkfor= {'quadprogbb'};
 solver(i).call    = 'callquadprogbb';
 solver(i).objective.quadratic.nonconvex = 1;
 solver(i).global = 1;
-i = i+1;
-
-solver(i) = lpsolver;
-solver(i).tag     = 'CONEPROG';
-solver(i).version = '';
-solver(i).checkfor= {'coneprog'};
-solver(i).call    = 'callconeprog';
-solver(i).constraint.inequalities.secondordercone.linear = 1;
 i = i+1;
 
 solver(i) = emptysolver;
