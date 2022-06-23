@@ -1,5 +1,5 @@
-function varargout = spy(X,variablesonly)
-%SPY (overloaded)
+function varargout = symamd(X,variablesonly)
+%SYMAMD (overloaded)
 
 if nargin < 2
     variablesonly = 0;
@@ -16,8 +16,4 @@ end
 
 Z = reshape(sum(abs(Z),2),X.dim(1),X.dim(2));
 Z = Z~=0;
-if nargout==0
-    spy(Z)
-else
-    varargout{1}=Z;
-end
+varargout{1}=symamd(Z);
