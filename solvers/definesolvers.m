@@ -678,6 +678,13 @@ solver(i).call    = 'callopticlp';
 i = i+1;
 
 solver(i) = qpsolver;
+solver(i).tag     = 'DAQP';
+solver(i).version = '';
+solver(i).checkfor= {'daqp'};
+solver(i).call    = 'calldaqp';
+i = i+1;
+
+solver(i) = qpsolver;
 solver(i).tag     = 'qpOASES';
 solver(i).version = '';
 solver(i).checkfor= {'qpOASES'};

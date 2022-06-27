@@ -155,6 +155,9 @@ else
     options.csdp = setup_csdp_options;
     Names = appendOptionNames(Names,options.csdp,'csdp');
 
+    options.daqp = setup_daqp_options;
+    Names = appendOptionNames(Names,options.daqp,'daqp');
+
     options.dsdp = setup_dsdp_options;
     Names = appendOptionNames(Names,options.dsdp,'dsdp');
 
@@ -677,6 +680,13 @@ catch
         cplex.param.double = [];
         cplex.param.int = [];
     end
+end
+
+function daqp_opts = setup_daqp_options
+try
+    daqp_opts = daqp().settings();
+catch
+    daqp_opts=[];
 end
 
 function ecos = setup_ecos_options
