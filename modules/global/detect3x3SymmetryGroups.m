@@ -21,7 +21,7 @@ if any(good)
             index0 = find(X);
             index = index0;
             corner = 0;
-            for block = 1:p.K.s(j)-n
+            for block = 1:p.K.s(j)-n+1
                 dataBlock = p.semidefinite{j}.F_struc(index,:);
                 used = find(any(dataBlock,1));
                 dataBlock = dataBlock(:,used);
@@ -56,7 +56,7 @@ if any(good)
         end
     end
     for i = 1:length(groups)
-        if length(groups{i}.variables) > 1
+        if 1%length(groups{i}.variables) > 1
             keep(i) = 1;
         else
             keep(i) = 0;
@@ -66,7 +66,7 @@ if any(good)
         groups = {groups{find(keep)}};
         if length(groups) > 0
             for i = 1:length(groups)
-                for j = 1:length(groups{i}.variables);
+                for j = 1:length(groups{i}.variables)
                     v = groups{i}.variables{j};
                     v = v(v>1)-1;
                     groups{i}.variables{j} = v;

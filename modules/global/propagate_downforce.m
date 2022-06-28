@@ -1,11 +1,13 @@
-function [p,p_feasible] = propagate_downforce(p,p_feasible)
-if p_feasible
+function p = propagate_downforce(p)
+
+% Find inconsistency of x1 + x2 + ... <= y
+if p.feasible
     for i = 1:length(p.downForce)
-        forcing = p.downForce{i}.forcing;
-        forced = p.downForce{i}.forced;
+        forcing = p.downForce{i}.forcing;        
         if p.ub(forcing)==0
+            forced = p.downForce{i}.forced;
             if any(p.lb(forced)==1)
-                p_feasible = 0;
+                p.feasible = 0;
                 return
             else
                 p.ub(forced)=0;

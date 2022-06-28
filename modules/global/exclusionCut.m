@@ -1,4 +1,7 @@
 function [b,a] = exclusionCut(x,thesign)
+% Returns cut [b a]*[1;x] which is infeasible 
+% for given binary
+% thesign = -1 models same for negated binary
 
 zv = find(abs(x) <= 1e-5);
 nz = find(abs(x) > 1e-5);   

@@ -29,27 +29,35 @@ if ~isinf(upper) && nnz(p.Q)==0 && isequal(p.K.m,0) && ~any(p.variabletype)
             p = addEquality(p,[upper-1-p.f -p.c']);
         else
             p = addInequality(p,[upper-1-p.f -p.c']);        
-        end
+        end        
     end
 end
 
-% Exclusion cuts for negated binaries based on some optimal solutions
 if ~isinf(upper) && p.all_integers && all(p.ub <= 0) && all(p.lb >= -1)   
+    % Exclusion cuts for negated binaries based on some optimal solutions
+    % kept for historical reason on malformed model
     for i = 1:min(size(allSolutions,2),10)
         [b,a] = exclusionCut(allSolutions(:,end-i+1),-1);
         p = addInequality(p,[b a]);        
     end    
+elseif ~isinf(upper) && p.all_integers && all(p.ub <= 1) && all(p.lb >= 0)   
+    % Normal exclusion on binary
+     for i = 1:min(size(allSolutions,2),10)
+         [b,a] = exclusionCut(allSolutions(:,end-i+1),1);
+         p = addInequality(p,[b a]);        
+     end    
 end
 
-for i = 1:length(p.cardinalityvariables)
-    used = p.cardinalityvariables{i};
-    L = p.lb(used);
-    if sum(L) == p.cardinalitysize{i}
-        p.ub(used(p.lb(used) < p.ub(used) )) = 0;  
-    end
-end
+% for i = 1:length(p.cardinalityvariables)
+%     used = p.cardinalityvariables{i};
+%     L = p.lb(used);
+%     if sum(L) == p.cardinalitysize{i}
+%         p.ub(used(p.lb(used) < p.ub(used) )) = 0;  
+%     end
+% end
 
 removethese = p.lb==p.ub;
+[~,map] = ismember(find(~p.lb==p.ub),1:length(p.c));
 if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.options.allowsmashing
  
     % Fixed variables, so let us try to presolve as muh as possible
@@ -64,6 +72,7 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.opt
     p.cardinalityvariables = [];
     p.cardinalitygroups = [];
     %p.atmost.groups = [];
+    %p = smashAtmost(p,idx);
     
     p.lb(idx)=[];
     p.ub(idx)=[];
@@ -130,14 +139,13 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.opt
     else
         % Solve relaxation
         p.solver.version = p.solver.lower.version;
-        p.solver.subversion = p.solver.lower.subversion;               
+        p.solver.subversion = p.solver.lower.subversion;        
         output = feval(lowersolver,p);        
     end
     if output.problem == 1 || output.problem == 24
         output.Primal = [];
         return
-	end
-
+    end
     % Recover
     x=relaxed_p.c*0;
     x(removethese)=relaxed_p.lb(removethese);

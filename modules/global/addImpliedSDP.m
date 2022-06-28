@@ -12,7 +12,7 @@ if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
         X0 = reshape(F(:,1),p.K.s(i),p.K.s(i));
         % linear terms 
         XX = reshape(sum(F(:,2:end) ~= 0,2),p.K.s(i),p.K.s(i));
-        candidates = find(any(X0-diag(diag(X0)),2) & (diag(X0)<=0) & ~any(XX-diag(diag(XX)),2));
+        candidates = find(any(X0-diag(diag(X0)),2) & (diag(X0)<=0) & diag(XX))
         if ~isempty(candidates);
             I = speye(p.K.s(i),p.K.s(i));
             pos = find(I(:));
@@ -33,13 +33,8 @@ if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
             end
         end
         top = top + p.K.s(i)^2;
-    end
-    if size(newF,1)>0
-        p.F_struc = [p.F_struc(1:p.K.f + p.K.l,:);
-            newF;
-            p.F_struc(1+p.K.f+p.K.l:end,:)];
-        p.K.l = p.K.l + size(newF,1);
-    end
+    end    
+    p = addInequality(p,newF);
     
     % Search for trivial variables entering in diagonal elements alone, and
     % not entering anywhere else in model. Bad modelling?
@@ -72,7 +67,12 @@ if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
         top = top + p.K.s(j)^2;
     end
     p.adjustable = candidates(find(fixable));
-    for i = candidates(find(~isnan(fixable)))        
-    end
+%     for i = (find(~isnan(fixable)))
+%         if fixable(i) == 1
+%           %  p.lb(i) = p.ub(i);
+%         elseif fixable(i) == -1
+%           %  p.ub(i) = p.lb(i);
+%         end
+%     end
 end
 

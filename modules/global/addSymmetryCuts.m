@@ -10,20 +10,35 @@ for j = 1:length(p.sdpsymmetry)
         % also accept {-1,0}-models so translate and scale
         L = p.lb(vars);
         U = p.ub(vars);
-        combs = dec2decbin(0:2^length(vars)-1,length(vars))';
+        m = length(vars);
+        combs = dec2decbin(0:2^m-1,m)';        
         combs = repmat(L,1,size(combs,2)) + repmat(U-L,1,size(combs,2)).*combs;
         combs = unique(combs','rows')';
+        feasible = ones(1,size(combs,2));
         for i = 1:size(combs,2)
             if min(eig(reshape(p.sdpsymmetry{j}.dataBlock*[1;combs(:,i)],n,n))) < -abs(p_lp.options.bnb.feastol)
                 excludes = [excludes combs(:,i)];
+                feasible(i) = 0;
             end
         end
+        % We can model the inconsistencies in various ways
+        % 1. Binary variables must sum to something
+        % 2. Binary variables sum less
+        % 3. Binary variables sum larger
+        % 4. Generic, just exclude        
+        %sum_feas = sum(combs(:,find(feasible)),1)
+        %sum_infeas = sum(excludes,1)                
         if ~isempty(excludes)
             newF = [];
             infeasible_combinations = unique(excludes','rows')';
             for k = 1:size(infeasible_combinations,2)
                 % Local cut for reduced set
-                [b,atemp] = exclusionCut(infeasible_combinations(:,k),-1);
+                if min(min(excludes))==-1
+                    binary_type = -1;
+                else
+                    binary_type = 1;
+                end
+                [b,atemp] = exclusionCut(infeasible_combinations(:,k),binary_type);
                 % Add that cut for every variable groups
                 for s = 1:length(p.sdpsymmetry{j}.variables)
                     a = spalloc(1,length(p_lp.c),1);

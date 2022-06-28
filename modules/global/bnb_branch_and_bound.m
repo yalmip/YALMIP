@@ -113,16 +113,17 @@ else
     can_use_ceil_lower = 0;
 end
 
-if nnz(Q)==0 && nnz(c)==1 && ~any(p.K.m)
-    p.simplecost = 1;
-else
-    p.simplecost = 0;
-end
+% if nnz(Q)==0 && nnz(c)==1 && ~any(p.K.m)
+%     p.simplecost = 1;
+% else
+%     p.simplecost = 0;
+% end
 
 p = detectSOS(p);
-p = detectAtMost(p);
-p = presolveSOS(p);
-p = smashFixed(p);
+p = detect_knapsack(p);
+p = detect_atleast(p); 
+%p = presolveSOS(p);
+%p = smashFixed(p);
 p = propagate_bounds_from_qualities(p);
 
 p.options.allowsmashing = 1;
@@ -152,21 +153,37 @@ p = addImpliedSDP(p);
 
 % Resuse some code from cutsdp to add simple cuts required for SDP
 % feasibility for problems with some trivial symmetries
-p = detectAndAdd3x3SymmetryGroups(p);
+p = detectAndAdd3x3SymmetryGroups(p,[],0);
 
 % Detect some more simple cuts
-p = detectAndAdd3x3AtmostGroups(p);
+p = detectAndAdd3x3SDPGUBGroups(p);
+%p = detectAndAdd3x3AtmostGroups(p);
 
+%p = crossBinaryProductandAtmost(p);
+p = crossBinaryProductandCardinality(p);
+
+% Prepare to run...
 feasibilityHistory = [];
-% Save of all optimal solutions
-allSolutions = [];
+allFeasibleSolutions = [];
+allRelaxedSolutions = [];
 sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
 numericalProblemsCount= 0;
+directionWhenFoundFeasible = {};
 
 % Generalized upper solver format
 upperSolversList = strsplit(uppersolver,',');
+
+% A small machine for heuristics on selecting
+% up- or down-node first from the stack. Without any 
+% found feasible solutions, we are agnostic and alternate.
+% As we gather info about where we find solutions, we 
+% start picking more from one of them first.
+NodeSelector.Current = 'up';
+NodeSelector.Count = 1;
+NodeSelector.directionWhenFoundFeasible = 0;
+NodeSelector.directionWhenFoundBetter = 0;
 
 if p.options.bnb.verbose
     
@@ -185,64 +202,99 @@ if p.options.bnb.verbose
     disp(['* Upper solver   : ' uppersolver]);
     disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
     disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
+    nB = length(p.binary_variables);
+    nI = length(p.integer_variables);
+    nC = length(p.c) - nB - nI;
+    nKS = length(p.knapsack.a);
+    nGUB = length(find(p.knapsack.type == 3));
+    nCARD = length(find(p.knapsack.type == 2));
+    nGEN = length(p.knapsack.type)-nGUB - nCARD;
+    % Don't count the cover cardinalities derived from knapsacks
+    % They are not added to model
+    nGEN = nGEN - length(find(p.knapsack.type == 4));
+    disp(['* ' num2str(nB) ' binaries, ' num2str(nI) ' integers, ' num2str(nC) ' continuous.']);
+    disp(['* ' num2str(nKS) ' knapsacks (' num2str(nGUB) ' GUBs, ' num2str(nCARD) ' cardinality, ' num2str(nGEN) ' general)']);
     
     if possiblynonconvex & p.options.warning
         disp(' ');
         disp('Warning : The continuous relaxation may be nonconvex. This means ');
         disp('that the branching process is not guaranteed to find a');
         disp('globally optimal solution, since the lower bound can be');
-        disp('invalid. Hence, do not trust the bound or the gap...')
-        
+        disp('invalid. Hence, do not trust the bound or the gap...')        
     end
 end
 
-if p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
+if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open   Elapsed time');end;
+covers = [];
+p.LinearBinaryPositiveCost = all(p.c>=0) && all(ismember(find(p.c),p.binary_variables)) && nnz(p.Q)==0 && isempty(p.evalMap);
+
+% FIXME do when detecting gubs
+p.gubs = zeros(length(p.c),1);
+for i = 1:length(p.c)    
+    for k = find(p.knapsack.type == 3)
+        if ismember(i,p.knapsack.variables{k})
+            p.gubs(i) = k;
+            break
+        end
+    end
+end
+
+covercandidates = [];
+violationscount = 0;
+
+cuts.knapsack = [];
+cuts.sdpknapsack = [];
 
 while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
-         
+              
     % ********************************************
-    % BINARY VARIABLES ARE FIXED ALONG THE PROCESS
+    % FIXED ALONG THE TREE...
     % ********************************************
     binary_variables = p.binary_variables;
-    
-    % ********************************************
-    % SO ARE SEMI VARIABLES
-    % ********************************************
-    semicont_variables  = p.semicont_variables;
-    
+	semicont_variables  = p.semicont_variables;
+      
     % ********************************************
     % ASSUME THAT WE WON'T FATHOME
     % ********************************************
     keep_digging = 1;
-    message = '';
+    Message = 'Node solved succesfully.';
+    
+    % We will use the change in fixed variables as
+    % an indicator when selecting node,so remember 
+    % where we started
+    p.nfixed = nnz(p.lb == 1) + nnz(p.ub == 0);
         
     % *************************************
     % SOLVE NODE PROBLEM
     % *************************************
-    if any(p.ub<p.lb - 1e-12)
+    if any(p.ub < p.lb - 1e-12)
+        % Trivially infeasible
         x = zeros(length(p.c),1);
         output.Primal = x;
-        output.problem=1;
+        output.problem = 1;
     else
         p.x_min = x_min;
-        relaxed_p = p;
-        relaxed_p.integer_variables = [];
-        relaxed_p.binary_variables = [];
-        relaxed_p.semicont_variables = [];
-        relaxed_p.ub(p.ub<p.lb) = relaxed_p.lb(p.ub<p.lb);
+        relaxed_p = integer_relax(p);       
         
-        % Solve node relaxation     
-        output = bnb_solvelower(lowersolver,relaxed_p,upper,lower,x_min,allSolutions);
+        % Solve node relaxation         
+        output = bnb_solvelower(lowersolver,addInequality(relaxed_p,covers),upper,lower,x_min,allFeasibleSolutions);              
+        if output.problem == 0
+            covers = knapsack_add_cover_cut(p,output.Primal,covers,'crowder',upper);
+            covers = knapsack_add_cover_cut(p,output.Primal,covers,'gu',upper);
+        end
+        
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
+            Message = 'Infeasible node.'
         elseif output.problem == -1
             % This is the dreaded unknown state from mosek. Try without
             % objective to see if it is infeasible?
             ptest = relaxed_p;
             ptest.c = ptest.c*0;ptest.Q = ptest.Q*0;
-            outputtest = bnb_solvelower(lowersolver,ptest,upper,lower,x_min,allSolutions);
+            outputtest = bnb_solvelower(lowersolver,ptest,upper,lower,x_min,allFeasibleSolutions);
             if outputtest.problem == 1
                 output.problem = 1;
+                Message = 'Infeasible node.'
             else
                 output.problem = -1;
             end
@@ -250,8 +302,9 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         
         if output.problem == 9
             unknownErrorCount = unknownErrorCount + 1;
+            Message = 'Unknown error, will try to recover.'
         end
-               
+       
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -265,10 +318,81 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 end
             end
         end
-                
+        
+        if output.problem == 0 && ~isempty(p.binary_variables)
+         
+         allRelaxedSolutions = [allRelaxedSolutions output.Primal];
+         
+         %x_trial = round_solution(output.Primal,p);
+         %x_trial = round_solution(output.Primal,p);
+         x_trial = output.Primal;
+         ptemp = emptyNumericalModel;
+         ptemp.options = p.options;
+         [X,p_lp_contcut,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,ptemp,x_trial,1,p);         
+         
+         if ~isempty(p_lp_contcut.F_struc)
+             for j = 1:p_lp_contcut.K.l
+                row = p_lp_contcut.F_struc(j,:);                
+                % Set continuous to best possible
+                if ~isempty(p.noninteger_variables)
+                    for i = p.noninteger_variables
+                        if row(i+1) < 0
+                            row(1) = row(1) + row(i+1)*poriginal.lb(1);
+                        elseif row(i+1) > 0
+                            row(1) = row(1) + row(i+1)*poriginal.ub(1);
+                        end
+                    end
+                    cc = row(1+p.noninteger_variables);
+                    row(1+p.noninteger_variables) = 0;
+                end  
+          
+                % Use general cover separator
+                % Eigenvalues are easily somewhat shaky numerically so
+                % relax slightly
+                row(1) = row(1) + 1e-8;
+                cut = knapsack_create_cover_cut(-row(2:end),row(1),output.Primal,'gu',p.gubs);
+              %  load dummy
+              %  disp(cut*[1;x_])
+                % Dedicated easy which appears effective
+                if all(row(2:end)>=0) & row(1)<=0
+                    a = row(2:end);
+                    b = -row(1);
+                    [val,loc] = sort(a,'ascend');
+                    g = gub_cumsum(val,p.gubs);
+                    m = max(find(g < -row(1)));
+                    ok = setdiff(loc,loc(1:m));
+                    b_cut = -1;
+                    a_cut = spalloc(1,length(val),0);
+                    a_cut(ok) = 1;
+                    cut2 = [b_cut a_cut];
+                else
+                    cut2 = [];
+                end
+                   % [cut' cut2' row' [0;output.Primal] cumsum(cut'.*[1;output.Primal]) cumsum(cut2'.*[1;output.Primal])]
+                    %[cut*[1;output.Primal] cut2*[1;output.Primal] ]
+                    ptemp.F_struc = [ptemp.F_struc;cut;cut2];
+                    ptemp.K.l = ptemp.K.l + size(cut,1)+size(cut2,1);
+                %end
+             end
+             if ptemp.K.l>0
+                violations = ptemp.F_struc*[ones(1,size(allRelaxedSolutions,2));allRelaxedSolutions];
+                t = find(violations(:,end) < 0);
+                [nv,loc] = max(sum(violations < -1e-1,2));
+                if nv > 0 && violations(loc,end) < -1e-1
+                     % covercandidates = [covercandidates;p_lp.F_struc(loc,:)];
+                     % covers = [covers;p_lp.F_struc(loc,:)];
+                else                  
+                end                      
+                covers = [covers;ptemp.F_struc(t,:)];
+             end
+             spy(covers);drawnow
+         end
+        
+        end
+        
         if output.problem == -4
             diagnostics = -4;
-            x = nan+zeros(length(p.lb),1);
+            x = nan+zeros(length(p.lb),1);            
         else
             if isempty(output.Primal)
                 output.Primal = zeros(length(p.c),1);
@@ -279,7 +403,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             end
         end
     end
-    
+
     solved_nodes = solved_nodes+1;
     
     % **************************************
@@ -341,19 +465,34 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             
             if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))                              
                 for k = 1:length(upperSolversList)                    
-                    [upper1,x_min1] = feval(upperSolversList{k},p,upper,x,poriginal,output,lower);
-                    if upper1 < upper
+                    [upper1,x_min1,covers] = feval(upperSolversList{k},p,upper,x,poriginal,output,lower,covers);
+                    if ~isinf(upper1)                       
+                        if strcmp(p.fixdir,'up')
+                            NodeSelector.directionWhenFoundFeasible = NodeSelector.directionWhenFoundFeasible + 1;
+                        else
+                            NodeSelector.directionWhenFoundFeasible = NodeSelector.directionWhenFoundFeasible - 1;
+                        end                           
+                    end
+                    if upper1 < upper 
+                        % Where are we finding solutions?
+                        if strcmp(p.fixdir,'up')
+                            NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter + 1;                            
+                        else
+                            NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter - 1;                            
+                        end
                         x_min = x_min1;
-                        allSolutions = [allSolutions x_min1];
+                        allFeasibleSolutions = [allFeasibleSolutions x_min1];
                         upper = upper1;
                         if length(stack.nodes)>0
-                            [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);
+                            [stack,stacklower] = prune(stack,upper,p.options,solved_nodes,p,allFeasibleSolutions);
                             lower = min(lower,stacklower);
                         end
                         [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);
+                        stack = probeStackForNewUpper(stack,upper,p);
+                        p = probeForNewUpper(p,upper);
                     elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4
                         % Yet another solution with same value
-                        allSolutions = [allSolutions x_min1];
+                        allFeasibleSolutions = [allFeasibleSolutions x_min1];
                     end                
                 end                                
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
@@ -370,6 +509,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     
     switch output.problem
         case {-1,3,4,5,11}
+            Message = 'Numerical problems, will try to recover.';
             % Solver behaved weird. Make sure we continue digging if possible          
             keep_digging = length(integer_variables)>0 || length(binary_variables)>0 || length(semicont_variables)>0;
             feasible = 1;
@@ -384,9 +524,11 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 lower = ceil(lower-1e-6);
             end
         case {1,12,-4,22,24}
+            Message = 'Infeasible node.';
             keep_digging = 0;
             cost = inf;
             feasible = 0;
+            
         case 2
             cost = -inf;
         otherwise
@@ -398,16 +540,30 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % **************************************
     % YAHOO! INTEGER SOLUTION FOUND
     % **************************************
-    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4) & ~(output.problem == 2)
+    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4) & ~(output.problem == 2)        
+        Message = 'Integer solution in relaxation.';
+        if strcmp(p.fixdir,'up')
+            NodeSelector.directionWhenFoundFeasible =  NodeSelector.directionWhenFoundFeasible + 1;
+        else
+            NodeSelector.directionWhenFoundFeasible =  NodeSelector.directionWhenFoundFeasible - 1;
+        end
         if (cost<upper) & feasible
+            if strcmp(p.fixdir,'up')
+                NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter + 1;
+            else
+                NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter - 1;                
+            end
             x_min = x;
             upper = cost;
-            allSolutions = [allSolutions x_min];
-            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allSolutions);            
-            [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);
+            allFeasibleSolutions = [allFeasibleSolutions x_min];
+            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allFeasibleSolutions);            
+            [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);            
+            % Remove trivially bad variables
+            stack = probeStackForNewUpper(stack,upper,p);            
+            p = probeForNewUpper(p,upper);
         end
         p = adaptivestrategy(p,upper,solved_nodes);
-        keep_digging = 0;
+        keep_digging = 0;        
     end
     
     % **************************************
@@ -415,6 +571,9 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % **************************************
     if cost>upper*(1-p.options.bnb.gaptol)
         keep_digging = 0;
+        if output.problem ~=1
+            Message = '-> Node terminated from bound.';
+        end
     end
     
     feasibilityHistory(end+1) = feasible;
@@ -451,35 +610,42 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                                         
             otherwise
         end
-                
-        [p0,p0_feasible] = propagate_binary_product(p0);
-        [p1,p1_feasible] = propagate_binary_product(p1);
         
-%        [p0,p0_feasible] = pruneOnForcedObjective(p0,upper,p0_feasible);
-%        [p1,p1_feasible] = pruneOnForcedObjective(p1,upper,p1_feasible);
-        if p0_feasible;p0 = propagate_atmost(p0);end
-        if p1_feasible;p1 = propagate_atmost(p1);end
-        [p0,p0_feasible] = propagate_downforce(p0,p1_feasible);
-        [p1,p1_feasible] = propagate_downforce(p1,p1_feasible);
-        [p0,p0_feasible] = propagate_upforce(p0,p1_feasible);
-        [p1,p1_feasible] = propagate_upforce(p1,p1_feasible);
-
-        node1 = newNode(p1,globalindex,'up',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
-        pid = pid + 1;
-        node0 = newNode(p0,globalindex,'down',TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
-        pid = pid + 1;
+        p0.feasible = 1;
+        p1.feasible = 1;
+        p0 = propagate_cardinality(p0);
+        p1 = propagate_cardinality(p1);
+        p0 = propagate_atleast(p0);
+        p1 = propagate_atleast(p1);
+        p0 = propagate_downforce(p0);
+        p1 = propagate_downforce(p1);
+        p0 = propagate_upforce(p0);
+        p1 = propagate_upforce(p1);
+        p0 = propagate_binary_product(p0);
+        p1 = propagate_binary_product(p1);
+        p0 = propagate_cardinality(p0);
+        p1 = propagate_cardinality(p1);
             
+        p0.deltafixed = nnz(p0.lb==p0.ub) - p0.nfixed;
+        p1.deltafixed = nnz(p1.lb==p1.ub) - p1.nfixed;
+        
+        node1 = newNode(p1,globalindex,p1.fixdir,TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
+        pid = pid + 1;
+        node0 = newNode(p0,globalindex,p0.fixdir,TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
+        pid = pid + 1;
+                                  
         % Make sure we don't push trivially poor stuff to stack, so reuse
         % pruning code by creating temporary stacks first
         tempstack = stackCreate;
-        if p0_feasible            
+        if p1.feasible
+            tempstack = push(tempstack,node1);
+        end        
+        if p0.feasible            
             tempstack = push(tempstack,node0);
         end
-        if p1_feasible
-            tempstack = push(tempstack,node1);
-        end
-        tempstack = prune(tempstack,upper,p.options,solved_nodes,p,allSolutions);
-        stack = mergeStack(stack,tempstack);    
+                
+        tempstack = prune(tempstack,upper,p.options,solved_nodes,p,allFeasibleSolutions);
+        stack = mergeStack(stack,tempstack);         
     end
         
     if stackLength(stack)>0
@@ -491,7 +657,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     
     % Close current and proceed to next if gap large
     gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
-    [node,stack] = pull(stack,p.options.bnb.method,x_min,upper);
+    [node,stack,NodeSelector] = pull(stack,p.options.bnb.method,x_min,upper,NodeSelector);
     if ~isempty(node)
         p = copyNode(p,node);
     else
@@ -502,21 +668,22 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     end    
     if isnan(gap)
         gap = inf;
-    end
-    
+    end    
     lowerhist = [lowerhist lower];
     upperhist = [upperhist upper];
     stacksizehist = [stacksizehist stackLength(stack)];
       
-    if p.options.bnb.verbose;
+    if p.options.bnb.verbose
         if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)
             if p.options.bnb.plot
                 hold off
                 subplot(1,3,1);               
-                l = plot([lowerhist' upperhist']);set(l,'linewidth',2);
+                l = stairs([lowerhist' upperhist']);set(l,'linewidth',2);
+                grid on
                 title('Upper/lower bounds')
                 subplot(1,3,2);                
-                l = plot(stacksizehist);set(l,'linewidth',2);
+                l = stairs(stacksizehist);set(l,'linewidth',2);
+                grid on
                 title('Open nodes')
                 drawnow
                 subplot(1,3,3);   
@@ -527,13 +694,18 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             if lastUpper > upper
                 fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),'-> Found improved solution!');
             else
-                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),yalmiperror(output.problem,'',1));
+                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),etime(clock,bnbsolvertime),Message);
             end
         end
     end
     lastUpper = upper;    
 end
-if p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
+if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
+if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose
+    if ~isempty(p.knapsack.a)
+        disp(['* Added ' num2str(size(covers,1)) ' global cover cuts']);
+    end
+end
 if unknownErrorCount == 10
      diagnostics = 9;
 end
@@ -567,8 +739,8 @@ switch options.bnb.branchrule
         nint = find(abs(x(all_variables)-round(x(all_variables)))>options.bnb.inttol);
         [val,index] = min(abs(x(nint)));
         index = nint(index);
-    case 'max'        
-        indic = (1 + min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
+    case 'max'   
+        indic = (1+min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
         [val,index] = max(indic);
     otherwise
         error('Branch-rule not supported')
@@ -646,11 +818,15 @@ if length(friends) > 1
     p1.lb(friends)=0;
 end
 
+p0.fixdir = 'down';
+p1.fixdir = 'up';
 p1.binary_variables = new_binary;
 p1.lower = lower;
 p1.depth = p.depth+1;
 
-
+% if rand<.5
+%     t=p0;p0=p1;p1=t;
+% end
 
 function [p0,p1] = integersplit(p,x,index,lower,options,x_min)
 
@@ -673,14 +849,8 @@ p1.depth = p.depth+1;
 p1.x0(variable) = lb;
 p1.lb(variable)=max(p1.lb(variable),lb);
 
-% *****************************
-% PROCESS MOST PROMISING FIRST
-% *****************************
-if lb-current<0.5
-    pt=p1;
-    p1=p0;
-    p0=pt;
-end
+p0.fixdir = 'down';
+p1.fixdir = 'up';
 
 function [p0,p1] = sos1split(p,x,index,lower,options,x_min)
 
@@ -698,6 +868,8 @@ p0.ub(v2) = 0;
 p1 = p;p1.lower = lower;
 p1.sosgroups{index} = v2;
 p1.ub(v1) = 0;
+
+error('FIX down/up flag')
 
 function [p0,p1] = semisplit(p,x,index,lower,options,x_min)
 
@@ -725,7 +897,10 @@ p0.semibounds.ub(index)=[];
 p1.semibounds.lb(index)=[];
 p1.semibounds.ub(index)=[];
 
-function s = num2str2(x,d,c);
+p0.fixdir = 'down';
+p1.fixdir = 'up';
+
+function s = num2str2(x,d,c)
 if nargin==3
     s = num2str(x,c);
 else
@@ -739,7 +914,7 @@ function [stack,lower] = prune(stack,upper,options,solved_nodes,p,allSolutions)
 % PRUNE STACK W.R.T NEW UPPER BOUND
 % *********************************
 if stackLength(stack)>0 && ~isinf(upper)
-    if length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0       
+    if length(p.binary_variables) + length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0       
         L = stack.lower;
         tooLarge = find(~isinf(L) & L>=upper-0.999);
     else     
@@ -767,7 +942,22 @@ if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0
     if ~isempty(tooLarge)
         stack.nodeCount = stack.nodeCount - length(tooLarge);
         stack.lower(tooLarge) = inf;  
-    end    
+    end
+    if p.LinearBinaryPositiveCost && ~isinf(upper)
+        % obj = sum (c_i >=0)*xi xi binary
+        % if any ci is larger than upper, ub has to be 0
+        % if lb is 1, it is infeasible
+        r = find(p.c > upper);
+        if ~isempty(r)
+            for i = find(~isinf(stack.lower))
+                if any(stack.nodes{i}.lb(r))
+                    stack.lower(i) = inf;
+                else
+                    stack.nodes{i}.ub(r) = 0;
+                end
+            end
+        end
+    end
 end
 
 if stack.nodeCount > 0
@@ -814,6 +1004,7 @@ p.pid = node.pid;
 p.sosgroups = node.sosgroups;
 p.sosvariables = node.sosvariables;
 p.atmost = node.atmost;
+p.localatmost = node.localatmost;
 
 function stack = stackCreate
 stack.nodes = {};
@@ -840,7 +1031,7 @@ used = find(~(isinf(stack.lower) & stack.lower > 0));
 stack.lower = stack.lower(used);
 stack.nodes = {stack.nodes{used}};
 
-function [p,stack] = pull(stack,method,x_min,upper)
+function [p,stack,NodeSelector] = pull(stack,method,x_min,upper,NodeSelector)
 
 if stackLength(stack) > 0
     if numel(stack.lower) > 100 && nnz(isinf(stack.lower)) > 0.25*numel(stack.lower)
@@ -853,10 +1044,45 @@ if stackLength(stack) > 0
             % Silly for backward testing compatibility. Stack order has
             % changed, to be able to compare some examples, make sure we
             % traverse the tree in exactly the same was as before on ties
-            j = max(find(depths == i));
-            p = getStackNode(stack,j);
-            stack = removeStackNode(stack,j);
-                     
+            candidates = find(depths == i);
+            fixed = [];
+            p = [];
+            for j = candidates
+                %fixed = [fixed nnz(stack.nodes{j}.lb == stack.nodes{j}.ub)];
+                fixed = [fixed stack.nodes{j}.deltafixed];
+            end
+            if ~all(fixed == fixed(1))
+                [~,loc] = max(fixed);
+                selected_node = candidates(loc);
+                p = getStackNode(stack,selected_node);               
+            else
+                % Seclect based on up/down
+                for j = candidates
+                    if isequal(stack.nodes{j}.fixdir, NodeSelector.Current)
+                        selected_node = j;
+                        p = getStackNode(stack,selected_node);                       
+                        NodeSelector.Count = NodeSelector.Count - 1;
+                        if NodeSelector.Count == 0
+                            NodeSelector.Count = 1;
+                            if strcmp(NodeSelector.Current,'up')
+                                NodeSelector.Current = 'down';
+                            else
+                                NodeSelector.Current = 'up';
+                            end
+                        end
+                        break
+                    end
+                end
+            end
+            if isempty(p)
+                selected_node = candidates(end);
+                p = getStackNode(stack,selected_node);
+            end                        
+            %j = max(find(depths == i));
+            %p = getStackNode(stack,j);
+            %stack = removeStackNode(stack,j);
+            stack = removeStackNode(stack,selected_node);                     
+            
         case 'project'
             error
             [i,j]=min([stack.projection]);
@@ -871,13 +1097,66 @@ if stackLength(stack) > 0
             
         case 'best'                       
             lowers = getStackLowers(stack);
-            [i,j] = min(lowers);
+            [i,j] = min(lowers);       
+            candidates = find(abs(lowers-i)<=1e-10);
+          
+            fixed = [];
+            p = [];
+            for j = candidates
+                fixed = [fixed nnz(stack.nodes{j}.lb == stack.nodes{j}.ub)];
+            end
+            if ~all(fixed == fixed(1))
+                [~,loc] = max(fixed);
+                selected_node = candidates(loc);
+                p = getStackNode(stack,selected_node);
+            else
+                % Select based on up/down
+                %                 for j = candidates
+                %                     if isequal(stack.nodes{j}.fixdir, NodeSelector.Current)
+                %                         selected_node = j;
+                %                         p = getStackNode(stack,selected_node);
+                %                         NodeSelector.Count = NodeSelector.Count - 1;
+                %                         if NodeSelector.Count == 0
+                %                             NodeSelector.Count = 1;
+                %                             if strcmp(NodeSelector.Current,'up')
+                %                                 NodeSelector.Current = 'down';
+                %                             else
+                %                                 NodeSelector.Current = 'up';
+                %                             end
+                %                         end
+                %                         break
+                %                     end
+                %                 end
+                for j = candidates
+                    if isequal(stack.nodes{j}.fixdir, NodeSelector.Current)
+                        selected_node = j;
+                        p = getStackNode(stack,selected_node);
+                        NodeSelector.Count = NodeSelector.Count - 1;
+                        if NodeSelector.Count == 0
+                            NodeSelector.Count = 1;
+                            if strcmp(NodeSelector.Current,'up')
+                                NodeSelector.Current = 'down';
+                                NodeSelector.Count = max(1,1 - NodeSelector.directionWhenFoundFeasible - NodeSelector.directionWhenFoundBetter);
+                            else
+                                NodeSelector.Current = 'up';
+                                NodeSelector.Count = max(1,1 + NodeSelector.directionWhenFoundFeasible + NodeSelector.directionWhenFoundBetter);
+                            end
+                        end
+                        break
+                    end
+                end
+            end
+            if isempty(p)                
+                selected_node = candidates(end);
+                p = getStackNode(stack,selected_node);               
+            end    
+            
             % Silly for backward testing compatibility. Stack order has
             % changed, to be able to compare some examples, make sure we
             % traverse the tree in exactly the same was as before on ties
-            j = max(find(lowers == i));
-            p = getStackNode(stack,j);
-            stack = removeStackNode(stack,j);
+           % j = max(find(lowers == i));
+           % p = getStackNode(stack,j);
+            stack = removeStackNode(stack,selected_node);
             
         otherwise
     end
@@ -936,7 +1215,8 @@ node1.pid = pid;
 node1.sosgroups = p1.sosgroups;
 node1.sosvariables = p1.sosvariables;
 node1.atmost = p1.atmost;
-
+node1.localatmost = p1.localatmost;
+node1.deltafixed = p1.deltafixed;
 function [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack)
 if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))==0
     d = diag(p.Q);
@@ -961,37 +1241,34 @@ if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))=
     end
 end
 
-function [p,p_feasible] = pruneOnForcedObjective(p,upper,p_feasible)
-if 0%~isinf(upper)
-    if all(p.c >= 0) && nnz(p.Q)==0
-        % Find those forced to be 1
-        % (if they are continuous etc does matter
-        % will not influence)
-        alreadyFixed = find(p.lb==1);
-        % If they are forced to 0, some other has to be activated
-        p.c(p.lb==0 & p.ub==0) = inf;
-        if ~isempty(alreadyFixed)
-            cost_given = sum(p.c(alreadyFixed));
-        else
-            cost_given = 0;
-        end
-        % Now study what cost might become if a
-        % forcing variable is set to 1
-        for i = 1:length(p.upForce)            
-            if p.ub(p.upForce{i}.forcing) == 1
-                forced = p.upForce{i}.forced;
-                if ~any(p.lb(forced)==1)
-                    % This cost is already included
-                    forced = setdiff(forced,alreadyFixed);
-                    if min(p.c(forced))+cost_given>upper  
-                        % This forcing variable mut be kept 0
-                        p.ub(p.upForce{i}.forcing)=0;                
-                    end
-                end
-            end
-        end        
+function stack = probeStackForNewUpper(stack,upper,p)
+for i = 1:length(stack.nodes)
+    if ~isinf(stack.lower(i))
+        stack.nodes{i} = probeForNewUpper(stack.nodes{i},upper,p);
     end
 end
-if any(p.lb > p.ub)
-    p_feasible = 1;
+
+function s = probeForNewUpper(s,upper,p)
+if nargin == 2
+    p = s;
+end
+% FIXME generalize for negative etc
+if p.LinearBinaryPositiveCost
+    % Compute possible indivual contribution to cost
+    % Only tests those that can be 0 or 1
+    probe = find(s.lb(s.binary_variables) < s.ub(s.binary_variables));
+    probe = s.binary_variables(probe);
+    % This is as low we can go if we keep everything at lb
+    trivialBound = sum(p.c.*s.lb);
+    % Check what happens if we fix a variable to 1
+    must_be_zero = [];
+    for j = probe
+        % Fixing leads to poor bound
+        if trivialBound + p.c(j) > upper
+            must_be_zero = [must_be_zero j];
+        end
+    end
+    if ~isempty(must_be_zero)
+        s.ub(must_be_zero) = 0;
+    end
 end

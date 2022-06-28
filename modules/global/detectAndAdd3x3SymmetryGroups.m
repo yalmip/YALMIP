@@ -12,7 +12,7 @@ p.sdpsymmetry = [];
 % Find
 p = detect3x3SymmetryGroups(p);
 % Create unless sent
-if nargin < 2
+if nargin < 2 || isempty(pp)
     pp = p;pp.F_struc = [];pp.K.l = 0;pp.K.f = 0;pp.K.s = 0;
 end
 [p,pp] = addSymmetryCuts(p,pp);

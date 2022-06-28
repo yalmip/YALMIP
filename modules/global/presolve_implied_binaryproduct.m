@@ -51,10 +51,11 @@ for i = 1:length(lower_and)
             end
         end
         if y_bounded_by_x2
-            p.binary_variables = union(p.binary_variables,y);
+            p.binary_variables = union(p.binary_variables,y);            
             p.binaryProduct = [p.binaryProduct;y x(:)']; 
             p.lb(p.binary_variables) = max(p.lb(p.binary_variables),0);
             p.ub(p.binary_variables) = min(p.ub(p.binary_variables),1);
         end
     end
 end
+p.integer_variables = setdiff(p.integer_variables,p.binary_variables);

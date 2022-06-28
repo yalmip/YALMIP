@@ -59,6 +59,7 @@ if isempty(p.lb)
     p.lb = repmat(-inf,length(p.c),1);
 end
 
+
 % *************************************************************************
 %% ADD CONSTRAINTS 0<=x<=1 FOR BINARY
 % *************************************************************************
@@ -71,30 +72,23 @@ end
 %% Extract better bounds from model
 % *************************************************************************
 if ~isempty(p.F_struc)
-    [lb,ub,used_rows_eq,used_rows_lp] = find_lp_bounds(p.F_struc,p.K);
-    if ~isempty([used_rows_eq(:);used_rows_lp(:)])
-        lower_defined = find(~isinf(lb));
-        if ~isempty(lower_defined)
-            p.lb(lower_defined) = max(p.lb(lower_defined),lb(lower_defined));
-        end
-        upper_defined = find(~isinf(ub));
-        if ~isempty(upper_defined)
-            p.ub(upper_defined) = min(p.ub(upper_defined),ub(upper_defined));
-        end
-        p.F_struc(p.K.f+used_rows_lp,:)=[];
-        p.F_struc(used_rows_eq,:)=[];
-        p.K.l = p.K.l - length(used_rows_lp);
-        p.K.f = p.K.f - length(used_rows_eq);
+    p.nonlinears = [];
+    p = presolve_bounds_from_modelbounds(p,1);
+end
+% Sent model used integers for binary?
+if ~isempty(p.integer_variables)
+    binary_integer = find(p.ub(p.integer_variables)<=1 & p.lb(p.integer_variables)>=0);
+    if ~isempty(binary_integer)
+        p.binary_variables = union(p.binary_variables,p.integer_variables(binary_integer));        
+        p.integer_variables(binary_integer) = [];
     end
 end
 
-% *************************************************************************
-%% ADD CONSTRAINTS 0<x<1 FOR BINARY
-% *************************************************************************
-if ~isempty(p.binary_variables)
-    p.ub(p.binary_variables) =  min(p.ub(p.binary_variables),1);
-    p.lb(p.binary_variables) =  max(p.lb(p.binary_variables),0);
-end
+% ********************************
+%% Wrong encoding in some historical files causing sign-switch on binary
+% ********************************
+p.nonlinear = [];
+[p,negated_binary] = detect_negated_binary(p);
 
 % *************************************************************************
 %% PRE-SOLVE (nothing fancy coded)
@@ -144,6 +138,11 @@ end
 % *************************************************************************
 cutsdpsolvertime = clock;
 [x_min,solved_nodes,lower,feasible,D_struc,interrupted] = cutting(p);
+
+% Map back in weird models with negated binary
+if ~isempty(x_min) && ~isempty(negated_binary)
+    x_min(negated_binary) = -x_min(negated_binary);
+end
 
 % *************************************************************************
 %% CREATE SOLUTION
@@ -203,7 +202,17 @@ end
 % *************************************************************************
 cutsolver = p.solver.lower.call;
 
+p = smashFixed(p);
 p = addImpliedSDP(p);
+p = detect_knapsack(p);
+%p = detectAtMost(p);
+%m = length(p.atmost.groups);
+p = presolve_implied_binaryproduct(p);
+p = detectAndAdd3x3SymmetryGroups(p);
+%p = detectAndAdd3x3AtmostGroups(p);
+p = detectAndAdd3x3SDPGUBGroups(p);
+%p = crossBinaryProductandAtmost(p);
+p = crossBinaryProductandCardinality(p);
 
 % *************************************************************************
 %% Create copy of model without the Conic part
@@ -214,7 +223,6 @@ p_lp.K.s = 0;
 p_lp.K.q = 0;
 
 p_original = p;
-
 % *************************************************************************
 %% DISPLAY HEADER
 % *************************************************************************
@@ -223,6 +231,18 @@ if p.options.cutsdp.verbose
     disp(['* Lower solver   : ' p.solver.lower.tag]);
     disp(['* Max iterations : ' num2str(p.options.cutsdp.maxiter)]);
     disp(['* Max time       : ' num2str(p.options.cutsdp.maxtime)]);
+    nB = length(p.binary_variables);
+    nI = length(p.integer_variables);
+    nC = length(p.c) - nB - nI;
+    nKS = length(p.knapsack.a);
+    nGUB = length(find(p.knapsack.type == 3));
+    nCARD = length(find(p.knapsack.type == 2));
+    nGEN = length(p.knapsack.type)-nGUB - nCARD;
+    % Don't count the cover cardinalities derived from knapsacks
+    % They are not added to model
+    nGEN = nGEN - length(find(p.knapsack.type == 4));
+    disp(['* ' num2str(nB) ' binaries, ' num2str(nI) ' integers, ' num2str(nC) ' continuous.']);
+    disp(['* ' num2str(nKS) ' knapsacks (' num2str(nGUB) ' GUBs, ' num2str(nCARD) ' cardinality, ' num2str(nGEN) ' general)']);    
 end
 
 if p.options.cutsdp.verbose
@@ -232,10 +252,6 @@ if p.options.cutsdp.verbose
         disp(' Node    Phase        Cone infeas   Integrality infeas  Lower bound  Upper bound  LP cuts  Elapsed time');
     end
 end
-
-% p = smashFixed(p);
-% p = detectAtMost(p);
-% p = detectAndAdd3x3AtmostGroups(p);
 
 % Rhs of SOCP has to be non-negative
 if ~p.solver.lower.constraint.inequalities.secondordercone.linear
@@ -308,7 +324,7 @@ else
     sdpmonotinicity=[];
 end
 
-[p,p_lp] = detectAndAdd3x3SymmetryGroups(p,p_lp);
+%[p,p_lp] = detectAndAdd3x3SymmetryGroups(p,p_lp);
 
 integer_variables = [p.binary_variables p.integer_variables];
 
@@ -341,6 +357,7 @@ p_lp_unused = p_lp;
 p_lp_unused.F_struc = [];
 p_lp_unused.K.f = 0;
 p_lp_unused.K.l = 0;
+starting_cuts = p_lp.K.l;
 while goon
 
     % Keep history of what we have been doing. Used for some diagnostics
@@ -446,9 +463,9 @@ while goon
             p_lp = add_nogood_cut(p,p_lp,x,infeasibility);                    
         end
         
-        if output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))
-          p_lp = add3x3sdpsymmetrycut(p,p_lp,x);                   
-        end
+%         if output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)+length(p.binary_variables)==length(p.c)) && output.problem == 0))
+%          p_lp = add3x3sdpsymmetrycut(p,p_lp,x);                   
+%         end
         
         if upptemp < upper
              upper = upptemp;
@@ -518,7 +535,7 @@ while goon
     integerInfeasibility = sum(abs(x(p.integer_variables)-round(x(p.integer_variables)))) + sum(abs(x(p.binary_variables)-round(x(p.binary_variables))));
     if p.options.cutsdp.verbose
         if mod(solved_nodes-1,p.options.print_interval)==0 || goon == 0
-            fprintf(' %4.0f :  %s  %11.3E %12.3E      %14.3E   %11.3E     %3.0f     %5.1f\n',solved_nodes,phaseString{currentPhase+1},sdpInfeasibility,integerInfeasibility,lower,upper,p_lp.K.l-p.K.l,etime(clock,cutsdpsolvertime));
+            fprintf(' %4.0f :  %s  %11.3E %12.3E      %14.3E   %11.3E     %3.0f     %5.1f\n',solved_nodes,phaseString{currentPhase+1},sdpInfeasibility,integerInfeasibility,lower,upper,p_lp.K.l-starting_cuts,etime(clock,cutsdpsolvertime));
         end
     end
 end
@@ -580,7 +597,7 @@ else
 end
 
 
-function  [X,p_lp,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,p_lp,x,i,p_original);
+function  [X,p_lp,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,p_lp,x,i,p_original)
 
 newcuts = 0;
 newF = [];
@@ -644,7 +661,57 @@ if infeasibility<0
                 end
             end
             b = bA(:,1);
-            A = -bA(:,2:end);            
+            A = -bA(:,2:end); 
+%             A(abs(A)<1e-12)=0;
+%             for i = 1:p_lp.K.l
+%                 ss(i)=p_lp.F_struc(i,2:end)*A'/(norm(p_lp.F_struc(i,2:end))*norm(A));
+%             end 
+%             [val,loc] = max((ss));
+%             plot(sort((ss)))
+%             drawnow
+%             if val > 0.95
+%                 1
+%             end
+%             if ~isempty(newF)
+%                 clear ss
+%             for i = 1:size(newF,1)
+%                 ss(i)=newF(i,2:end)*A'/(norm(newF(i,:))*norm(A));
+%             end 
+%             [val,loc] = max((ss));           
+%             drawnow
+%             if val > 0.9
+%                 1
+%             end
+%             end
+%             k = min(abs(nonzeros(A)));
+%             if k >= 1e-3
+%                 A = 10*A/k;
+%                 b = 10*b/k;
+%                 A_ = floor(A);
+%                 b_ = floor(b);
+%                 x0 = [speye(length(p.c)) A';A 0]\[x;b];
+%                 x0 = x0(1:length(p.c));
+%                 x1 = [speye(length(p.c)) A_';A_ 0]\[x;b_];
+%                 x1 = x1(1:length(p.c));
+%                 if norm(x-x1) > norm(x-x0) && b_-A_*x < 0
+%                  %   'hej'
+%                  A = A_;
+%                  b = b_;
+%                 end
+%             end
+%             for i = 1:p_lp.K.l
+%                 if isequal(find([b A]), find(p_lp.F_struc(i,:)))
+%                     e1=[b -A];e2 = p_lp.F_struc(i,:);
+%                     e1 = nonzeros(e1/b);
+%                     e2 = nonzeros(e2/e2(1));
+%                     [(e1) (e2) -e2<=-e1];
+%                     if all( (-e2) <= (-e1))
+%                         'hej'
+%                     elseif all( (-e2) >= (-e1))
+%                         'hej 2'
+%                     end                        
+%                 end
+%             end
             if isempty(p_lp.F_struc) || ~any(sum(abs(p_lp.F_struc-repmat([b -A],size(p_lp.F_struc,1),1)),2)<= 1e-12)
                 newF = real([newF;[b -A]]);
                 newcuts = newcuts + 1;

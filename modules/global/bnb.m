@@ -95,6 +95,29 @@ p = compile_nonlinear_table(p);
 p = bounds_from_cones_to_lp(p);
 p = presolve_bounds_from_modelbounds(p,1);
 
+% !!!!!!!!!!!!!!!!!!!!!!!! REMOVE
+if isempty(p.nonlinear)
+    if p.K.f>0
+        Aeq = -p.F_struc(1:p.K.f,2:end);
+        beq = p.F_struc(1:p.K.f,1);
+        A = [Aeq;-Aeq];
+        b = [beq;-beq];
+        [p.lb,p.ub,redundant,pss] = tightenbounds(A,b,p.lb,p.ub,p.integer_variables,p.binary_variables,ones(length(p.lb),1));
+    end
+    pss=[];
+    if p.K.l>0
+        A = -p.F_struc(1+p.K.f:p.K.f+p.K.l,2:end);
+        b = p.F_struc(1+p.K.f:p.K.f+p.K.l,1);
+        [p.lb,p.ub,redundant,pss] = tightenbounds(A,b,p.lb,p.ub,p.integer_variables,p.binary_variables,ones(length(p.lb),1));
+        if length(redundant)>0
+            pss.AL0A(redundant,:)=[];
+            pss.AG0A(redundant,:)=[];
+            p.F_struc(p.K.f+redundant,:)=[];
+            p.K.l = p.K.l - length(redundant);
+        end
+    end
+end
+
 % ********************************
 %% Data loaded with wrong type?
 % ********************************
@@ -109,7 +132,7 @@ end
 % ********************************
 %% Wrong encoding in some historical files causing sign-switch on binary
 % ********************************
-[p,negated_binary] = detectNegatedBinary(p);
+[p,negated_binary] = detect_negated_binary(p);
 
 % Remove some garbage
 p = detectRedundantInfeasibleSDPRows(smashFixed(p));
@@ -140,6 +163,21 @@ p = propagate_bounds_from_equalities(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_impliedintegers_from_equalities(p);
+
+
+% [F,h]=loadsdpafile('diw_43.dat-s');
+% Missar en annars, 
+p = propagate_bounds_from_monomials(p);
+p = propagate_bounds_from_equalities(p);
+if p.K.l > 0
+    b = p.F_struc(1+p.K.f:p.K.l+p.K.f,1);
+    A = -p.F_struc(1+p.K.f:p.K.l+p.K.f,2:end);
+    redundant = find(((A>0).*A*(p.ub-p.lb) - (b-A*p.lb) <= 0));
+    if ~isempty(redundant)
+        p.F_struc(p.K.f + redundant,:) = [];
+        p.K.l = p.K.l - length(redundant);
+    end
+end
 
 if ~p.feasible
     output = createOutputStructure([],[],[],1,yalmiperror(1,'BNB'),[],[],0);    
@@ -211,6 +249,7 @@ bnbsolvertime = clock;
 bnbsolvertime =  etime(clock,bnbsolvertime);
 output.solvertime = setuptime + bnbsolvertime;
 
+% Map back in weird models with negated binary
 if ~isempty(x_min) && ~isempty(negated_binary)
     x_min(negated_binary) = -x_min(negated_binary);
 end
