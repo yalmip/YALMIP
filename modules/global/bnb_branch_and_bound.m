@@ -130,20 +130,17 @@ p.options.allowsmashing = 1;
 poriginal = p;
 p.cuts = [];
 pid = 0;
-lowerhist = [];
-upperhist = [];
-stacksizehist = [];
 p.fixedvariable = [];
 p.fixdir = '';
 lastUpper = upper;
 oldp = p;
 
+% Detect if pure integer or mixed
 if length(p.integer_variables)+length(p.binary_variables) == length(p.c)
     p.all_integers = 1;
 else
     p.all_integers = 0;
 end
-
 p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
 poriginal.noninteger_variables = p.noninteger_variables;
 
@@ -161,15 +158,21 @@ p = detectAndAdd3x3SDPGUBGroups(p);
 % Extract more info from some combinatorial AND structure
 p = cross_binary_product_cardinality(p);
 
+% Might have detect stuff, copy back to global model
+poriginal.lb = max(poriginal.lb,p.lb);
+poriginal.ub = min(poriginal.ub,p.ub);
+
 % Prepare to run...
-feasibilityHistory = [];
+History.feasibility = [];
+History.lower = [];
+History.upper = [];
+History.stacksize = [];
 allFeasibleSolutions = [];
 allRelaxedSolutions = [];
 sosgroups = [];
 sosvariables = [];
 unknownErrorCount = 0;
 numericalProblemsCount= 0;
-directionWhenFoundFeasible = {};
 
 % Generalized upper solver format
 upperSolversList = strsplit(uppersolver,',');
@@ -226,10 +229,7 @@ end
 if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open  Cuts   Elapsed time');end;
 
 % Some tricks and strategies are performed for certain objectives
-p.LinearBinaryPositiveCost = all(p.c>=0) && all(ismember(find(p.c),p.binary_variables)) && nnz(p.Q)==0 && isempty(p.evalMap);
-p.LinearBinaryNegativeCost = all(p.c<=0) && all(ismember(find(p.c),p.binary_variables)) && nnz(p.Q)==0 && isempty(p.evalMap);
-p.LinearBinaryCost = all(ismember(find(p.c),p.binary_variables)) && nnz(p.Q)==0 && isempty(p.evalMap);
-p.UnitContinuousCost = nnz(p.c) == 1 && all(ismember(find(p.c),p.noninteger_variables)) && nnz(p.Q)==0 && isempty(p.evalMap);
+p = detect_special_objectives(p);
 poriginal.UnitContinuousCost = p.UnitContinuousCost;
 
 % FIXME do when detecting gubs
@@ -569,7 +569,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         end
     end
     
-    feasibilityHistory(end+1) = feasible;
+    History.feasibility(end+1) = feasible;
     % **********************************
     % CONTINUE SPLITTING?
     % **********************************
@@ -666,9 +666,9 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     if isnan(gap)
         gap = inf;
     end    
-    lowerhist = [lowerhist lower];
-    upperhist = [upperhist upper];
-    stacksizehist = [stacksizehist stackLength(stack)];
+    History.lower(end+1) = lower;
+    History.upper(end+1) = upper;
+    History.stacksize(end+1) = stackLength(stack);
       
     if p.options.bnb.verbose
         if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)

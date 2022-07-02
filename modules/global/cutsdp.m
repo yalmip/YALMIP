@@ -210,6 +210,9 @@ p = detectAndAdd3x3SymmetryGroups(p);
 p = detectAndAdd3x3SDPGUBGroups(p);
 p = cross_binary_product_cardinality(p);
 
+% Some tricks and strategies are performed for certain objectives
+p = detect_special_objectives(p);
+
 % *************************************************************************
 %% Create copy of model without the Conic part
 % *************************************************************************
@@ -332,6 +335,7 @@ p_lp_unused.F_struc = [];
 p_lp_unused.K.f = 0;
 p_lp_unused.K.l = 0;
 starting_cuts = p_lp.K.l;
+
 while goon
 
     % Keep history of what we have been doing. Used for some diagnostics
