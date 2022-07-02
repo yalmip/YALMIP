@@ -205,14 +205,10 @@ cutsolver = p.solver.lower.call;
 p = smashFixed(p);
 p = addImpliedSDP(p);
 p = detect_knapsack(p);
-%p = detectAtMost(p);
-%m = length(p.atmost.groups);
 p = presolve_implied_binaryproduct(p);
 p = detectAndAdd3x3SymmetryGroups(p);
-%p = detectAndAdd3x3AtmostGroups(p);
 p = detectAndAdd3x3SDPGUBGroups(p);
-%p = crossBinaryProductandAtmost(p);
-p = crossBinaryProductandCardinality(p);
+p = cross_binary_product_cardinality(p);
 
 % *************************************************************************
 %% Create copy of model without the Conic part
@@ -253,11 +249,11 @@ if p.options.cutsdp.verbose
     end
 end
 
+% We now build an initial trivial outer approximation to start
 % Rhs of SOCP has to be non-negative
 if ~p.solver.lower.constraint.inequalities.secondordercone.linear
     p_lp = addSOCPCut(p,p_lp);
 end
-
 % SDP diagonal has to be non-negative
 p_lp = addDiagonalCuts(p,p_lp);
 
@@ -266,6 +262,7 @@ p_lp = addDiagonalCuts(p,p_lp);
 % non-zero
 p_lp = addActivationCuts(p,p_lp);
 p_lp = addTrivialActivationCuts(p,p_lp);
+% Clean up a bit
 p_lp = removeRedundant(p_lp);
 
 only_solvelp = 0;
@@ -294,7 +291,6 @@ if nnz(p.Q) == 0
         end
     end
 end
-%lower = sum(sign(p.c).*(p.lb));
 if isinf(lower) | nnz(p.Q)~=0
     lower = -1e6;
 end
@@ -302,29 +298,7 @@ end
 % *************************************************************************
 % Experimental stuff for variable fixing
 % *************************************************************************
-if p.options.cutsdp.nodefix & (p.K.s(1)>0)
-    top = startofSDPCone(p.K);
-    for i=1:length(p.K.s)
-        n=p.K.s(i);
-        for j=1:size(p.F_struc,2)-1;
-            X=full(reshape(p.F_struc(top:top+n^2-1,j+1),p.K.s(i),p.K.s(i)));
-            X=(X+X')/2;
-            v=real(eig(X+sqrt(eps)*eye(length(X))));
-            if all(v>=0)
-                sdpmonotinicity(i,j)=-1;
-            elseif all(v<=0)
-                sdpmonotinicity(i,j)=1;
-            else
-                sdpmonotinicity(i,j)=nan;
-            end
-        end
-        top=top+n^2;
-    end
-else
-    sdpmonotinicity=[];
-end
-
-%[p,p_lp] = detectAndAdd3x3SymmetryGroups(p,p_lp);
+p = detect_sdpmonotonicity(p);
 
 integer_variables = [p.binary_variables p.integer_variables];
 
@@ -385,10 +359,8 @@ while goon
     ptemp = adjustMaxTime(ptemp,ptemp.options.cutsdp.maxtime,etime(clock,cutsdpsolvertime));
     if integerPhase
         output = feval(cutsolver,ptemp);
-        if output.problem == 12
-            ptemp.c = ptemp.c*0;
-            ptemp.Q = ptemp.Q*0;
-            output = feval(cutsolver,ptemp);
+        if output.problem == 12            
+            output = feval(cutsolver,remove_objective(ptemp));
             if output.problem == 0
                 output.problem = 2;
             end
@@ -400,13 +372,10 @@ while goon
             ptemp.F_struc = 0.001*ptemp.F_struc;
         end
     else
-        ptemp.binary_variables = [];
-        ptemp.integer_variables = [];
+        ptemp = integer_relax(ptemp);
         output = feval(cutsolver,ptemp);
-        if output.problem == 12
-            ptemp.c = ptemp.c*0;
-            ptemp.Q = ptemp.Q*0;
-            output = feval(cutsolver,ptemp);
+        if output.problem == 12                       
+            output = feval(cutsolver,remove_objective(ptemp));
             if output.problem == 0
                 output.problem = 2;
             end
@@ -428,7 +397,7 @@ while goon
     
     eig_failure = 0;
     currentPhase = integerPhase ;
-    if output.problem == 1 | output.problem == 12
+    if output.problem == 1 || output.problem == 12
         % LP relaxation was infeasible, hence problem is infeasible
         feasible = 0;
         lower = inf;
@@ -462,10 +431,6 @@ while goon
         if was_lp_really_feasible && isinf(upptemp) && (output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))            )
             p_lp = add_nogood_cut(p,p_lp,x,infeasibility);                    
         end
-        
-%         if output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)+length(p.binary_variables)==length(p.c)) && output.problem == 0))
-%          p_lp = add3x3sdpsymmetrycut(p,p_lp,x);                   
-%         end
         
         if upptemp < upper
              upper = upptemp;
@@ -571,8 +536,25 @@ if any(p.K.s)
         psave = p_lp;
         while iter <= p.options.cutsdp.maxprojections+1 & (infeasibility(end) < -p.options.cutsdp.feastol) && keep_projecting
             % Add cuts b + a'*x >= 0 (if x infeasible)            
+            before = p_lp.K.l;
             [X,p_lp,infeasibility(iter),a,b,failure] = add_one_sdp_cut(p,p_lp,x,i,p_original);
-               
+            added  = p_lp.K.l-before;
+            allC = [];
+            for k = 1:added
+                row0 = p_lp.F_struc(p_lp.K.f+before+k,:);
+                % Set continuous to best possible
+                row = row0;
+                row = fix_continuous_in_row_at_best_possible(row,p_original,inf);
+            
+                % Use general cover separator
+                % Eigenvalues are easily somewhat shaky numerically so
+                % relax slightly
+                row(1) = row(1) + 1e-8;                
+                cut = knapsack_create_cover_cut(-row(2:end),row(1),x*0+1,'gu');                
+                if ~isempty(cut) && cut*[1;x] < row*[1;x]
+                    p_lp.F_struc(p_lp.K.f+before+k,:) = cut;                                                        
+                end               
+            end                   
             eig_computation_failure = eig_computation_failure & failure;
             if ~isempty(a) && infeasibility(iter) < p_lp.options.cutsdp.feastol && p.options.cutsdp.cutlimit > 0
                 % Project current point on the hyper-plane associated with
@@ -596,145 +578,6 @@ else
     worstinfeasibility = min(worstinfeasibility,0);
 end
 
-
-function  [X,p_lp,infeasibility,asave,bsave,failure] = add_one_sdp_cut(p,p_lp,x,i,p_original)
-
-newcuts = 0;
-newF = [];
-n = p.K.s(i);
-if numel(x)/length(x) < .1
-    X = p.semidefinite{i}.F_struc*sparse([1;x]);
-else
-    X = p.semidefinite{i}.F_struc*[1;x];
-end
-X = reshape(X,n,n);X = (X+X')/2;
-asave = [];
-bsave = [];
-% First check if it happens to be psd. Then we are done. Quicker
-% than computing all eigenvalues
-% This also acts as a slight safe-guard in case the sparse eigs
-% fails to prove that the smallest eigenvalue is non-negative
-%[R,indefinite] = chol(X+eye(length(X))*1e-12);
-%if indefinite
-
-% User is trying to solve by only generating no-good cuts
-permutation = [];
-failure = 0;
-if p.options.cutsdp.cutlimit == 0
-     [d,v] = eig(full(X));
-     infeasibility = v(1,1);   
-    return
-end
-
-% For not too large problems, we simply go with a dense
-% eigenvalue/vector computation
-if  n <= p_lp.options.cutsdp.switchtosparse
-    [d,v] = eig(full(X));
-    failure = 0;
-else
-    % Try to perform a block-diagonalization of the current solution,
-    % and compute eigenvalue/vectorsa for each block.
-    % Sparse eigenvalues can easily fails so we catch info about this
-    [d,v,permutation,failure] = dmpermblockeig(X,p_lp.options.cutsdp.switchtosparse);
-end
-d(abs(d)<1e-12)=0;
-infeasibility = min(diag(v));
-if infeasibility<0
-    [ii,jj] = sort(diag(v));
-    
-    if ~isempty(permutation)
-        [~,inversepermutation] = ismember(1:length(permutation),permutation);      
-    end
-    
-    for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'
-        if v(m,m)<=-1e-12                       
-            try
-                if ~isempty(permutation)
-                    dhere = d(inversepermutation,m);
-                else
-                    dhere = d(:,m);
-                end
-                dd = dhere*dhere';dd = dd(:);
-                bA = dd'*p.semidefinite{i}.F_struc;
-                if numel(bA)/nnz(bA) < .1
-                    bA = sparse(bA);
-                end
-            end
-            b = bA(:,1);
-            A = -bA(:,2:end); 
-%             A(abs(A)<1e-12)=0;
-%             for i = 1:p_lp.K.l
-%                 ss(i)=p_lp.F_struc(i,2:end)*A'/(norm(p_lp.F_struc(i,2:end))*norm(A));
-%             end 
-%             [val,loc] = max((ss));
-%             plot(sort((ss)))
-%             drawnow
-%             if val > 0.95
-%                 1
-%             end
-%             if ~isempty(newF)
-%                 clear ss
-%             for i = 1:size(newF,1)
-%                 ss(i)=newF(i,2:end)*A'/(norm(newF(i,:))*norm(A));
-%             end 
-%             [val,loc] = max((ss));           
-%             drawnow
-%             if val > 0.9
-%                 1
-%             end
-%             end
-%             k = min(abs(nonzeros(A)));
-%             if k >= 1e-3
-%                 A = 10*A/k;
-%                 b = 10*b/k;
-%                 A_ = floor(A);
-%                 b_ = floor(b);
-%                 x0 = [speye(length(p.c)) A';A 0]\[x;b];
-%                 x0 = x0(1:length(p.c));
-%                 x1 = [speye(length(p.c)) A_';A_ 0]\[x;b_];
-%                 x1 = x1(1:length(p.c));
-%                 if norm(x-x1) > norm(x-x0) && b_-A_*x < 0
-%                  %   'hej'
-%                  A = A_;
-%                  b = b_;
-%                 end
-%             end
-%             for i = 1:p_lp.K.l
-%                 if isequal(find([b A]), find(p_lp.F_struc(i,:)))
-%                     e1=[b -A];e2 = p_lp.F_struc(i,:);
-%                     e1 = nonzeros(e1/b);
-%                     e2 = nonzeros(e2/e2(1));
-%                     [(e1) (e2) -e2<=-e1];
-%                     if all( (-e2) <= (-e1))
-%                         'hej'
-%                     elseif all( (-e2) >= (-e1))
-%                         'hej 2'
-%                     end                        
-%                 end
-%             end
-            if isempty(p_lp.F_struc) || ~any(sum(abs(p_lp.F_struc-repmat([b -A],size(p_lp.F_struc,1),1)),2)<= 1e-12)
-                newF = real([newF;[b -A]]);
-                newcuts = newcuts + 1;
-                if isempty(asave)
-                    A(abs(A)<1e-12)=0;
-                    b(abs(b)<1e-12)=0;
-                    asave = -A(:);
-                    bsave = b;
-                end
-            end
-        end
-    end
-end
-
-newF(abs(newF)<1e-12) = 0;
-keep=find(any(newF(:,2:end),2));
-newF = newF(keep,:);
-if size(newF,1)>0
-    newF(:,1) = newF(:,1) + 0*0.02*abs(p_lp.options.cutsdp.feastol);
-    p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);newF];
-    p_lp.K.l = p_lp.K.l + size(newF,1);
-end
-
 function [p_lp] = add_nogood_cut(p,p_lp,x,infeasibility)
 % Add a nogood cut. Might already have been generated by
 % the SDP cuts, but it doesn't hurt to add it
@@ -753,48 +596,6 @@ elseif all(p_lp.ub(p.integer_variables) <= 0) && all(p_lp.lb(p.integer_variables
     a(p.integer_variables) = atemp;
     p_lp.F_struc = [p_lp.F_struc(1:p_lp.K.f,:);p_lp.F_struc(1+p_lp.K.f:end,:);b a];
     p_lp.K.l=p_lp.K.l+1;
-end
-
-
-function [p_lp,infeasibility,infeasible_socp_cones] = add_socp_cut(p,p_lp,x,infeasibility);
-infeasible_socp_cones = zeros(1,length(p.K.q));
-% Only add these cuts if solver doesn't support SOCP cones
-if ~p.solver.lower.constraint.inequalities.secondordercone.linear
-    if any(p.K.q)
-        % Add cuts
-        top = startofSOCPCone(p.K);
-        for i = 1:1:length(p.K.q)
-            n = p.K.q(i);
-            X = p.F_struc(top:top+n-1,:)*[1;x];
-            X = [X(1) X(2:end)';X(2:end) eye(n-1)*X(1)];
-            Y = randn(n,n);
-            newcuts = 1;
-            newF = zeros(n,size(p.F_struc,2));
-            [d,v] = eig(X);
-            infeasibility = min(infeasibility,min(diag(v)));
-            dummy=[];
-            newF = [];
-            if infeasibility<0
-                [ii,jj] = sort(diag(v));
-                for m = jj(1:min(length(jj),p.options.cutsdp.cutlimit))'%find(diag(v<0))%1:1%length(v)
-                    if v(m,m)<0
-                        v1 = d(1,m);v2 = d(2:end,m);
-                        newF = [newF;p.F_struc(top,:) + 2*v1*v2'*p.F_struc(top+1:top+n-1,:)];
-                        newcuts = newcuts + 1;
-                    end
-                end
-            end
-            newF(abs(newF)<1e-12) = 0;
-            keep= any(newF(:,2:end),2);
-            newF = newF(keep,:);
-            if size(newF,1)>0
-                p_lp.F_struc = [p_lp.F_struc;newF];
-                p_lp.K.l = p_lp.K.l + size(newF,1);
-                [i,j] = sort(p_lp.F_struc*[1;x]);
-            end
-            top = top+n;
-        end
-    end
 end
 
 function p_lp = addActivationCuts(p,p_lp)

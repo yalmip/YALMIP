@@ -12,7 +12,7 @@ if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
         X0 = reshape(F(:,1),p.K.s(i),p.K.s(i));
         % linear terms 
         XX = reshape(sum(F(:,2:end) ~= 0,2),p.K.s(i),p.K.s(i));
-        candidates = find(any(X0-diag(diag(X0)),2) & (diag(X0)<=0) & diag(XX))
+        candidates = find(any(X0-diag(diag(X0)),2) & (diag(X0)<=0) & diag(XX));
         if ~isempty(candidates);
             I = speye(p.K.s(i),p.K.s(i));
             pos = find(I(:));

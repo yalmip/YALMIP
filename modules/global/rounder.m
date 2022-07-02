@@ -77,7 +77,7 @@ if ismember('shifted round',p.options.bnb.rounding)
     end
 end
 
-if length(prelaxed.sosgroups)>0
+if ~isempty(prelaxed.sosgroups)
     xtemp = x;
     stillChangable = true(length(xtemp),1);
     votes = zeros(length(xtemp),1);
@@ -126,20 +126,7 @@ for i = 1:length(p.semicont_variables)
     end
 end
 
-function xtemp = fix_atmost(p,xtemp,x)
-
-would = zeros(1,length(x));
-for i = 1:length(p.atmost.groups)
-    k = p.atmost.groups{i};
-    if nnz(xtemp(k))> p.atmost.bounds(i)
-        n_should_be_zero = length(p.atmost.groups{i}) - p.atmost.bounds(i);
-        [y,loc] = sort(abs(x(k)));
-        xtemp(k(loc(1:n_should_be_zero))) = 0;
-    end
-end
-
 function xtemp = fix_cardinality(p,xtemp,x)
-
 would = zeros(1,length(x));
 for i = find(ismember(p.knapsack.type,[2 3 4 5]))
     k = p.knapsack.variables{i};

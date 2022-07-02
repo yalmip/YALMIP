@@ -21,29 +21,51 @@ for j = 1:length(p.sdpsymmetry)
                 feasible(i) = 0;
             end
         end
-        % We can model the inconsistencies in various ways
-        % 1. Binary variables must sum to something
-        % 2. Binary variables sum less
-        % 3. Binary variables sum larger
-        % 4. Generic, just exclude        
-        %sum_feas = sum(combs(:,find(feasible)),1)
-        %sum_infeas = sum(excludes,1)                
+        % We can model the inconsistencies in various ways       
+        % 1. Binary variables sum less
+        % 2. Binary variables sum larger
+        % 3. Generic, just exclude                           
         if ~isempty(excludes)
+            done = 0;
+            sum_feas = sum(combs(:,find(feasible)),1);
+            sum_infeas = sum(excludes,1); 
             newF = [];
-            infeasible_combinations = unique(excludes','rows')';
-            for k = 1:size(infeasible_combinations,2)
-                % Local cut for reduced set
-                if min(min(excludes))==-1
-                    binary_type = -1;
-                else
-                    binary_type = 1;
+            for k = min(sum(combs,1)):max(sum(combs,1))
+                if all(sum_feas<=k) && all(sum_infeas>k)
+                    for s = 1:length(p.sdpsymmetry{j}.variables)
+                        a = spalloc(1,length(p_lp.c),1);
+                        a(p.sdpsymmetry{j}.variables{s}) = -1;
+                        newF = [newF;k a];                          
+                    end                    
+                    done = 1;
+                    break
+                elseif  all(sum_feas>=k) && all(sum_feas<k)
+                    for s = 1:length(p.sdpsymmetry{j}.variables)
+                        a = spalloc(1,length(p_lp.c),1);
+                        a(p.sdpsymmetry{j}.variables{s}) = 1;
+                        newF = [newF;-k a];                       
+                    end 
+                    done = 1;
+                    break
                 end
-                [b,atemp] = exclusionCut(infeasible_combinations(:,k),binary_type);
-                % Add that cut for every variable groups
-                for s = 1:length(p.sdpsymmetry{j}.variables)
-                    a = spalloc(1,length(p_lp.c),1);
-                    a(p.sdpsymmetry{j}.variables{s}) = atemp;                    
-                    newF = [newF;b a];                  
+            end
+            if ~done   
+                % No good structure, just add no-goods
+                infeasible_combinations = unique(excludes','rows')';
+                for k = 1:size(infeasible_combinations,2)
+                    % Local cut for reduced set
+                    if min(min(excludes))==-1
+                        binary_type = -1;
+                    else
+                        binary_type = 1;
+                    end
+                    [b,atemp] = exclusionCut(infeasible_combinations(:,k),binary_type);
+                    % Add that cut for every variable groups
+                    for s = 1:length(p.sdpsymmetry{j}.variables)
+                        a = spalloc(1,length(p_lp.c),1);
+                        a(p.sdpsymmetry{j}.variables{s}) = atemp;
+                        newF = [newF;b a];
+                    end
                 end
             end
             p_lp = addInequality(p_lp,newF);

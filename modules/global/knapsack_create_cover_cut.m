@@ -15,16 +15,20 @@ elseif nargin < 4
     alg = 'crowder';
     gubs = [];
 elseif nargin < 5
-    gubs = [];
+    gubs = spalloc(1,length(a),0);
 end
 
 if ~all(a)
     nz = find(a);
     a_ = a(nz); 
     cut_ = knapsack_create_cover_cut(a_,b,x(nz),alg,gubs(nz));
-    cut = spalloc(1,length(a)+1,0);
-    cut(1) = cut_(1);
-    cut(1+nz) = cut_(2:end);
+    if ~isempty(cut_)
+        cut = spalloc(1,length(a)+1,0);
+        cut(1) = cut_(1);
+        cut(1+nz) = cut_(2:end);
+    else
+        cut = [];
+    end
     return
 elseif any(a<0)
     % Negative values in a*x <= b
@@ -40,8 +44,10 @@ elseif any(a<0)
     % we know have a cut, cut(1) + cut(2:end)*y >=0
     %                     cut(1) + cut(2:end)(1-x) >= 0
     %                     cut(1) + sum(cut(2:end)) + (-cut(2))*x >= 0
-    cut(1) = cut(1)+sum(cut(1 + neg));
-    cut(1 + neg) = -cut(1 + neg);
+    if ~isempty(cut)
+        cut(1) = cut(1)+sum(cut(1 + neg));
+        cut(1 + neg) = -cut(1 + neg);
+    end
     return
 end
     
@@ -52,18 +58,21 @@ switch alg
         [val,loc] = sort((1-x)./a(:),'ascend');
     case 'gu'
         [val,loc] = sort((x),'descend');
+    case 'gu-reverse'
+        [val,loc] = sort((x),'ascend');
+                
     otherwise
         error('Unsupport cover cut separation')
 end
 % Initial cover
-if 1%isempty(gubs)
-    C = min(find(cumsum(a(loc))>b));
-else
-   % C = min(find(cumsum(a(loc))>b));
-    C = min(find(gub_cumsum(a,loc,gubs)>b));
-end
+C = min(find(cumsum(a(loc))>b));
+
 % Apply Balas lifting
 q = knapsack_cover_lift_balas(a,loc(1:C));
+% qL = knapsack_cover_lift_letchford(a,b,loc(1:C));
+% if q~=qL
+%    'HEJ'
+% end
 % Return row where row*[1;x] hopefully is violated
 cut = spalloc(1,length(a)+1,0);
 cut(1) = C-1;
