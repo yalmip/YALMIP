@@ -682,6 +682,7 @@ solver(i).tag     = 'DAQP';
 solver(i).version = '';
 solver(i).checkfor= {'daqp'};
 solver(i).call    = 'calldaqp';
+solver(i).constraint.binary = 1;
 i = i+1;
 
 solver(i) = qpsolver;

@@ -8,6 +8,8 @@ F_struc = interfacedata.F_struc;
 K       = interfacedata.K;
 lb      = interfacedata.lb;
 ub      = interfacedata.ub;
+bin_vars= interfacedata.binary_variables;
+[ub'; lb']
 % Extract constraints
 if ~isempty(F_struc)
   A = full(-F_struc(:,2:end));
@@ -23,6 +25,7 @@ blower = full([lb;b(1:meq);-inf(m,1)]);
 % Set constraint type
 sense =  [zeros(length(ub),1,'int32');5*ones(meq,1,'int32');zeros(m,1,'int32')];
 sense(find(isinf(lb)&isinf(ub))) = int32(4); % "ignore" if lb and ub are inf
+sense(bin_vars) = int32(16);
 
 if options.savedebug
     save debugfile model
