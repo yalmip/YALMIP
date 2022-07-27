@@ -66,7 +66,7 @@ end
 
 % Standard interface
 Primal      = xstar;
-Dual        = []; % TODO: add dual information 
+Dual        = info.lambda(length(ub)+1:end);
 infostr     = yalmiperror(problem,interfacedata.solver.tag);
 if ~options.savesolverinput
     solverinput = [];
