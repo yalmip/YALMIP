@@ -1,29 +1,34 @@
 function output = calldaqp(interfacedata)
 
+% Get problem data
 options = interfacedata.options;
-model = yalmip2quadprog(interfacedata);
+H       = full(2*interfacedata.Q);
+f       = full(interfacedata.c);
+F_struc = interfacedata.F_struc;
+K       = interfacedata.K;
+lb      = interfacedata.lb;
+ub      = interfacedata.ub;
+% Extract constraints
+if ~isempty(F_struc)
+  A = full(-F_struc(:,2:end));
+  b = full(F_struc(:,1));
+  meq = K.f;
+  m = length(b)-meq;
+else
+    A = []; b = [];
+	m=0; meq=0;
+end
+bupper = full([ub;b]);
+blower = full([lb;b(1:meq);-inf(m,1)]);
+% Set constraint type
+sense =  [zeros(length(ub),1,'int32');5*ones(meq,1,'int32');zeros(m,1,'int32')];
+sense(find(isinf(lb)&isinf(ub))) = int32(4); % "ignore" if lb and ub are inf
 
 if options.savedebug
     save debugfile model
 end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
-
-
-% Define QP
-[m,n]= size(model.A);
-meq = length(model.beq);
-H = full(model.Q);
-f = full(model.c);
-A = full([model.A;model.Aeq]);
-if(all(isinf(model.lb))&all(isinf(model.ub)))
-  lb=[];ub=[];
-else 
-  lb = model.lb; ub=model.ub;
-end
-bupper = full([ub;model.b;model.beq]);
-blower = full([lb;-inf(m,1);model.beq]);
-sense =  [zeros(length(ub)+m,1,'int32');5*ones(meq,1,'int32')];
 
 % Solve with DAQP 
 d = daqp();
@@ -36,6 +41,7 @@ else
   xstar = []; info= [];
 end
 solvertime = toc(solvertime);
+info
 
 switch exitflag 
     case 1
