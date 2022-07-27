@@ -9,7 +9,6 @@ K       = interfacedata.K;
 lb      = interfacedata.lb;
 ub      = interfacedata.ub;
 bin_vars= interfacedata.binary_variables;
-[ub'; lb']
 % Extract constraints
 if ~isempty(F_struc)
   A = full(-F_struc(:,2:end));
@@ -44,7 +43,6 @@ else
   xstar = []; info= [];
 end
 solvertime = toc(solvertime);
-info
 
 switch exitflag 
     case 1
