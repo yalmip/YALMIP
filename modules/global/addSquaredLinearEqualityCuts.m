@@ -1,4 +1,4 @@
-function p = addMultipliedEqualityCuts(p)
+function p = addSquaredLinearEqualityCuts(p)
 
 newRows = [];
 for j = 1:p.K.f
