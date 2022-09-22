@@ -27,7 +27,7 @@ m = size(p,2);
 
 if min(n,m)>1
     plin = [];
-    J = double(jacobian(p,x));
+    J = value(jacobian(p,x));
     for i = 1:m
         plin = [plin p0(:,i)+squeeze(J(:,i,:))*(x-x0)];
     end
