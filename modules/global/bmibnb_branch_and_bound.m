@@ -1,4 +1,4 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = branch_and_bound(p,x_min,upper,timing,solution_hist)
+function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = bmibnb_branch_and_bound(p,x_min,upper,timing,solution_hist)
 
 % *************************************************************************
 % Initialize diagnostic code
