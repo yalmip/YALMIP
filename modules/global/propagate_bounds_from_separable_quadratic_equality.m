@@ -1,4 +1,4 @@
-function p = update_sumsepquad_bounds(p);
+function p = propagate_bounds_from_separable_quadratic_equality(p);
 % Looking for case z == b + q1(x1) + q2(x2) + ... where q quadratic
 
 % Temporarily treat polynomials/functions as linear variables

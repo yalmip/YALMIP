@@ -605,6 +605,7 @@ solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
 
+if ~exist('OCTAVE_VERSION','builtin')
 solver(i) = lpsolver;
 solver(i).tag     = 'GLPK';
 solver(i).version = 'GLPKMEX';
@@ -613,6 +614,7 @@ solver(i).call    = 'callglpk';
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
+endif
 
 % Needed for Later Octave version (glpkmex is depracated)
 solver(i) = lpsolver;
