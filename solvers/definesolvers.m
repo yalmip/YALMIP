@@ -614,7 +614,7 @@ solver(i).call    = 'callglpk';
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 i = i+1;
-endif
+end
 
 % Needed for Later Octave version (glpkmex is depracated)
 solver(i) = lpsolver;
