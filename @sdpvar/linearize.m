@@ -25,11 +25,8 @@ p0 = double(p);
 n = size(p,1);
 m = size(p,2);
 
-if ~isfield(p.extra, 'jacobian')
+if ~isfield(p.extra, 'jacobian') || isempty(p.extra.jacobian)
     p.extra.jacobian = jacobian(p,x);
-    % assignin('caller', inputname(1), p) 
-    % this would automatically register the jacobian for the caller but 
-    % this may be an unwanted behavior so I commented it out
 end
 J = value(p.extra.jacobian);
 
