@@ -12,9 +12,29 @@ x_min = x;
 intvars = [p.integer_variables(:);p.binary_variables(:)];
 convars = p.noninteger_variables;
 
+close = find(abs(x(intvars)-round(x(intvars))<=p.options.bnb.inttol));
+x(intvars(close)) = round(x(intvars(close)));
+
 % Tidy up numerical noise within tolerance
 close = find(abs(x(intvars)-round(x(intvars))<=p.options.bnb.inttol));
 x(intvars(close)) = round(x(intvars(close)));
+% % 
+% for i = 1:15
+%      s = find(p.F_struc(1:p.K.l,:)*[1;round(x)]<0);
+%      r=sum(sign(p.F_struc(s,2:end)),1);
+%      
+%      m = max(r);
+% %     j = find((r == m) & p.c(:)'>0 & p.ub(:)'==1);
+% %     x(j) = 1;
+% %     s = find(p.F_struc(1:p.K.l,:)*[1;round(x)]<0);
+% %     r=sum(sign(p.F_struc(s,2:end)),1);
+% %     m = max(r);
+% %     j = find((r == m) & p.c(:)'<0 & p.lb(:)'==0);
+% %     x(j) = 0;
+% end
+
+
+
 
 if ismember('shifted round',p.options.bnb.rounding)
     % Pre-extract...
@@ -36,9 +56,11 @@ if ismember('shifted round',p.options.bnb.rounding)
         if ~isempty(prelaxed.binaryProduct)
             xtemp(prelaxed.binaryProduct(:,1)) = prod(xtemp(prelaxed.binaryProduct(:,2:3)),2);
         end
+        
         xtemp = fix_cardinality(p,xtemp,xtest);
         xtemp = fix_semivar(p,xtemp);
         xtemp = setnonlinearvariables(p,xtemp);
+        
         if ~isequal(xtemp,oldxtemp)
             oldxtemp=xtemp;
             upperhere = computecost(p.f,p.corig,p.Q,xtemp,p);

@@ -1,7 +1,7 @@
-function [p_sdpknapsackcuts,p_rawcuts,p_lp_contcut] = create_sdpknapsack_cuts(p,x_trial,poriginal,upper)
+function [p_sdpknapsackcuts,p_adjustedcut,p_lp_contcut] = create_sdpknapsack_cuts(p,x_trial,poriginal,upper)
 
 p_sdpknapsackcuts = emptyNumericalModel;
-p_rawcuts = emptyNumericalModel;
+p_adjustedcut = emptyNumericalModel;
 p_sdpcuts = emptyNumericalModel;
 x_trial(x_trial < p.lb) = p.lb(x_trial < p.lb);
 x_trial(x_trial > p.ub) = p.ub(x_trial > p.ub);
@@ -18,8 +18,21 @@ for sdpcount = 1:length(p.K.s)
             % Eigenvalues are easily somewhat shaky numerically so
             % relax slightly
             row(1) = row(1) + 1e-8; 
+            % Strengthen coefficients
+             if all(row(2:end) >= 0) & row(1) < 0
+                 row(2:end) = min(row(2:end),-row(1));
+%                 b = -row(1);
+%                 a = row(2:end);
+%                 [~,loc] = sort(a);
+%                 s = max(find(cumsum(a(loc)) < b));
+%                 S = loc(1:s);N_S = setdiff(1:length(a),S);
+%                 b = b - sum(a(S));
+%                 a(S)=0;
+%                 a(N_S) = min(a(N_S),b);
+%                 row = [-b a];
+             end
             % Save for furter use later
-            p_rawcuts = addInequality(p_rawcuts,row);
+            p_adjustedcut = addInequality(p_adjustedcut,row);
             
             % Use general cover separator
             cut = knapsack_create_cover_cut(-row(2:end),row(1),x_trial,'gu',p.gubs);

@@ -8,17 +8,17 @@ S = sdpCuts.F_struc;
 k = find(p.ub == p.lb);
 s = S(:,1+k)*p.ub(k);
 S(:,1) = S(:,1) + s;
-S(:,1+k)=[];
+S(:,1+k)=0;
 
 % Use cardinality constraints to strengthen bound
-n_fixed = nnz(p.lb==1);
+n_fixed = nnz(p.lb(p.binary_variables)==1);
 n_free = p.globalcardinality.up - n_fixed;
 upper_bound = -inf;
 for i = 1:size(S,1)
     if n_free == 0
         upper_bound = max(upper_bound,(S(i,1))./S(i,end));
     else
-        row = max(S(i,2:end-1),0);
+        row = max(S(i,1+p.binary_variables),0);
         upper_bound = max(upper_bound,(S(i,1) + sumk(row,n_free))./S(i,end));
     end
 end
