@@ -197,6 +197,12 @@ if p.options.cutsdp.adjustsolvertol
     p = adjustSolverPrecision(p);
 end
 
+if length(p.integer_variables)+length(p.binary_variables) == length(p.c)
+    p.all_integers = 1;
+else
+    p.all_integers = 0;
+end
+
 % *************************************************************************
 %% Create function handle to solver
 % *************************************************************************

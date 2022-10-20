@@ -22,6 +22,16 @@ if p.all_integers
     if nargin == 3 && clearStructure == 1
         p.semidefinite=[];
     end
-else
-     p.semidefinite=[];
+else    
+    if nargin == 3 && clearStructure == 1
+        p.semidefinite=[];
+    else
+        top = startofSDPCone(p.K);
+        p.F_struc = p.F_struc';
+        for i = 1:length(p.K.s)
+            p.semidefinite{i}.F_struc = p.F_struc(:,top:top+p.K.s(i)^2-1)';
+            top = top + p.K.s(i)^2;
+        end
+        p.F_struc = p.F_struc';
+    end
 end
