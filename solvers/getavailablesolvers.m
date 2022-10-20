@@ -1,4 +1,4 @@
-function [solvers,keep,allsolvers] = getavailablesolvers(findallsolvers,options);
+function [solvers,keep,allsolvers] = getavailablesolvers(findallsolvers,options)
     
 solvers = definesolvers;allsolvers = solvers;
 keep = ones(length(solvers),1);
