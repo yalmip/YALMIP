@@ -289,7 +289,7 @@ end
 % DID WE SELECT THE MPT solver (backwards comb)
 %******************************************
 actually_save_output = interfacedata.options.savesolveroutput;
-if strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.tag,'mpcvx') | strcmpi(solver.tag,'mplcp') | strcmpi(solver.tag,'pop')    
+if strcmpi(solver.tag,'mpt') | strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.tag,'mpcvx') | strcmpi(solver.tag,'mplcp') | strcmpi(solver.tag,'pop')    
     interfacedata.options.savesolveroutput = 1;
     if isempty(interfacedata.parametric_variables)
         if (nargin < 4 | ~isa(varargin{4},'sdpvar'))
