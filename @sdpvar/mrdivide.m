@@ -19,6 +19,7 @@ try
             y = X;
             y.basis = y.basis/Y;
         end
+        y.conicinfo = [0 0];
         return
     end
 
