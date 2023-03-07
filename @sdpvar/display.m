@@ -192,7 +192,7 @@ switch(X.typeflag)
                 DynamicalRange = ['0 to 0'];
             end
             
-            info = [info '\nCoeffiecient range: ' DynamicalRange];                      
+            info = [info '\nCoefficient range: ' DynamicalRange];                      
             fprintf([classification num2str(n) 'x' num2str(m) info '\n']);
         end;
     case 1
