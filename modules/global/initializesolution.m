@@ -6,7 +6,8 @@ if p.options.warmstart
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
     if relaxed_feasible 
-        upper_ = p.f+p.c'*z+z'*p.Q*z;
+        % upper_ = p.f+p.c'*z+z'*p.Q*z;
+        upper_ = computecost(p.f,p.c,p.Q,z,p);
         if upper_ <= upper
             upper = upper_;
             x_min = z;
@@ -42,7 +43,8 @@ else
     if relaxed_feasible
         infs = isinf(z);
         if ~any(infs)
-            upper_ = p.f+p.c'*z+z'*p.Q*z;
+            % upper_ = p.f+p.c'*z+z'*p.Q*z;
+            upper_ = computecost(p.f,p.c,p.Q,z,p);
             if upper_ <= upper
                 upper = upper_;
                 x_min = z;
@@ -52,7 +54,8 @@ else
             % Allow inf solutions if variables aren't used in objective
             if all(p.c(infs)==0) & nnz(p.Q(infs,:))==0
                 ztemp = z;ztemp(infs)=0;
-                upper_ = p.f+p.c'*ztemp+ztemp'*p.Q*ztemp;
+                %upper_ = p.f+p.c'*ztemp+ztemp'*p.Q*ztemp;
+                upper_ = computecost(p.f,p.c,p.Q,ztemp,p);
                 if upper_ <= upper
                     upper = upper_;
                     x_min = z;
@@ -78,11 +81,14 @@ else
     z = evaluate_nonlinear(p,x);
     z = propagateAuxilliary(p,z);    
     residual = constraint_residuals(p,z);
-    relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);
-    if relaxed_feasible & ( p.f+p.c'*z+z'*p.Q*z < upper)
-        upper = p.f+p.c'*z+z'*p.Q*z;
-        x_min = z;
-        x0 = x_min;
+    relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);   
+    if relaxed_feasible 
+        tempcost = computecost(p.f,p.c,p.Q,z,p);
+        if tempcost < upper
+            upper = tempcost;
+            x_min = z;
+            x0 = x_min;
+        end
     end
     p.x0 = x0;
 end
