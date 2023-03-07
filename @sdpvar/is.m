@@ -140,8 +140,8 @@ switch property
         base = X.basis;
         n = X.dim(1);
         base(:,1)=0;
-        YESNO = full(issymmetric(X) && nnz(base)==n*n && all(sum(base,2)==1)) && length(X.lmi_variables)==n*(n+1)/2 && isreal(X);
-        if YESNO
+        YESNO = 0;
+        if full(issymmetric(X) && nnz(base)==n*n && all(sum(base,2)==1)) && length(X.lmi_variables)==n*(n+1)/2 && isreal(X)
             % Possible case
             % FIX : Stupidly slow and complex
             [i,j,k] = find(base');
@@ -150,6 +150,11 @@ switch property
             Y = (Y+Y')-diag(sparse(diag(Y)));
             [uu,oo,pp] = unique(Y(:));
             YESNO = isequal(i,pp+1);            
+        elseif ishermitian(X) && nnz(base)==n*(n+1) && length(X.lmi_variables)==n^2
+            temp = createImagBasis(n);
+            if isequal(temp,base)
+                YESNO = 1;
+            end
         end
         
     case 'socone'
