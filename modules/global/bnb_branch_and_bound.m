@@ -736,11 +736,11 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             if p.options.bnb.plot
                 hold off
                 subplot(1,3,1);               
-                l = stairs([lowerhist' upperhist']);set(l,'linewidth',2);
+                l = stairs([History.lower' History.upper']);set(l,'linewidth',2);
                 grid on
                 title('Upper/lower bounds')
                 subplot(1,3,2);                
-                l = stairs(stacksizehist);set(l,'linewidth',2);
+                l = stairs(History.stacksize);set(l,'linewidth',2);
                 grid on
                 title('Open nodes')
                 drawnow
