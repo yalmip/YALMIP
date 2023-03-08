@@ -999,7 +999,7 @@ function [stack,lower] = prune(stack,upper,options,solved_nodes,p,allSolutions)
 % PRUNE STACK W.R.T NEW UPPER BOUND
 % *********************************
 if stackLength(stack)>0 && ~isinf(upper)
-    if length(p.binary_variables) + length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0       
+    if length(p.binary_variables) + length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0 && isequal(p.K.m,0)      
         L = stack.lower;
         tooLarge = find(~isinf(L) & L>=upper-0.999);
     else     
@@ -1013,7 +1013,7 @@ if stackLength(stack)>0 && ~isinf(upper)
 end
 
 % Prune simple linear model w.r.t bound constraints only
-if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0
+if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0 && isequal(p.K.m,0)
     tooLarge = [];
     for i = find(~isinf(stack.lower))
         pi = stack.nodes{i};
