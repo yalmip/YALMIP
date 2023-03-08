@@ -727,8 +727,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     if isnan(gap)
         gap = inf;
     end    
-    History.lower(end+1) = lower;
-    History.upper(end+1) = upper;
+    History.lower = [History.lower  lower];
+    History.upper = [History.upper upper];
     History.stacksize(end+1) = stackLength(stack);
       
     if p.options.bnb.verbose

@@ -1,5 +1,8 @@
 function cost = computecost(f,c,Q,x,p)
 
+if isempty(f)
+    f = 0;
+end
 cost = f+c'*x+x'*Q*x;
 if ~isequal(p.K.m,0)
     top = size(p.F_struc,1)-sum(p.K.m.^2)+1;

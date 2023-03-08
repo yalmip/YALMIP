@@ -18,11 +18,6 @@ if nargin<7
     parametric = 0;
 end
 
-%% Clean objective to default empty
-if isa(h,'double')
-    h = [];
-end
-
 % *************************************************************************
 %% Exit if LOGDET objective is nonlinear
 % *************************************************************************
@@ -566,7 +561,7 @@ if ~isempty(logdetStruct)
     end
     if ~can_solve_maxdet
         if isempty(h)
-            h = 0;
+            h = 0;       
         end
         if 0%can_solve_expcone
             for i = 1:length(logdetStruct.P)
@@ -734,7 +729,15 @@ try
         tempoptions.relax = 1;
         [c,Q,f]=createobjective(h,logdetStruct,tempoptions,quad_info);
     else
-        [c,Q,f]=createobjective(h,logdetStruct,options,quad_info);
+        if isa(h,'double')
+            [c,Q,f]=createobjective([],logdetStruct,options,quad_info);
+            f = h;
+        else
+            [c,Q,f]=createobjective(h,logdetStruct,options,quad_info);
+        end
+    end
+    if isempty(f)
+        f = 0;
     end
 catch
     error(lasterr)
