@@ -1,6 +1,11 @@
 function diagnostic = solvesdp(varargin)
 %SOLVESDP Obsolete command, please use OPTIMIZE
 
+persistent CACHED_SOLVERS
+persistent allsolvers
+persistent EXISTTIME
+persistent NCHECKS
+
 yalmiptime = clock; % Let us see how much time we spend
 
 % *********************************
@@ -202,6 +207,40 @@ if length(F) == 0 & isempty(h) & isempty(logdetStruct)
    return
 end
 
+% *************************************************************************
+%% LOOK FOR AVAILABLE SOLVERS
+% Finding solvers can be very slow on some systems. To alleviate this
+% problem, YALMIP can cache the list of available solvers.
+% *************************************************************************
+if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
+    getsolvertime = clock;
+    solvers = getavailablesolvers(0,options);
+    getsolvertime = etime(clock,getsolvertime);
+    % CODE TO INFORM USERS ABOUT SLOW NETWORKS!
+    if isempty(EXISTTIME)
+        EXISTTIME = getsolvertime;
+        NCHECKS = 1;
+    else
+        EXISTTIME = [EXISTTIME getsolvertime];
+        NCHECKS = NCHECKS + 1;
+    end
+    if (options.cachesolvers==0)
+        if ((NCHECKS >= 3 & (sum(EXISTTIME)/NCHECKS > 1)) | EXISTTIME(end)>2)
+            if warningon
+                info = 'Warning: YALMIP has detected that your drive or network is unusually slow.\nThis causes a severe delay in OPTIMIZE when I try to find available solvers.\nTo avoid this, use the options CACHESOLVERS in SDPSETTINGS.\nSee the FAQ for more information.\n';
+                fprintf(info);
+            end
+        end
+    end
+    if length(EXISTTIME) > 5
+        EXISTTIME = EXISTTIME(end-4:end);
+        NCHECKS = 5;
+    end
+    CACHED_SOLVERS = solvers;
+else
+    solvers = CACHED_SOLVERS;
+end
+
 % Dualize the problem?
 if ~isempty(F)
     if options.dualize == -1
@@ -214,7 +253,7 @@ if ~isempty(F)
     end
 end
 if options.dualize == 1   
-    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options);
+    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options,solvers);
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
     if ~isempty(complexInfo)
@@ -246,7 +285,7 @@ end
 % ******************************************
 % COMPILE IN GENERALIZED YALMIP FORMAT
 % ******************************************
-[interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,[],logdetStruct,h,options,0,solving_parametric);
+[interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,[],logdetStruct,h,options,0,solving_parametric,solvers);
 
 % ******************************************
 % FAILURE?

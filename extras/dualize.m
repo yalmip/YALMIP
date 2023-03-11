@@ -1,4 +1,4 @@
-function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend,options)
+function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend,options,solvers)
 % DUALIZE Create the dual of an SDP given in primal form
 %
 % [Fd,objd,X,t,err] = dualize(F,obj,auto)
@@ -80,12 +80,11 @@ end
 
 if extend    
     if nargin < 6 || isempty(options)    
-        options = sdpsettings;
+        extoptions = sdpsettings;
+    else
+    	extoptions = options;
     end
-    options.dualize = 1;
-    options.allowmilp = 0;
-    options.solver = '';
-    [F,failure,cause] = expandmodel(F,obj,options);
+    [F,failure,cause] = expandmodel(F,obj,extoptions);
     if failure
         error('Failed during convexity propagation. Avoid nonlinear operators when applying dualization.');
     end
@@ -97,6 +96,13 @@ end
 
 if nargin<4 || isempty(extlp)
     extlp = 1;
+end
+
+if nargin < 7 || isempty(options) || strcmpi(options.solver,'')
+	solver.complex = 0;
+else
+	solverindex = min(find(strcmpi(lower({solvers.tag}),lower(options.solver))));
+	solver = solvers(solverindex);
 end
 
 % Cones and equalities
@@ -114,7 +120,6 @@ X={};
 % when we add simple LP constraints (as in P>0, P(1,3)>0)
 varSDP = [];
 SDPset = zeros(length(F),1);
-ComplexSDPset = zeros(length(F),1);
 isSDP = is(F,'sdp');
 for i = 1:length(F)
     if isSDP(i);        
@@ -122,15 +127,21 @@ for i = 1:length(F)
         if is(Fi,'shiftsdpcone')
             vars = getvariables(Fi);
             if isempty(findrows(varSDP,[vars(1) vars(end)]))
-                SDPset(i) = 1;
-                varSDP = [varSDP;vars(1) vars(end)];
-                shiftMatrix{end+1} = getbasematrix(Fi,0);
-                X{end+1}=Fi;
-                if is(Fi,'complex')
-                    ComplexSDPset(i) = 1;
+            	if solver.complex == 1
+            		SDPset(i) = 1;	
+                	varSDP = [varSDP;vars(1) vars(end)];
+                	shiftMatrix{end+1} = getbasematrix(Fi,0);
+                	X{end+1}=Fi;
+                else
+                	if is(Fi,'real')
+	            		SDPset(i) = 1;	
+	                	varSDP = [varSDP;vars(1) vars(end)];
+	                	shiftMatrix{end+1} = getbasematrix(Fi,0);
+	                	X{end+1}=Fi;
+                	end
                 end
-            end
-        end
+			end
+		end
     end
 end
 F_SDP = F(find(SDPset));
@@ -446,7 +457,7 @@ end
 % If complex SDP cone, we reformulate and call again on a real-valued
 % problem. This leads to twice the amount of work, but it is a quick fix
 % for the moment
-if any(is(F_CONE,'complexsdpcone'))
+if any(is(F_CONE,'complexsdpcone')) & (solver.complex == 0)
     F_NEWCONES = [];
     top = 1;
     for i = 1:length(X)      
@@ -496,7 +507,7 @@ if any(is(F_CONE,'complexsdpcone'))
     F_reformulated = [F_NEWCONES, F_AXb, x>=0];
     complexInfo.replaced = Xreplace;
     complexInfo.new = Xnew;
-    [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend);
+    [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend,options,solvers);
     return
 end
 
@@ -520,8 +531,15 @@ for i = 1:length(F_CONE)
         shift = [shift;shiftMatrix{i}(:)];
     else
         % SDP
-        ind =  find(tril(reshape(1:ns(i)^2,ns(i),ns(i))));
-        shift = [shift;shiftMatrix{i}(ind)];
+        if is(X{i},'complex') & (solver.complex == 1)
+        	ind = reshape(1:ns(i)^2,ns(i),ns(i));
+        	indr = find(tril(ind));
+        	indc = find(tril(ind,-1));
+        	shift = [shift;real(shiftMatrix{i}(indr));-imag(shiftMatrix{i}(indc))];
+        else
+        	ind =  find(tril(reshape(1:ns(i)^2,ns(i),ns(i))));
+        	shift = [shift;shiftMatrix{i}(ind)];
+        end
     end
 end
 
@@ -649,7 +667,7 @@ else
 end
 
 % Shift due to translated dual cones X = Z+shift
-if length(shift > 0)
+if any(shift ~= 0)
     b = b + Fbase_X(1:end-1,:)*shift;
 end
 obj_offset = 0;
@@ -680,15 +698,19 @@ for j = 1:1:n_cones
 
     if size(X{j},1)==size(X{j},2)
         % SDP cone
-        ind = reshape(1:ns(j)^2,ns(j),ns(j));
-        ind = find(tril(ind));
+        if is(X{j},'complex') & (solver.complex == 1)
 
-        % Get non-symmetric constraint AiX=b
-        Fi = Fbase_X(1:length(b),start+(1:length(ind)))'/2;
+	        ind = reshape(1:ns(j)^2,ns(j),ns(j));
+    	    indr = find(tril(ind)); %real part
+    	    indc = find(tril(ind,-1)); %imaginary part   	    
 
-        if 1
-            [iF,jF,sF] = find(Fi);
-            iA = ind(iF);
+    	    % Get non-symmetric constraint AiX=b
+    	    Fir = Fbase_X(1:length(b),start+(1:length(indr)))'/2;
+    	    Fic = 1i*Fbase_X(1:length(b),start+length(indr)+(1:length(indc)))'/2;
+
+
+            [iF,jF,sF] = find(Fir);
+            iA = indr(iF);
             jA = jF;
             sA = sF;
             the_col = 1+floor((iA-1)/ns(j));
@@ -704,34 +726,84 @@ for j = 1:1:n_cones
             diags = find(diag(1:ns(j)));
             id = find(ismembcYALMIP(iA,diags));
             sA(id) = 2*sA(id);
-            Ai = sparse(iA,jA,sA,ns(j)^2,length(b));
 
-        else % Old slooooooow version
-            Ai = spalloc(ns(j)^2,length(b),nnz(Fi));
-            Ai(ind,:) = Fi;
-            % Symmetrize
-            [rowcols,varindicies,vals]=find(Ai);
-            the_col = 1+floor((rowcols-1)/ns(j));
-            the_row = rowcols-(the_col-1)*ns(j);
+            [iFc,jFc,sFc] = find(Fic);
+            iAc = indc(iFc);
+            jAc = jFc;
+            sAc = sFc;
+            the_col = 1+floor((iAc-1)/ns(j));
+            the_row = iAc-(the_col-1)*ns(j);
             these_must_be_transposed = find(the_row > the_col);
             if ~isempty(these_must_be_transposed)
                 new_rowcols = the_col(these_must_be_transposed) + (the_row(these_must_be_transposed)-1)*ns(j);
-                Ai(sub2ind(size(Ai),new_rowcols,varindicies(these_must_be_transposed))) = vals(these_must_be_transposed);
+                iAc = [iAc;new_rowcols];
+                jAc = [jAc;jAc(these_must_be_transposed)];
+                sAc = [sAc;-sAc(these_must_be_transposed)];
             end
 
-            % Fix diagonal term
-            diags = find(diag(1:ns(j)));
-            Ai(diags,:) = 2*Ai(diags,:);
-        end
+			iA = [iA;iAc];
+			jA = [jA;jAc];
+			sA = [sA;sAc];
+
+            Ai = sparse(iA,jA,sA,ns(j)^2,length(b));
+	        vecA{j} = Ai;
+    	    start = start + length(indr) + length(indc);
+    	    
+		else 
+    
+	        ind = reshape(1:ns(j)^2,ns(j),ns(j));
+    	    ind = find(tril(ind));
+
+    	    % Get non-symmetric constraint AiX=b
+    	    Fi = Fbase_X(1:length(b),start+(1:length(ind)))'/2;
+
+	        if 1
+	            [iF,jF,sF] = find(Fi);
+	            iA = ind(iF);
+	            jA = jF;
+	            sA = sF;
+	            the_col = 1+floor((iA-1)/ns(j));
+	            the_row = iA-(the_col-1)*ns(j);
+	            these_must_be_transposed = find(the_row > the_col);
+	            if ~isempty(these_must_be_transposed)
+	                new_rowcols = the_col(these_must_be_transposed) + (the_row(these_must_be_transposed)-1)*ns(j);
+	                iA = [iA;new_rowcols];
+	                jA = [jA;jA(these_must_be_transposed)];
+	                sA = [sA;sA(these_must_be_transposed)];
+	            end
+	            % Fix diagonal term
+	            diags = find(diag(1:ns(j)));
+	            id = find(ismembcYALMIP(iA,diags));
+	            sA(id) = 2*sA(id);
+	            Ai = sparse(iA,jA,sA,ns(j)^2,length(b));
+
+	        else % Old slooooooow version
+	            Ai = spalloc(ns(j)^2,length(b),nnz(Fi));
+	            Ai(ind,:) = Fi;
+	            % Symmetrize
+	            [rowcols,varindicies,vals]=find(Ai);
+	            the_col = 1+floor((rowcols-1)/ns(j));
+	            the_row = rowcols-(the_col-1)*ns(j);
+	            these_must_be_transposed = find(the_row > the_col);
+	            if ~isempty(these_must_be_transposed)
+	                new_rowcols = the_col(these_must_be_transposed) + (the_row(these_must_be_transposed)-1)*ns(j);
+	                Ai(sub2ind(size(Ai),new_rowcols,varindicies(these_must_be_transposed))) = vals(these_must_be_transposed);
+	            end
+
+	            % Fix diagonal term
+	            diags = find(diag(1:ns(j)));
+	            Ai(diags,:) = 2*Ai(diags,:);
+	        end
 
         %        if norm(Ai-Ai2,inf)>1e-12
         %            error
         %        end
 
 
-        vecA{j} = Ai;
+	        vecA{j} = Ai;
 
-        start = start + length(ind);
+    	    start = start + length(ind);
+		end
     else
         % Second order cone
         ind = 1:prod(size(X{j}));
@@ -745,8 +817,8 @@ for j = 1:1:n_cones
         vecA{j} = Ai;
         start = start + length(ind);
     end
-
 end
+
 % LP Cone
 if n_lp>0
     Alp=Fbase_x(1:length(b),:)';
@@ -769,11 +841,21 @@ for j = 1:1:n_cones
         %C{j} = (C{j}+ C{j}')/2;
         %start = start + length(ind);
 
-        ind = reshape(1:ns(j)^2,ns(j),ns(j));
-        [indi,indj] = find(tril(ind));
-        C{j} = sparse(indi,indj,-Fbase_X(end,start+(1:length(indi))),ns(j),ns(j));
-        C{j} = (C{j}+ C{j}')/2;
-        start = start + length(indi);
+		if is(X{j},'complex') & (solver.complex == 1)
+			ind = reshape(1:ns(j)^2,ns(j),ns(j));
+        	[indir,indjr] = find(tril(ind)); %real part
+        	[indic,indjc] = find(tril(ind,-1)); %imaginary part
+        	C{j} = sparse(indir,indjr,-Fbase_X(end,start+(1:length(indir))),ns(j),ns(j));
+        	C{j} = C{j} + 1i*sparse(indic,indjc,-Fbase_X(end,start+length(indir)+(1:length(indic))),ns(j),ns(j));		        				
+			C{j} = (C{j} + C{j}')/2;
+			start = start + length(indir) + length(indic);
+		else
+			ind = reshape(1:ns(j)^2,ns(j),ns(j));
+        	[indi,indj] = find(tril(ind));
+        	C{j} = sparse(indi,indj,-Fbase_X(end,start+(1:length(indi))),ns(j),ns(j));
+        	C{j} = (C{j}+ C{j}')/2;
+        	start = start + length(indi);
+        end
     else
         %ind = 1:ns(j);
         ind = 1:prod(size(X{j}));

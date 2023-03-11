@@ -1,4 +1,4 @@
-function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric)
+function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric,solvers_from_solvesdp)
 
 persistent CACHED_SOLVERS
 persistent allsolvers
@@ -16,6 +16,10 @@ ForiginalQuadratics = [];
 %% Did we make the call from SOLVEMP
 if nargin<7
     parametric = 0;
+end
+
+if nargin < 8
+	solvers_from_solvesdp = [];
 end
 
 % *************************************************************************
@@ -154,7 +158,7 @@ end
 % Finding solvers can be very slow on some systems. To alleviate this
 % problem, YALMIP can cache the list of available solvers.
 % *************************************************************************
-if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
+if ((options.cachesolvers==0) | isempty(CACHED_SOLVERS)) & isempty(solvers_from_solvesdp)
     getsolvertime = clock;
     [solvers,kept,allsolvers] = getavailablesolvers(findallsolvers,options);
     getsolvertime = etime(clock,getsolvertime);
@@ -179,8 +183,11 @@ if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
         NCHECKS = 5;
     end
     CACHED_SOLVERS = solvers;
-else
+elseif isempty(solvers_from_solvesdp)
     solvers = CACHED_SOLVERS;
+else
+	solvers = solvers_from_solvesdp;
+	allsolvers = definesolvers;
 end
 
 % *************************************************************************
