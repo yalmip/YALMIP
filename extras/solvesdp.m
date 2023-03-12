@@ -241,6 +241,15 @@ else
     solvers = CACHED_SOLVERS;
 end
 
+%here we are not actually selecting a solver, just checking whether it supports complex numbers
+solverindex = min(find(strcmpi(lower({solvers.tag}),lower(options.solver))));
+if isempty(solverindex)
+	complexsolver = 0;
+else
+	solver = solvers(solverindex);
+	complexsolver = solver.complex; 
+end
+
 % Dualize the problem?
 if ~isempty(F)
     if options.dualize == -1
@@ -253,7 +262,7 @@ if ~isempty(F)
     end
 end
 if options.dualize == 1   
-    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options,solvers);
+    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options,complexsolver);
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
     if ~isempty(complexInfo)

@@ -1,4 +1,4 @@
-function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend,options,solvers)
+function [Fdual,objdual,X,t,err,complexInfo] = dualize(F,obj,auto,extlp,extend,options,complexsolver)
 % DUALIZE Create the dual of an SDP given in primal form
 %
 % [Fd,objd,X,t,err] = dualize(F,obj,auto)
@@ -80,11 +80,9 @@ end
 
 if extend    
     if nargin < 6 || isempty(options)    
-        extoptions = sdpsettings;
-    else
-    	extoptions = options;
+        options = sdpsettings;
     end
-    [F,failure,cause] = expandmodel(F,obj,extoptions);
+    [F,failure,cause] = expandmodel(F,obj,options);
     if failure
         error('Failed during convexity propagation. Avoid nonlinear operators when applying dualization.');
     end
@@ -98,11 +96,8 @@ if nargin<4 || isempty(extlp)
     extlp = 1;
 end
 
-if nargin < 7 || isempty(options) || strcmpi(options.solver,'')
-	solver.complex = 0;
-else
-	solverindex = min(find(strcmpi(lower({solvers.tag}),lower(options.solver))));
-	solver = solvers(solverindex);
+if nargin < 7
+	complexsolver = 0;
 end
 
 % Cones and equalities
@@ -124,29 +119,31 @@ isSDP = is(F,'sdp');
 for i = 1:length(F)
     if isSDP(i);        
         Fi = lmi2sdpvar(F,i);
-        if is(Fi,'shiftsdpcone')
-            vars = getvariables(Fi);
-            if isempty(findrows(varSDP,[vars(1) vars(end)]))
-            	if solver.complex == 1
-            		SDPset(i) = 1;	
-                	varSDP = [varSDP;vars(1) vars(end)];
-                	shiftMatrix{end+1} = getbasematrix(Fi,0);
-                	X{end+1}=Fi;
-                else
-                	if is(Fi,'real')
-	            		SDPset(i) = 1;	
-	                	varSDP = [varSDP;vars(1) vars(end)];
-	                	shiftMatrix{end+1} = getbasematrix(Fi,0);
-	                	X{end+1}=Fi;
-                	end
-                end
-			end
+        if complexsolver == 1
+	        if is(Fi,'complexshiftsdpcone')
+	            vars = getvariables(Fi);
+	            if isempty(findrows(varSDP,[vars(1) vars(end)]))
+	                SDPset(i) = 1;
+	                varSDP = [varSDP;vars(1) vars(end)];
+	                shiftMatrix{end+1} = getbasematrix(Fi,0);
+	                X{end+1}=Fi;
+	            end
+	        end
+        elseif complexsolver == 0
+	        if is(Fi,'shiftsdpcone')
+	            vars = getvariables(Fi);
+	            if isempty(findrows(varSDP,[vars(1) vars(end)]))
+	                SDPset(i) = 1;
+	                varSDP = [varSDP;vars(1) vars(end)];
+	                shiftMatrix{end+1} = getbasematrix(Fi,0);
+	                X{end+1}=Fi;
+	            end
+	        end
 		end
     end
 end
 F_SDP = F(find(SDPset));
 F = F(find(~SDPset));
-
 % Same thing for second order cones
 % However, we must not add any SOC cones
 % that we already defined as SDP cones
@@ -457,7 +454,7 @@ end
 % If complex SDP cone, we reformulate and call again on a real-valued
 % problem. This leads to twice the amount of work, but it is a quick fix
 % for the moment
-if any(is(F_CONE,'complexsdpcone')) & (solver.complex == 0)
+if any(is(F_CONE,'complexsdpcone')) & (complexsolver == 0)
     F_NEWCONES = [];
     top = 1;
     for i = 1:length(X)      
@@ -507,7 +504,7 @@ if any(is(F_CONE,'complexsdpcone')) & (solver.complex == 0)
     F_reformulated = [F_NEWCONES, F_AXb, x>=0];
     complexInfo.replaced = Xreplace;
     complexInfo.new = Xnew;
-    [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend,options,solvers);
+    [Fdual,objdual,X,t,err] = dualize(F_reformulated,obj,auto,extlp,extend,options,complexsolver);
     return
 end
 
@@ -531,7 +528,7 @@ for i = 1:length(F_CONE)
         shift = [shift;shiftMatrix{i}(:)];
     else
         % SDP
-        if is(X{i},'complex') & (solver.complex == 1)
+        if is(X{i},'complex') & (complexsolver == 1)
         	ind = reshape(1:ns(i)^2,ns(i),ns(i));
         	indr = find(tril(ind));
         	indc = find(tril(ind,-1));
@@ -698,7 +695,7 @@ for j = 1:1:n_cones
 
     if size(X{j},1)==size(X{j},2)
         % SDP cone
-        if is(X{j},'complex') & (solver.complex == 1)
+        if is(X{j},'complex') & (complexsolver == 1)
 
 	        ind = reshape(1:ns(j)^2,ns(j),ns(j));
     	    indr = find(tril(ind)); %real part
@@ -841,7 +838,7 @@ for j = 1:1:n_cones
         %C{j} = (C{j}+ C{j}')/2;
         %start = start + length(ind);
 
-		if is(X{j},'complex') & (solver.complex == 1)
+		if is(X{j},'complex') & (complexsolver == 1)
 			ind = reshape(1:ns(j)^2,ns(j),ns(j));
         	[indir,indjr] = find(tril(ind)); %real part
         	[indic,indjc] = find(tril(ind,-1)); %imaginary part
