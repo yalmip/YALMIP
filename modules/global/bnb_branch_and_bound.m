@@ -276,10 +276,6 @@ poriginal = probeForNewUpper(poriginal,upper);
 p = probeForNewUpper(p,upper);
 poriginal = updateCardinalityFromUpper(poriginal,upper);
 p.globalcardinality = poriginal.globalcardinality;
-
-% Used for pseudo-cost
-Pseudo.ObjectiveGainsPerUnit.up = cell(1,length(p.c));
-Pseudo.ObjectiveGainsPerUnit.down = cell(1,length(p.c));
  
 while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
               
@@ -433,18 +429,6 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     if output.problem==0 || output.problem==3 || output.problem==4 || output.problem==5
         cost = computecost(f,c,Q,x,p);
         
-        if output.problem == 0
-            switch p.fixdir                
-                case 'up'
-                    dc = (cost-p.lower)/p.IntInfeas;
-                    Pseudo.ObjectiveGainsPerUnit.up{p.fixedvariable} = [Pseudo.ObjectiveGainsPerUnit.up{p.fixedvariable} dc];
-                case 'down'
-                    dc = (cost-p.lower)/p.IntInfeas;
-                    Pseudo.ObjectiveGainsPerUnit.down{p.fixedvariable} = [Pseudo.ObjectiveGainsPerUnit.down{p.fixedvariable} dc];
-                otherwise
-            end
-        end
-        
         if output.problem~=1
             if output.problem == 3 || output.problem == 4 || output.problem == 5
                 cost = -inf;
@@ -521,17 +505,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             keep_digging = 0;
             cost = inf;
             feasible = 0;
-                               
-            switch p.fixdir                
-                case 'up'
-                    dc = inf;
-                    Pseudo.ObjectiveGainsPerUnit.up{p.fixedvariable} = [Pseudo.ObjectiveGainsPerUnit.up{p.fixedvariable} dc];
-                case 'down'
-                    dc = inf;
-                    Pseudo.ObjectiveGainsPerUnit.down{p.fixedvariable} = [Pseudo.ObjectiveGainsPerUnit.down{p.fixedvariable} dc];
-                otherwise
-            end        
-            
+
         case 2
             cost = -inf;
         otherwise
@@ -644,7 +618,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         % **********************************
         % BRANCH VARIABLE
         % **********************************
-        [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,p.options,x_min,[],p,Pseudo);
+        [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,p.options,x_min,[],p);
         
         % **********************************
         % CREATE NEW PROBLEMS
@@ -771,7 +745,7 @@ end
 % **********************************
 %% BRANCH VARIABLE
 % **********************************
-function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p,Pseudo)
+function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p)
 all_variables = [integer_variables(:);binary_variables(:)];
 
 if ~isempty(p.sosvariables) && isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')
@@ -801,31 +775,6 @@ switch options.bnb.branchrule
         indic = (1+min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
         [val,index] = max(indic);
         
-    case 'pseudo'
-        for k = all_variables(:)'
-            gu(k) = mean(Pseudo.ObjectiveGainsPerUnit.up{k});            
-            gd(k) = mean(Pseudo.ObjectiveGainsPerUnit.down{k});                           
-        end
-        gu = gu(all_variables);
-        gd = gd(all_variables);
-        gu_m = mean(~gu(~isnan(gu)));
-        gd_m = mean(~gd(~isnan(gd)));
-        if isnan(gu_m)
-            gu_m = 1;
-        end        
-        if isnan(gd_m)
-            gd_m = 1;
-        end
-        gu(isnan(gu))=gu_m;
-        gd(isnan(gd))=gd_m;
-        for k = 1:length(all_variables)
-            xk = x(all_variables(k));
-            dxu = ceil(xk) - xk;
-            dxd = xk - floor(xk);
-            s(k) = (1+gu(k)*dxu)*(1+gd(k)*dxd);
-        end
-        [~,index] = max(s);
-               
     otherwise
         error('Branch-rule not supported')
 end
@@ -984,6 +933,9 @@ p1.semibounds.ub(index)=[];
 
 p0.fixdir = 'down';
 p1.fixdir = 'up';
+
+p0.IntInfeas = 1;
+p1.IntInfeas = 1;
 
 function s = num2str2(x,d,c)
 if nargin==3
