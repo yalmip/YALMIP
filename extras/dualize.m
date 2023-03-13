@@ -725,9 +725,9 @@ for j = 1:1:n_cones
             sA(id) = 2*sA(id);
 
             [iFc,jFc,sFc] = find(Fic);
-            iAc = indc(iFc);
-            jAc = jFc;
-            sAc = sFc;
+            iAc = indc(iFc(:)); %ensure these are column vectors
+            jAc = jFc(:);
+            sAc = sFc(:);
             the_col = 1+floor((iAc-1)/ns(j));
             the_row = iAc-(the_col-1)*ns(j);
             these_must_be_transposed = find(the_row > the_col);
@@ -964,5 +964,6 @@ for i = 1:length(F)
         implicit_positive = [implicit_positive vars(ii)];
     end
 end
+
 
 
