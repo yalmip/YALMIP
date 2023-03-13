@@ -1,6 +1,9 @@
 function feasible = checkfeasiblefast(p,x,tol)
 
 feasible = 0;
+if isempty(x)
+    return
+end
 if ~(all(x < p.ub+tol) && all(x > p.lb-tol))
     return
 end
