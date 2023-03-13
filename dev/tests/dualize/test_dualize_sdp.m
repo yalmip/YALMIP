@@ -270,3 +270,11 @@ testCase.assertTrue(sol1.problem == 0);
 testCase.assertTrue(sol2.problem == 0);
 testCase.assertTrue(abs(o1 - o2) <= 1e-4);
 
+function test13(testCase)
+yalmip('clear')
+N = 5;
+X = sdpvar(N,N,'hermitian','complex');
+F = [X>=0, X(1) == 2];
+opts = sdpsettings('dualize',1,'verbose',1);
+sol = optimize(F,trace(X),opts);
+testCase.assertTrue(sol.problem == 0);
