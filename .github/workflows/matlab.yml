@@ -11,6 +11,11 @@ on:
     branches: [ develop ]
   
   workflow_dispatch:
+  
+permissions:
+  contents: read
+  statuses: write
+  checks: write  
 
 jobs:
   
