@@ -208,6 +208,10 @@ end
 % *************************************************************************
 cutsolver = p.solver.lower.call;
 
+% Prepare of detected
+p.forbiddencardinality.variables = {};
+p.forbiddencardinality.value= {};
+
 p = smashFixed(p);
 p = addImpliedSDP(p);
 p = detect_knapsack(p);
