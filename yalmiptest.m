@@ -101,9 +101,9 @@ end
 [solvers,found] = getavailablesolvers(0);
 j = 1;
 status = ones(length(solvers),1);
+s = {solvers.tag};
 for i = 1:length(solvers)
     if solvers(i).show
-        s = {solvers.tag};
         same = find(strcmpi(solvers(i).tag,s));
         % Find all instances of same solver different versions
         for k = setdiff(same,i)
@@ -114,13 +114,16 @@ for i = 1:length(solvers)
         data{j,1} = upper(solvers(i).tag);
         found_versions = same(find(found(same)));
         if ~isempty(found_versions)
-            version = solvers(min(found_versions)).version;
+        	idx = min(found_versions);
+            version = solvers(idx).version;
             if ~any(strcmpi(version,{'geometric','standard'}))
-                data{j,2} = solvers(min(found_versions)).version;
+                data{j,2} = solvers(idx).version;
             end
+        else
+        	idx = i;
         end
-        status(j) = found(i)+1+solvers(i).builtin;
-        data{j,3} = foundstring{found(i)+1+solvers(i).builtin};
+        status(j) = found(idx)+1+solvers(idx).builtin;
+        data{j,3} = foundstring{found(idx)+1+solvers(idx).builtin};
         j = j+1;
     end
 end
