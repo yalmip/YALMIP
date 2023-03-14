@@ -773,7 +773,7 @@ solver(i).call    = 'callsedumi';
 solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
 solver(i).constraint.inequalities.rotatedsecondordercone.linear = 0;
-solver(i).complex = 0;
+solver(i).complex = 1;
 i = i+1;
 
 solver(i) = sdpsolver;
