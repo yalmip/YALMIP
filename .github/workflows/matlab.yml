@@ -12,16 +12,16 @@ on:
   
   workflow_dispatch:
   
-permissions:
-  contents: read
-  statuses: write
-  checks: write  
-
 jobs:
   
   job1:
     name: Complete integration (basics)
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      statuses: write
+      checks: write
     
     steps:
       - uses: actions/checkout@v2
@@ -69,6 +69,11 @@ jobs:
   job2:
     name: Complete integration (modules)    
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      statuses: write
+      checks: write
     
     steps:
       - uses: actions/checkout@v2
@@ -136,6 +141,11 @@ jobs:
   job3:
     name: Complete integration (solvers)   
     runs-on: ubuntu-latest
+        
+    permissions:
+      contents: read
+      statuses: write
+      checks: write
     
     steps:
       - uses: actions/checkout@v2
