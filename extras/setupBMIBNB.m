@@ -79,7 +79,7 @@ else
     tempProblemClass.constraint.inequalities.semidefinite.linear = 1;
     temp_options.solver = options.bmibnb.sdpsolver;
     [sdpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
-    if problem 
+    if problem || strcmpi(sdpsolver.tag,'bnb')
         % We will not be able to run these strategies
         solver.sdpsolver = [];
     else
