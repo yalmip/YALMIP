@@ -64,9 +64,11 @@ if ~isempty(p.binary_variables) && ~isempty(p.F_struc)
                     if ~ismember( sL(j),p.binary_variables)   % {d implies x(s) <= q}
                         q = pprobed.lb(sL(j));
                         L = p.lb(sL(j));
-                        newCuts(end+1,1) = -L;
-                        newCuts(end,1+sL(j)) = 1;
-                        newCuts(end,1+p.binary_variables(i)) = L-q;
+                        if ~isinf(q) && ~isinf(L)
+                            newCuts(end+1,1) = -L;
+                            newCuts(end,1+sL(j)) = 1;
+                            newCuts(end,1+p.binary_variables(i)) = L-q;
+                        end
                     end
                 end
                 for j = 1:length(sU)
@@ -75,9 +77,11 @@ if ~isempty(p.binary_variables) && ~isempty(p.F_struc)
                         % U - x(s) + d*(q-U) >= 0
                         q = pprobed.ub(sU(j));
                         U = p.ub(sU(j));
-                        newCuts(end+1,1) = U;
-                        newCuts(end,1+sU(j)) = -1;
-                        newCuts(end,1+p.binary_variables(i)) = q-U;
+                        if ~isinf(q) && ~isinf(U)
+                            newCuts(end+1,1) = U;
+                            newCuts(end,1+sU(j)) = -1;
+                            newCuts(end,1+p.binary_variables(i)) = q-U;
+                        end
                     end
                 end
             end
