@@ -14,6 +14,12 @@ if ~findallsolvers
             isavailable = isavailable & s;
             j = j + 1;
         end
+        if ~isempty(solvers(i).detector)
+            try
+                isavailable = isavailable & solvers(i).detector();
+            catch
+            end
+        end
         if ~isavailable
             keep(i)=0;
         end
