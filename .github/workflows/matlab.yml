@@ -19,9 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: read
-      statuses: write
       checks: write
+      contents: write
+      pull-requests: write
+      statuses: write      
     
     steps:
       - uses: actions/checkout@v2
