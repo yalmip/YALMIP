@@ -14,11 +14,17 @@ if ~findallsolvers
             isavailable = isavailable & s;
             j = j + 1;
         end
-        if ~isempty(solvers(i).detector)
+        if isavailable && ~isempty(solvers(i).detector)
             try
                 isavailable = isavailable & solvers(i).detector();
             catch
             end
+        end
+        if isavailable && ~isempty(solvers(i).versionnumbercreator)
+            solvers(i).subversion = solvers(i).versionnumbercreator();            
+        end
+        if isavailable && ~isempty(solvers(i).requiredversionnumber)
+            isavailable = isavailable & isVersionRecent(solvers(i).subversion, solvers(i).requiredversionnumber);
         end
         if ~isavailable
             keep(i)=0;

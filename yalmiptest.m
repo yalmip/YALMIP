@@ -117,7 +117,7 @@ for i = 1:length(solvers)
         	idx = min(found_versions);
             version = solvers(idx).version;
             if ~any(strcmpi(version,{'geometric','standard'}))
-                data{j,2} = solvers(idx).version;
+                data{j,2} = [solvers(idx).version ' ' solvers(idx).subversion];
             end
         else
         	idx = i;
