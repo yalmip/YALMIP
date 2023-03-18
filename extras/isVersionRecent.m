@@ -5,11 +5,12 @@ function isRecent = isVersionRecent(version1, version2)
 version1Arr = str2double(strsplit(version1, '.'));
 version2Arr = str2double(strsplit(version2, '.'));
 
-% Add zero components to version arrays if they have different lengths
-if numel(version1Arr) < numel(version2Arr)
-    version1Arr(end+1:numel(version2Arr)) = 0;
-elseif numel(version2Arr) < numel(version1Arr)
-    version2Arr(end+1:numel(version1Arr)) = 0;
+% Add zero components to version arrays if they are not in the format x.y.z
+if numel(version1Arr) < 3
+    version1Arr(end+1:3) = 0;
+end
+if numel(version2Arr) < 3
+    version2Arr(end+1:3) = 0;
 end
 
 % Compare the version numbers
