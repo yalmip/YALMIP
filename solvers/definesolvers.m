@@ -758,17 +758,6 @@ i = i+1;
 
 solver(i) = sdpsolver;
 solver(i).tag     = 'SeDuMi';
-solver(i).subversion = '1.1';
-solver(i).checkfor= {'sedumi.m','ada_pcg.m','qinvsqrt','install_sedumi'};
-solver(i).call    = 'callsedumi';
-solver(i).constraint.equalities.linear = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-solver(i).constraint.inequalities.rotatedsecondordercone.linear = 0;
-solver(i).complex = 1;
-i = i+1;
-
-solver(i) = sdpsolver;
-solver(i).tag     = 'SeDuMi';
 solver(i).subversion = '1.3.6';
 solver(i).checkfor= {'sedumi.m','ada_pcg.m','install_sedumi'};
 solver(i).detector= @()isequal('1.3.6',sedumi_version());
@@ -783,6 +772,17 @@ solver(i) = sdpsolver;
 solver(i).tag     = 'SeDuMi';
 solver(i).subversion = '1.3';
 solver(i).checkfor= {'sedumi.m','ada_pcg.m','install_sedumi'};
+solver(i).call    = 'callsedumi';
+solver(i).constraint.equalities.linear = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.inequalities.rotatedsecondordercone.linear = 0;
+solver(i).complex = 0;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag     = 'SeDuMi';
+solver(i).subversion = '1.1';
+solver(i).checkfor= {'sedumi.m','ada_pcg.m','qinvsqrt','install_sedumi'};
 solver(i).call    = 'callsedumi';
 solver(i).constraint.equalities.linear = 1;
 solver(i).constraint.inequalities.secondordercone.linear = 1;
