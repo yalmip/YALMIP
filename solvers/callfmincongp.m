@@ -91,7 +91,12 @@ prob = precalcgpstruct(prob);
 options.fmincon.GradObj    = 'on';
 options.fmincon.GradConstr = 'on';
 solvertime = tic;
-[xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
+if ~exist('OCTAVE_VERSION','builtin')
+    [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
+else
+    [xout,fmin,flag,output] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
+    lambda = [];
+end
 solvertime = toc(solvertime);
 
 x = zeros(length(c),1);
