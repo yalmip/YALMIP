@@ -11,7 +11,13 @@ end
 
 try
     if ishermitian(X) && ishermitian(Y)
-        y = constraint(triu(X),'==',triu(Y));
+    	if isreal(X) && isreal(Y)
+		    mask = triu(true(length(X)));
+		    y = constraint(extsubsref(X,mask),'==',extsubsref(Y,mask));
+		else
+		    mask = triu(true(length(X)),1);
+    	    y = constraint([diag(X);real(extsubsref(X,mask));imag(extsubsref(X,mask))],'==',[diag(Y);real(extsubsref(Y,mask));imag(extsubsref(Y,mask))]);
+    	end
     else
         y = constraint(X,'==',Y);
     end
