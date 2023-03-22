@@ -1288,17 +1288,20 @@ catch
 end
 
 function scs = setup_scs_options
-scs.alpha = 1.5;
-scs.rho_x = 1e-3;
-scs.max_iters = 2500;
-scs.eps_abs = 1e-3;
-scs.eps_rel = 1e-3;
-scs.eps_infeas = 1e-3;
-scs.normalize = 1;
-scs.scale = 5;
-scs.cg_rate = 2;
-scs.eliminateequalities = 0;
-scs.gpu = false;
+    scs.normalize = 1;
+    scs.scale = 0.1;
+    scs.adaptive_scale = 1;
+    scs.rho_x = 1e-6;
+    scs.max_iters = 100000;
+    scs.eps_abs = 1e-4;
+    scs.eps_rel = 1e-4;
+    scs.eps_infeas = 1e-7;
+    scs.alpha = 1.5;
+    scs.acceleration_lookback = 10;
+    scs.acceleration_interval = 10;
+    scs.eliminateequalities = 0;
+    scs.gpu = false;
+
 
 function dsdp = setup_dsdp_options
 try
