@@ -1297,8 +1297,11 @@ function scs = setup_scs_options
     scs.eps_rel = 1e-4;
     scs.eps_infeas = 1e-7;
     scs.alpha = 1.5;
+    scs.time_limit_secs = 0;
     scs.acceleration_lookback = 10;
     scs.acceleration_interval = 10;
+    scs.write_data_filename = "";
+    scs.log_csv_filename = "";
     scs.eliminateequalities = 0;
     scs.gpu = false;
 
