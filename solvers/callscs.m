@@ -30,7 +30,6 @@ else
     xsol = 0;
 end
 
-
 if model.options.savedebug
     save scsdebug scsmodel
 end
@@ -58,9 +57,9 @@ if ~isempty(model.evalMap)
     Dual = [];
 else
     % Map to full format from tril
-    Dual = y_s(1:scsmodel.cones.f+scsmodel.cones.l+sum(scsmodel.cones.q));
+    Dual = y_s(1:scsmodel.cones.z+scsmodel.cones.l+sum(scsmodel.cones.q));
     if ~isempty(scsmodel.cones.s) && any(scsmodel.cones.s)        
-        top = 1 + scsmodel.cones.f + scsmodel.cones.l + sum(scsmodel.cones.q);
+        top = 1 + scsmodel.cones.z + scsmodel.cones.l + sum(scsmodel.cones.q);
         for i = 1:length(scsmodel.cones.s)
             n = scsmodel.cones.s(i);
             sdpdual = y_s(top:top + n*(n+1)/2-1,:);
