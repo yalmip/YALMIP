@@ -723,6 +723,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 title('Histogram lower bounds')
                 drawnow
             end
+            upper = full(upper);
+            lower = full(lower);
             if lastUpper > upper
                 fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f   %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),size(globalcuts,1),etime(clock,bnbsolvertime),'-> Found improved solution!');
             else
