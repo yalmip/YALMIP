@@ -57,7 +57,7 @@ switch errorcode
         if flag
             error_string = ['Unknown error  ' solver];
         else
-            error_string = ['Unknown error (<a href="yalmip.github.io/tutorial/inside/debug">learn to debug</a>) ' solver];
+            error_string = ['Unknown error (<a href="yalmip.github.io/inside/debug">learn to debug</a>) ' solver];
         end
     case 0
         error_string = ['Successfully solved ' solver ];
@@ -94,7 +94,7 @@ switch errorcode
     case 8
         error_string = ['Feasibility cannot be determined ' solver ];
     case 9
-        error_string = ['Unknown problem (<a href="yalmip.github.io/tutorial/inside/debug">learn to debug</a>) ' solver ];
+        error_string = ['Unknown problem (<a href="yalmip.github.io/inside/debug">learn to debug</a>) ' solver ];
     case 10
         error_string = ['bigM failed, increase sp.Mfactor ' solver ];
     case 11
