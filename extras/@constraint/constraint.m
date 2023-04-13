@@ -41,7 +41,7 @@ if isa(Z,'double')
         Z = Z(:);
         switch quantifier
             case '=='
-                if all(Z)==0
+                if all(Z==0)
                     warning('Equality constraint evaluated to trivial true.')
                     F = [];
                     return
