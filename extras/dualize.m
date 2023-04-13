@@ -956,6 +956,7 @@ for i = 1:length(F)
     n = sqrt(size(B,1));
     d = 1:(n+1):n^2;
     B = B(d,:);
+    B = real(B); % Temporary fix to remove negligible imaginary parts that can occur for large problems
     candidates = find((B(:,1) == 0) & (sum(B | B,2) == 1) & (sum(B,2) == 1));
     if ~isempty(candidates)
         vars = getvariables(Fi);
