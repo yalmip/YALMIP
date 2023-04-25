@@ -35,7 +35,7 @@ upperhere = computecost(p.f,p.corig,p.Q,x,p);
 if upperhere < upper
     if checkfeasiblefast(p,x,p.options.bnb.feastol)
         x_min = x;
-        upper = upper_here;
+        upper = upperhere;
     elseif ~isempty(sdp)
         [upper,x_min] = extendSDP(p,x,sdp,convars,intvars,upper,x_min);
     end
