@@ -5,7 +5,10 @@ h = varargin{2};
 varargin{2} = sum(recover(depends(h)));
 
 if ~is(h,'linear')
-    error('Parts of your matrix objective is not linear (multiple solutions can currently only be obtained for linear objectives)');
+    disp(['You have sent an objective of size ' sizestring(size(h))]);
+    disp('Multiple objectives is only supported for linear case (<a href="https://yalmip.github.io/multiplesolutions">see here</a>)');   
+    disp('Most likely you have created a non-scalar by mistake');
+    error('Multiple solutions only supported for linear case');
 end
 
 if is(h,'complex')
