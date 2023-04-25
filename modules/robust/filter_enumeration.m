@@ -188,7 +188,16 @@ for j = 1:length(F_xw_socp_sdp)
         if ~isempty(uncAux)
             temp = replace(temp,uncAux,z{i});
         end
-        F = F + lmi(temp);
+        if is(F_xw_socp_sdp(j),'socp')
+            B = getbase(temp);
+            % Has this been simplified to norm(constant)<=
+            if ~any(B(2:end,2:end))
+                temp = sdpvar(temp);
+                F = F + [temp(1)>=norm(B(2:end,1))];
+            end
+        else
+            F = F + lmi(temp);
+        end
     end
 end
 
