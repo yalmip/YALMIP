@@ -194,6 +194,8 @@ for j = 1:length(F_xw_socp_sdp)
             if ~any(B(2:end,2:end))
                 temp = sdpvar(temp);
                 F = F + [temp(1)>=norm(B(2:end,1))];
+            else
+                F = F + lmi(temp);
             end
         else
             F = F + lmi(temp);
