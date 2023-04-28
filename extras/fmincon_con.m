@@ -83,14 +83,15 @@ if any(model.K.s)
         n = model.K.s(i);
         X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
         X = full(reshape(X,n,n));
-        [d,v] = eig(X); 
-        v = diag(v);
+        [d,v] = eig(X);
+        v = diag(v);       
         if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
             v = cumsum(v);
         end
         % These will reordered later
-        g = [g;-v(1:min(n,sdpLayer.n))];
-        top = top + n^2;          
+        g = [g;-v(1:sdpLayer.n(i))];
+        %g = [g;-v(1:min(n,sdpLayer.n))];FX
+        top = top + n^2;
     end
 end
 
@@ -173,15 +174,29 @@ end
 if model.nonlinearinequalities || anyCones(model.K)
     dg = dg';   
 end
-% hold on
-% x = sdpvar(2,1);
-% plot([g + dg'*(x-xevaled(1:2))<=0,-3<=x<=3],x,'y',[],sdpsettings('plot.shade',.1))
-% plot(xevaled(1),xevaled(2),'+b')
-% drawnow
-% axis([-2 2 -2 2])
-% dg
-% xevaled
-% 1;
+
+if model.options.debugplot
+    clf;hold on
+    x = sdpvar(2,1);grid on
+    try
+        plot([g + dg'*(x-xevaled(1:2))<=0,-3<=x<=3],x,'y',[],sdpsettings('plot.shade',.1))
+    catch
+    end
+    e = sdisplay(g + dg'*(x-xevaled(1:2)));
+    colors = {'red','blue','green','magenta'};
+    for i = 1:length(g)
+        s = replace(replace([e{i} '=0'],'x(1)','x'),'x(2)','y');
+        if ismember('x',s) && ismember('y',s)
+            l = ezplot(s);
+            set(l,'color',colors{i});
+        end
+    end
+    plot(xevaled(1),xevaled(2),'+b')
+    drawnow;
+    axis([-4 4 -4 4])
+    1;
+end
+
 
 function conederiv = computeSOCPDeriv(model,z,dzdx)
 conederiv = [];
@@ -327,14 +342,7 @@ for i = 1:length(model.K.s)
     else
         sdpLayer.eigenVectors{i} = d;
     end
-    %  use
-%    if any( find(use))
-%        disp(use)
-%    end
     d(:,find(use)) = sdpLayer.eigenVectors{i}(:,use(find(use)));
-    %   if size(sdpLayer.eigenVectors{i},2) > 5*n
-    %       sdpLayer.eigenVectors{i} = sdpLayer.eigenVectors{i}(:,end-5*n:end);
-    %   end
     newSDPblock = [];
     nZeroVectors = length(find(abs(diag(v))<=1e-8));
     try
@@ -367,24 +375,10 @@ for i = 1:length(model.K.s)
         end
     catch
         %  'Fail'
-    end
-    pre_reordering = 1:n;
-    %     if any(abs(diff(diag(v))) <=1e-6)
-    %         groupStart = 1;
-    %         vv = diag(v);
-    %         while groupStart < n
-    %             thisGroup = find(abs(vv(groupStart+1:end)-vv(groupStart))<=1e-6);
-    %             if any(thisGroup)
-    %                 members = [groupStart groupStart+thisGroup(:)'];
-    %                 [~,loc] = sort((1:n)*abs(d(:,members)));
-    %                 pre_reordering(members) = members(loc);
-    %                 groupStart = groupStart + length(members);
-    %             else
-    %                 groupStart = groupStart + 1;
-    %             end
-    %         end
-    %     end
-    for m = 1:min(sdpLayer.n,model.K.s(i))
+    end 
+    %pre_reordering = 1:min(sdpLayer.n,model.K.s(i));
+    pre_reordering = 1:sdpLayer.n(i);
+    for m = 1:sdpLayer.n(i)%min(sdpLayer.n,model.K.s(i))
         newrow = [];
         newrow = oneSDPGradient(d(:,m),B(top:top+n^2-1,:));
         newSDPblock = [newSDPblock;newrow];
@@ -396,7 +390,7 @@ for i = 1:length(model.K.s)
     if ~isempty(sdpLayer.oldGradient{i})
         [reordering] = matchGradientRows(newSDPblock,sdpLayer.oldGradient{i});
         newSDPblock = newSDPblock(reordering,:);
-        reordering = reordering(pre_reordering);
+        reordering = reordering(pre_reordering);       
     end
     %  newSDPblock
     sdpLayer.oldGradient{i} = newSDPblock;
@@ -443,13 +437,16 @@ end
 function  g = reorderEigenvalueG(g,model)
 global sdpLayer
 if ~isempty(sdpLayer.reordering{1})
-    g_nonsdp = g(1:end-sum(min(sdpLayer.n,model.K.s)));
-    g_sdp = g(end-sum(min(sdpLayer.n,model.K.s))+1:end);
+    %g_nonsdp = g(1:end-sum(min(sdpLayer.n,model.K.s)));%FX
+    g_nonsdp = g(1:end-sum(sdpLayer.n));
+    %g_sdp = g(end-sum(min(sdpLayer.n,model.K.s))+1:end);FX
+    g_sdp = g(end-sum(sdpLayer.n)+1:end);
     reordering = [];
     top = 0;
     for i = 1:length(model.K.s)
         reordering = [reordering;top+sdpLayer.reordering{i}];
-        top = top + min(sdpLayer.n,model.K.s(i));
+        %top = top + min(sdpLayer.n,model.K.s(i));FX
+        top = top + sdpLayer.n(i);
     end
     g_sdp = g_sdp(reordering);
     g = [g_nonsdp;g_sdp];

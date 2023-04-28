@@ -72,7 +72,14 @@ sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 sdpLayer.nullVectors = cell(length(model.K.s),1);
 sdpLayer.eigenVectors = cell(length(model.K.s),1);
-sdpLayer.n  = inf;
+
+if isequal(model.options.slayer.m,inf)
+    sdpLayer.n  = model.K.s;
+elseif isequal(model.options.slayer.m,-1)
+    sdpLayer.n  = min(length(model.c),model.K.s);
+else
+    sdpLayer.n = repmat(model.options.slayer.m,1,length(model.K.s));
+end
 
 showprogress('Calling FMINCON',model.options.showprogress);
 

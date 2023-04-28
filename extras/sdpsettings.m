@@ -437,6 +437,7 @@ options.saveyalmipmodel  = 0;
 options.convertconvexquad = 1;
 options.assertgpnonnegativity = 1;
 options.thisisnotagp = 0;
+options.debugplot = 0;
 options.radius = inf;
 options.relax = 0;
 options.dualize = 0;

@@ -82,7 +82,14 @@ sdpLayer.nullVectors = cell(length(model.K.s),1);
 sdpLayer.eigenVectors = cell(length(model.K.s),1);
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
-sdpLayer.n  = inf;
+
+if isequal(model.options.slayer.m,inf)
+    sdpLayer.n  = model.K.s;
+elseif isequal(model.options.slayer.m,-1)
+    sdpLayer.n  = min(length(model.c),model.K.s);
+else
+    sdpLayer.n = repmat(model.options.slayer.m,1,length(model.K.s));
+end
 
 funcs.objective = @(x)ipopt_callback_f(x,model);
 funcs.gradient = @(x)ipopt_callback_df(x,model);
