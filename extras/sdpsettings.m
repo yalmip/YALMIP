@@ -529,6 +529,7 @@ bnb.rounding = {'ceil','floor','round','shifted round','fix'};
 bnb.uppersolver = 'rounder';
 bnb.branchrule = 'max';
 bnb.method = 'depthbest';
+bnb.cuts = -1;
 bnb.cut.knapsack.cover = 1;
 bnb.cut.sdpknapsack.cover = 1;
 bnb.round = 1;
