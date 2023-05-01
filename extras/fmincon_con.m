@@ -197,7 +197,6 @@ if model.options.debugplot
     1;
 end
 
-
 function conederiv = computeSOCPDeriv(model,z,dzdx)
 conederiv = [];
 z = sparse(z(:));
@@ -318,31 +317,64 @@ for i = 1:length(model.K.s)
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
     [d,v] = eig(X);
-    if ~isempty(sdpLayer.eigenVectors)
-        use = zeros(1,n);
-        used = zeros(1,size(sdpLayer.eigenVectors{i},2));
-        for j = 1:n
-            if ~isempty(sdpLayer.eigenVectors{i})
-                Xv = X*sdpLayer.eigenVectors{i};
+    C = determineClusters(diag(v), eps^.75);
+
+    if model.options.slayer.stabilize
+        if ~isempty(sdpLayer.eigenVectors{i})        
+            C = determineClusters(diag(v), 1e-5);
+            if length(C) < n
+                dnew = [];
+                for j = 1:length(C)
+                    if length(C{j})==1
+                        dnew = [dnew d];
+                    else
+                        m = length(C{j});
+                        % All other
+                        therest = [C{setdiff(j:length(C),j)}];
+                        V = [d(:,therest) dnew];
+                        for k = C{j}
+                            V = [d(:,therest) dnew];
+                            A = [V';X-v(k,k)*eye(n)];
+                            old = sdpLayer.eigenVectors{i}(:,k);
+                            xl = ([eye(n) A';
+                                A zeros(size(A,1))]+7e-7*eye(n+size(A,1)))\[old(:);zeros(size(A,1),1)];
+                            z = xl(1:n);
+                            
+                            dnew = [dnew z/norm(z)];
+                        end
+                    end
+                end
+                d = dnew;
             end
-            for k = 1:size(sdpLayer.eigenVectors{i},2)
-                s = norm(Xv(:,k)-v(j,j)*sdpLayer.eigenVectors{i}(:,k));
-                if s <= 1e-12
-                    if ~used(k) && ~use(j)
-                        use(j) = k;
-                        used(k) = 1;
+        end
+        sdpLayer.eigenVectors{i} = d;
+    else
+        if ~isempty(sdpLayer.eigenVectors)
+            use = zeros(1,n);
+            used = zeros(1,size(sdpLayer.eigenVectors{i},2));
+            for j = 1:n
+                if ~isempty(sdpLayer.eigenVectors{i})
+                    Xv = X*sdpLayer.eigenVectors{i};
+                end
+                for k = 1:size(sdpLayer.eigenVectors{i},2)
+                    s = norm(Xv(:,k)-v(j,j)*sdpLayer.eigenVectors{i}(:,k));
+                    if s <= 1e-12
+                        if ~used(k) && ~use(j)
+                            use(j) = k;
+                            used(k) = 1;
+                        end
                     end
                 end
             end
+            sdpLayer.eigenVectors{i} = [sdpLayer.eigenVectors{i} d];
+            if size(sdpLayer.eigenVectors{i},2) > 10*size(sdpLayer.eigenVectors{i},1)
+                sdpLayer.eigenVectors{i} = sdpLayer.eigenVectors{i}(:,end-10*size(sdpLayer.eigenVectors{i},1):end);
+            end
+        else
+            sdpLayer.eigenVectors{i} = d;
         end
-        sdpLayer.eigenVectors{i} = [sdpLayer.eigenVectors{i} d];
-        if size(sdpLayer.eigenVectors{i},2) > 10*size(sdpLayer.eigenVectors{i},1)
-            sdpLayer.eigenVectors{i} = sdpLayer.eigenVectors{i}(:,end-10*size(sdpLayer.eigenVectors{i},1):end);
-        end        
-    else
-        sdpLayer.eigenVectors{i} = d;
+        d(:,find(use)) = sdpLayer.eigenVectors{i}(:,use(find(use)));
     end
-    d(:,find(use)) = sdpLayer.eigenVectors{i}(:,use(find(use)));
     newSDPblock = [];
     nZeroVectors = length(find(abs(diag(v))<=1e-8));
     try
@@ -452,9 +484,31 @@ if ~isempty(sdpLayer.reordering{1})
     g = [g_nonsdp;g_sdp];
 end
 
-function newrow = oneSDPGradient(d,B,top)
+function newrow = oneSDPGradient(d,B)
 n = size(d,1);
 newrow = [];
 for j = 1:size(B,2)
     newrow = [newrow d'*reshape(B(:,j),n,n)*d];
+end
+
+function [clusters] = determineClusters(vector, eps)
+% Cluster/detect muliple eigenvalues
+n = length(vector);
+if n == 0
+    clusters = [];
+    return
+end
+% Initialize first cluster
+clusters = {1};
+current_cluster = 1;
+% Iterate through elements and add to existing or new cluster
+for i = 2:n
+    if abs(vector(i) - vector(i-1)) <= eps
+        % Add to current cluster
+        clusters{current_cluster} = [clusters{current_cluster}, i];
+    else
+        % Start new cluster
+        current_cluster = current_cluster + 1;
+        clusters{current_cluster} = [i];
+    end
 end

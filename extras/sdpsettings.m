@@ -426,6 +426,7 @@ options.warmstart = 0;
 options.savedebug = 0;
 options.slayer.algorithm = 'convex';
 options.slayer.m = inf;
+options.slayer.stabilize = 1;
 options.warning = 1;
 options.cachesolvers = 0;
 options.showprogress = 0;
