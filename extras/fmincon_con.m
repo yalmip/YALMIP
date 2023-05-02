@@ -83,13 +83,13 @@ if any(model.K.s)
         n = model.K.s(i);
         X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
         X = full(reshape(X,n,n));
-        [d,v] = eig(X);
-        v = diag(v);       
+        [eigenvectors,eigenvalues] = eig(X);
+        eigenvalues = diag(eigenvalues);       
         if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
-            v = cumsum(v);
+            eigenvalues = cumsum(eigenvalues);
         end
         % These will reordered later
-        g = [g;-v(1:sdpLayer.n(i))];
+        g = [g;-eigenvalues(1:sdpLayer.n(i))];
         %g = [g;-v(1:min(n,sdpLayer.n))];FX
         top = top + n^2;
     end
@@ -175,7 +175,7 @@ if model.nonlinearinequalities || anyCones(model.K)
     dg = dg';   
 end
 
-if model.options.debugplot
+if model.options.debugplot && size(dg,1)==2
     clf;hold on
     x = sdpvar(2,1);grid on
     try
@@ -316,38 +316,37 @@ for i = 1:length(model.K.s)
     n = model.K.s(i);
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
-    [d,v] = eig(X);
-    C = determineClusters(diag(v), eps^.75);
-
+    [eigenvectors,eigenvalues] = eig(X);
+    eigenvalues = diag(eigenvalues);
+   
     if model.options.slayer.stabilize
-        if ~isempty(sdpLayer.eigenVectors{i})        
-            C = determineClusters(diag(v), 1e-5);
+        if ~isempty(sdpLayer.eigenVectors{i})                    
+            C = determineClusters(eigenvalues, 1e-7);
             if length(C) < n
                 dnew = [];
                 for j = 1:length(C)
                     if length(C{j})==1
-                        dnew = [dnew d];
+                        dnew = [dnew eigenvectors(:,C{j})];
                     else
                         m = length(C{j});
                         % All other
-                        therest = [C{setdiff(j:length(C),j)}];
-                        V = [d(:,therest) dnew];
+                        therest = [C{setdiff(j:length(C),j)}];                      
                         for k = C{j}
-                            V = [d(:,therest) dnew];
-                            A = [V';X-v(k,k)*eye(n)];
+                            V = [eigenvectors(:,therest) dnew];
+                            q = rand(n,1);
+                            A = [V';X-eigenvalues(k)*eye(n);q'];
                             old = sdpLayer.eigenVectors{i}(:,k);
                             xl = ([eye(n) A';
-                                A zeros(size(A,1))]+7e-7*eye(n+size(A,1)))\[old(:);zeros(size(A,1),1)];
+                                A zeros(size(A,1))]+1e-10*eye(n+size(A,1)))\[old(:);zeros(size(A,1)-1,1);sign(q'*old)];
                             z = xl(1:n);
-                            
                             dnew = [dnew z/norm(z)];
                         end
                     end
-                end
-                d = dnew;
+                end               
+                eigenvectors = dnew;
             end
         end
-        sdpLayer.eigenVectors{i} = d;
+        sdpLayer.eigenVectors{i} = eigenvectors;
     else
         if ~isempty(sdpLayer.eigenVectors)
             use = zeros(1,n);
@@ -357,7 +356,7 @@ for i = 1:length(model.K.s)
                     Xv = X*sdpLayer.eigenVectors{i};
                 end
                 for k = 1:size(sdpLayer.eigenVectors{i},2)
-                    s = norm(Xv(:,k)-v(j,j)*sdpLayer.eigenVectors{i}(:,k));
+                    s = norm(Xv(:,k)-eigenvalues(j)*sdpLayer.eigenVectors{i}(:,k));
                     if s <= 1e-12
                         if ~used(k) && ~use(j)
                             use(j) = k;
@@ -366,17 +365,17 @@ for i = 1:length(model.K.s)
                     end
                 end
             end
-            sdpLayer.eigenVectors{i} = [sdpLayer.eigenVectors{i} d];
+            sdpLayer.eigenVectors{i} = [sdpLayer.eigenVectors{i} eigenvectors];
             if size(sdpLayer.eigenVectors{i},2) > 10*size(sdpLayer.eigenVectors{i},1)
                 sdpLayer.eigenVectors{i} = sdpLayer.eigenVectors{i}(:,end-10*size(sdpLayer.eigenVectors{i},1):end);
             end
         else
-            sdpLayer.eigenVectors{i} = d;
+            sdpLayer.eigenVectors{i} = eigenvectors;
         end
-        d(:,find(use)) = sdpLayer.eigenVectors{i}(:,use(find(use)));
+        eigenvectors(:,find(use)) = sdpLayer.eigenVectors{i}(:,use(find(use)));
     end
     newSDPblock = [];
-    nZeroVectors = length(find(abs(diag(v))<=1e-8));
+    nZeroVectors = length(find(abs(eigenvalues)<=1e-8));
     try
         if any(nZeroVectors)
             if ~isempty(sdpLayer.nullVectors{i})
@@ -391,11 +390,11 @@ for i = 1:length(model.K.s)
                 end
             end
             if isempty(sdpLayer.nullVectors{i})
-                sdpLayer.nullVectors{i} = d(:,1:nZeroVectors);
+                sdpLayer.nullVectors{i} = eigenvectors(:,1:nZeroVectors);
                 %'New batch'
             elseif  nZeroVectors > size(sdpLayer.nullVectors{i},2)
                 %'Expanding'
-                S = [sdpLayer.nullVectors{i} d(:,nZeroVectors+1:end)];
+                S = [sdpLayer.nullVectors{i} eigenvectors(:,nZeroVectors+1:end)];
                 S = null(S');
                 %S = null(sdpLayer.nullVectors{i}');
                 sdpLayer.nullVectors{i} = [sdpLayer.nullVectors{i} S(:,1:(nZeroVectors-size(sdpLayer.nullVectors{i},2)))];
@@ -403,7 +402,7 @@ for i = 1:length(model.K.s)
                 %'Contracting'
             end
             %  'Using'
-            d(:,1:nZeroVectors) = sdpLayer.nullVectors{i}(:,1:nZeroVectors);
+            eigenvectors(:,1:nZeroVectors) = sdpLayer.nullVectors{i}(:,1:nZeroVectors);
         end
     catch
         %  'Fail'
@@ -412,7 +411,7 @@ for i = 1:length(model.K.s)
     pre_reordering = 1:sdpLayer.n(i);
     for m = 1:sdpLayer.n(i)%min(sdpLayer.n,model.K.s(i))
         newrow = [];
-        newrow = oneSDPGradient(d(:,m),B(top:top+n^2-1,:));
+        newrow = oneSDPGradient(eigenvectors(:,m),B(top:top+n^2-1,:));
         newSDPblock = [newSDPblock;newrow];
         newcuts = newcuts + 1;
     end
