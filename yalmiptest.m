@@ -220,9 +220,7 @@ for i = 1:length(test)
             sols{i} = addLink(upper(cleanversion(info.yalmipmodel.solver.tag)));
         else
             sols{i} = cleanversion(info.yalmipmodel.solver.tag);
-        end               
-        % And now run all the tests
-        info = eval([test{i}.fcn '(ops)']);
+        end                    
         pass(i) = 1;
         results{i}='Success';
     catch
