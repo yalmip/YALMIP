@@ -55,7 +55,7 @@ if any(p.K.s)
         n = p.K.s(i);
         X{i} = r(top:top+n^2-1);top = top+n^2;
         X{i} = reshape(X{i},n,n);
-        detailed.s = [detailed.s;min(eig(X{i}))];
+        detailed.s = [detailed.s;min(real(eig(X{i})))];
     end
     res = [res;detailed.s];
 end
