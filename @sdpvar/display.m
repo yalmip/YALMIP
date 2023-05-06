@@ -167,7 +167,7 @@ switch(X.typeflag)
                     doubleX = double(X);
                     try
                     eigX = eig(doubleX);
-                    info = [info '\nEigenvalues between [' num2str(min(eigX)) ',' num2str(max(eigX)) ']'];               
+                    info = [info '\nEigenvalues between [' num2str(min(eigX)) ',' num2str(max(eigX)) '], '  num2str(nnz(doubleX)) ' nonzeros'];               
                     catch
                     end
                 end
@@ -176,7 +176,7 @@ switch(X.typeflag)
                 if ~any(any(isnan(value(x))))
                     doubleX = value(X);
                     try                       
-                        info = [info '\nValues in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) ']'];
+                        info = [info '\nValues in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) '], ' num2str(nnz(doubleX)) ' nonzeros'];
                     catch
                     end
                 end
