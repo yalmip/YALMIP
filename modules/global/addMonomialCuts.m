@@ -14,27 +14,46 @@ if any(p.originalModel.variabletype==3)
             U = p.ub(monom_variable);
             if ~isinf(L) && ~isinf(U)
                 if even(n)
-                    M = (L+U)/2;
-                    if L <= 0 && U >= 0 && M~=0
-                        if M < 0
-                            [Ax,Ay,b,K] = convexhullConvex(L,M,0,U,L^n,M^n,0,U^n,n*L^(n-1),n*M^(n-1),0,n*U^(n-1));
-                        else
-                            [Ax,Ay,b,K] = convexhullConvex(L,0,M,U,L^n,0,M^n,U^n,n*L^(n-1),0,n*M^(n-1),n*U^(n-1));
-                        end
-                    else
-                        [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));
-                    end
+                    % Derive tangent cuts at the borders, and add
+                    % a cut parallell to the upper cut. The point where
+                    % this is located is given by M
+                    % The cut y>=0 will be added elsewhere
+                    df = (U^n-L^n)/(U-L);
+                    M = sign(df)*(abs(df)/n)^(1/(n-1));
+                    [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));                    
                     p_cut.F_struc(end+1:end+length(b),1) = b;
                     p_cut.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
                     p_cut.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
                     p_cut.K.l = p_cut.K.l+length(b);
                 else
-                    if p.lb(monom_variable)<0 &  p.ub(monom_variable)>0 & ~isinf(p.lb(monom_variable)) & ~isinf(p.ub(monom_variable))
-                        
+                    % Odd case a bit trickier, as signs on bounds will 
+                    % determine convexity 
+                    if L >= 0
+                        % Convex case. Add tangent cut as in even case
+                        % We know df is non-negative here
+                        df = (U^n-L^n)/(U-L);
+                        M = (df/n)^(1/(n-1));
+                        [Ax,Ay,b,K] = convexhullConvex(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));                    
+                        p_cut.F_struc(end+1:end+length(b),1) = b;
+                        p_cut.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
+                        p_cut.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
+                        p_cut.K.l = p_cut.K.l+length(b);
+                    elseif U <= 0
+                        % Concave case. Add tangent cut as in even case
+                        % We know df is non-negative here and we are
+                        % looking for the tangent in negative space
+                        df = (U^n-L^n)/(U-L);
+                        M = -(df/n)^(1/(n-1));
+                        [Ax,Ay,b,K] = convexhullConcave(L,M,U,L^n,M^n,U^n,n*L^(n-1),n*M^(n-1),n*U^(n-1));                    
+                        p_cut.F_struc(end+1:end+length(b),1) = b;
+                        p_cut.F_struc(end-length(b)+1:end,1+monom_variable) = -Ax;
+                        p_cut.F_struc(end-length(b)+1:end,1+monom_index) = -Ay;
+                        p_cut.K.l = p_cut.K.l+length(b);
+                    else
+                        % Tricky case neither convex nor concave
                         % Line between lower bound and tangent intersection
                         r = zeros(1,n+1);r(1)=n-1;r(2)=-L*n;r(end)=L^n;
-                        r = roots(r);
-                        %r = r(min(find(r==real(r))));
+                        r = roots(r);                        
                         r = max(r(imag(r)==0));
                         if r >= U
                             r = U;
