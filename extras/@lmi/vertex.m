@@ -31,6 +31,7 @@ end
 
 if all(b > 0)    
 	x_c = zeros(size(A,2),1);
+    R = inf;
 else
     x = sdpvar(size(A,2),1);
     if isempty(Aeq)
