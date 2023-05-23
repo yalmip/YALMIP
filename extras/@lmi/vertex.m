@@ -55,6 +55,11 @@ if nargin == 2
         xi(i) = find(xi(i) == recoverdata.used_variables);        
     end
     V = V(xi,:);
-    V = unique(V','rows')';
+    if length(xi)==1
+        V = [min(V) max(V)];
+    else
+        k = unique(convhulln(V'));
+        V = V(:,k);
+    end
 end
     
