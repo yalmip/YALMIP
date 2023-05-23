@@ -50,3 +50,5 @@ cc(2*Sen_n+1:3*Sen_n)=Z;
 cc(3*Sen_n+1:end)=Z;
 obj=cc*X;
 sol = optimize(F,obj,sdpsettings('solver','bnb','verbose',0));
+testCase.assertTrue(sol.problem==0);
+testCase.assertTrue(abs(value(obj)-3100) <= 1);
