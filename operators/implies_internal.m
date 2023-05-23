@@ -20,7 +20,7 @@ end
 % % Special case x == 1 (or x = 0) implies something
 % Avoids introducing a glue binary for the equality
 % Fixes #690
-if isa(X,'lmi') && length(X)==1 && is(X,'equality')
+if isa(X,'lmi') && length(X)==1 && length(sdpvar(X))==1 && is(X,'equality')
     x = sdpvar(X);
     if is(x,'binary')
         B = getbase(x);
