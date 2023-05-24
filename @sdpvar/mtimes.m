@@ -65,13 +65,13 @@ switch 2*X_is_spdvar+Y_is_spdvar
         try
             % HACK: Return entropy when user types x*log(x), plog for
             % x*log(y/x) and -plog for x*log(x/y)
-            if isequal(Y.extra.opname,'log')
+            if isequal(Y.extra.opname,'log') || isequal(Y.extra.opname,'scaled log')
                 Z = check_for_special_case(Y,X);
                 if ~isempty(Z)
                     return
                 end
 
-            elseif isequal(X.extra.opname,'log')
+            elseif isequal(X.extra.opname,'log') || isequal(X.extra.opname,'scaled log')
                 Z = check_for_special_case(X,Y);
                 if ~isempty(Z)
                     return
@@ -554,7 +554,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     Z.basis = Z.basis*Y;
                     % Reset info about conic terms
                     Z.conicinfo = [0 0];
-                    Z.extra.opname='';                   
+                    if ~isempty(Z.extra.opname)
+                        if isempty(strfind(Z.extra.opname,'scaled'))
+                            Z.extra.opname = ['scaled ' Z.extra.opname];
+                        end
+                    end                    
                     return
                 end
             else
@@ -631,7 +635,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 else
                     Z.basis = Z.basis*X;
                     Z.conicinfo = [0 0];
-                    Z.extra.opname='';                    
+                    if ~isempty(Z.extra.opname)
+                        if isempty(strfind(Z.extra.opname,'scaled'))
+                            Z.extra.opname = ['scaled ' Z.extra.opname];
+                        end
+                    end
                     return
                 end
             else               
@@ -798,36 +806,27 @@ Z.extra.opname='';
 
 
 function Z = check_for_special_case(Y,X)
-% LOG(?)*X
+% k*LOG(?)*X
 args = yalmip('getarguments',Y);
 args = args.arg{1};
 if issamevariable(X,args)
     B = getbase(Y);
+    % B(1) should currently always be 0
     Z = X*B(1)-B(2)*entropy(X);
     return
-end
-if 0%isequal(getvariables(args),getvariables(X)) 
-    % Possible f(x)*log(f(x))
-    [i,j,k] = find(getbase(args));
-    [ii,jj,kk] = find(getbase(X));
-    if isequal(i,ii) && isequal(j,jj)
-        scale = kk(1)./k(1)
-        if all(abs(kk./k - kk(1)./k(1)) <= 1e-12)
-           Z = -scale*entropy(args); 
-           return
-        end
-    end
 end
 if isequal(getbase(args),[0 1]) &&  isequal(getbase(X),[0 1])
     mt = yalmip('monomtable');
     v = mt(getvariables(args),:);
     vb = v(find(v));
     if v(getvariables(X))==1 && min(vb)==-1 && max(vb)==1
-        % X * log(X / Y) = -plog(X,Y)
-        Z = -plog([X;recover(find(v==-1))]);
+        % X * k * log(X / Y) = -k*plog(X,Y)
+        B = getbase(Y);
+        Z = -B(2)*plog([X;recover(find(v==-1))]);
     elseif v(getvariables(X))==-1 && min(vb)==-1 && max(vb)==1
-        % X * log(Y / X) = plot(X,Y)
-        Z = plog([X;recover(find(v==1))]);
+        % X * k * log(Y / X) = k*plog(X,Y)
+        B = getbase(Y);
+        Z = B(2)*plog([X;recover(find(v==1))]);
     else
         Z = [];
     end
