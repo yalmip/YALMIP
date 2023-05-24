@@ -65,13 +65,14 @@ switch 2*X_is_spdvar+Y_is_spdvar
         try
             % HACK: Return entropy when user types x*log(x), plog for
             % x*log(y/x) and -plog for x*log(x/y)
-            if isequal(Y.extra.opname,'log') || isequal(Y.extra.opname,'scaled log')
+            % FIXME: Clean up and generalize
+            if isequal(Y.extra.opname,'log') || isequal(Y.extra.opname,'slog') || isequal(Y.extra.opname,'scaled log') || isequal(Y.extra.opname,'exp') || isequal(Y.extra.opname,'scaled exp')
                 Z = check_for_special_case(Y,X);
                 if ~isempty(Z)
                     return
                 end
 
-            elseif isequal(X.extra.opname,'log') || isequal(X.extra.opname,'scaled log')
+            elseif isequal(X.extra.opname,'log') || isequal(X.extra.opname,'slog') || isequal(X.extra.opname,'scaled log') || isequal(X.extra.opname,'log') || isequal(X.extra.opname,'scaled log')
                 Z = check_for_special_case(X,Y);
                 if ~isempty(Z)
                     return
@@ -806,13 +807,40 @@ Z.extra.opname='';
 
 
 function Z = check_for_special_case(Y,X)
-% k*LOG(?)*X
+% Detecting variants of
+% k*LOG(?)*X or k*EXP(?)*X 
 args = yalmip('getarguments',Y);
 args = args.arg{1};
+if isequal(Y.extra.opname,'slog')
+    args = args + 1;
+    Y.extra.opname = 'log';
+end
+if isequal(X.dim,args.dim) && isequal(size(X.basis),size(args.basis))
+    [~,~,a] = find(X.basis);
+    [~,~,b] = find(args.basis);
+    if ~isequal(a,b)
+        c = a./b;
+        if all(abs(c-c(1))<=1e-13)
+            % We have log(f)*(k*f)
+            k = c(1);
+            
+            Y.basis = Y.basis*k;
+            X.basis = X.basis/k;
+            args.basis = X.basis;
+            
+        end
+    end
+end
 if issamevariable(X,args)
     B = getbase(Y);
     % B(1) should currently always be 0
-    Z = X*B(1)-B(2)*entropy(X);
+    switch Y.extra.opname
+        case {'log','scaled log'}
+            Z = X*B(1)-B(2)*entropy(X);      
+        case {'exp','scaled exp'}
+            Z = X*B(1)+B(2)*xexp(X);            
+        otherwise
+    end
     return
 end
 if isequal(getbase(args),[0 1]) &&  isequal(getbase(X),[0 1])
@@ -822,11 +850,33 @@ if isequal(getbase(args),[0 1]) &&  isequal(getbase(X),[0 1])
     if v(getvariables(X))==1 && min(vb)==-1 && max(vb)==1
         % X * k * log(X / Y) = -k*plog(X,Y)
         B = getbase(Y);
-        Z = -B(2)*plog([X;recover(find(v==-1))]);
+        switch Y.extra.opname
+            case {'log','scaled log'}
+                Z = -B(2)*plog([X;recover(find(v==-1))]);
+            case {'exp','scaled exp'}
+                Z = [];
+            otherwise
+        end
+            
     elseif v(getvariables(X))==-1 && min(vb)==-1 && max(vb)==1
         % X * k * log(Y / X) = k*plog(X,Y)
+        % X * k * exp(Y / X) = k*pexp(X,Y)
         B = getbase(Y);
-        Z = B(2)*plog([X;recover(find(v==1))]);
+        switch Y.extra.opname
+            case {'log','scaled log'}
+                if B(2)==1
+                    Z = plog([X;recover(find(v==1))]);
+                else
+                    Z = B(2)*plog([X;recover(find(v==1))]);
+                end
+            case {'exp','scaled exp'}
+                if B(2)==1
+                    Z = pexp([X;recover(find(v==1))]);
+                else
+                    Z = B(2)*pexp([X;recover(find(v==1))]);
+                end
+            otherwise
+        end
     else
         Z = [];
     end
