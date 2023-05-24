@@ -29,10 +29,14 @@ switch class(varargin{1})
     case 'sdpvar'
 
         if ~isequal(prod(size(varargin{1})),2)
-            error('PLOG only defined for 2x1 arguments');
-        else
-            varargout{1} = yalmip('define',mfilename,varargin{1});
+            if nargin == 2
+                varargin{1} = [varargin{1} varargin{2}];
+            else
+                error('PLOG only defined for 2x1 arguments');
+            end
         end
+        varargout{1} = yalmip('define',mfilename,varargin{1});
+        
 
     case 'char'
               

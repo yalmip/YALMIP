@@ -14,6 +14,10 @@ switch Y.typeflag
 end
 % Reset info about conic terms
 Y.conicinfo = [0 0];
-Y.extra.opname='';
+if ~isempty(Y.extra.opname)
+    if isempty(strfind(Y.extra.opname,'scaled'))
+        Y.extra.opname = ['scaled ' Y.extra.opname];
+    end
+end
 
 

@@ -60,6 +60,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             return
         end
 
+        if isequal(X,0)
+            y = Y;
+            return
+        end
+        
         y = Y;
         n_Y = Y.dim(1);
         m_Y = Y.dim(2);
@@ -106,6 +111,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             catch
                 error(lasterr);
             end
+            return
+        end
+        
+        if isequal(Y,0)
+            y = X;
             return
         end
 

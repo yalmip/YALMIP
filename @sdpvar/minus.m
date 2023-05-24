@@ -74,7 +74,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             y.basis(1) = tmp;
             % Reset info about conic terms
             y.conicinfo = [0 0];
-            y.extra.opname='';            
+            if ~isempty(y.extra.opname)
+                if isempty(strfind(y.extra.opname,'scaled'))
+                    y.extra.opname = ['scaled ' y.extra.opname];
+                end
+            end
             return
         end
 

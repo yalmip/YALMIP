@@ -63,16 +63,16 @@ end
 switch 2*X_is_spdvar+Y_is_spdvar
     case 3        
         try
-            % HACK: Return entropy when user types x*log(x), plog for
-            % x*log(y/x) and -plog for x*log(x/y)
-            % FIXME: Clean up and generalize
-            if isequal(Y.extra.opname,'log') || isequal(Y.extra.opname,'slog') || isequal(Y.extra.opname,'scaled log') || isequal(Y.extra.opname,'exp') || isequal(Y.extra.opname,'scaled exp')
+            % Check for some standard stuff we want to intervene
+            % a*log(a) converts to -entropy(a)
+            % a*log(b/a) converts to plog(b,a)
+            % a*exp(b/a) converts to pexp(b,a)
+            if islogorexp(Y)
                 Z = check_for_special_case(Y,X);
                 if ~isempty(Z)
                     return
                 end
-
-            elseif isequal(X.extra.opname,'log') || isequal(X.extra.opname,'slog') || isequal(X.extra.opname,'scaled log') || isequal(X.extra.opname,'log') || isequal(X.extra.opname,'scaled log')
+            elseif islogorexp(X)
                 Z = check_for_special_case(X,Y);
                 if ~isempty(Z)
                     return
@@ -551,6 +551,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 if Y==0
                     Z = 0;
                     return
+                elseif Y==1
+                    return
                 else
                     Z.basis = Z.basis*Y;
                     % Reset info about conic terms
@@ -632,6 +634,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
             if y_isscalar
                 if X==0
                     Z = 0;
+                    return
+                elseif X==1
                     return
                 else
                     Z.basis = Z.basis*X;
@@ -811,70 +815,63 @@ function Z = check_for_special_case(Y,X)
 % k*LOG(?)*X or k*EXP(?)*X 
 args = yalmip('getarguments',Y);
 args = args.arg{1};
+% Temporarily recast slog as log (slog is log(1+x))
 if isequal(Y.extra.opname,'slog')
     args = args + 1;
     Y.extra.opname = 'log';
 end
+% Detect the case log(f)*(k*f), and rescale to k*log(f)*f
+% to simplify comparison of function argument and outer argument
 if isequal(X.dim,args.dim) && isequal(size(X.basis),size(args.basis))
     [~,~,a] = find(X.basis);
     [~,~,b] = find(args.basis);
     if ~isequal(a,b)
         c = a./b;
-        if all(abs(c-c(1))<=1e-13)
-            % We have log(f)*(k*f)
-            k = c(1);
-            
+        if all(abs(c-c(1))<=1e-13)           
+            k = c(1);            
             Y.basis = Y.basis*k;
             X.basis = X.basis/k;
-            args.basis = X.basis;
-            
+            args.basis = X.basis;            
         end
     end
 end
+% Entropy/xexp?
 if issamevariable(X,args)
-    B = getbase(Y);
-    % B(1) should currently always be 0
+    % Extract k in k*log or k*exp
+    B = getbase(Y);k = B(2);
     switch Y.extra.opname
         case {'log','scaled log'}
-            Z = X*B(1)-B(2)*entropy(X);      
+            Z = (-k)*entropy(X);      
         case {'exp','scaled exp'}
-            Z = X*B(1)+B(2)*xexp(X);            
+            Z = k*xexp(X);            
         otherwise
     end
     return
 end
+% Check for simple perspective stuff
 if isequal(getbase(args),[0 1]) &&  isequal(getbase(X),[0 1])
     mt = yalmip('monomtable');
     v = mt(getvariables(args),:);
     vb = v(find(v));
     if v(getvariables(X))==1 && min(vb)==-1 && max(vb)==1
-        % X * k * log(X / Y) = -k*plog(X,Y)
-        B = getbase(Y);
+        % X * k * log(X / Y) = -k*plog(X,Y) (i.e. kullback-leibler)
+        B = getbase(Y);k = B(2);
         switch Y.extra.opname
             case {'log','scaled log'}
-                Z = -B(2)*plog([X;recover(find(v==-1))]);
+                Z = (-k)*plog([X;recover(find(v==-1))]);
             case {'exp','scaled exp'}
                 Z = [];
             otherwise
-        end
-            
+        end            
     elseif v(getvariables(X))==-1 && min(vb)==-1 && max(vb)==1
         % X * k * log(Y / X) = k*plog(X,Y)
         % X * k * exp(Y / X) = k*pexp(X,Y)
-        B = getbase(Y);
+        B = getbase(Y);k = B(2);
         switch Y.extra.opname
-            case {'log','scaled log'}
-                if B(2)==1
-                    Z = plog([X;recover(find(v==1))]);
-                else
-                    Z = B(2)*plog([X;recover(find(v==1))]);
-                end
+            case {'log','scaled log'}                                                
+                Z = k*plog([X;recover(find(v==1))]);                
             case {'exp','scaled exp'}
-                if B(2)==1
-                    Z = pexp([X;recover(find(v==1))]);
-                else
-                    Z = B(2)*pexp([X;recover(find(v==1))]);
-                end
+                Z = k*pexp([X;recover(find(v==1))]);
             otherwise
         end
     else
@@ -886,7 +883,6 @@ end
 
 
 function yes = isdiagonal(X)
-
 yes = 0;
 if size(X,1) == size(X,2)
     [i,j] = find(X);
@@ -896,12 +892,17 @@ if size(X,1) == size(X,2)
 end
 
 function x = expandAllocation(x,n)
-
 if length(x) < n
     x = [x zeros(1,2*n-length(x))];
 end
         
 function yes = issamevariable(X,Y)
-
 yes = isequal(X.dim,Y.dim) && isequal(X.basis,Y.basis) && isequal(X.lmi_variables,Y.lmi_variables);
 
+function yes = islogorexp(X)
+name = X.extra.opname;
+if isempty(name)
+    yes = 0;
+else
+    yes = isequal(name,'log') || isequal(name,'slog') || isequal(name,'scaled log') || isequal(name,'exp') || isequal(name,'scaled exp');
+end
