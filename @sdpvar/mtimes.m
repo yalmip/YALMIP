@@ -798,10 +798,10 @@ Z.extra.opname='';
 
 
 function Z = check_for_special_case(Y,X)
-% X*Y = X*log(?)
+% LOG(?)*X
 args = yalmip('getarguments',Y);
 args = args.arg{1};
-if isequal(X,args)
+if issamevariable(X,args)
     B = getbase(Y);
     Z = X*B(1)-B(2)*entropy(X);
     return
@@ -852,5 +852,7 @@ if length(x) < n
     x = [x zeros(1,2*n-length(x))];
 end
         
+function yes = issamevariable(X,Y)
 
+yes = isequal(X.dim,Y.dim) && isequal(X.basis,Y.basis) && isequal(X.lmi_variables,Y.lmi_variables);
 
