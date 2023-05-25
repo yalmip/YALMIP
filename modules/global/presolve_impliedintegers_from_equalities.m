@@ -1,5 +1,8 @@
-function p = propagate_impliedintegers_from_equalities(p)
-
+function p = presolve_impliedintegers_from_equalities(p)
+% Find things like z = 2*x1+3*x2 where x is integer
+% and thus implies that z is integer (we only save information
+% we do not promote z to integer at currently, hence branching etc
+% will only be done on x)
 if any(p.K.f)
     implied_integers = [];
     integers = [p.binary_variables p.integer_variables];
@@ -8,7 +11,7 @@ if any(p.K.f)
             s = find(p.F_struc(i,2:end));
             if all(s == fix(s))
                 y = ismember(s,integers);
-                if nnz(y) == length(s)-1;
+                if nnz(y) == length(s)-1
                     newinteger = s(y == 0);
                     implied_integers = [implied_integers newinteger];
                     integers = [integers newinteger];
@@ -20,4 +23,3 @@ if any(p.K.f)
 else
     p.implied_integers = [];
 end
-      
