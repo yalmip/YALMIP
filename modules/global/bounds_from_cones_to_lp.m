@@ -32,7 +32,7 @@ if any(p.K.s)
         row = p.F_struc(index,:);
         for k = 1:n
             if nnz(row(k,2:end))> 1
-                newInequalities = [newInequalities;row];        
+                % newInequalities = [newInequalities;row];        
             elseif nnz(row(k,2:end)) == 1
                 % This is just a bound
                 idx = find(row(k,2:end));
