@@ -32,14 +32,14 @@ if any(p.K.s)
         row = p.F_struc(index,:);
         for k = 1:n
             if nnz(row(k,2:end))> 1
-               % newInequalities = [newInequalities;row];        
+                newInequalities = [newInequalities;row];        
             elseif nnz(row(k,2:end)) == 1
                 % This is just a bound
                 idx = find(row(k,2:end));
                 if row(k,idx+1)>0
-                    p.lb(idx) = max(p.lb(idx),-row(1)/row(k,idx+1));
+                    p.lb(idx) = max(p.lb(idx),-row(k,1)/row(k,idx+1));
                 else
-                    p.ub(idx) = min(p.ub(idx),row(1)/(-row(k,idx+1)));
+                    p.ub(idx) = min(p.ub(idx),row(k,1)/(-row(k,idx+1)));
                 end
             end
         end
