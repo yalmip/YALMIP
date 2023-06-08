@@ -467,7 +467,7 @@ while goon
         % Don't add no-good if we time out etc, for purely integer problems
         % or problems where we analytically can compute the continuous from
         % given integers
-        if was_lp_really_feasible && isinf(upptemp) && (output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))            )
+        if was_lp_really_feasible && isinf(upptemp) && (output.problem == 0 && ((integerPhase && p.sdpextendable) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))            )
             p_lp = add_nogood_cut(p,p_lp,x,infeasibility);
         end
         
