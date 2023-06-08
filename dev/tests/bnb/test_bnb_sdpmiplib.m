@@ -6,7 +6,7 @@ function test_bma(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 973) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 101);
 end
 
@@ -15,7 +15,7 @@ function test_map(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 1023) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 129);
 end
 
@@ -24,7 +24,7 @@ function test_ml(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 886) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 93);
 end
 
@@ -33,7 +33,7 @@ function test_diw(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - -95) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 21);
 end
 
@@ -41,7 +41,7 @@ end
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - -211) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 25);
 end
 
@@ -51,7 +51,7 @@ function test_colon(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 127.47) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 53);
 end
 
@@ -60,7 +60,7 @@ function test_random(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 11.56) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 17);
 end
 
@@ -69,7 +69,7 @@ function test_clique(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 147) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 4);
 end
 
@@ -78,6 +78,6 @@ function test_bar(testCase)
 sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - 2.118) <= 1e-2);
-if strcmpi(sol.solveroutput.solver,'mosek')
+if strcmpi(sol.solveroutput.localsolver,'mosek')
     testCase.assertTrue(sol.solveroutput.solved_nodes <= 51);
 end
