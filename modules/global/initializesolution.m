@@ -15,7 +15,7 @@ if p.options.warmstart
     end
 else
     % Save for later
-    x0 = p.x0;
+    startx0 = p.x0;
     
     p.x0 = zeros(length(p.c),1);
     % Avoid silly warnings
@@ -100,7 +100,7 @@ else
             x0 = x_min;
         end
     end    
-    p.x0 = x0;
+    p.x0 = startx0;
 end
 
 
