@@ -30,15 +30,17 @@ if any(p.K.s)
         n = p.K.s(i);
         index = top + find(speye(n))-1;        
         row = p.F_struc(index,:);
-        if nnz(row(2:end))> 1
-           % newInequalities = [newInequalities;row];        
-        else
-            % This is just a bound
-            idx = find(row(2:end));
-            if row(idx)>0
-                p.lb(idx) = max(p.lb(idx),-row(1)/row(idx+1));
-            else
-                p.ub(idx) = min(p.ub(idx),row(1)/row(idx+1));
+        for k = 1:n
+            if nnz(row(k,2:end))> 1
+               % newInequalities = [newInequalities;row];        
+            elseif nnz(row(k,2:end)) == 1
+                % This is just a bound
+                idx = find(row(k,2:end));
+                if row(k,idx+1)>0
+                    p.lb(idx) = max(p.lb(idx),-row(1)/row(k,idx+1));
+                else
+                    p.ub(idx) = min(p.ub(idx),row(1)/row(k,idx+1));
+                end
             end
         end
         top = top + n^2;
