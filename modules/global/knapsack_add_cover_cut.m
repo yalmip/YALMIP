@@ -16,7 +16,7 @@ for i = find(p.knapsack.type == 0)
     v = p.knapsack.variables{i};
     x_ = x(v);
     
-    cut_ = knapsack_create_cover_cut(a,b,x_,alg,p.gubs);
+    cut_ = knapsack_create_cover_cut(a,b,x_,alg);
     if ~isempty(cut_)
         cut = spalloc(1,length(p.c)+1,0);
         cut(1) = cut_(1);

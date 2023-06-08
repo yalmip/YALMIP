@@ -1,8 +1,18 @@
-function p = addInequality(p,row)
+function p = addInequality(p,row,which)
+if nargin == 3
+    if islogical(which)
+        which = find(which);
+    end
+    if isempty(row) || isempty(which)
+        return
+    else
+        row = row(which,:);
+    end
+end
 if ~anyCones(p.K)
     % Just append in the end
     p.F_struc = [p.F_struc;row];
-else
+elseif ~isempty(row)
     % Insert before conics
     if p.K.f==0 % a bit faster, append on top
         p.F_struc = [row;

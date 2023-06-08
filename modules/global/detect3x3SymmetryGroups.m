@@ -1,20 +1,9 @@
 function p = detect3x3SymmetryGroups(p)
-
-% Normally we would do this on models with binary variables
-% but there were some weird models where everything was modelled
-% using integers in {-1,0}, so accept that too
-good = zeros(1,length(p.c));
-good(p.binary_variables) = 1;
-if ~isempty(p.integer_variables)
-    flipped_binary = find(p.lb(p.integer_variables)==-1 & p.ub(p.integer_variables)== 0);
-    if ~isempty(flipped_binary)
-        good(p.integer_variables(flipped_binary))=1;
-    end
-end    
-if any(good)
+   
+if ~isempty(p.binary_variables)
     groups = {};
     for j = 1:length(p.K.s)
-        if p.K.s(j) >= 3
+        if p.K.s(j) >= 3 && p.semidefinite{j}.purebinary
             n = 3;
             X = spalloc(p.K.s(j),p.K.s(j),p.K.s(j)^2);
             X(1:n,1:n) = 1;
@@ -25,9 +14,11 @@ if any(good)
                 dataBlock = p.semidefinite{j}.F_struc(index,:);
                 used = find(any(dataBlock,1));
                 dataBlock = dataBlock(:,used);
-                if used(1) == 0;dataBlock = [zeros(size(dataBlock,1),1) dataBlock];end
+                if used(1) > 1
+                    dataBlock = [zeros(size(dataBlock,1),1) dataBlock];
+                end                
                 v = used;v = v(v>1)-1;
-                if all(good(v))
+                if all(p.isbinary(v))
                     if isempty(groups)
                         groups{1}.dataBlock = dataBlock;
                         groups{1}.variables{1} = used;

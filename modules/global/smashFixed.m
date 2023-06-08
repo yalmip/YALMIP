@@ -1,5 +1,5 @@
 function p = smashFixed(p,action)
-if ~isempty(p.F_struc)
+if p.feasible && ~isempty(p.F_struc)
     r = find(p.lb == p.ub);
     if ~isempty(r)
         p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,1+r)*p.lb(r);

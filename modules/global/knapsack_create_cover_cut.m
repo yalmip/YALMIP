@@ -1,4 +1,4 @@
-function cut = knapsack_create_cover_cut(a,b,x,alg,gubs)
+function cut = knapsack_create_cover_cut(a,b,x,alg)
 % Derive cover inequalities cut*[1;x]>=0 for a*x <= b
 
 if (all(a>=0) && sum(a)<=b) || (all(a<=0) && (b>=0))
@@ -9,19 +9,15 @@ end
 
 if nargin < 3
     x = ones(length(a),1);
-    alg = 'crowder';
-    gubs = [];
+    alg = 'crowder';  
 elseif nargin < 4
-    alg = 'crowder';
-    gubs = [];
-elseif nargin < 5
-    gubs = spalloc(1,length(a),0);
+    alg = 'crowder';  
 end
 
 if ~all(a)
     nz = find(a);
     a_ = a(nz); 
-    cut_ = knapsack_create_cover_cut(a_,b,x(nz),alg,gubs(nz));
+    cut_ = knapsack_create_cover_cut(a_,b,x(nz),alg);
     if ~isempty(cut_)
         cut = spalloc(1,length(a)+1,0);
         cut(1) = cut_(1);
@@ -40,7 +36,7 @@ elseif any(a<0)
     a_(neg) = -a(neg);
     x_ = x;
     x_(neg) = 1-x(neg);
-    cut = knapsack_create_cover_cut(a_,b-sum(a(neg)),x_,alg,gubs);
+    cut = knapsack_create_cover_cut(a_,b-sum(a(neg)),x_,alg);
     % we know have a cut, cut(1) + cut(2:end)*y >=0
     %                     cut(1) + cut(2:end)(1-x) >= 0
     %                     cut(1) + sum(cut(2:end)) + (-cut(2))*x >= 0
@@ -69,10 +65,6 @@ C = min(find(cumsum(a(loc))>b));
 
 % Apply Balas lifting
 q = knapsack_cover_lift_balas(a,loc(1:C));
-% qL = knapsack_cover_lift_letchford(a,b,loc(1:C));
-% if q~=qL
-%    'HEJ'
-% end
 % Return row where row*[1;x] hopefully is violated
 cut = spalloc(1,length(a)+1,0);
 cut(1) = C-1;

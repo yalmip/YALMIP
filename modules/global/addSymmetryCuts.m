@@ -30,13 +30,6 @@ for j = 1:length(p.sdpsymmetry)
             sum_feas = sum(combs(:,find(feasible)),1);
             sum_infeas = sum(excludes,1); 
             newF = [];
-            if all(sum_infeas==sum_infeas(1)) && all(sum_feas < sum_infeas(1) | sum_feas > sum_infeas(1))
-                % There is a forbidden sum among these
-                for s = 1:length(p.sdpsymmetry{j}.variables)
-                    p.forbiddencardinality.variables{end+1} = p.sdpsymmetry{j}.variables{s};
-                    p.forbiddencardinality.value{end+1} = sum_infeas(1);                
-                end
-            end
             for k = min(sum(combs,1)):max(sum(combs,1))
                 if all(sum_feas<=k) && all(sum_infeas>k)
                     for s = 1:length(p.sdpsymmetry{j}.variables)
@@ -46,7 +39,7 @@ for j = 1:length(p.sdpsymmetry)
                     end                    
                     done = 1;
                     break
-                elseif  all(sum_feas>=k) && all(sum_feas<k)
+                elseif all(sum_feas>=k) && all(sum_feas<k)
                     for s = 1:length(p.sdpsymmetry{j}.variables)
                         a = spalloc(1,length(p_lp.c),1);
                         a(p.sdpsymmetry{j}.variables{s}) = 1;

@@ -1,5 +1,5 @@
 function p = addImpliedSDP(p)
-if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
+if p.feasible && nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
     % Search for rows where there is a constant, and a diagonal term 
     % which thus has to be strictly positive, we might leads us to a
     % constraints of the type sum x_i >= 1, if only non-negative integer
@@ -53,9 +53,9 @@ if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
             % Diagonal matrix?
             d = diag(X0);
             if nnz((X0-diag(d)))==0                
-                if all(sign(d)<=0) && p.c(i)>=0 && (isnan(fixable(i)) || fixable(i)==-1)
+                if all(sign(d)<=0) && p.c(candidates(i))>=0 && (isnan(fixable(i)) || fixable(i)==-1)
                     fixable(i) = -1;
-                elseif all(sign(d)>=0) && p.c(i)<=0 && (isnan(fixable(i)) || fixable(i)==1)
+                elseif all(sign(d)>=0) && p.c(candidates(i))<=0 && (isnan(fixable(i)) || fixable(i)==1)
                     fixable(i) = 1;
                 else
                     fixable(i) = 0;
@@ -65,14 +65,17 @@ if nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
             end          
         end
         top = top + p.K.s(j)^2;
+    end   
+    for i = (find(~isnan(fixable)))
+        if fixable(i) == 1
+            p.lb(candidates(fixable(i))) = p.ub(candidates(fixable(i)));
+            p.F_struc(4,1+candidates(fixable(i)))=  0;
+        elseif fixable(i) == -1
+            p.ub(candidates(i)) = p.lb(candidates((i)));
+            p.F_struc(4,1+candidates(i))=  0;
+        end
     end
-    p.adjustable = candidates(find(fixable));
-%     for i = (find(~isnan(fixable)))
-%         if fixable(i) == 1
-%           %  p.lb(i) = p.ub(i);
-%         elseif fixable(i) == -1
-%           %  p.ub(i) = p.lb(i);
-%         end
-%     end
+    % Make sure we didn't add redundants
+    p = presolve_remove_repeatedrows(p);
 end
 

@@ -3,7 +3,7 @@ function p = presolve_impliedintegers_from_equalities(p)
 % and thus implies that z is integer (we only save information
 % we do not promote z to integer at currently, hence branching etc
 % will only be done on x)
-if any(p.K.f)
+if p.feasible && any(p.K.f)
     implied_integers = [];
     integers = [p.binary_variables p.integer_variables];
     for i = 1:p.K.f

@@ -14,12 +14,14 @@ if p.options.warmstart
         end
     end
 else
+    % Save for later
     x0 = p.x0;
+    
     p.x0 = zeros(length(p.c),1);
     % Avoid silly warnings
     if ~isempty(p.evalMap)
         for i = 1:length(p.evalMap)
-            if (isequal(p.evalMap{i}.fcn,'log') | isequal(p.evalMap{i}.fcn,'log2') | isequal(p.evalMap{i}.fcn,'log10'))
+            if (isequal(p.evalMap{i}.fcn,'log') || isequal(p.evalMap{i}.fcn,'log2') || isequal(p.evalMap{i}.fcn,'log10'))
                 p.x0(p.evalMap{i}.variableIndex) = (p.lb(p.evalMap{i}.variableIndex) +  p.ub(p.evalMap{i}.variableIndex))/2;
             end
         end
@@ -28,7 +30,7 @@ else
     x = p.x0;
     z = evaluate_nonlinear(p,x);
     z = propagateAuxilliary(p,z);
-    
+    z = sdpextendsolution(p,z);
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
     if relaxed_feasible
@@ -65,6 +67,13 @@ else
         end
     end
     p.x0 = (p.lb + p.ub)/2;
+    if p.binarycardinality.up < length(p.binary_variables)
+        % Greedy, set the cheapest ones to 1
+        c = p.c(p.binary_variables);
+        [~,index] = sort(c,'ascend');
+        x0(p.binary_variables(index(1:p.binarycardinality.up))) = 1;
+        x0(p.binary_variables(index(p.binarycardinality.up+1:end))) = 0;
+    end
     p.x0(isinf(p.ub))=p.lb(isinf(p.ub));
     p.x0(isinf(p.lb))=p.ub(isinf(p.lb));
     p.x0(isinf(p.lb) & isinf(p.ub))=0;
@@ -79,7 +88,8 @@ else
     x(isinf(x))=eps;
     x(isnan(x))=eps;
     z = evaluate_nonlinear(p,x);
-    z = propagateAuxilliary(p,z);    
+    z = propagateAuxilliary(p,z);  
+    z = sdpextendsolution(p,z);
     residual = constraint_residuals(p,z);
     relaxed_feasible = all(residual(1:p.K.f)>=-p.options.bmibnb.eqtol) & all(residual(1+p.K.f:end)>=p.options.bmibnb.pdtol);   
     if relaxed_feasible 
@@ -89,7 +99,7 @@ else
             x_min = z;
             x0 = x_min;
         end
-    end
+    end    
     p.x0 = x0;
 end
 

@@ -27,6 +27,17 @@ function output = cutsdp(p)
 bnbsolvertime = clock;
 showprogress('Cutting plane solver started',p.options.showprogress);
 optionsIn = p.options;
+p.cliques.table = spalloc(length(p.c),0,0);
+p.cliques.hash  = spalloc(length(p.c),0,0);
+p.knapsack.a = {};
+p.knapsack.b = {};
+p.knapsack.type = [];
+p.knapsack.variables = {};
+p.knapsack.hash = [];
+p.feasible = 1;
+p.binarycardinality.up = length(p.binary_variables);
+p.binarycardinality.down = 0;
+p.hash = randn(length(p.c),1);
 
 % ********************************
 %% Remove options if none has been changed
@@ -59,7 +70,6 @@ if isempty(p.lb)
     p.lb = repmat(-inf,length(p.c),1);
 end
 
-
 % *************************************************************************
 %% ADD CONSTRAINTS 0<=x<=1 FOR BINARY
 % *************************************************************************
@@ -89,6 +99,7 @@ end
 % ********************************
 p.nonlinear = [];
 [p,negated_binary] = detect_negated_binary(p);
+p.integral_variables = union(p.binary_variables,p.integer_variables);
 
 % *************************************************************************
 %% PRE-SOLVE (nothing fancy coded)
@@ -132,6 +143,9 @@ switch max(min(p.options.verbose,3),0)
         p.options.cutsdp.verbose = 0;
         p.options.verbose = 0;
 end
+
+% Detect common case with 1 continuous variable in SDP only
+p = addSDPextendable(p);
 
 % *************************************************************************
 %% START CUTTING
@@ -197,7 +211,7 @@ if p.options.cutsdp.adjustsolvertol
     p = adjustSolverPrecision(p);
 end
 
-if length(p.integer_variables)+length(p.binary_variables) == length(p.c)
+if length(p.integral_variables) == length(p.c)
     p.all_integers = 1;
 else
     p.all_integers = 0;
@@ -213,7 +227,7 @@ p.forbiddencardinality.variables = {};
 p.forbiddencardinality.value= {};
 
 p = smashFixed(p);
-p = addImpliedSDP(p);
+p = presolve_implied_from_SDP(p);
 p = detect_knapsack(p);
 p = presolve_implied_binaryproduct(p);
 p = detectAndAdd3x3SymmetryGroups(p);
@@ -313,7 +327,7 @@ end
 % *************************************************************************
 p = detect_sdpmonotonicity(p);
 
-integer_variables = [p.binary_variables p.integer_variables];
+integer_variables = p.integral_variables;
 
 standard_options = p_lp.options;
 if p.options.cutsdp.twophase || isempty(integer_variables)
@@ -429,8 +443,19 @@ while goon
         
         was_lp_really_feasible = checkfeasiblefast(ptemp,x,-p.options.cutsdp.feastol);               
         
-       if p.options.cutsdp.sdppump & integerPhase                     
-            [xtemp,upptemp,pumpPossible,p_original,pumpSuccess] = sdpPump(p_original,x,-p.options.cutsdp.feastol);                                               
+       if p.sdpextendable&&integerPhase%p.options.cutsdp.sdppump & integerPhase   
+%           [xtemp,fail] = sdpextend(p_original,x);
+%           if ~fail
+%               if checkfeasiblefast(p,xtemp,1e-6)
+%                 upptemp = computecost(p.f,p.c,p.Q,x,p);
+%                 successful = 1;
+%             else
+%                 upptemp = inf;
+%                 successful = 0;
+%             end
+%             %  upptemp = computecost(p.f,p.c,p.Q,x,p);
+%           end
+          [xtemp,upptemp,pumpPossible,p_original,pumpSuccess] = sdpPump(p_original,x,-p.options.cutsdp.feastol);                                               
         else
             upptemp = inf;
         end
@@ -443,7 +468,7 @@ while goon
         % or problems where we analytically can compute the continuous from
         % given integers
         if was_lp_really_feasible && isinf(upptemp) && (output.problem == 0 && ((integerPhase && pumpPossible) || (integerPhase && (length(p.integer_variables)==length(p.c)) && output.problem == 0))            )
-            p_lp = add_nogood_cut(p,p_lp,x,infeasibility);                    
+            p_lp = add_nogood_cut(p,p_lp,x,infeasibility);
         end
         
         if upptemp < upper

@@ -1,155 +1,64 @@
 function [x_min,solved_nodes,lower,upper,profile,diagnostics] = bnb_branch_and_bound(p)
 
-%% *******************************
-% We don't need this
-% *******************************
+% Prepare root node
 p.options.savesolveroutput = 0;
+p.options.savesolverinput = 1; % We save this to re-use some stuff in fmincon
 p.options.saveduals = 0;
 p.options.dimacs = 0;
-diagnostics = 0;
-bnbsolvertime = clock;
-
-%% *******************************
-% Tracking performance etc
-% *******************************
-profile.local_solver_time = 0;
-
-%% *************************************************************************
-% We save this to re-use some stuff in fmincon
-% *************************************************************************
-p.options.savesolverinput = 1;
-
-%% *******************************
-% SET-UP ROOT PROBLEM
-% *******************************
+p.getsolvertime = p.options.bnb.profile;
+p.options.allowsmashing = 1;
 p.depth = 0;
 p.lower = NaN;
-[p,x_min,upper] = initializesolution(p,[],inf);
+p.cuts = [];
+p.fixdir = '';
 
-% See if there is structure which can be exploited to improve primal
-% heuristics. If all objective variables only enter SDPs and LPs through
-% positive coefficients (and diagonal in SDP), the we can try a bisection
-% on these, if the combinatorial stuff is feasible
-% p = detectMonotoneSDPObjective(p);
-
-%% *******************************
-% Global stuff
-% *******************************
+diagnostics = 0;
+bnbsolvertime = clock;
+profile.local_solver_time = 0;
 lower = NaN;
-stack = stackCreate;
-
-%% *******************************
-% Create function handle to solver
-% *******************************
-lowersolver = p.solver.lower.call;
-uppersolver = p.options.bnb.uppersolver;
-
-p.corig = p.c;
-
-%% *******************************
-% INVARIANT PROBLEM DATA
-% *******************************
-c = p.corig;
-Q = p.Q;
-f = p.f;
-integer_variables = p.integer_variables;
-semicont_variables = p.semicont_variables;
-
 solved_nodes = 0;
 gap = inf;
 node = 1;
+stack = stackCreate;
+lowersolver = p.solver.lower.call;
+uppersolver = p.options.bnb.uppersolver;
+History.feasibility = [];
+History.lower = [];
+History.upper = [];
+History.stacksize = [];
+allFeasibleSolutions = [];
+allRelaxedSolutions = [];
+unknownErrorCount = 0;
+numericalProblemsCount= 0;
+upperSolversList = strsplit(uppersolver,',');
+% A small machine for heuristics on selecting
+% up- or down-node first from the stack. Without any
+% found feasible solutions, we are agnostic and alternate.
+% As we gather info about where we find solutions, we
+% start picking more from one of them first.
+NodeSelector.Current = 'up';
+NodeSelector.Count = 1;
+NodeSelector.directionWhenFoundFeasible = 0;
+NodeSelector.directionWhenFoundBetter = 0;
 
-if p.options.bnb.presolve
-    savec = p.c;
-    saveQ = p.Q;
-    p.Q = p.Q*0;
-    
-    n = length(p.c);
-    saveBinary = p.binary_variables;
-    saveInteger = p.integer_variables;
-    p.binary_variables = [];
-    p.integer_variables = [];
-    
-    for i = 1:length(c)
-        p.c = eyev(n,i);
-        output = feval(lowersolver,p);
-        if output.problem == 0
-            p.lb(i) = max(p.lb(i),output.Primal(i)-1e-3);
-        end
-        p.c = -eyev(n,i);
-        output = feval(lowersolver,p);
-        if output.problem == 0
-            p.ub(i) = min(p.ub(i),output.Primal(i)+1e-3);
-        end
-        p.lb(saveBinary) = ceil(p.lb(saveBinary)-1e-3);
-        p.ub(saveBinary) = floor(p.ub(saveBinary)+1e-3);
-    end
-    p.binary_variables = saveBinary;
-    p.integer_variables = saveInteger;
-    
-    p.Q = saveQ;
-    p.c = savec;
-end
+% Detect common case with 1 continuous variable in SDP only
+p = addSDPextendable(p);
 
-%%************************************************
-% Some hacks to speed up solver calls
-% Only track solver-time if user wants profile
-% ************************************************
-p.getsolvertime = p.options.bnb.profile;
-
-%%*******************************
-%% DISPLAY HEADER
-% *******************************
-originalDiscrete = [p.integer_variables(:);p.binary_variables(:)];
-originalBinary   = p.binary_variables(:);
-
-if nnz(Q-fix(Q))==0 && (nnz(p.c-fix(p.c))==0) && isequal(p.K.m,0)
-    can_use_ceil_lower = all(ismember(find(p.c),originalDiscrete));
-    can_use_ceil_lower = can_use_ceil_lower && all(ismember(find(any(Q,2)),originalDiscrete));
-else
-    can_use_ceil_lower = 0;
-end
-
-% if nnz(Q)==0 && nnz(c)==1 && ~any(p.K.m)
-%     p.simplecost = 1;
-% else
-%     p.simplecost = 0;
-% end
-
-p = detectSOS(p);
+% p = detectMonotoneSDPObjective(p);
 p = detect_knapsack(p);
-p = detect_atleast(p); 
-%p = presolveSOS(p);
-%p = smashFixed(p);
-p = propagate_bounds_from_qualities(p);
+p = presolve_cliquestrengthen(p);
 
-p.options.allowsmashing = 1;
-poriginal = p;
-p.cuts = [];
+[p,x_min,upper] = initializesolution(p,[],inf);
+if ~isinf(upper) && p.options.bnb.verbose
+    disp(['* Heuristics found solution with objective ' num2str(upper)]);
+end
+
 pid = 0;
-p.fixedvariable = [];
-p.fixdir = '';
 lastUpper = upper;
 oldp = p;
 
-% Detect if pure integer or mixed
-if length(p.integer_variables)+length(p.binary_variables) == length(p.c)
-    p.all_integers = 1;
-else
-    p.all_integers = 0;
-end
-p.noninteger_variables = setdiff(1:length(p.c),[p.integer_variables p.binary_variables p.semicont_variables]);
-poriginal.noninteger_variables = p.noninteger_variables;
-
-% Prepare of detected
-p.forbiddencardinality.variables = {};
-p.forbiddencardinality.value= {};
-
-% Trivial stuff in SDP cone, such as constant non-zero in row forcing
-% diagonal to be non-zero
-p = addImpliedSDP(p);
-poriginal.F_struc = p.F_struc;
-poriginal.K = p.K;
+% Remember if pure integer or mixed
+p.all_integers  = (length(p.integral_variables) == length(p.c));
 
 % Resuse some code from cutsdp to add simple cuts required for SDP
 % feasibility for problems with some trivial symmetries
@@ -160,35 +69,6 @@ p = detectAndAdd3x3SDPGUBGroups(p);
 
 % Extract more info from some combinatorial AND structure
 p = cross_binary_product_cardinality(p);
-
-% Might have detect stuff, copy back to global model
-poriginal.lb = max(poriginal.lb,p.lb);
-poriginal.ub = min(poriginal.ub,p.ub);
-
-% Prepare to run...
-History.feasibility = [];
-History.lower = [];
-History.upper = [];
-History.stacksize = [];
-allFeasibleSolutions = [];
-allRelaxedSolutions = [];
-sosgroups = [];
-sosvariables = [];
-unknownErrorCount = 0;
-numericalProblemsCount= 0;
-
-% Generalized upper solver format
-upperSolversList = strsplit(uppersolver,',');
-
-% A small machine for heuristics on selecting
-% up- or down-node first from the stack. Without any 
-% found feasible solutions, we are agnostic and alternate.
-% As we gather info about where we find solutions, we 
-% start picking more from one of them first.
-NodeSelector.Current = 'up';
-NodeSelector.Count = 1;
-NodeSelector.directionWhenFoundFeasible = 0;
-NodeSelector.directionWhenFoundBetter = 0;
 
 if p.options.bnb.verbose
     
@@ -202,14 +82,13 @@ if p.options.bnb.verbose
         p.solver.lower.tag = [p.solver.lower.tag '-' p.solver.lower.version];
     end
     
-    disp('* Starting YALMIP integer branch & bound.');
-    disp(['* Lower solver   : ' p.solver.lower.tag]);
-    disp(['* Upper solver   : ' uppersolver]);
-    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
-    disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);
+    % Number of effective binaries is not same as those
+    % kept in list p.binary_variables, as some are presolved
+    % (and marked as such in removableVariables)
+    % away and thus not really in the problem any longer
     nB = length(p.binary_variables);
     nI = length(p.integer_variables);
-    nC = length(p.c) - nB - nI;
+    nC = length(p.noninteger_variables);
     nKS = length(p.knapsack.a);
     nGUB = length(find(p.knapsack.type == 3));
     nCARD = length(find(p.knapsack.type == 2));
@@ -217,126 +96,109 @@ if p.options.bnb.verbose
     % Don't count the cover cardinalities derived from knapsacks
     % They are not added to model
     nGEN = nGEN - length(find(p.knapsack.type == 4));
-    disp(['* ' num2str(nB) ' binaries, ' num2str(nI) ' integers, ' num2str(nC) ' continuous.']);
+    nIMPL = length(intersect(p.binary_variables,p.implied_integers));
+    if nIMPL > 0
+        disp(['* Presolved model: ' num2str(nB) ' binaries (' num2str(nIMPL) ' implied), ' num2str(nI) ' integers, ' num2str(nC) ' continuous.']);
+    else
+        disp(['* Presolved model: ' num2str(nB) ' binaries, ' num2str(nI) ' integers, ' num2str(nC) ' continuous.']);
+    end
+    disp(['*                  ' num2str(p.K.f+p.K.l) ' linear rows, ' num2str(sum(p.K.q)+sum(p.K.s.^2)) ' conic rows']);
+    
     disp(['* ' num2str(nKS) ' knapsacks (' num2str(nGUB) ' GUBs, ' num2str(nCARD) ' cardinality, ' num2str(nGEN) ' general)']);
     
-    if possiblynonconvex & p.options.warning
+    if possiblynonconvex && p.options.warning
         disp(' ');
         disp('Warning : The continuous relaxation may be nonconvex. This means ');
         disp('that the branching process is not guaranteed to find a');
         disp('globally optimal solution, since the lower bound can be');
-        disp('invalid. Hence, do not trust the bound or the gap...')        
+        disp('invalid. Hence, do not trust the bound or the gap...')
     end
 end
 
-if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose;            disp(' Node       Upper       Gap(%)     Lower     Open  Cuts   Elapsed time');end;
+% Detect global cardinality on all binary from knapsacks
+p = extract_global_cardinality(p);
 
-% Some tricks and strategies are performed for certain objectives
-p = detect_special_objectives(p);
-poriginal.UnitContinuousCost = p.UnitContinuousCost;
-poriginal.LinearBinaryPositiveCost = p.LinearBinaryPositiveCost;
-poriginal.forbiddencardinality = p.forbiddencardinality;
-
-% FIXME do when detecting gubs
-p.gubs = zeros(length(p.c),1);
-for i = 1:length(p.c)    
-    for k = find(p.knapsack.type == 3)
-        if ismember(i,p.knapsack.variables{k})
-            p.gubs(i) = k;
-            break
-        end
-    end
-end
-j = find(any(p.F_struc(p.K.l+1:end,2:end),1));
-found = zeros(1,length(p.c));
-N = 0;
-for i = 1:length(p.knapsack.a)
-	v = p.knapsack.variables{i};
-    N = N + p.knapsack.b{i};
-    found(v) = 1;
-    if all(found(j))
-        break
-    end
-end            
-
-poriginal.knapsack = p.knapsack;
-poriginal.gubs = p.gubs;
-
-% Detect global cardinality on all binary
-poriginal = extract_global_cardinality(poriginal);
-p.globalcardinality = poriginal.globalcardinality;
-
-globalcuts = [];
 sdpCuts = emptyNumericalModel;
+AddedCoverCuts = 0;
+% We have a global pack of cuts, and then we have keep track which
+% we have added to the global pool. However, we also keep track of
+% which we have deemed redundant in a node (and thus deeper in the tree
+% from there)
+globalcuts = [];
+p.cutactivate  = [];% This is global information
+p.cutredundant = [];% Local node copied to children
 
 % Some simple trial solutions
 [x_min,upper] = root_node_heuristics(p,x_min,upper);
-% Might be able to tighten some stuff based on this solution
-poriginal = probeForNewUpper(poriginal,upper);
-p = probeForNewUpper(p,upper);
-poriginal = updateCardinalityFromUpper(poriginal,upper);
-p.globalcardinality = poriginal.globalcardinality;
- 
+if ~isinf(upper)
+    if p.options.bnb.verbose
+        disp(['* Heuristics found solution with objective ' num2str(upper)]);
+    end
+    % Might be able to tighten some stuff based on this solution
+    p = probeForNewUpper(p,upper);
+end
+
+if p.options.bnb.verbose
+    disp('Node      Incumbent      Gap        Bound   Open  Cut     Time  Diagnostics');
+end
+
+% Save the root node to keep data which does not have to
+% be copied to every node, and to keep global information
+poriginal = p;
+
+
 while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
-              
-    % ********************************************
-    % FIXED ALONG THE TREE...
-    % ********************************************
-    binary_variables = p.binary_variables;
-	semicont_variables  = p.semicont_variables;
-        
+    
     % ********************************************
     % ASSUME THAT WE WON'T FATHOME
     % ********************************************
     keep_digging = 1;
+    p.feasible = 1;
     Message = 'Node solved succesfully.';
-%     
-%     if ~isinf(upper)        
-%         poriginal = funprobe(poriginal,upper);
-%         p.ub = min(p.ub,poriginal.ub);
-%         p.lb = max(p.lb,poriginal.lb); 
-%         for i = 1:length(stack.nodes)
-%             stack.nodes{i}.ub = min( stack.nodes{i}.ub,poriginal.ub);
-%         end
-%          p = funprobe(p,upper);
-%     end
-%     
+    % This should be perhaps be done directly on the stack
+    p = updateCardinalityFromUpper(p,upper);
+    
+    p_start = p;
+    
+    p = cut_process(p,globalcuts);
+    
     % We will use the change in fixed variables as
-    % an indicator when selecting node,so remember 
+    % an indicator when selecting node,so remember
     % where we started
     p.nfixed = nnz(p.lb == 1) + nnz(p.ub == 0);
-       
+    
     % *************************************
     % SOLVE NODE PROBLEM
     % *************************************
-    if any(p.ub < p.lb - 1e-12)
+    if any(p.ub < p.lb - 1e-12) || p.feasible == 0
         % Trivially infeasible
         x = zeros(length(p.c),1);
         output.Primal = x;
         output.problem = 1;
+        p.feasible = 0;
     else
         p.x_min = x_min;
-        relaxed_p = integer_relax(p);       
-        
-        % Solve node relaxation         
-        if p.UnitContinuousCost && sdpCuts.K.l > 0
-            upper_bound = upper_from_sdpcuts(p,sdpCuts);
-            if upper_bound > upper                
-                output.problem = 1;
-                output.Primal = [];
-            else
-                output = bnb_solvelower(lowersolver,addInequality(relaxed_p,globalcuts),upper,lower,x_min,allFeasibleSolutions);
-            end
-        else
-            output = bnb_solvelower(lowersolver,addInequality(relaxed_p,globalcuts),upper,lower,x_min,allFeasibleSolutions);
+        relaxed_p = integer_relax(p);
+                
+        p = checkConsistentSDPcutUpper(p,sdpCuts,upper);
+        if ~p.feasible
+            output.problem = 1;
+            output.Primal = [];
         end
-      
+        
+        % Solve node relaxation
+        if p.feasible
+            use = ~p.cutredundant(:) & p.cutactivate(:);
+            p_node = addInequality(relaxed_p,globalcuts,use);
+            output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);
+        end
+        
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
             Message = 'Infeasible node.'
         elseif output.problem == -1
             % This is the dreaded unknown state from mosek. Try without
-            % objective to see if it is infeasible?            
+            % objective to see if it is infeasible?
             outputtest = bnb_solvelower(lowersolver,remove_objective(relaxed_p),upper,lower,x_min,allFeasibleSolutions);
             if outputtest.problem == 1
                 output.problem = 1;
@@ -344,13 +206,13 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             else
                 output.problem = -1;
             end
-        end                       
+        end
         
         if output.problem == 9
             unknownErrorCount = unknownErrorCount + 1;
             Message = 'Unknown error, will try to recover.'
         end
-       
+        
         if p.options.bnb.profile
             profile.local_solver_time  = profile.local_solver_time + output.solvertime;
         end
@@ -364,21 +226,24 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 end
             end
         end
-                       
+        
         if output.problem == -4
             diagnostics = -4;
-            x = nan+zeros(length(p.lb),1);            
+            x = nan+zeros(length(p.lb),1);
         else
             if isempty(output.Primal)
                 output.Primal = zeros(length(p.c),1);
             end
-            x  = setnonlinearvariables(p,output.Primal);
+            % FIXME experimental stuff with eliminated binaries
+            % These are kept, but not in any constraint
+            %x(p.removableVariables) = 0;
+            x = setnonlinearvariables(p,output.Primal);
             if (p.K.l>0) && any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
-                output.problem = 1; 
+                output.problem = 1;
             end
         end
     end
-
+    
     solved_nodes = solved_nodes+1;
     
     % **************************************
@@ -389,11 +254,11 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % ANY INTEGERS? ROUND?
     % *************************************
     if output.problem == 0
-        non_integer_binary = abs(x(binary_variables)-round(x(binary_variables)))>p.options.bnb.inttol;
-        non_integer_integer = abs(x(integer_variables)-round(x(integer_variables)))>p.options.bnb.inttol;
+        non_integer_binary = abs(x(p.binary_variables)-round(x(p.binary_variables)))>p.options.bnb.inttol;
+        non_integer_integer = abs(x(p.integer_variables)-round(x(p.integer_variables)))>p.options.bnb.inttol;
         if p.options.bnb.round
-            x(binary_variables(~non_integer_binary))   = round(x(binary_variables(~non_integer_binary)));
-            x(integer_variables(~non_integer_integer)) = round(x(integer_variables(~non_integer_integer)));
+            x(p.binary_variables(~non_integer_binary))   = round(x(p.binary_variables(~non_integer_binary)));
+            x(p.integer_variables(~non_integer_integer)) = round(x(p.integer_variables(~non_integer_integer)));
         end
         non_integer_binary = find(non_integer_binary);
         non_integer_integer = find(non_integer_integer);
@@ -404,9 +269,9 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         end
     else
         % If we have numerical problems, we cannot trust current solution
-        non_integer_binary = binary_variables;
-        non_integer_integer = integer_variables;
-        non_semivar_semivar = semicont_variables;
+        non_integer_binary = p.binary_variables;
+        non_integer_integer = p.integer_variables;
+        non_semivar_semivar = p.semicont_variables;
     end
     
     x  = setnonlinearvariables(p,x);
@@ -425,9 +290,9 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             output.problem = 1;
         end
     end
-            
+    
     if output.problem==0 || output.problem==3 || output.problem==4 || output.problem==5
-        cost = computecost(f,c,Q,x,p);
+        cost = computecost(p.f,p.c,p.Q,x,p);
         
         if output.problem~=1
             if output.problem == 3 || output.problem == 4 || output.problem == 5
@@ -438,22 +303,22 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 lower = cost;
             end
             
-            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))                              
-                for k = 1:length(upperSolversList)                    
+            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
+                for k = 1:length(upperSolversList)
                     [upper1,x_min1,globalcuts] = feval(upperSolversList{k},p,upper,x,poriginal,output,lower,globalcuts);
-                    if ~isinf(upper1)                       
+                    if ~isinf(upper1)
                         if strcmp(p.fixdir,'up')
                             NodeSelector.directionWhenFoundFeasible = NodeSelector.directionWhenFoundFeasible + 1;
                         else
                             NodeSelector.directionWhenFoundFeasible = NodeSelector.directionWhenFoundFeasible - 1;
-                        end                           
+                        end
                     end
-                    if upper1 < upper 
+                    if upper1 < upper
                         % Where are we finding solutions?
                         if strcmp(p.fixdir,'up')
-                            NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter + 1;                            
+                            NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter + 1;
                         else
-                            NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter - 1;                            
+                            NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter - 1;
                         end
                         x_min = x_min1;
                         allFeasibleSolutions = [allFeasibleSolutions x_min1];
@@ -470,34 +335,34 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                     elseif ~isinf(upper1) && upper1 == upper && norm(x_min-x_min1) > 1e-4
                         % Yet another solution with same value
                         allFeasibleSolutions = [allFeasibleSolutions x_min1];
-                    end                
-                end                                
+                    end
+                end
             elseif isempty(non_integer_binary) && isempty(non_integer_integer) && isempty(non_semivar_semivar)
             end
         end
     end
-        
+    
     p = adaptivestrategy(p,upper,solved_nodes);
     
     % *************************************
     % CHECK FATHOMING POSSIBILITIES
     % *************************************
     feasible = 1;
-    
     switch output.problem
         case {-1,3,4,5,11}
             Message = 'Numerical problems, will try to recover.';
-            % Solver behaved weird. Make sure we continue digging if possible          
-            keep_digging = length(integer_variables)>0 || length(binary_variables)>0 || length(semicont_variables)>0;
+            % Solver behaved weird. Make sure we continue digging if possible
+            % keep_digging = length(integer_variables)>0 || length(binary_variables)>0 || length(semicont_variables)>0;
+            keep_digging = any(p.lb(p.integral_variables)~=p.ub(p.integral_variables));
             feasible = 1;
             cost = lower;
             x = p.lb + (p.ub-p.lb)*(1/pi);
             unbounded = find(isinf(p.ub) & isinf(p.lb));
             if ~isempty(unbounded)
                 x(unbounded) = 0;
-            end            
+            end
         case 0
-            if can_use_ceil_lower
+            if p.IntegerCost
                 lower = ceil(lower-1e-6);
             end
         case {1,12,-4,22,24}
@@ -505,19 +370,19 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             keep_digging = 0;
             cost = inf;
             feasible = 0;
-
+            
         case 2
             cost = -inf;
         otherwise
             % This part has to be much more robust because this could be a
             % numerical problem leading to a non-trustworthy solution
-            cost = f+c'*x+x'*Q*x;
+            cost = p.f+p.c'*x+x'*p.Q*x;
     end
     
     % **************************************
     % YAHOO! INTEGER SOLUTION FOUND
     % **************************************
-    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4) & ~(output.problem == 2)        
+    if isempty(non_integer_binary) & isempty(non_integer_integer)  & isempty(non_semivar_semivar) & ~(output.problem == -1) &  ~(output.problem == 4) & ~(output.problem == 2)
         Message = 'Integer solution in relaxation.';
         if strcmp(p.fixdir,'up')
             NodeSelector.directionWhenFoundFeasible =  NodeSelector.directionWhenFoundFeasible + 1;
@@ -528,76 +393,83 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             if strcmp(p.fixdir,'up')
                 NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter + 1;
             else
-                NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter - 1;                
+                NodeSelector.directionWhenFoundBetter =  NodeSelector.directionWhenFoundBetter - 1;
             end
             x_min = x;
             upper = cost;
             allFeasibleSolutions = [allFeasibleSolutions x_min];
-            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allFeasibleSolutions);            
-            [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);            
-            % Remove trivially bad variables
-            stack = probeStackForNewUpper(stack,upper,p); 
+            [stack,lower] = prune(stack,upper,p.options,solved_nodes,p,allFeasibleSolutions);
+            [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack);
+            % Remove trivially bad nodes
+            stack = probeStackForNewUpper(stack,upper,p);
             poriginal = probeForNewUpper(poriginal,upper);
             p = probeForNewUpper(p,upper);
             poriginal = updateCardinalityFromUpper(poriginal,upper);
+            p = updateCardinalityFromUpper(p,upper);
         end
         p = adaptivestrategy(p,upper,solved_nodes);
-        keep_digging = 0;        
+        keep_digging = 0;
     elseif output.problem == 0 && ~isempty(p.binary_variables)
         
-        % Not integer feasible, 
-        % Try to add some GLOBAL cuts 
+        % Not integer feasible,
+        % Try to add some GLOBAL cuts
         % Start with knapsack
-        if p.options.bnb.cut.knapsack.cover
+        new_cuts = [];
+        if p.options.bnb.cuts && p.options.bnb.cut.knapsack.cover
             covers_knap1 = knapsack_add_cover_cut(p,output.Primal,'crowder',upper);
             covers_knap2 = knapsack_add_cover_cut(p,output.Primal,'gu',upper);
-        else
-            covers_knap1 = [];
-            covers_knap2 = [];
+            new_cuts = [covers_knap1;covers_knap1];
         end
         
-        % Derive knapsack from SDP cone
-        if p.options.bnb.cut.sdpknapsack.cover && p.all_integers
-            allRelaxedSolutions = [allRelaxedSolutions output.Primal];
-            x_trial = output.Primal;  
+        % Derive some cut from SDP cone and use to propagate
+        if any(p.K.s) && length(p.binary_variables)>= 0 && p.options.bnb.cuts
             % p_sdpknapsack : Result from cover analysis
-            % p_adjustedcut : Original SDP cut with continuous fixed
+            % p_binarycut   : Original SDP cut with continuous fixed
             % p_sdpcuts     : Original SDP cut
-            [p_sdpknapsackcovers,p_adjustedcut,p_sdpcuts] = create_sdpknapsack_cuts(p,x_trial,poriginal,upper);
-            if p_sdpknapsackcovers.K.l > 0
-                globalcuts = [globalcuts;p_sdpknapsackcovers.F_struc];                
+            [p_sdpknapsackcovers,p_binarycut,p_sdpcuts] = create_sdpknapsack_cuts(p,output.Primal,poriginal,upper);
+            if p.options.bnb.cut.sdpknapsack.cover && p_sdpknapsackcovers.K.l > 0
+                new_cuts = [new_cuts;p_sdpknapsackcovers.F_struc];
             end
-            if p_adjustedcut.K.l>0
+            if p_binarycut.K.l>0
                 sdpCuts = addInequality(sdpCuts,p_sdpcuts.F_struc);
-                % Propagate this SDP cut on the global model
-                % using Glovers-Sherali second-order                                 
-                poriginal = updateLowerCardinality(poriginal,p_adjustedcut);
-                p.globalcardinality.down = max(poriginal.globalcardinality.down,p.globalcardinality.down);
-                [L,U] = propagate_second_order_cover(p_adjustedcut,poriginal);
-                if any(~isinf(L)) || any(~isinf(U))
-                    % Apply to node and global model
-                    p.lb = max(p.lb,L);
-                    p.ub = min(p.ub,U); 
-                    stack = tightenStackBounds(stack,L,U);                    
-                    poriginal.lb = max(poriginal.lb,L);
-                    poriginal.ub = min(poriginal.ub,U);              
-                end
+                
+                % Propgate implications from this cut on cardinality
+                % The cut is valid globally
+                poriginal = updateLowerCardinalityFromCut(poriginal,p_binarycut);
+                poriginal = updateUpperCardinalityFromCut(poriginal,p_binarycut);
+                p = propagate_global_to_node(poriginal,p);
+                
+                % Propagate this cut on the global model
+                % using Glovers-Sherali second-order covers
+                % Does not reduce #nodes but is efficient at detecting 0s
+                % which leads to quicker solves in the nodes
+                poriginal = iterate_propagate_second_order_cover(p_binarycut,poriginal);
+                poriginal = updateLowerCardinalityFromCut(poriginal,p_binarycut);
+                poriginal = updateUpperCardinalityFromCut(poriginal,p_binarycut);
+                p = propagate_global_to_node(poriginal,p);
+                
                 % Do the same thing on the local model
-                ptemp = p;ptemp.binary_variables = poriginal.binary_variables;
-                [L,U] = propagate_second_order_cover(p_adjustedcut,ptemp);
-                if any(~isinf(L)) || any(~isinf(U))
-                    p.lb = max(p.lb,L);
-                    p.ub = min(p.ub,U);                      
-                end
+                p = iterate_propagate_second_order_cover(p_binarycut,p);
+                p = updateLowerCardinalityFromCut(p,p_binarycut);
+                p = updateUpperCardinalityFromCut(p,p_binarycut);
+                
+                % Exploit binary product models (remove)
+                [p,poriginal] = propagate_binary_product_on_cut(p,poriginal,p_binarycut);
             end
-        end            
-        globalcuts = unique([globalcuts;covers_knap1;covers_knap2],'rows');      
+        end
+        if ~isempty(globalcuts) && ~isempty(new_cuts)
+            new_hash = new_cuts*[1;p.hash];
+            old_hash = globalcuts*[1;p.hash];
+            s = find(~ismember(new_hash,old_hash));
+            new_cuts = new_cuts(s,:);
+        end
+        globalcuts = [globalcuts;new_cuts];
     end
     
     % **************************************
     % Stop digging if it won't give sufficient improvement anyway
     % **************************************
-    if cost>upper*(1-p.options.bnb.gaptol)
+    if cost>upper*(1-p.options.bnb.gaptol) || p.feasible == 0
         keep_digging = 0;
         if output.problem ~=1
             Message = '-> Node terminated from bound.';
@@ -608,7 +480,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
     % **********************************
     % CONTINUE SPLITTING?
     % **********************************
-    if keep_digging & (cost<upper)
+    if keep_digging && (cost<upper)
         
         if solved_nodes == 1
             RootNodeInfeas =  TotalIntegerInfeas+TotalBinaryInfeas;
@@ -618,14 +490,50 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         % **********************************
         % BRANCH VARIABLE
         % **********************************
-        [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,p.options,x_min,[],p);
+        [index,whatsplit,globalindex] = branchvariable(x,p.integer_variables,p.binary_variables,p.options,x_min,[],p);
+        
+        if size(globalcuts,1) > 0
+            % Implementing cutting plane management and selection techniques
+            % Franz Wesselmann, Uwe H. Suhl
+            if length(p.cutactivate)<size(globalcuts,1)
+                p.cutactivate(size(globalcuts,1)) = 0;
+            end
+            if length(p.cutredundant)<size(globalcuts,1)
+                p.cutredundant(size(globalcuts,1)) = 0;
+            end
+            for i = 1:size(globalcuts,1)
+                a0 = globalcuts(i,1);
+                a  = -globalcuts(i,2:end);
+                eff(i,1) = (a*x - a0)/norm(a);
+                isp(i,1) = nnz(p.c(p.binary_variables))/nnz(p.c);
+                obp(i,1) = abs(a*p.c/(norm(a)*norm(p.c)));
+            end
+            meas = [eff isp obp]*[1/3;1/3;1/3];
+            meas(eff<0) = -inf;
+            meas(obp<0.1) = -inf;
+            meas(find(p.cutactivate))=-inf;
+            for loops = 1:4
+                if any(~isinf(meas))
+                    [~,j] = max(meas);
+                    p.cutactivate(j) = 1;
+                    meas(j) = -inf;
+                    a = globalcuts(j,2:end);
+                    for k = 1:size(globalcuts,1)
+                        b = globalcuts(k,2:end);
+                        if (abs(a*b')/(norm(a)*norm(b)))>0.9
+                            meas(k) = -inf;
+                        end
+                    end
+                end
+            end
+        end
         
         % **********************************
         % CREATE NEW PROBLEMS
-        % ********************************** 
+        % **********************************
         switch whatsplit
             case 'binary'
-                [p0,p1,index] = binarysplit(p,x,index,cost,[],sosgroups,sosvariables);
+                [p0,p1,index] = binarysplit(p,x,index,cost,[]);
                 
             case 'integer'
                 [p0,p1] = integersplit(p,x,index,cost,x_min);
@@ -633,27 +541,16 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             case 'semi'
                 [p0,p1] = semisplit(p,x,index,cost,x_min);
                 
-            case 'sos1'
-                [p0,p1] = sos1split(p,x,index,cost,x_min);
-                                        
             otherwise
         end
         
         p0.feasible = 1;
         p1.feasible = 1;
-        p0 = propagate_cardinality(p0);
-        p1 = propagate_cardinality(p1);
-        p0 = propagate_atleast(p0);
-        p1 = propagate_atleast(p1);
-        p0 = propagate_downforce(p0);
-        p1 = propagate_downforce(p1);
-        p0 = propagate_upforce(p0);
-        p1 = propagate_upforce(p1);
-        p0 = propagate_binary_product(p0);
-        p1 = propagate_binary_product(p1);
-        p0 = propagate_cardinality(p0);
-        p1 = propagate_cardinality(p1);
-            
+        p0 = propagate_multiple(p0);
+        p1 = propagate_multiple(p1);
+        p0 = checkConsistentSDPcutUpper(p0,sdpCuts,upper);
+        p1 = checkConsistentSDPcutUpper(p1,sdpCuts,upper);
+        
         p0.deltafixed = nnz(p0.lb==p0.ub) - p0.nfixed;
         p1.deltafixed = nnz(p1.lb==p1.ub) - p1.nfixed;
         
@@ -661,27 +558,27 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         pid = pid + 1;
         node0 = newNode(p0,globalindex,p0.fixdir,TotalIntegerInfeas,TotalBinaryInfeas,1-(x(globalindex)-floor(x(globalindex))),pid);
         pid = pid + 1;
-                                  
+        
         % Make sure we don't push trivially poor stuff to stack, so reuse
         % pruning code by creating temporary stacks first
         tempstack = stackCreate;
         if p1.feasible
             tempstack = push(tempstack,node1);
-        end        
-        if p0.feasible            
+        end
+        if p0.feasible
             tempstack = push(tempstack,node0);
         end
-                
-        tempstack = prune(tempstack,upper,p.options,solved_nodes,p,allFeasibleSolutions);
-        stack = mergeStack(stack,tempstack);         
-    end
         
+        tempstack = prune(tempstack,upper,p.options,solved_nodes,p,allFeasibleSolutions);
+        stack = mergeStack(stack,tempstack);
+    end
+    
     if stackLength(stack)>0
         lower = stackLower(stack);
         if isinf(lower) && lower > 0 && ~isinf(upper)
             lower = upper;
         else
-            if can_use_ceil_lower
+            if p.IntegerCost
                 lower = ceil(lower-1e-6);
             end
         end
@@ -697,51 +594,61 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         if ~isinf(upper)
             gap = 0;
         end
-    end    
+    end
     if isnan(gap)
         gap = inf;
-    end    
+    end
     History.lower = [History.lower  lower];
     History.upper = [History.upper upper];
     History.stacksize(end+1) = stackLength(stack);
-      
+    
     if p.options.bnb.verbose
         if mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)
             if p.options.bnb.plot
                 hold off
-                subplot(1,3,1);               
+                subplot(1,3,1);
                 l = stairs([History.lower' History.upper']);set(l,'linewidth',2);
                 grid on
                 title('Upper/lower bounds')
-                subplot(1,3,2);                
+                subplot(1,3,2);
                 l = stairs(History.stacksize);set(l,'linewidth',2);
                 grid on
                 title('Open nodes')
                 drawnow
-                subplot(1,3,3);   
+                subplot(1,3,3);
                 hist(getStackLowers(stack),25);
                 title('Histogram lower bounds')
                 drawnow
             end
             upper = full(upper);
             lower = full(lower);
+            
+            binary_diagnostics = createBinaryDiagnosticsString(p_start);
+            
+            if length(p.cutactivate)<size(globalcuts,1)
+                p.cutactivate(size(globalcuts,1)) = 0;
+            end
+            if length(p.cutredundant)<size(globalcuts,1)
+                p.cutredundant(size(globalcuts,1)) = 0;
+            end
+            
             if lastUpper > upper
-                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f   %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),size(globalcuts,1),etime(clock,bnbsolvertime),'-> Found improved solution!');
+                fprintf(' %4.0f : %12.3E  %6.2f%%  %12.3E  %2.0f  %2.0f/%2.0f %6.1f  %s  %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),nnz(~p.cutredundant & p.cutactivate),nnz(p.cutactivate),etime(clock,bnbsolvertime),binary_diagnostics,'-> Found improved solution!');
             else
-                fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f   %2.0f  %8.1f    %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),size(globalcuts,1),etime(clock,bnbsolvertime),Message);
+                fprintf(' %4.0f : %12.3E  %6.2f%%  %12.3E  %2.0f  %2.0f/%2.0f %6.1f  %s  %s \n',solved_nodes,upper,100*gap,lower,stackLength(stack),nnz(~p.cutredundant & p.cutactivate),nnz(p.cutactivate),etime(clock,bnbsolvertime),binary_diagnostics,Message);
             end
         end
     end
-    lastUpper = upper;    
+    lastUpper = upper;
 end
 if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose;showprogress([num2str2(solved_nodes,3)  ' Finishing.  Cost: ' num2str(upper) ],p.options.bnb.verbose);end
 if p.options.bnb.maxiter >= 0 && p.options.bnb.verbose
-    if ~isempty(p.knapsack.a)
-        disp(['* Added ' num2str(size(globalcuts,1)) ' global cover cuts']);
+    if AddedCoverCuts > 0
+        disp(['* Added ' num2str(AddedCoverCuts) ' global cover cuts']);
     end
 end
 if unknownErrorCount == 10
-     diagnostics = 9;
+    diagnostics = 9;
 end
 
 % **********************************
@@ -749,17 +656,6 @@ end
 % **********************************
 function [index,whatsplit,globalindex] = branchvariable(x,integer_variables,binary_variables,options,x_min,Weight,p)
 all_variables = [integer_variables(:);binary_variables(:)];
-
-if ~isempty(p.sosvariables) && isempty(setdiff(all_variables,p.sosvariables)) & strcmp(options.bnb.branchrule,'sos')
-    % All variables are in SOS1 constraints
-    for i = 1:length(p.sosgroups)
-        dist(i) = (sum(x(p.sosgroups{i}))-max(x(p.sosgroups{i})))/length(p.sosgroups{i});
-    end
-    % Which SOS to branch on
-    [val,index] = max(dist);
-    whatsplit = 'sos1';
-    globalindex = index;  
-end
 
 switch options.bnb.branchrule
     case 'weight'
@@ -773,8 +669,15 @@ switch options.bnb.branchrule
         nint = find(abs(x(all_variables)-round(x(all_variables)))>options.bnb.inttol);
         [val,index] = min(abs(x(nint)));
         index = nint(index);
-    case 'max'   
-        indic = (1+min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
+    case 'max'
+        % Merit brancing on variables in GUBs
+        % indic = (1+min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
+        if ~isempty(p.cliques.table)
+            part_of_clique = any(p.cliques.table(all_variables,:),2);
+            indic = (1+part_of_clique(:) + min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
+        else
+            indic = (1+min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
+        end
         [val,index] = max(indic);
         
     otherwise
@@ -803,7 +706,7 @@ if isempty(index) | ~isempty(p.semicont_variables)
     if isempty(val)
         whatsplit = 'semi';
         index = index2;
-    elseif val2>val        
+    elseif val2>val
         whatsplit = 'semi';
         index = index2;
     end
@@ -812,54 +715,25 @@ end
 % **********************************
 % SPLIT PROBLEM
 % **********************************
-function [p0,p1,variable] = binarysplit(p,x,index,lower,options,sosgroups,sosvariables)
+function [p0,p1,variable] = binarysplit(p,x,index,lower,options)
 p0 = p;
 p1 = p;
 
 variable = p.binary_variables(index);
-tf = ~(ismembcYALMIP(p0.binary_variables,variable));
-new_binary = p0.binary_variables(tf);
 
-friends = [];
-if ~isempty(sosvariables)
-    if ismember(variable,sosvariables)
-        i = 1;
-        while i<=length(sosgroups)            
-            if ismember(variable,sosgroups{i})
-                friends = setdiff(sosgroups{i},variable);
-                break
-            else
-                i = i + 1;
-            end
-        end
-    end
-end
-
-p0.ub(variable)=0;
-p0.lb(variable)=0;
-if length(friends) == 1
-    p0.ub(friends) = 1;
-    p0.lb(friends) = 1;
-end
-
+p0.ub(variable) = 0;
+p0.lb(variable) = 0;
 p0.lower = lower;
 p0.depth = p.depth+1;
-p0.binary_variables = new_binary;
+p0.fixdir = 'down';
+p0.IntInfeas = x(variable)-p0.ub(variable);
 
 p1.ub(variable)=1;
 p1.lb(variable)=1;
-if length(friends) > 1
-    p1.ub(friends)=0;
-    p1.lb(friends)=0;
-end
-
-p0.fixdir = 'down';
-p0.IntInfeas = x(variable)-p0.ub(variable);
-p1.fixdir = 'up';
-p1.IntInfeas = p1.lb(variable)-x(variable);
-p1.binary_variables = new_binary;
 p1.lower = lower;
 p1.depth = p.depth+1;
+p1.fixdir = 'up';
+p1.IntInfeas = p1.lb(variable)-x(variable);
 
 function [p0,p1] = integersplit(p,x,index,lower,options,x_min)
 
@@ -886,26 +760,6 @@ p0.fixdir = 'down';
 p1.fixdir = 'up';
 p0.IntInfeas = x(variable)-p0.ub(variable);
 p1.IntInfeas = p1.lb(variable)-x(variable);
-
-
-function [p0,p1] = sos1split(p,x,index,lower,options,x_min)
-
-v = p.sosgroups{index};
-n = ceil(length(v)/2);
-v1 = v(randperm(length(v),n));
-v2 = setdiff(v,v1);
-
-% In first node, set v2 to 0 and v1 to sosgroup
-p0 = p;p0.lower = lower;
-p0.sosgroups{index} = v1;
-p0.ub(v2) = 0;
-
-% In second node, set v1 to 0 and v1 to sosgroup
-p1 = p;p1.lower = lower;
-p1.sosgroups{index} = v2;
-p1.ub(v1) = 0;
-
-error('FIX down/up flag')
 
 function [p0,p1] = semisplit(p,x,index,lower,options,x_min)
 
@@ -953,16 +807,16 @@ function [stack,lower] = prune(stack,upper,options,solved_nodes,p,allSolutions)
 % PRUNE STACK W.R.T NEW UPPER BOUND
 % *********************************
 if stackLength(stack)>0 && ~isinf(upper)
-    if length(p.binary_variables) + length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0 && isequal(p.K.m,0)      
+    if length(p.binary_variables) + length(p.integer_variables) == length(p.c) && all(p.c == fix(p.c)) && nnz(p.Q)==0 && isempty(p.evalMap) && nnz(p.variabletype)==0 && isequal(p.K.m,0)
         L = stack.lower;
         tooLarge = find(~isinf(L) & L>=upper-0.999);
-    else     
+    else
         L = stack.lower;
         tooLarge = find(~isinf(L) & L>=upper*(1-options.bnb.prunetol));
     end
-    if ~isempty(tooLarge)        
+    if ~isempty(tooLarge)
         stack.nodeCount = stack.nodeCount - length(tooLarge);
-        stack.lower(tooLarge) = inf;        
+        stack.lower(tooLarge) = inf;
     end
 end
 
@@ -980,7 +834,7 @@ if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0 && isequal(p.K.
     end
     if ~isempty(tooLarge)
         stack.nodeCount = stack.nodeCount - length(tooLarge);
-        stack.lower(tooLarge) = inf;  
+        stack.lower(tooLarge) = inf;
     end
     if p.LinearBinaryPositiveCost && ~isinf(upper)
         % obj = sum (c_i >=0)*xi xi binary
@@ -1028,6 +882,8 @@ end
 function p = copyNode(p,node)
 p.lb = node.lb;
 p.ub = node.ub;
+p.cutredundant = node.cutredundant;
+p.binarycardinality = node.binarycardinality;
 p.depth = node.depth;
 p.lower = node.lower;
 p.fixedvariable = node.fixedvariable;
@@ -1040,10 +896,6 @@ p.binary_variables = node.binary_variables;
 p.semicont_variables = node.semicont_variables;
 p.semibounds = node.semibounds;
 p.pid = node.pid;
-p.sosgroups = node.sosgroups;
-p.sosvariables = node.sosvariables;
-%p.atmost = node.atmost;
-%p.localatmost = node.localatmost;
 
 function stack = stackCreate
 stack.nodes = {};
@@ -1053,14 +905,14 @@ stack.nodeCount = 0;
 function stack = push(stack,p)
 stack.nodes{end + 1} = p;
 stack.lower(end + 1) = p.lower;
-stack.nodeCount = stack.nodeCount + 1;   
+stack.nodeCount = stack.nodeCount + 1;
 
 function stack1 = mergeStack(stack1,stack2)
 for i = 1:1:length(stack2.nodes)
     if ~(isinf(stack2.lower(i)) && stack2.lower(i)>0)
         stack1.nodes{end + 1} = stack2.nodes{i};
         stack1.lower(end + 1) = stack2.lower(i);
-        stack1.nodeCount = stack1.nodeCount + 1;   
+        stack1.nodeCount = stack1.nodeCount + 1;
     end
 end
 
@@ -1091,19 +943,18 @@ if stackLength(stack) > 0
             fixed = [];
             p = [];
             for j = candidates
-                %fixed = [fixed nnz(stack.nodes{j}.lb == stack.nodes{j}.ub)];
                 fixed = [fixed stack.nodes{j}.deltafixed];
             end
             if ~all(fixed == fixed(1))
                 [~,loc] = max(fixed);
                 selected_node = candidates(loc);
-                p = getStackNode(stack,selected_node);               
+                p = getStackNode(stack,selected_node);
             else
                 % Seclect based on up/down
                 for j = candidates
                     if isequal(stack.nodes{j}.fixdir, NodeSelector.Current)
                         selected_node = j;
-                        p = getStackNode(stack,selected_node);                       
+                        p = getStackNode(stack,selected_node);
                         NodeSelector.Count = NodeSelector.Count - 1;
                         if NodeSelector.Count == 0
                             NodeSelector.Count = 1;
@@ -1120,11 +971,8 @@ if stackLength(stack) > 0
             if isempty(p)
                 selected_node = candidates(end);
                 p = getStackNode(stack,selected_node);
-            end                        
-            %j = max(find(depths == i));
-            %p = getStackNode(stack,j);
-            %stack = removeStackNode(stack,j);
-            stack = removeStackNode(stack,selected_node);                     
+            end
+            stack = removeStackNode(stack,selected_node);
             
         case 'project'
             error
@@ -1138,21 +986,21 @@ if stackLength(stack) > 0
             p=stack(j);
             stack = stack([1:1:j-1 j+1:1:end]);
             
-        case 'best'                       
+        case 'best'
             lowers = getStackLowers(stack);
-            [i,j] = min(lowers);       
+            [i,j] = min(lowers);
             candidates = find(abs(lowers-i)<=1e-10);
-          
+            
             fixed = [];
             p = [];
             for j = candidates
-                fixed = [fixed nnz(stack.nodes{j}.lb == stack.nodes{j}.ub)];           
+                fixed = [fixed nnz(stack.nodes{j}.lb == stack.nodes{j}.ub)];
             end
             if ~all(fixed == fixed(1))
                 [~,loc] = max(fixed);
                 selected_node = candidates(loc);
                 p = getStackNode(stack,selected_node);
-            else               
+            else
                 for j = candidates
                     if isequal(stack.nodes{j}.fixdir, NodeSelector.Current)
                         selected_node = j;
@@ -1172,16 +1020,14 @@ if stackLength(stack) > 0
                     end
                 end
             end
-            if isempty(p)                
+            if isempty(p)
                 selected_node = candidates(end);
-                p = getStackNode(stack,selected_node);               
-            end    
+                p = getStackNode(stack,selected_node);
+            end
             
             % Silly for backward testing compatibility. Stack order has
             % changed, to be able to compare some examples, make sure we
             % traverse the tree in exactly the same was as before on ties
-           % j = max(find(lowers == i));
-           % p = getStackNode(stack,j);
             stack = removeStackNode(stack,selected_node);
             
         otherwise
@@ -1221,13 +1067,16 @@ N = stack.nodes{j};
 
 function stack = removeStackNode(stack,j)
 stack.nodeCount = stack.nodeCount - length(j);
-stack.lower(j) = inf;   
+stack.lower(j) = inf;
 
 function node1 = newNode(p1,globalindex,fixdir,TotalIntegerInfeas,TotalBinaryInfeas,notused,pid)
+% Dynamic fields saved to stack elements
 node1.lb = p1.lb;
 node1.ub = p1.ub;
 node1.depth = p1.depth;
 node1.lower = p1.lower;
+node1.binarycardinality = p1.binarycardinality;
+node1.cutredundant = p1.cutredundant;
 node1.fixedvariable = globalindex;
 node1.fixdir = fixdir;
 node1.TotalIntegerInfeas = TotalIntegerInfeas;
@@ -1238,9 +1087,8 @@ node1.binary_variables = p1.binary_variables;
 node1.semicont_variables = p1.semicont_variables;
 node1.semibounds = p1.semibounds;
 node1.pid = pid;
-node1.sosgroups = p1.sosgroups;
-node1.sosvariables = p1.sosvariables;
 node1.deltafixed = p1.deltafixed;
+
 function [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack)
 if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))==0
     d = diag(p.Q);
@@ -1253,7 +1101,7 @@ if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))=
         fake.integer_variables = p.integer_variables;
         fake.binary_variables = p.binary_variables;
         fake.implied_integers = p.implied_integers;
-        for j = 1:length(stack.nodes)                        
+        for j = 1:length(stack.nodes)
             stack.nodes{j}.lb(i) = max(stack.nodes{j}.lb(i),-U);
             stack.nodes{j}.ub(i) = min(stack.nodes{j}.ub(i),U);
             fake.lb =  stack.nodes{j}.lb;
@@ -1276,8 +1124,7 @@ function s = probeForNewUpper(s,upper,p)
 if nargin == 2 || isinf(upper)
     p = s;
 end
-% FIXME generalize for negative etc
-if p.LinearBinaryPositiveCost
+if p.LinearBinaryPositiveCost && ~isinf(upper)
     % Compute possible indivual contribution to cost
     % Only tests those that can be 0 or 1
     probe = find(s.lb(s.binary_variables) < s.ub(s.binary_variables));
@@ -1295,6 +1142,24 @@ if p.LinearBinaryPositiveCost
     if ~isempty(must_be_zero)
         s.ub(must_be_zero) = 0;
     end
+elseif p.LinearBinaryNegativeCost && ~isinf(upper)
+    % Compute possible indivual contribution to cost
+    % Only tests those that can be 0 or 1
+    probe = find(s.lb(s.binary_variables) < s.ub(s.binary_variables));
+    probe = s.binary_variables(probe);
+    % This is as low we can go if we keep everything at ub
+    trivialBound = sum(p.c.*s.ub);
+    % Check what happens if we fix a variable to 0
+    must_be_one = [];
+    for j = probe
+        % Fixing leads to poor bound (not better than current)
+        if trivialBound - p.c(j) >= upper
+            must_be_one = [must_be_one j];
+        end
+    end
+    if ~isempty(must_be_one)
+        s.lb(must_be_one) = 1;
+    end
 end
 
 function stack = tightenStackBounds(stack,L,U)
@@ -1303,96 +1168,171 @@ for i = 1:length(stack.nodes)
         stack.nodes{i}.lb = max(stack.nodes{i}.lb,L);
         stack.nodes{i}.ub = min(stack.nodes{i}.ub,U);
         if any(stack.nodes{i}.lb > stack.nodes{i}.ub)
-           stack.lower(i) = inf;
+            stack.lower(i) = inf;
         end
     end
 end
 
 function p = updateCardinalityFromUpper(p,upper)
-% FIXME generalize for negative etc
+
 if p.LinearBinaryPositiveCost && ~isinf(upper)
-    % If we only pick the smallest possible, how many can
-    % we pick before it is worse than current upper
-    c = p.c(p.binary_variables);   
-    c = c(find(p.ub(p.binary_variables)==1));    
-    c_sort = sort(c);
-    k = max(find(cumsum(c_sort) < upper));    
-    p.globalcardinality.up = min(k,p.globalcardinality.up);    
-    if all(p.gubs(p.binary_variables))
-        if all([p.knapsack.b{p.gubs(p.binary_variables)}]==1)
-            c_gubs = 0;
-            G = unique(p.gubs(p.binary_variables));
-            G = setdiff(G,0);
-            for i = 1:length(G)
-                v = p.knapsack.variables{G(i)};
-                c_gubs(i) = min(p.c(v));
-                fixed(i) = max(p.lb(v));
-            end            
-            c_sort = sort(c_gubs);
-            k = max(find(cumsum(c_sort) < upper));
-            p.globalcardinality.up = min(k,p.globalcardinality.up);
-        end
-    end
-end
-
-function p = updateLowerCardinality(p,p_cut)
-for i = 1:p_cut.K.l
-    if p_cut.F_struc(i,1) < 0
-        s = p_cut.F_struc(i,1 + p.binary_variables);
-        k = min(find(cumsum(sort(s,'descend')) >= -p_cut.F_struc(i,1)));
-        p.globalcardinality.down = max(p.globalcardinality.down,k);
-    end
-end
-
-function p = funprobe(p,upper);
-
-probe = find(p.lb ~= p.ub & p.lb>=0);
-A = -p.F_struc(1:p.K.l,2:end);
-b = p.F_struc(1:p.K.l,1);
-A = [p.c';A];
-b = [upper;b];
-for k = probe(:)'
-    p_ = p;
-    knapsack = p.gubs(k);
-    friends = p.knapsack.variables{knapsack};
-    p_.ub(friends) = 0;
-    p_.ub(k) = 1;
-    p_.lb(k) = 1;
-    
-    A_ = A;b_ = b;
-    fixed = find(p_.lb == p_.ub);
-    b_ = b_ - A_(:,fixed)*p_.lb(fixed);
-    A_(:,fixed)=0;
-    infeasible = 0;
-    for row = 1:length(b)
-        a = A_(row,:);
-        % sum a_i x_i <= b_i
-        if all(a>=0)
-            forced_zero = find(a > b_(row));
-            p_.ub(forced_zero) = 0;
-            A_(:,forced_zero) = 0;
-        elseif all(a<=0)
-            if ~any(a<0) & b(row) < 0
-                infeasible = 1;
-                break
-            elseif nnz(a)==1 & b(row)<0
-                j = find(a);
-                p_.lb(j) = 1;
+    fixed_binary = find(p.lb==1 & p.isbinary(:));
+    free_binary = find(p.lb==0 & p.ub==1 & p.isbinary(:));
+    if ~isempty(free_binary)
+        c = sort(p.c(free_binary),'ascend');
+        k = max(find(sum(p.c(fixed_binary))+cumsum(c) < upper));
+        if isempty(k)
+            if sum(p.c(fixed_binary)) > upper
+                p.feasible=0;
+                return
+            else
+                k=0;
             end
         end
-        if sum(p.c.*p_.lb) > upper
-            infeasible = 1;
-        end
+    else
+        k=0;
     end
-    if infeasible
-        p.ub(k) = 0;
-    end
+    p.binarycardinality.up = min(length(fixed_binary)+k,p.binarycardinality.up);
+    
+elseif p.LinearBinaryCost && ~isinf(upper)
+    % How many do we need to set to improve upper?
+    % Find those we actually can set
+    c = p.c(p.ub == 1);
+    c = c(find(c));
+    k = min(find(cumsum(sort(c,'ascend')) < upper));
+    p.binarycardinality.down = max(k,p.binarycardinality.down);
 end
 
 
+function p = updateLowerCardinalityFromCut(p,p_cut)
+% 5*x1+4*x2+3*x3+2*x4 >= 9 so at least 2 must be set
+if p.feasible && p.binarycardinality.down~=p.binarycardinality.up
+    for i = 1:p_cut.K.l
+        if p_cut.F_struc(i,1) < 0
+            s = p_cut.F_struc(i,1 + p.binary_variables);
+            s = s(p.ub(p.binary_variables)==1);
+            k = min(find(cumsum(sort(s,'descend')) >= -p_cut.F_struc(i,1)));
+            if isempty(k)
+                p.feasible = 0;
+            else
+                p.binarycardinality.down = max(p.binarycardinality.down,k);
+            end
+        end
+    end
+end
+function p = updateUpperCardinalityFromCut(p,p_cut)
+if p.feasible && p.binarycardinality.down~=p.binarycardinality.up
+    for i = 1:p_cut.K.l
+        s = p_cut.F_struc(i,1 + p.binary_variables);
+        k = max(find(cumsum(sort(s,'descend')) >= -p_cut.F_struc(i,1)));
+        p.binarycardinality.up = min(p.binarycardinality.up,k);
+    end
+end
 
+function p = check_cliqueviolation(p)
+if p.feasible
+    for i = size(p.cliques.table,2):-1:1
+        vars = find(p.cliques.table(:,i));
+        switch nnz(p.lb(vars))
+            case 0
+            case 1
+            otherwise
+                p.feasible = 0;
+                break
+        end
+    end
+end
 
+function p = checkConsistentSDPcutUpper(p,sdpCuts,upper)
+if p.feasible && ~isinf(upper) && p.UnitContinuousCost && sdpCuts.K.l > 0
+    upper_lowerbound = upper_from_sdpcuts(p,sdpCuts,upper);
+    if upper_lowerbound > upper
+        p.feasible = 0;        
+    end
+end
 
+function p = iterate_propagate_second_order_cover(p_binarycut,p)
+n_fixed = nnz(p.lb(p.binary_variables)==p.ub(p.binary_variables));
+goon = 1;
+while goon && p.options.bnb.cardinalitypropagations && p.feasible
+    [L,U] = propagate_second_order_cover(p_binarycut,p);
+    if any(L>p.ub) || any(U < p.lb)
+        p.feasible = 0;
+    else
+        if any(~isinf(L)) || any(~isinf(U))
+            p.lb = max(p.lb,L);
+            p.ub = min(p.ub,U);
+        end
+        new_n_fixed = nnz(p.lb(p.binary_variables)==p.ub(p.binary_variables));
+        if new_n_fixed == n_fixed
+            goon = 0;
+        end
+        n_fixed = new_n_fixed;
+    end
+end
 
+function binary_diagnostics = createBinaryDiagnosticsString(p)
+fixed_1 = nnz(p.lb(p.binary_variables)==1);
+fixed_0 = nnz(p.ub(p.binary_variables)==0);
+binary_diagnostics = ['(' num2str(fixed_0) '/' num2str(fixed_1) '/' num2str(p.binarycardinality.down) '/' num2str(p.binarycardinality.up) ')'];
 
+function p = propagate_multiple(p)
+p.binarycardinality.down = max(p.binarycardinality.down,nnz(p.lb(p.binary_variables)==1));
+p.binarycardinality.up = min(p.binarycardinality.up,nnz(p.ub(p.binary_variables)==1));
+p = propagate_cardinality(p);
+p = propagate_setcover(p);
+p = propagate_downforce(p);
+p = propagate_upforce(p);
+p = propagate_binary_product(p);
+p = propagate_cardinality(p);
+p = check_cliqueviolation(p);
+
+function p = propagate_global_to_node(poriginal,p)
+p.binarycardinality.down = max(poriginal.binarycardinality.down,p.binarycardinality.down);
+p.binarycardinality.up   = min(poriginal.binarycardinality.up,p.binarycardinality.up);
+p.lb = max(p.lb,poriginal.lb);
+p.ub = min(p.ub,poriginal.ub);
+if any(p.ub < p.lb)
+    p.feasible = 0;
+end
+
+function [p,poriginal] = propagate_binary_product_on_cut(p,poriginal,p_binarycut)
+if p.feasible
+    for i = 1:p_binarycut.K.l
+        row = p_binarycut.F_struc(i,:);
+        if all(row(2:end) <= 0)
+            % we have c - sum xi*(ai>0) >=0
+            r = row(2:end);
+            if ~isempty(p.binaryProduct) && all(ismember(find(r),p.binaryProduct(:,2:3)))
+                r = sort(r(r<0),'descend');
+                n = max(find(row(1) + cumsum(r) >= 0));
+                % All active variables in the model is
+                % contained in the z = xi*xj structures via x
+                if all(ismember(find(poriginal.ub == 1),p.binaryProduct))
+                    % Since at most n of the x variables can be
+                    % non-zero, at most nchoosek(n,2) of the z can be
+                    % non-zero
+                    poriginal.binarycardinality.up = min(poriginal.binarycardinality.up,nchoosek(n,2));
+                    p.binarycardinality.up = poriginal.binarycardinality.up;
+                end
+            end
+        end
+    end
+end
+
+function p = cut_process(p,globalcuts)
+m = size(globalcuts,1);
+if length(p.cutactivate) < m
+    p.cutactivate(m) = 0;
+end
+if length(p.cutredundant) < m
+    p.cutredundant(m) = 0;
+end
+if ~isempty(globalcuts)
+    s = find(p.cutactivate & ~p.cutredundant);
+    A = globalcuts(s,2:end);
+    b = globalcuts(s,1);
+    locally_redundant = find((b + [A.*(A>0)]*p.lb + [A.*(A<0)]*p.ub) >= 0);
+    p.cutredundant(s(locally_redundant)) = 1;
+end
 

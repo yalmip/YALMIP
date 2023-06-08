@@ -49,33 +49,21 @@ function output = bnb(p)
 %
 % See also OPTIMIZE, BINVAR, INTVAR, BINARY, INTEGER
 
-% ********************************
-%% INITIALIZE DIAGNOSTICS IN YALMIP
-% ********************************
 bnbsolvertime = clock;
-showprogress('Branch and bound started',p.options.showprogress);
 
-% ********************************
-%% Remove options if none has been changed
-%%  Improves performance when calling solver many times
-% ********************************
+% Remove options if none has been changed
+% Improves performance when calling solver many times
 p.options = pruneOptions(p.options);
 
-% ********************************
-%% We might have a GP : pre-calc
-% ********************************
+% We might have a GP : pre-calc
 p.nonlinear = find(~(sum(p.monomtable~=0,2)==1 & sum(p.monomtable,2)==1));
 p.nonlinear = union(p.nonlinear,p.evalVariables);
 
-% ********************************
 % This field is only used in bmibnb, which uses the same sub-functions as
 % bnb
-% ********************************
 p.high_monom_model = [];
 
-% ********************************
-%% Define infinite bounds, assume feasible
-% ********************************
+% Define infinite bounds, assume feasible
 if isempty(p.ub)
     p.ub = repmat(inf,length(p.c),1);
 end
@@ -84,112 +72,100 @@ if isempty(p.lb)
 end
 p.feasible = 1;
 
-%% *******************************
+% Various classifications and detection of special stuff
+p.rowtype = zeros(1,p.K.f+p.K.l);
+p.cliques.table = spalloc(length(p.c),0,0);
+p.cliques.hash  = spalloc(length(p.c),0,0);
+p.knapsack.a = {};
+p.knapsack.b = {};
+p.knapsack.variables = {};
+p.knapsack.type = [];
+p.knapsack.hash = [];
+p.hash = randn(length(p.c),1);
+p.isbinary  = ismember(1:length(p.c),p.binary_variables);
+p.isinteger = ismember(1:length(p.c),p.integer_variables);
+p.isintegral = p.isbinary | p.isinteger;
+
 % Could be some nonlinear terms 
 % (although these problems are recommended to be solved using BMIBNB
 p = compile_nonlinear_table(p);
 
-% ********************************
-%% Extract bounds from model
-% ********************************
-p = bounds_from_cones_to_lp(p);
+% Extract bounds from model
 p = presolve_bounds_from_modelbounds(p,1);
+p = bounds_from_cones_to_lp(p);
 
-% !!!!!!!!!!!!!!!!!!!!!!!! REMOVE
-if isempty(p.nonlinear)
-    if p.K.f>0
-        Aeq = -p.F_struc(1:p.K.f,2:end);
-        beq = p.F_struc(1:p.K.f,1);
-        A = [Aeq;-Aeq];
-        b = [beq;-beq];
-        [p.lb,p.ub,redundant,pss] = tightenbounds(A,b,p.lb,p.ub,p.integer_variables,p.binary_variables,ones(length(p.lb),1));
-    end
-    pss=[];
-    if p.K.l>0
-        A = -p.F_struc(1+p.K.f:p.K.f+p.K.l,2:end);
-        b = p.F_struc(1+p.K.f:p.K.f+p.K.l,1);
-        [p.lb,p.ub,redundant,pss] = tightenbounds(A,b,p.lb,p.ub,p.integer_variables,p.binary_variables,ones(length(p.lb),1));
-        if length(redundant)>0
-            pss.AL0A(redundant,:)=[];
-            pss.AG0A(redundant,:)=[];
-            p.F_struc(p.K.f+redundant,:)=[];
-            p.K.l = p.K.l - length(redundant);
-        end
-    end
-end
+% Data loaded as integer, but trivially a binary?
+p = presolve_binaryinteger(p);
 
-% ********************************
-%% Data loaded with wrong type?
-% ********************************
-if ~isempty(p.integer_variables)
-    binary_integer = find(p.ub(p.integer_variables)<=1 & p.lb(p.integer_variables)>=0);
-    if ~isempty(binary_integer)
-        p.binary_variables = union(p.binary_variables,p.integer_variables(binary_integer));        
-        p.integer_variables(binary_integer) = [];
-    end
-end
-
-% ********************************
-%% Wrong encoding in some historical files causing sign-switch on binary
-% ********************************
+% Wrong encoding in some historical files with integer -1 -> 0
 [p,negated_binary] = detect_negated_binary(p);
+p.integral_variables = union(p.binary_variables,p.integer_variables);
+p.noninteger_variables = setdiff(1:length(p.c),[p.integral_variables p.semicont_variables]);
 
-% Remove some garbage
-p = detectRedundantInfeasibleSDPRows(smashFixed(p));
+% We keep track of explicit cardinality bounds for some propagations
+p.binarycardinality.up = length(p.binary_variables);
+p.binarycardinality.down = 0;
 
-% ********************************
-%% ADD CONSTRAINTS 0<=x<=1 FOR BINARY
-% and clean integer bounds et
-% ********************************
-p = update_integer_bounds(p);
-p = update_semicont_bounds(p);
-
-if any(p.lb > p.ub+1e-6)
-    output = createOutputStructure(1);
-    output.infostr = yalmiperror(1,'BNB');
-    return
+% Say hello
+if p.options.verbose
+    disp('* Starting YALMIP integer branch & bound.');
+    disp(['* Lower solver   : ' p.solver.lower.tag]);
+    disp(['* Upper solver   : ' p.options.bnb.uppersolver]);
+    disp(['* Max time       : ' num2str(p.options.bnb.maxtime)]);
+    disp(['* Max iterations : ' num2str(p.options.bnb.maxiter)]);      
+    nB = length(p.binary_variables);
+    nI = length(p.integer_variables);
+    nC = length(p.c) - nB - nI;
+    disp(['* Inital model: ' num2str(nB) ' binaries, ' num2str(nI) ' integers, ' num2str(nC) ' continuous.']);    
+    disp(['*               ' num2str(p.K.f+p.K.l) ' linear rows, ' num2str(sum(p.K.q)+sum(p.K.s.^2)) ' conic rows']);    
+    disp(['* Starting presolve and model analysis']);
 end
 
-%% *******************************
-% PRE-SOLVE (nothing fancy coded)
-% % *******************************
+% Clean up model and extract basics
+% We remove constraints, but never remove any variables. Instead, we simply
+% simply zero out the columns and move to constant
+p = classifyrows(p);
 p = presolve_empty_rows(p);
-p = presolve_integer_coefficients(p);
+p = update_integer_bounds(p);
+p = presolve_euclideanreduction(p); 
+p = presolve_implied_from_SDP(p);
+p = presolve_remove_repeatedrows(p);
+p = presolve_remove_dominatedinequalities(p);
+p = presolve_remove_equalitydominateinequality(p);
+p = presolve_impliedintegers_from_equalities(p);
+p = presolve_strengthen_coefficients(p);
+p = presolve_dualreductions(p);
+p = update_semicont_bounds(p);
+p = smashFixed(p);
+p = presolve_empty_rows(p);
+p = detectRedundantInfeasibleSDPRows(p);
+p = presolve_empty_rows(p);
 p = presolve_implied_binaryproduct(p);
 p = presolve_downforce(p);
 p = presolve_upforce(p);
+% These are reused from BMIBNB and involves nonlinear models
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
-p = propagate_impliedintegers_from_equalities(p);
-
-
-% [F,h]=loadsdpafile('diw_43.dat-s');
-% Missar en annars, 
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
-if p.K.l > 0
-    b = p.F_struc(1+p.K.f:p.K.l+p.K.f,1);
-    A = -p.F_struc(1+p.K.f:p.K.l+p.K.f,2:end);
-    redundant = find(((A>0).*A*(p.ub-p.lb) - (b-A*p.lb) <= 0));
-    if ~isempty(redundant)
-        p.F_struc(p.K.f + redundant,:) = [];
-        p.K.l = p.K.l - length(redundant);
-    end
-end
 
-if ~p.feasible
+% Some tricks and strategies are performed for certain objectives
+p = detect_special_objectives(p);
+
+if ~p.feasible || any(p.lb > p.ub+1e-6)
     output = createOutputStructure([],[],[],1,yalmiperror(1,'BNB'),[],[],0);    
     return
 end
 
-% *******************************
-%% Display logics
+%% ************************************************************************
+% Display logics
 % 0 : Silent
 % 1 : Display branching
-% 2 : Display node solver prints
-% *******************************
+% 2 : More YALMIP info
+% 3 : Display node solver prints
+% *************************************************************************
 if p.options.verbose ~= fix(p.options.verbose)
     p.options.print_interval = ceil(1/p.options.verbose);
     p.options.verbose = ceil(p.options.verbose);
@@ -213,9 +189,7 @@ switch max(min(p.options.verbose,3),0)
         p.options.verbose = 0;
 end
 
-% *******************************
-%% Figure out the weights if any
-% *******************************
+% Figure out the sos weights if any (experimental)
 try % Probably buggy first version...
     if ~isempty(p.options.bnb.weight)
         weightvar = p.options.bnb.weight;
@@ -240,9 +214,8 @@ catch
     p.weight = ones(length(p.c),1);
 end
 
-% *******************************
-%% START BRANCHING
-% *******************************
+
+% START BRANCHING
 setuptime = etime(clock,bnbsolvertime);
 bnbsolvertime = clock;
 [x_min,solved_nodes,lower,upper,profile,diagnostics] = bnb_branch_and_bound(p);
@@ -254,9 +227,7 @@ if ~isempty(x_min) && ~isempty(negated_binary)
     x_min(negated_binary) = -x_min(negated_binary);
 end
 
-% **********************************
-%% CREATE SOLUTION
-% **********************************
+% CREATE SOLUTION
 if diagnostics == -4
     output.problem = -4;
 elseif diagnostics == 9
@@ -296,5 +267,3 @@ if p.options.savesolveroutput
 else
     output.solveroutput =[];
 end
-
-

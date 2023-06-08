@@ -7,14 +7,14 @@ function row = fix_continuous_in_row_at_best_possible(row,p,upper)
 % If solution available,we can tighten thisbound
 if p.UnitContinuousCost && ~isinf(upper)
     k = find(p.c);    
-    if p.c(k) == -1
+    if sign(p.c(k)) == -1
         % Some variable is maximized
         % It will never be lower than current objective
-        p.lb(k) = max(p.lb(k),-upper);
-    elseif p.c(k) == 1
+        p.lb(k) = max(p.lb(k),-upper/abs(p.c(k)));
+    elseif sign(p.c(k)) == 1
         % Some variable is minimized
         % It will never be larger than current objective
-        p.ub(k) = min(p.ub(k),upper);
+        p.ub(k) = min(p.ub(k),upper/p.c(k));
     end
 end
 

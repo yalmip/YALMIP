@@ -4,15 +4,15 @@ function p = presolve_integer_coefficients(p)
 p.isinteger = zeros(length(p.c),1);
 p.isinteger(p.binary_variables) = 1;
 p.isinteger(p.integer_variables) = 1;
-
+error
 % Trivially stupid equalities (i.e. Jeroslows example...)
 if any(p.K.f)
     for i = 1:p.K.f
         r = find(p.F_struc(i,2:end));
         if any(r) && all(p.isinteger(r))            
             a = p.F_struc(i,1+r);
-            if all(fix(a)==a)
-                % Integer coefficients row               
+            if all(fix(a)==a) && ~all(max(abs(a))==abs(nonzeros(a)))
+                % Integer coefficients row, not all equal               
                 m = abs(gcdfactor(a));
                 if m~=1
                     p.F_struc(i,:) = p.F_struc(i,:)/m;

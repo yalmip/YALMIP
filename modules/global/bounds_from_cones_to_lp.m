@@ -29,7 +29,18 @@ if any(p.K.s)
     for i = 1:length(p.K.s)
         n = p.K.s(i);
         index = top + find(speye(n))-1;        
-        newInequalities = [newInequalities;p.F_struc(index,:)];
+        row = p.F_struc(index,:);
+        if nnz(row(2:end))> 1
+           % newInequalities = [newInequalities;row];        
+        else
+            % This is just a bound
+            idx = find(row(2:end));
+            if row(idx)>0
+                p.lb(idx) = max(p.lb(idx),-row(1)/row(idx+1));
+            else
+                p.ub(idx) = min(p.ub(idx),row(1)/row(idx+1));
+            end
+        end
         top = top + n^2;
     end
     newInequalities = unique(newInequalities,'rows');

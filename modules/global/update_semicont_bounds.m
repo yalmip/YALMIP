@@ -1,5 +1,5 @@
 function p = update_semicont_bounds(p)
-if ~isempty(p.semicont_variables)
+if p.feasible && ~isempty(p.semicont_variables)
     redundant = find(p.lb<=0 & p.ub>=0);
     p.semicont_variables = setdiff(p.semicont_variables,redundant);
     % Now relax the model and generate hull including 0
