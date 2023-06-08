@@ -260,6 +260,7 @@ output.solverinput  = 0;
 if p.options.savesolveroutput
     output.solveroutput.setuptime = setuptime;
     output.solveroutput.localsolvertime = profile.local_solver_time;
+    output.solveroutput.localsolver = p.solver.lower.tag;
     output.solveroutput.branchingtime = bnbsolvertime;
     output.solveroutput.solved_nodes = solved_nodes;
     output.solveroutput.lower = lower;
