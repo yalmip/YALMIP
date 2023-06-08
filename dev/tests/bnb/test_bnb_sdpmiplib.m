@@ -38,7 +38,7 @@ if strcmpi(sol.solveroutput.localsolver,'mosek')
 end
 
 [F,h] = loadsdpafile('diw_37.dat-s');
-sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1));
+sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1,'sedumi.free',0));
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - -211) <= 1e-2);
 if strcmpi(sol.solveroutput.localsolver,'mosek')

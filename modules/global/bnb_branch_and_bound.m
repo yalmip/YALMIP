@@ -296,7 +296,11 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         
         if output.problem~=1
             if output.problem == 3 || output.problem == 4 || output.problem == 5
-                cost = -inf;
+                if nnz(p.Q)==0 && isempty(p.evalMap)
+                    cost = sum(p.c(p.c>0).*p.lb(p.c>0))+sum(p.c(p.c<0).*p.ub(p.c<0));
+                else
+                    cost = -inf;
+                end
             end
             
             if isnan(lower)
