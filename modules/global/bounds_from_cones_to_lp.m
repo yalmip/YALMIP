@@ -39,7 +39,7 @@ if any(p.K.s)
                 if row(k,idx+1)>0
                     p.lb(idx) = max(p.lb(idx),-row(1)/row(k,idx+1));
                 else
-                    p.ub(idx) = min(p.ub(idx),row(1)/row(k,idx+1));
+                    p.ub(idx) = min(p.ub(idx),row(1)/(-row(k,idx+1)));
                 end
             end
         end
