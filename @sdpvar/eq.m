@@ -10,16 +10,17 @@ if isa(Y,'blkvar')
 end
 
 try
-    if ishermitian(X) && ishermitian(Y)
-    	if isreal(X) && isreal(Y)
-		    mask = triu(true(length(X)));
-		    y = constraint(extsubsref(X,mask),'==',extsubsref(Y,mask));
+    Z = X - Y;
+    if ishermitian(Z)
+    	if isreal(Z)
+		    mask = triu(true(length(Z)));
+		    y = constraint(extsubsref(Z,mask),'==', 0);
 		else
-		    mask = triu(true(length(X)),1);
-    	    y = constraint([diag(X);real(extsubsref(X,mask));imag(extsubsref(X,mask))],'==',[diag(Y);real(extsubsref(Y,mask));imag(extsubsref(Y,mask))]);
+		    mask = triu(true(length(Z)),1);
+    	    y = constraint([diag(Z);real(extsubsref(Z,mask));imag(extsubsref(Z,mask))],'==', 0);
     	end
     else
-        y = constraint(X,'==',Y);
+        y = constraint(Z,'==',0);
     end
 catch
     error(lasterr)
