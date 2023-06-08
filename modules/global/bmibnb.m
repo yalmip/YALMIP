@@ -98,8 +98,9 @@ p.nonshiftedQP.Q =[];
 p.nonshiftedQP.c =[];
 p.nonshiftedQP.f =[];
 % Flags used by BNB which uses common presolve
-p.globalcardinality.up = [];
-p.globalcardinality.down = [];
+p.binarycardinality.up = length(p.binary_variables);
+p.binarycardinality.down = 0;
+p.sdpextendable = 0;
 
 % *************************************************
 % Decide on strategy for nonlinear SDP cone
