@@ -1,4 +1,4 @@
-function p = propagate_bounds_from_evaluations(p);
+function p = propagate_bounds_from_evaluations(p)
 
 if ~isempty(p.evalVariables)
     for i = 1:length(p.evalMap)

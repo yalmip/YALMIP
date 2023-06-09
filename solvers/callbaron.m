@@ -14,7 +14,7 @@ obj = createmodelstring(model.c,model);
 if nnz(model.Q)>0
     obj = [obj '+' createQstring(model.Q,model)];
 end
-if model.f > 0
+if any(model.f) > 0
     obj = [obj '+' num2str(model.f)];
 end
 obj = baronify(obj);
@@ -127,7 +127,7 @@ if ~isempty(x)
 end
 
 % Standard interface
-output = createoutput(x,[],[],problem,'BARON',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,[],[],problem,'BARON',solverinput,solveroutput,solvertime);
 
 
 
@@ -249,6 +249,8 @@ string = strrep(string,'-1*','-');
 string = strrep(string,'+1*','+');
 
 function s = baronify(s)
+s = strrep(s,'+1*','+');
+s = strrep(s,'-1*','-');
 s = strrep(s,'sqrtm_internal','sqrt');
 s = strrep(s,'cabs','abs');
 % YALMIP catches log(1+z) and implements internal model slog(z) 

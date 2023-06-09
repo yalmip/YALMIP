@@ -11,11 +11,11 @@ if ~isempty(model.evalMap)
     data.b = full(model.F_struc(:,1));
     data.c = full(model.c);
     cones = model.K;
-    % Clear away the SDP cone to easier add new rows. Will be put back in
+    % Clear away the Power and SDP cone to easier add new rows. Will be put back in
     % place later
-    data.A(end-sum(model.K.s.^2)+1:end,:)=[];
-    data.b(end-sum(model.K.s.^2)+1:end) = [];
-    sdpData = model.F_struc(end-sum(model.K.s.^2)+1:end,:);
+    data.A(end-sum(model.K.p)-sum(model.K.s.^2)+1:end,:)=[];
+    data.b(end-sum(model.K.p)-sum(model.K.s.^2)+1:end) = [];
+    sdpData = model.F_struc(end-sum(model.K.p)-sum(model.K.s.^2)+1:end,:);
     
     % First check that we have only exponentials
     convexFunctions = [];
@@ -46,36 +46,36 @@ if ~isempty(model.evalMap)
                 % Standard interface, return solver not applicable
                 % This should not be able to happen as we check this
                 % earlier
-                output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
+                output = createOutputStructure([],[],[],-4,model.solver.tag,[],[],0);
                 return
         end
     end
     % Check that all exp/log enter in a convex fashion
-    if model.K.f > 0
+    if any(model.K.f)
         if nnz(data.A(1:model.K.f,convexFunctions))>0 || nnz(data.A(1:model.K.f,concaveFunctions))>0
-            output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+            output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
             return
         end
     end
     % Check sign in objective on exp/log terms
     if any(data.c(convexFunctions) < 0) || any(data.c(concaveFunctions) > 0)
-        output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+        output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
         return
     end
     % Check sign in elementwise inequalities on exp/log terms
-    if model.K.l > 0
+    if any(model.K.l)
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,convexFunctions)>0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,concaveFunctions)<0)
-            output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+            output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
             return
         end
     end
-    % Check so there are no exp/log terms in quadratic or SDP cone
-    if sum(model.K.q) + sum(model.K.s) > 0
-        if nnz(data.A(1+model.K.f+model.K.l:end,convexFunctions))>0 || nnz(data.A(1+model.K.f+model.K.l:end,concaveFunctions))>0
-            output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+    % Check so there are no exp/log-terms inside cones
+    if sum(model.K.q) + model.K.e + sum(model.K.p) + sum(model.K.s) > 0
+        if nnz(model.F_struc(1+model.K.f+model.K.l:end,convexFunctions+1))+nnz(model.F_struc(1+model.K.f+model.K.l:end,concaveFunctions+1))>0
+            output = createOutputStructure([],[],[],23,model.solver.tag,[],[],0);
             return
         end
-    end
+    end 
     % Scalarize entropy operator
     if ~isempty(vectorentropy)
         for i = vectorentropy(:)'
@@ -138,7 +138,7 @@ if ~isempty(model.evalMap)
             % exp(x1-z)+exp(x2-z)+...<=1
             data.A = [data.A(1:cones.f,:) spalloc(cones.f,m,0);
                       spalloc(1,n,0) -ones(1,m);
-                      data.A(cones.f+1:end,:) spalloc(cones.l+sum(cones.q)+sum(cones.s),m,0)];
+                      data.A(cones.f+1:end,:) spalloc(cones.l+sum(cones.q),m,0)];
             data.b = [data.b(1:cones.f);
                       1;
                       data.b(cones.f+1:end)];
@@ -172,7 +172,7 @@ if ~isempty(model.evalMap)
                           -sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
             case 'pexp'
-                % xv(1)*exp(xv(2)/xv(1)) <= xc
+                % xv(1)*exp(xv(2)/xv(1)) <= xc                
                 x = model.evalMap{i}.variableIndex(2);
                 y = model.evalMap{i}.variableIndex(1);
                 z = model.evalMap{i}.computes;
@@ -230,8 +230,8 @@ if ~isempty(model.evalMap)
     model.F_struc = [data.b data.A];
     model.c = data.c;
     model.K = cones;   
-    % Put back the SDP cone in place
-    if model.K.s(1)>0
+    % Put back the POWER+SDP cone in place
+    if any(model.K.s) || any(model.K.p)
         if size(sdpData,2) < size(model.F_struc,2)
             sdpData(end,size(model.F_struc,2)) = 0;
         end

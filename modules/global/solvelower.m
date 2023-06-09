@@ -20,7 +20,7 @@ if p.options.bmibnb.cut.bilinear
 end
 
 if p.options.bmibnb.cut.normbound
-  	p_cut = addNormBoundCut(p_cut);
+	p_cut = addNormBoundCut(p_cut);
 end
 if p.options.bmibnb.cut.evalvariable
     p_cut = addEvalVariableCuts(p_cut);
@@ -45,7 +45,7 @@ if p.options.bmibnb.cut.monomialtower
     p_cut = addMonomialTowerCuts(p_cut);
 end
 if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
-    if ~isempty(p_cut.K.s) & p_cut.K.s(1) > 0
+    if any(p_cut.K.s)
         if isequal(p_cut.solver.lowercall,'callmosek')
             % Mosek SDP module does not support binary
             p_cut.binary_variables = [];
@@ -54,6 +54,31 @@ if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
         end
     end
 end
+
+if ~isempty(p.socpcuts.F_struc) && p.solver.lowersolver.constraint.inequalities.secondordercone.linear
+ 	p_cut = mergeNumericalModels(p_cut,p.socpcuts);
+end
+
+if ~isempty(p.delayedconvex)
+ 	p_cut = mergeNumericalModels(p_cut,p.delayedconvex);
+end
+
+if p.options.bmibnb.cut.convexupperbound && ~isinf(p.upper)
+    xc = [(p.lb+p.ub)/2];
+    if ~any(isinf(xc)) && ~any(isnan(xc))
+       % p_cut = add_convex_upper_bound_cut_generalized(p_cut,p.upper,xc);
+    end
+  %  xx = zeros(length(p.c),1);
+  %  xx(1:length(xmin)) = xmin;
+ %	p_cut = add_convex_upper_bound_cut(p_cut,p.upper,xx);
+end
+
+if p.options.bmibnb.plot
+    plotNodeModel(p_cut,'g')
+    axis([-3 3 -5 5])
+    drawnow
+end
+
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -73,7 +98,7 @@ else
     elseif p.solver.lowersolver.objective.quadratic.convex 
         % If we have a QP solver, we can at least try to strengthen the
         % relaxation by using the positive diagonal terms
-        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);
+        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);        
     end
     
     fixed = p_cut.lb >= p_cut.ub;
@@ -94,9 +119,9 @@ else
         
         if nnz(fixed)==0
             
-            if ~isempty(p_cut.bilinears) & 0
+            if ~isempty(p_cut.bilinears) && 0
                 top = size(p_cut.F_struc,1);
-                if length(p_cut.K.s)==1 & p_cut.K.s(1)==0
+                if length(p_cut.K.s)==1 && p_cut.K.s(1)==0
                     p_cut.K.s = [];
                 end
                 usedterms = zeros(size(p_cut.bilinears,1),1);
@@ -181,8 +206,15 @@ else
             p_cut.evaluation_scheme = [];
             
             tstart = tic;     
-            p_cut = pruneUnsupportedCuts(p_cut);            
-            output = feval(lowersolver,removenonlinearity(p_cut));
+            p_cut = pruneUnsupportedCuts(p_cut);
+            % FIXME - SDP in mosek does not support QP-term
+            % so we add a layer in-between to fake this via socp
+            % maybe clean up 
+            if strcmpi(p_cut.solver.lowersolver.tag,'mosek') && any(p_cut.K.s) && nnz(p_cut.Q)>0
+                output = moseksdpqpshim(removenonlinearity(p_cut));
+            else
+                output = feval(lowersolver,removenonlinearity(p_cut));
+            end
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
             if length(output.Primal) == length(p_cut.c)
@@ -243,7 +275,9 @@ else
             
             p_cut.lb(removethese)=[];
             p_cut.ub(removethese)=[];
-            p_cut.x0(removethese)=[];
+            if ~isempty(p_cut.x0)
+                p_cut.x0(removethese)=[];
+            end
             p_cut.monomtable(:,find(removethese))=[];
             p_cut.monomtable(find(removethese),:)=[];
             p_cut.variabletype(removethese) = [];
@@ -267,8 +301,15 @@ else
                 end
             else
                 try
-                    tstart = tic;                    
-                    output = feval(lowersolver,removenonlinearity(p_cut));
+                    tstart = tic;   
+                    
+                     if strcmpi(p_cut.solver.lowersolver.tag,'mosek') && any(p_cut.K.s) && nnz(p_cut.Q)>0
+                        output = moseksdpqpshim(removenonlinearity(p_cut));
+                     else
+                        output = feval(lowersolver,removenonlinearity(p_cut));
+                     end
+            
+                   % output = feval(lowersolver,removenonlinearity(p_cut));
                     psave.counter.lowersolved = psave.counter.lowersolved + 1;
                     timing.lowersolve = timing.lowersolve + toc(tstart);
                 catch
@@ -286,13 +327,51 @@ end
 
 function p = pruneUnsupportedCuts(p)
 
-if p.K.s > 0 & ~p.solver.lowersolver.constraint.inequalities.semidefinite.linear
+if any(p.K.s) & ~p.solver.lowersolver.constraint.inequalities.semidefinite.linear
     % Remove SDP cuts
     error('FIXME')
 end
 
-if p.K.e > 0 & ~p.solver.lowersolver.exponentialcone
+if any(p.K.e) & ~p.solver.lowersolver.exponentialcone
     % Remove EXPCONE cuts
     p.F_struc(end-p.K.e*3+1:1:end,:) = [];    
     p.K.e = 0;
 end
+
+function output = moseksdpqpshim(p)
+used = find(any(p.Q,2));
+Q = p.Q(used,used);
+[U,S,V] = svd(full(Q));
+r = find(diag(S)>=1e-12);
+R=(S(r,r)).^0.5*V(:,r)';
+
+% x(used)*R'*R*x(used) <= t-c'*tx-f
+% 1 + (t-c'*tx-f)
+% 1 - (t-c'*tx-f)
+% 2*R*x(used)
+p.F_struc(1,end+1) = 0;
+p.lb(end+1) = -inf;
+p.ub(end+1) = inf;
+p.c(end+1) = 0;
+p.Q = [];
+q = emptyNumericalModel;
+q.F_struc = spalloc(2+size(R,1),size(p.F_struc,2),0);
+q.F_struc(1,1) = 1-p.f;
+q.F_struc(1,2:end) = -p.c(:)';
+q.F_struc(1,end) = 1;
+q.F_struc(2,1) = 1+p.f;
+q.F_struc(2,2:end) = p.c(:)';
+q.F_struc(2,end) = -1;
+q.F_struc(3:end,1 + used) = 2*R;
+q.K.q = 2 + size(R,1);
+% Now change objective
+p.c = p.c*0;
+p.c(end) = 1;
+p = mergeNumericalModels(p,q);
+output = callmosek(p);
+if ~isempty(output.Primal)
+    output.Primal = output.Primal(1:end-1);
+end
+
+
+

@@ -38,25 +38,6 @@ lmi_variables = X.lmi_variables;
 
 nonlinears = lmi_variables(find(variabletype(lmi_variables)));
 
-% FIXME: This code does not work
-% if ~isempty(solution.values)
-%     if max(lmi_variables) <= length(solution.values) && isempty(nonlinears)
-%         if ~any(isnan(solution.values(lmi_variables(:))))
-%             % Yihoo, we can do this really fast by
-%             % re-using the old values
-%             sys = X.basis*[1;solution.values(lmi_variables(:))];
-%             if X.typeflag==10
-%                 sys = eig(full(reshape(sys,X.dim(1),X.dim(2))));
-%             else
-%                 sys = full(reshape(sys,X.dim(1),X.dim(2)));
-%             end
-%             return
-%         end
-%     end
-% end
-
-% Okey, we could not do it really fast...
-
 if nargin == 1
     % Definition of nonlinear variables
     allextended   = yalmip('extvariables');
@@ -182,7 +163,7 @@ if ~isempty(allextended)
                         i = 1;
                         val = nan;
                         while i<=n
-                            if min(checkset(extstruct.arg{2*i}))>=0
+                            if min(check(extstruct.arg{2*i}))>=0
                                 val = extstruct.arg{2*i-1};
                                 break
                             end
@@ -251,8 +232,6 @@ if ~isempty(nonlinears)
             if ~isempty(extended_variables)
                 for ii = 1:length(extended_variables)
                     extvar = used_in_monom(extended_variables(ii));
-                    %extstruct = yalmip('extstruct',extvar);
-                    %extstruct = getExtStruct(allStruct,extvar);
                     extstruct = allStruct(allStruct_computes == extvar);
                     for k = 1:length(extstruct.arg)
                         if isa(extstruct.arg{k},'sdpvar')

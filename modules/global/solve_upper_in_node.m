@@ -4,9 +4,9 @@ if nargin < 10
     cutiterations = 1;
 end
 
-% Call nonlinear solver (if there are SDP cones and non-SDP solver, remove
-% them and use cut generation later below
-[output,timing] = global_solve_upper(p,pruneSDPCone(p_upper),x,p.options,uppersolver,timing);
+% Call nonlinear solver (if there are SDP cones and non-SDP solver, or user
+% specified use of nonlinear SDP cut generation, remove SDP cone)
+[output,timing] = global_solve_upper(pruneSDPCone(p),pruneSDPCone(removeCuts(p_upper)),x,p.options,uppersolver,timing);
 output.Primal(p_upper.integer_variables) = round(output.Primal(p_upper.integer_variables));
 output.Primal(p_upper.binary_variables) = round(output.Primal(p_upper.binary_variables));
 
@@ -14,7 +14,14 @@ z = apply_recursive_evaluation(p_upper,output.Primal);
 
 [upper_residual,~,feasibility] = constraint_residuals(p_upper,z);
 feasible = ~isempty(z) & ~any(isnan(z)) & all(upper_residual(1:p_upper.K.f)>=-p.options.bmibnb.eqtol) & all(upper_residual(1+p_upper.K.f:end)>=-p.options.bmibnb.pdtol);
-
+for i = 1:length(p.evalMap)
+    if any(p.evalMap{i}.properties.forbidden)
+        if any(z(p.evalMap{i}.variableIndex) >p.evalMap{i}.properties.forbidden(1) & z(p.evalMap{i}.variableIndex) < p.evalMap{i}.properties.forbidden(2))
+            feasible = 0;
+            break
+        end
+    end
+end
 if feasible
     this_upper = p_upper.f+p_upper.c'*z+z'*p_upper.Q*z;
     if isequal(p_upper.K.f,0) && isequal(p_upper.K.l,0) && isequal(p_upper.K.q,0) && isequal(p_upper.K.s,0) 
@@ -60,14 +67,14 @@ elseif output.problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.co
     p_u=createsdpcut(p_u,z);
     p_upper.F_struc = [p_upper.F_struc(1:p_upper.K.f,:);p_u.lpcuts;p_upper.F_struc(1+p_upper.K.f:end,:)];
     p_upper.K.l  = p_upper.K.l + size(p_u.lpcuts,1);
-    if ~isempty(p_u.socpcuts)
-        p_upper.F_struc = [p_upper.F_struc(1:p_upper.K.f+p_upper.K.l,:);p_u.socpcuts;p_upper.F_struc(1+p_upper.K.f+p_upper.K.l:end,:)];
-        if isequal(p_upper.K.q,0)
-            p_upper.K.q  = repmat(3,1,size(p_u.socpcuts,1)/3);
-        else
-            p_upper.K.q  = [repmat(3,1,size(p_u.socpcuts,1)/3) p_upper.K.q];
-        end
-    end
+%    if ~isempty(p_u.socpcuts)
+%        p_upper.F_struc = [p_upper.F_struc(1:p_upper.K.f+p_upper.K.l,:);p_u.socpcuts;p_upper.F_struc(1+p_upper.K.f+p_upper.K.l:end,:)];
+%         if isequal(p_upper.K.q,0)
+%             p_upper.K.q  = repmat(3,1,size(p_u.socpcuts,1)/3);
+%         else
+%             p_upper.K.q  = [repmat(3,1,size(p_u.socpcuts,1)/3) p_upper.K.q];
+%         end
+%    end
     
     if ~isempty(p_u.lpcuts)
         n = length(p_u.cutState);        
@@ -86,7 +93,7 @@ elseif output.problem == 0 && p_upper.K.s(1)>0 && ~p_upper.solver.uppersolver.co
 end
 
 function p = pruneSDPCone(p)
-if ~isempty(p.K.s) || p.K.s(1) > 0
+if any(p.K.s) && p.options.bmibnb.uppersdprelax
     if ~p.solver.uppersolver.constraint.inequalities.semidefinite.linear
         p.F_struc(end-sum(p.K.s.^2)+1:end,:) = [];
         p.K.s = 0;

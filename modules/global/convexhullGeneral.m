@@ -16,4 +16,4 @@ fz = fz(sorter);
 [z,ii,jj]=unique(z);
 fz = fz(ii);
 
-[Ax,Ay,b] = convexhullFromSampled(z,fz,xL,xU);
+[Ax,Ay,b,K] = convexhullFromSampled(z,fz,xL,xU);

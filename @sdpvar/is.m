@@ -112,7 +112,7 @@ switch property
                 return;
             end
         end
-                
+
     case 'shiftsdpcone'
         
         if isequal(X.conicinfo,[1 0])
@@ -150,6 +150,51 @@ switch property
             Y = (Y+Y')-diag(sparse(diag(Y)));
             [uu,oo,pp] = unique(Y(:));
             YESNO = isequal(i,pp+1);            
+        end
+        
+                
+    case 'complexshiftsdpcone'
+        
+        if isequal(X.conicinfo,[1 0])
+            YESNO = 1;
+            return
+        elseif isequal(X.conicinfo,[1 1])
+            YESNO = 1;
+            return
+        elseif  isequal(X.conicinfo,[sqrt(-1) 0])
+            YESNO = 1;
+            return
+        elseif isequal(X.conicinfo,[1 1])
+            YESNO = 1;
+            return
+        end
+        
+        % Fixes bug #15
+        if length(X.lmi_variables)>1
+            if ~all(diff(X.lmi_variables)==1)
+                YESNO=0;
+                return;
+            end
+        end
+        
+        base = X.basis;
+        n = X.dim(1);
+        base(:,1)=0;
+        YESNO = 0;
+        if full(issymmetric(X) && nnz(base)==n*n && all(sum(base,2)==1)) && length(X.lmi_variables)==n*(n+1)/2 && isreal(X)
+            % Possible case
+            % FIX : Stupidly slow and complex
+            [i,j,k] = find(base');
+            Y = reshape(1:n^2,n,n);
+            Y = tril(Y);
+            Y = (Y+Y')-diag(sparse(diag(Y)));
+            [uu,oo,pp] = unique(Y(:));
+            YESNO = isequal(i,pp+1);            
+        elseif ishermitian(X) && nnz(base)==n*(n+1) && length(X.lmi_variables)==n^2
+            temp = createImagBasis(n);
+            if isequal(temp,base)
+                YESNO = 1;
+            end
         end
         
     case 'socone'
@@ -190,8 +235,6 @@ switch property
             YESNO = YESNO && all(all(CompressedList(find(ismember(CompressedList,NonlinearVariables)),2:maxdegree)>0));
         end
         
-    case 'factorized'
-        YESNO = length(X.leftfactors)>0;
     case 'sos'
         YESNO = (X.typeflag==11);  
     case 'kyp'

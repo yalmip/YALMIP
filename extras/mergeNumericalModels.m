@@ -23,12 +23,12 @@ p0.F_struc = sparse(p0.F_struc);
 % It is assumed p0 is the master model, i.e. p1 only contains constraints
 p = p0;
 
-if p1.K.f > 0
+if any(p1.K.f)
     p.F_struc = [p1.F_struc(1:p1.K.f,:);p.F_struc];
     p.K.f = p.K.f + p1.K.f;
 end
 
-if p1.K.l > 0
+if any(p1.K.l)
     p.F_struc = [p.F_struc(1:p.K.f,:);
         p1.F_struc(1+p1.K.f:p1.K.f+p1.K.l,:)
         p.F_struc(1+p.K.f:end,:)];

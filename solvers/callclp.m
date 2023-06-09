@@ -21,7 +21,7 @@ else
     beq = [];
 end
 
-if K.l > 0
+if any(K.l)
     A = -F_struc(1+K.f:end,2:end);
     b = F_struc(1+K.f:end,1);
 else
@@ -65,8 +65,6 @@ else
     D_struc = [];
 end
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 % Save all data sent to solver?
 if options.savesolverinput
 	solverinput = [];	
@@ -82,4 +80,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

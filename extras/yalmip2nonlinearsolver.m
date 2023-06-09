@@ -5,7 +5,7 @@ global newmodel
 newmodel = 1;
 
 model.dense = 0;
-if ~model.equalitypresolved
+if ~(model.equalitypresolved || model.presolved)
     model = propagate_bounds_from_equalities(model);
 end
 
@@ -17,19 +17,7 @@ c = model.c;
 
 % Pick out the positive conditions from cones ||Ax+b|| <= c'*x+d which will
 % be treated as (Ax+b)'*(ax+b) <= (c'*x+d)^2,  c'*x+d >= 0
-if any(K.q)
-    aux = [];
-    top = 1 + K.f + K.l;
-    for i = 1:length(K.q)
-        row = model.F_struc(top,:);
-        if any(row(2:end))
-            aux = [aux;row];
-        end
-        top = top + model.K.q(i);
-    end
-    model.F_struc = [model.F_struc(1:K.f+K.l,:);aux;model.F_struc(K.f+K.l+1:end,:)];
-    model.K.l = model.K.l + size(aux,1);
-end
+model = bounds_from_cones_to_lp(model);
 
 if isempty(model.evaluation_scheme)
     model = build_recursive_scheme(model);
@@ -79,7 +67,7 @@ if ~isempty(ub) && ~isempty(lb)
 end
 
 % Extract linear and nonlinear inequality constraints
-if model.K.l>0
+if any(model.K.l)
     A = -model.F_struc(1:model.K.l,2:end);
     b = model.F_struc(1:model.K.l,1);
     
@@ -198,8 +186,8 @@ end
 
 % Some precomputation of computational scheme for Jacobian
 allA = [model.Anonlineq;model.Anonlinineq];
-if any(model.K.q)
-    allA = [allA;model.F_struc(1+model.K.f + model.K.f:end,2:end)];
+if anyCones(model.K)
+    allA = [allA;model.F_struc(startofSOCPCone(model.K):end,2:end)];
 end
 requested = any(allA',2);
 [i,j] = find((model.deppattern(find(requested),:)));

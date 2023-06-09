@@ -152,7 +152,7 @@ end
 % ******************************************
 switch lower(solver.tag)
 
-    case 'cplex-ibm'
+    case 'cplex'
 
         % Hack to handle CPLEX slow treatment of parameters. Remove all
         % default settings, so optimizer runs fast
@@ -171,20 +171,18 @@ switch lower(solver.tag)
     case 'dsdp-opti'
         model = yalmip2optidsdp(interfacedata);
 
-    case 'gurobi-gurobi'
+    case {'gurobi','gurobi-gurobi'}
         model = yalmip2gurobi(interfacedata);
 
-    case 'gurobi-mex'
-        model = yalmip2gurobimex(interfacedata);
-
-    case 'cplex-cplexint'
-        [model.H,model.C,model.A,model.B,model.LB,model.UB,model.QC,model.VARTYPE,model.INDEQ,model.PARAM,model.OPTIONS] = cplex2yalmip(interfacedata);
-
-    case {'mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
-        if interfacedata.K.s(1)>0
-            model.prob = yalmip2SDPmosek(interfacedata);
-        else
-            model.prob = yalmip2mosek(interfacedata);
+    case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
+        try
+            if any(interfacedata.K.s)
+                model.prob = yalmip2SDPmosek(interfacedata);
+            else
+                model.prob = yalmip2mosek(interfacedata);
+            end
+        catch
+            model.prob = [];
         end
         model.param = interfacedata.options.mosek;
 
@@ -198,10 +196,10 @@ switch lower(solver.tag)
     case 'intlinprog'
         model = yalmip2intlinprog(interfacedata);
 
-    case {'sedumi-1.05','sedumi-1.1','sedumi-1.3'}
+    case {'sedumi','sedumi-1.05','sedumi-1.1','sedumi-1.3'}
         model = yalmip2sedumi(interfacedata);
 
-   case {'scs-direct','scs-indirect'}
+   case {'scs','scs-direct','scs-indirect'}
         model = yalmip2scs(interfacedata);
 
     case {'powersolver'}
@@ -210,13 +208,13 @@ switch lower(solver.tag)
     case 'csdp'
         model = yalmip2csdp(interfacedata);
 
-    case 'dsdp-5'
+    case {'dsdp','dsdp-5'}
         model = yalmip2dsdp(interfacedata);
 
     case 'sdpa-m'
         model = yalmip2sdpa(interfacedata);
 
-    case {'sdpt3-3.1','sdpt3-4'}
+    case {'sdpt3','sdpt3-3.1','sdpt3-4'}
         % Convert from internal (sedumi-like) format
         if isequal(interfacedata.K.m,0)
            model = yalmip2sdpt3(interfacedata);
@@ -224,7 +222,7 @@ switch lower(solver.tag)
             error('MAXDET models still not supported in SDPT3 export')
         end
 
-    case {'glpk-glpkmex','glpk-glpkmex-cc'}
+    case {'glpk','glpk-glpkmex','glpk-glpkmex-cc'}
         model = yalmip2glpkmex(interfacedata);
 
     case 'pensdp-penopt'

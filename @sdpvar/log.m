@@ -16,6 +16,7 @@ switch class(varargin{1})
         operator.derivative = @(x)(1./(abs(x)+eps));
         operator.inverse = @(x)(exp(x));
         operator.domain = [0 inf];
+        operator.singularity = [0 -inf -inf] ;
 
         varargout{1} = [];
         varargout{2} = operator;

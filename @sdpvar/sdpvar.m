@@ -45,16 +45,14 @@ function sys = sdpvar(varargin)
 %
 %   See also INTVAR, BINVAR, methods('sdpvar'), SEE
 
-% Turn this on if you want to use factor tracking (i.e, the solver STRUL)
-global FACTORTRACKING 
-FACTORTRACKING = 0;
-
 superiorto('double');
-try 
- superiorto('sgem');
- superiorto('gem');
-catch
- % GEM not in path
+if yalmip('gemInPath')
+    try 
+        superiorto('sgem');
+        superiorto('gem');
+    catch
+        % Problem with GEM
+    end
 end
 if nargin==0
     sys = sdpvar(1,1);
@@ -395,15 +393,7 @@ switch nargin
         sys.extra.opname = '';
         sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
-        sys.originalbasis = 'unknown';
-        if FACTORTRACKING
-            sys.leftfactors{1} = speye(sys.dim(1));
-            sys.rightfactors{1} = speye(sys.dim(2));
-        else
-            sys.leftfactors = [];
-            sys.rightfactors = [];
-        end        
-        sys.midfactors = [];
+        sys.originalbasis = 'unknown';        
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
         if ~isempty(constants);
@@ -415,10 +405,7 @@ switch nargin
             sys = full(reshape(sys.basis(:,1),sys.dim(1),sys.dim(2)));
         else
             sys = class(sys,'sdpvar');
-        end
-        if FACTORTRACKING
-            sys.midfactors{1} = sys;
-        end
+        end        
         return
     case 6 % Fast version for internal use
         sys.basis = varargin{5};
@@ -432,15 +419,7 @@ switch nargin
         sys.extra.opname = '';
         sys.extra.createTime = definecreationtime;
         sys.conicinfo = 0;
-        sys.originalbasis = 'unknown';
-        if FACTORTRACKING
-            sys.leftfactors{1} = speye(sys.dim(1));
-            sys.rightfactors{1} = speye(sys.dim(2));
-        else
-            sys.leftfactors = [];
-            sys.rightfactors = [];
-        end
-        sys.midfactors = [];
+        sys.originalbasis = 'unknown';        
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
         if ~isempty(constants);
@@ -452,10 +431,7 @@ switch nargin
             sys = full(reshape(sys.basis(:,1),sys.dim(1),sys.dim(2)));
         else
             sys = class(sys,'sdpvar');
-        end
-        if FACTORTRACKING
-            sys.midfactors{1} = sys;
-        end
+        end       
         return
     case 7 % Fast version for internal use
         sys.basis = varargin{5};
@@ -469,15 +445,7 @@ switch nargin
         sys.extra.opname = '';
         sys.extra.createTime = '';
         sys.conicinfo = varargin{7};
-        sys.originalbasis = 'unknown';
-        if FACTORTRACKING
-            sys.leftfactors{1} =  speye(sys.dim(2));
-            sys.rightfactors{1} =  speye(sys.dim(2));
-        else
-            sys.leftfactors = [];
-            sys.rightfactors = [];
-        end
-        sys.midfactors = [];
+        sys.originalbasis = 'unknown';        
         % Find zero-variables
         constants = find(sys.lmi_variables==0);
         if ~isempty(constants);
@@ -489,10 +457,7 @@ switch nargin
             sys = full(reshape(sys.basis(:,1),sys.dim(1),sys.dim(2)));
         else
             sys = class(sys,'sdpvar');
-        end
-        if FACTORTRACKING
-            sys.midfactors{1} = sys;
-        end
+        end        
         return
         
     case 8
@@ -588,15 +553,18 @@ for blk = 1:length(n)
                 [uu,oo,pp] = unique(Y(:));
                 BasisReal = sparse(1:n(blk)^2,pp+1,1);
                 
-                BasisImag = [spalloc(n(blk)^2,n(blk)*(n(blk)-1)/2,n(blk))];
-                l = 1;
-                for i=1:n(blk)
-                    for j=i+1:n(blk),
-                        BasisImag(i+(j-1)*n(blk),l)=sqrt(-1);
-                        BasisImag(j+(i-1)*n(blk),l)=-sqrt(-1);
-                        l = l+1;
-                    end
+                % Remove diagonal, flip signs, and complexify
+                BasisImag = BasisReal;
+                BasisImag(:,1) = [];
+                index = [1];
+                for i = 1:n(blk)-1
+                    index = [index index(end)+n(blk)-i+1];
                 end
+                BasisImag(:,index) = [];
+                [i,j,s] = find(BasisImag);
+                s(1:2:end)=-1;
+                BasisImag = sparse(i,j,s*sqrt(-1),size(BasisImag,1),size(BasisImag,2));
+                               
                 tbasis = [BasisReal BasisImag];
                 basis{blk} = tbasis;
             end
@@ -748,18 +716,7 @@ if isa(basis,'cell')
         sys{blk}.extra.createTime = definecreationtime;
         sys{blk}.conicinfo = conicinfo;
         sys{blk}.originalbasis = matrix_type;
-        if FACTORTRACKING
-            sys{blk}.leftfactors{1} = speye(n(blk));
-            sys{blk}.rightfactors{1} = speye(m(blk));
-        else
-            sys{blk}.leftfactors = [];
-            sys{blk}.rightfactors = [];
-        end
-        sys{blk}.midfactors = [];
-        sys{blk} = class(sys{blk},'sdpvar');
-        if FACTORTRACKING
-            sys{blk}.midfactors{1} = sys{blk};
-        end
+        sys{blk} = class(sys{blk},'sdpvar');       
     end
     if length(n)==1
         sys = sys{1};
@@ -776,36 +733,15 @@ else
     sys.extra.opname = '';
     sys.extra.createTime = definecreationtime;
     sys.conicinfo = conicinfo;
-    sys.originalbasis = matrix_type;
-    if FACTORTRACKING
-        sys.leftfactors{1} = speye(n);
-        sys.rightfactors{1} = speye(m);
-    else
-        sys.leftfactors = [];
-        sys.rightfactors = [];
-    end
-    sys.midfactors = [];
+    sys.originalbasis = matrix_type;    
     sys = class(sys,'sdpvar');
-    if FACTORTRACKING
-        sys.midfactors{1} = sys;
-    end
     if isequal(matrix_type,'hankel')
         % To speed up generation, we have just created a vector, and now
         % hankelize it
         sys.dim(2) = 1;
         sys = hankel(sys);
-        if FACTORTRACKING
-            sys.leftfactors{1} = eye(sys.dim(1));
-            sys.midfactors{1} = sys;
-            sys.rightfactors{1} = eye(sys.dim(1));
-        end
     elseif isequal(matrix_type,'toeplitz')
         sys.dim(2) = 1;
         sys = toeplitz(sys);
-        if FACTORTRACKING
-            sys.leftfactors{1} = eye(sys.dim(1));
-            sys.midfactors{1} = sys;
-            sys.rightfactors{1} = eye(sys.dim(1));
-        end
     end
 end

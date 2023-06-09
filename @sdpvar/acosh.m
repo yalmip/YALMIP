@@ -10,7 +10,8 @@ switch class(varargin{1})
         operator = CreateBasicOperator('positive','callback');   
         operator.convexity = @convexity;
         operator.bounds = @bounds;
-
+        operator.domain = [1 inf];                 
+        
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
@@ -26,9 +27,12 @@ if xU<=-1
 elseif xL>=1
     L = acosh(xL);
     U = acosh(xU);
+elseif xU <= 1
+    L = 0;
+    U = acosh(xL);
 else
-    L = -inf;
-    U = inf;
+    L = 0;
+    U = acosh(xU);
 end
 
 function vexity = convexity(xL,xU)

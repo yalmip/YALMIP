@@ -22,9 +22,6 @@ end
 
 
 X = varargin{1};
-if ~isempty(X.midfactors)
-  X = flush(X);
-end
 
 try
     switch Y(1).type

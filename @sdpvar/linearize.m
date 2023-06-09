@@ -25,11 +25,16 @@ p0 = double(p);
 n = size(p,1);
 m = size(p,2);
 
+if ~isfield(p.extra, 'jacobian') || isempty(p.extra.jacobian)
+    p.extra.jacobian = jacobian(p,x);
+end
+J = value(p.extra.jacobian);
+
 if min(n,m)>1
     plin = [];
     for i = 1:m
-        plin = [plin p0(:,i)+double(jacobian(p(:,i),x))*(x-x0)];
+        plin = [plin p0(:,i)+squeeze(J(:,i,:))*(x-x0)];
     end
 else
-    plin = p0+double(jacobian(p,x))*(x-x0);
+    plin = p0+double(J)*(x-x0);
 end

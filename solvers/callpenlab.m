@@ -15,7 +15,7 @@ penm.Nx=length(model.linearindicies);
 
 
 if length(nnz(model.K.s)>0)
-    top = 1 + model.K.f + model.K.l + sum(model.K.q);
+    top = startofSDPCone(model.K);
     for i = 1:length(model.K.s)
         model.vecF{i} = model.F_struc(top:top+model.K.s(i)^2-1,:);
         top = top + model.K.s(i)^2;
@@ -56,7 +56,7 @@ if length(model.b)>0 | length(model.beq)>0
     penm.conhess = @(x,Y,k,userdata) penlab_callback_dcon2(x,k,userdata);
 end
 
-if model.K.s(1)>0
+if any(model.K.s)
     penm.NALIN=length(model.K.s);
     penm.lbA=zeros(find(model.K.s)>0,1);
     penm.mconfun  = @(x,Y,k,userdata) penlab_callback_matrixG(x, k,userdata);
@@ -109,6 +109,6 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'PENLAB',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'PENLAB',solverinput,solveroutput,solvertime);
 
 

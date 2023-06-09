@@ -9,6 +9,8 @@ end
 % FIXME: Check will be strengthened
 for i = 1:nargin
     if isa(varargin{i},'optimizer') && isequal(varargin{i}.diminOrig,varargin{1}.diminOrig)
+    elseif isa(varargin{i},'optimizer') && isequal(varargin{i}.diminOrig,{[0 0]}) && isempty(varargin{1}.diminOrig)
+    elseif isa(varargin{i},'optimizer') && isequal(varargin{1}.diminOrig,{[0 0]}) && isempty(varargin{i}.diminOrig)
     else
         error('The optimizer objects do not match')
     end
@@ -55,10 +57,10 @@ K = model1.K;
 Data = [];
 hash = model1.hash;
 
-if model1.K.f > 0
+if any(model1.K.f)
     Data = model1.F_struc(top1:top1 + model1.K.f-1,:);
 end
-if model2.K.f > 0
+if any(model2.K.f)
     index = top2:top2 + model2.K.f-1;
     index = find(~ismember(model2.hash.f,model1.hash.f));
     if ~isempty(index)
@@ -70,14 +72,14 @@ end
 top1 = top1 + model1.K.f;
 top2 = top2 + model2.K.f;
 
-if model1.K.l > 0
+if any(model1.K.l)
     Data = [Data;model1.F_struc(top1:top1 + model1.K.l-1,:)];
     hash.l = model1.hash.l;
 end
 top1 = top1 + model1.K.l;
 K.l = model1.K.l;
 
-if model2.K.l > 0
+if any(model2.K.l)
     index = top2:top2 + model2.K.l-1;
     keep = find(~ismember(model2.hash.l,model1.hash.l));
     index = index(keep);
@@ -89,13 +91,13 @@ if model2.K.l > 0
 end
 top2 = top2 + model2.K.l;
 
-if ~isempty(model1.K.q) && any(model1.K.q)
+if any(model1.K.q)
     Data = [Data;model1.F_struc(top1:top1 + sum(model1.K.q)-1,:)];
 end
 top1 = top1 + sum(model1.K.q);
 K.q = model1.K.q;
 
-if ~isempty(model2.K.q) && any(model2.K.q)        
+if any(model2.K.q)        
     keep = find(~ismember(model2.hash.q,model1.hash.q));
     if any(keep)
         for i = 1:length(keep)
@@ -113,13 +115,13 @@ if ~isempty(model2.K.q) && any(model2.K.q)
     end
 end
 
-if ~isempty(model1.K.s) && any(model1.K.s)
+if any(model1.K.s)
     Data = [Data;model1.F_struc(top1:top1 + sum(model1.K.s.^2)-1,:)];
 end
 top1 = top1 + sum(model1.K.s.^2);
 K.s = model1.K.s;
 
-if ~isempty(model2.K.s) && any(model2.K.s)        
+if any(model2.K.s)        
     keep = find(~ismember(model2.hash.s,model1.hash.s));
     if any(keep)
         for i = 1:length(keep)
@@ -146,21 +148,21 @@ model.hash = hash;
 function model = defineHash(model,hashvar,hashcon);
 
 top = 1;
-if model.K.f > 0
+if any(model.K.f)
     model.hash.f = (model.F_struc(top:top+model.K.f-1,:)*hashvar);
     top = top + model.K.f;
 else
     model.hash.f = [];
 end
 
-if model.K.l > 0
+if any(model.K.l)
     model.hash.l = (model.F_struc(top:top+model.K.l-1,:)*hashvar);
     top = top + model.K.l;
 else
     model.hash.l = [];
 end
 
-if ~isempty(model.K.q) && any(model.K.q)
+if any(model.K.q)
     for i = 1:length(model.K.q)
         model.hash.q(i) = hashcon(1:model.K.q(i))'*(model.F_struc(top:top+model.K.q(i)-1,:)*hashvar);
         top = top + model.K.q(i);
@@ -169,7 +171,7 @@ else
     model.hash.q = [];
 end
 
-if ~isempty(model.K.s) && any(model.K.s)
+if any(model.K.s)
     for i = 1:length(model.K.s)
         model.hash.s(i) = hashcon(1:model.K.s(i)^2)'*(model.F_struc(top:top+model.K.s(i)^2-1,:)*hashvar);
         top = top + model.K.s(i);

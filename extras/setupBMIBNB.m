@@ -1,7 +1,7 @@
 function [solver,diagnostic] = setupBMIBNB(solver,ProblemClass,options,solvers,socp_are_really_qc,F,h,logdetStruct,parametric,evaluation_based,F_vars,exponential_cone,allsolvers)
 
 diagnostic = [];
-
+options.forceglobal = 0;
 %% ************************************************************************
 % Relax problem for lower solver
 tempProblemClass = ProblemClass;
@@ -79,7 +79,7 @@ else
     tempProblemClass.constraint.inequalities.semidefinite.linear = 1;
     temp_options.solver = options.bmibnb.sdpsolver;
     [sdpsolver,problem] = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
-    if problem 
+    if problem || strcmpi(sdpsolver.tag,'bnb')
         % We will not be able to run these strategies
         solver.sdpsolver = [];
     else
@@ -127,12 +127,15 @@ end
 if temp_options.bmibnb.uppersdprelax
     temp_ProblemClass.constraint.inequalities.elementwise.linear = temp_ProblemClass.constraint.inequalities.elementwise.linear | temp_ProblemClass.constraint.inequalities.semidefinite.linear;
     temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex = temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex | temp_ProblemClass.constraint.inequalities.semidefinite.quadratic;
-    temp_ProblemClass.constraint.inequalities.elementwise.polynomial = temp_ProblemClass.constraint.inequalities.elementwise.polynomial | temp_ProblemClass.constraint.inequalities.semidefinite.polynomial;
+    temp_ProblemClass.constraint.inequalities.elementwise.polynomial = temp_ProblemClass.constraint.inequalities.elementwise.polynomial | temp_ProblemClass.constraint.inequalities.semidefinite.polynomial;    
     temp_ProblemClass.constraint.inequalities.elementwise.sigmonial = temp_ProblemClass.constraint.inequalities.elementwise.sigmonial | temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial;
     temp_ProblemClass.constraint.inequalities.semidefinite.linear = 0;
     temp_ProblemClass.constraint.inequalities.semidefinite.quadratic = 0;
     temp_ProblemClass.constraint.inequalities.semidefinite.polynomial = 0;
     temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial = 0;
+end
+if isempty(options.bmibnb.uppersolver)
+    temp_options.avoidGlobalSolver = 1;
 end
 [uppersolver,problem] = selectsolver(temp_options,temp_ProblemClass,solvers,socp_are_really_qc,allsolvers);
 % if isempty(uppersolver) && temp_ProblemClass.constraint.inequalities.elementwise.polynomial

@@ -19,6 +19,11 @@ pars.fid = double(options.verbose);
 if ~isempty(ub)
     [F_struc,K] = addStructureBounds(F_struc,K,ub,lb);
 end
+% Sedumi does not like when diagonals SDP elements appear in LP cone
+M.F_struc=F_struc;M.K=K;
+M = removeredundantlps(M);
+F_struc = M.F_struc;
+K = M.K;
 
 % Avoid bug (by design?) in SeDuMi on 1D second order cones
 if any(K.q == 2)
@@ -69,8 +74,6 @@ end
 warning(warnState);
 solvertime = toc(solvertime);
 
-
-
 % Internal format
 Primal = y_s; 
 Dual   = x_s;
@@ -118,9 +121,6 @@ if (abs(info.feasratio+1)<0.1) & (pinf==0) &  (dinf==0) & (c'*y_s<-1e10)
     problem = 2; 
 end
 
-
-infostr = yalmiperror(problem,model.solver.tag);
-
 % Save ALL data sent to solver
 if options.savesolverinput
     solverinput.A = -F_struc(:,2:end);
@@ -142,7 +142,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 
  
 function [new_F_struc,K] = fix1Dqcone(F_struc,K); 
@@ -160,3 +160,24 @@ for i = 1:length(K.q)
     end
 end
 new_F_struc = [new_F_struc;F_struc(top:end,:)];
+
+function p = removeredundantlps(p)
+if any(p.K.s)
+    h = randn(size(p.F_struc,2),1);
+    h = p.F_struc*h;
+    if length(unique(h))<size(p.F_struc,1)
+        h_lp = h(1+p.K.f : p.K.f + p.K.l);
+        top = startofSDPCone(p.K);
+        allindex = [];
+        for i = 1:length(p.K.s)
+            index = find(speye(p.K.s(i)));
+            allindex = [allindex;top + index-1];
+            top = top + p.K.s(i)^2;
+        end
+        problems = ismember(h_lp,h(allindex));
+        if any(problems)
+            p.F_struc(p.K.f + find(problems),:)=[];
+            p.K.l = p.K.l - nnz(problems);
+        end
+    end
+end

@@ -22,14 +22,14 @@ solvertime = toc(solvertime);
 
 % Create dual variable in internal format
 if options.saveduals  
-    if K.l > 0
+    if any(K.l)
         top = 1;
         D_struc = X{1};
     else
         top = 0;
         D_struc = [];
     end
-    if K.s(1) > 0
+    if any(K.s)
         for j = 1:length(K.s)
             n = K.s(j);
             Z = triu(ones(n));
@@ -67,7 +67,6 @@ switch exitflag
     otherwise
         problem = -1;
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolveroutput   
 	solveroutput.y = y;
@@ -86,4 +85,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

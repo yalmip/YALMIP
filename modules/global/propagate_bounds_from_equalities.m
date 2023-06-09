@@ -43,6 +43,10 @@ if p.K.f >0
                 thisrow = -thisrow;
             end
             [row,col,val] = find(thisrow);
+            if length(row) == 1 && col(1) && abs(val)>1e-8
+                p.feasible = 0;
+                return
+            end
             % Find bounds from sum(xi) = 1, xi>0
             if all(val(2:end) < 0)
                 usedVars = col(2:end)-1;

@@ -1,4 +1,4 @@
-function p = presolve_quadratic_psdbound(p)
+function p = propagate_bounds_from_convex_quadratic(p)
 % Look for r >= (or ==) (x - c)^T Q (x - c)
 if p.K.f + p.K.l > 0    
     for i = 1:p.K.l + p.K.f

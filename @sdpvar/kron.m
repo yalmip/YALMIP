@@ -20,8 +20,7 @@ if (isa(X,'sdpvar') & isa(Y,'sdpvar'))
             this_row = [this_row subsref(X,s)*Y];
         end
         y = [y;this_row];
-    end
-    y = flush(y);
+    end    
     return
 end
 
@@ -75,6 +74,5 @@ y.dim(2) = size(temp,2);
 y = clean(y);
 % Reset info about conic terms
 if isa(y,'sdpvar')
-    y = flush(y);
     y.conicinfo = [0 0];
 end

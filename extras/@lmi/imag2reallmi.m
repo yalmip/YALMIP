@@ -10,18 +10,10 @@ for i = 1:Counter
         j = j+1;
     else
         switch F.clauses{i}.type
-            case 1
-                               
-                if hasfactors(Freal.clauses{j}.data)                    
-                    % We use factor-tracking lifting
-                   Freal.clauses{j}.data = lift2real(F.clauses{j}.data);                    
-                else
-                    % Fast without tracking
-                    reF=real(F.clauses{j}.data);
-                    imF=imag(F.clauses{j}.data);                                                               
-                    Freal.clauses{j}.data = [reF imF;-imF reF];
-                end
-                
+            case 1                
+                reF=real(F.clauses{j}.data);
+                imF=imag(F.clauses{j}.data);                                                               
+                Freal.clauses{j}.data = [reF imF;-imF reF];                                
                 j = j+1;
             case {2,3}
                 reF=real(F.clauses{j}.data);

@@ -18,7 +18,11 @@ else
 end
 
 if isequal(vexity,'convex')
-    f0 = @(x)real(eval([p.fcn '(x)']));
+    if strcmpi(p.fcn,'blackbox')
+        f0 = @(x)real(blackbox(x,p.arg{2}));
+    else
+        f0 = @(x)real(eval([p.fcn '(x)']));
+    end
     f = @(xL,xU)createConvexHullMethodConvex(xL,xU,f0,p.properties.derivative);
 elseif isequal(vexity,'concave')
     f0 = @(x)real(eval([p.fcn '(x)']));

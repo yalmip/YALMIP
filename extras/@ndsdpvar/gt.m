@@ -1,20 +1,2 @@
 function y = gt(X,Y)
-%GT (overloaded)
-
-if isa(X,'ndsdpvar')
-    X = sdpvar(X);
-elseif isa(X,'double')
-    X = X(:);
-end
-
-if isa(Y,'ndsdpvar')
-    Y = sdpvar(Y);
-elseif isa(Y,'double')
-    Y = Y(:);
-end
-
-try
-    y = constraint(X,'>',Y);
-catch
-    error(lasterr)
-end
+error('Strict inequalities are not supported (<a href="yalmip.github.io/inside/strictinequalities">learn why</a>)')

@@ -1,4 +1,4 @@
-function [F,M,m] = max_integer_model(X,t,M,m);
+function [F,M,m] = max_integer_model(X,t,M,m)
 
 if nargin < 3
     [M,m] = derivebounds(X);

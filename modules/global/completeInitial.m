@@ -1,6 +1,6 @@
 function p = completeInitial(p)
 
-if p.options.usex0 && any(isnan(p.x0))
+if p.options.warmstart && any(isnan(p.x0))
   
     p_reduced = p;
     

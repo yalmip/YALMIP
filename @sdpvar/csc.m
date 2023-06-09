@@ -9,8 +9,9 @@ switch class(varargin{1})
 
         operator = CreateBasicOperator('callback');
         operator.derivative = @(x)(-csc(x)*(cot(x)));
-        operator.singularity = 0;
-
+        % FIXME: Need extended format to deal with infinitely many
+        % singularites
+        
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};

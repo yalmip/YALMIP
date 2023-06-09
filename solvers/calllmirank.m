@@ -17,7 +17,7 @@ end
 pars = options.lmirank;
 pars.fid = double(options.verbose);
 
-if ~options.usex0
+if ~options.warmstart
     interfacedata.options.verbose =  max(0,interfacedata.options.verbose - 1);
     initialsolver = eval(['@' interfacedata.solver.initialsolver.call]);
     start = K.l;
@@ -35,7 +35,7 @@ if ~options.usex0
     interfacedata.solver = interfacedata.solver.initialsolver;
     output = feval(initialsolver,interfacedata);
     if output.problem ~= 1
-        options.usex0 = 1;       
+        options.warmstart = 1;       
         x0 = output.Primal;
     else
         return;
@@ -50,7 +50,7 @@ end
 
 if options.showprogress;showprogress(['Calling ' interfacedata.solver.tag],options.showprogress);end
 solvertime = tic;
-if options.usex0
+if options.warmstart
     [y,info] = lmirank(-F_struc(:,2:end),F_struc(:,1),K,pars,x0);
 else
     [y,info] = lmirank(-F_struc(:,2:end),F_struc(:,1),K,pars);
@@ -85,5 +85,4 @@ else
 end
 
 % Standard interface 
-infostr = yalmiperror(problem,interfacedata.solver.tag);	
-output = createOutputStructure(x,[],[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,[],[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

@@ -45,7 +45,7 @@ for index = 1:n*m
         fc = basis(index,:);
         f{index} = fc(1);
         c{index} = zeros(length(x),1);
-
+        
         [aux,loc] = ismember(vars,x_var);
         i = 1+(1:length(vars));
         nz = find(loc);
@@ -55,58 +55,21 @@ for index = 1:n*m
     else
         if all(vt(vars(find(base(2:end)))) <= 2)
             Qtemp = spalloc(length(x),length(x),2*nnz(base));
-            ctemp = spalloc(length(x),1,0);
-
+            ctemp = spalloc(length(x),1,0);            
             f{index} = base(1);
-            base = base(2:end);
-         
-            if 0%simple                 
-                if length(linear)>0
-                    ctemp(jl)=base(linear);
-                end
-                if length(bilinear)>0
-                    Qtemp(bilinindex) = base(bilinear(:))/2;
-                end
-                if length(quadratic)>0
-                    Qtemp(quadindex) = base(quadratic(:))/2;
-                end
-                Qtemp =  Qtemp+Qtemp';                
-            else
-                % Old version of code
-                [jj,ii,kk] = find(mt');ii = [ii(:) ;0];
-                top = 1;
-                if 1
-                    %Qtemp2=Qtemp;
-                    %ctemp2=ctemp;
-                    bilinear_places = find(diff(ii)==0);                    
-                    quadratic_places   = find(diff(ii)~=0 & kk==2);                    
-                    Qtemp(sub2ind(size(Qtemp),jj(bilinear_places),jj(bilinear_places+1)))= base(ii(bilinear_places))/2;
-                    Qtemp(sub2ind(size(Qtemp),jj(quadratic_places),jj(quadratic_places)))= base(ii(quadratic_places))/2;
-                    linear_places = find(variabletype==0);
-                    [iii,jjj] = find(mt(linear_places,:));
-                    ctemp(jjj) = base(linear_places);
-                else
-                    %Qtemp(jj(bilinear_places),jj(bilinear_places+1))
-                    for i = 1:length(x_lin)
-                        if ii(top) == ii(top+1)
-                            % Variable i is the product of two
-                            Qtemp(jj(top),jj(top+1))=Qtemp(jj(top),jj(top+1)) + base(i)/2;
-                            %Qtemp(jj(top),jj(top+1)) = base(i)/2;
-                            top = top + 2;
-                        else
-                            j = [jj(top)];
-                            if kk(top)==1
-                                ctemp(j)=base(i);
-                            else
-                                Qtemp(j,j)=Qtemp(j,j) + base(i)/2;
-                                % Qtemp(j,j) = base(i)/2;
-                            end
-                            top = top + 1;
-                        end
-                    end
-                end
-                Qtemp =  Qtemp+Qtemp';
-            end
+            base = base(2:end);                        
+            % Old version of code
+            [jj,ii,kk] = find(mt');ii = [ii(:) ;0];
+            bilinear_places = find(diff(ii)==0);
+            quadratic_places   = find(diff(ii)~=0 & kk==2);
+            Qtemp(sub2ind(size(Qtemp),jj(bilinear_places),jj(bilinear_places+1)))= base(ii(bilinear_places))/2;
+            Qtemp(sub2ind(size(Qtemp),jj(quadratic_places),jj(quadratic_places)))= base(ii(quadratic_places))/2;
+            linear_places = find(variabletype==0);
+            [iii,jjj] = find(mt(linear_places,:));
+            ctemp(jjj) = base(linear_places);
+            
+            Qtemp =  Qtemp+Qtemp';
+            
             Q{index} = Qtemp;
             c{index} = ctemp;
         else

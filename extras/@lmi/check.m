@@ -54,7 +54,9 @@ lmiinfo{9} = 'KYP constraint';
 lmiinfo{10} = 'Eigenvalue constraint';
 lmiinfo{11} = 'SOS constraint';
 lmiinfo{15} = 'Uncertainty declaration';
+lmiinfo{20} = 'Power cone constraint';
 lmiinfo{54} = 'Vectorized second order cone constraints';
+lmiinfo{58} = 'Vectorized power cone constraints';
 lmiinfo{55} = 'Complementarity constraint';
 lmiinfo{56} = 'Logic constraint';
 header = {'ID','Constraint','Primal residual','Dual residual','Tag'};
@@ -127,13 +129,28 @@ for j = 1:nlmi
         case 8
             res(j,1) = -full(max(max(abs(F0-round(F0)))));
             res(j,1) = min(res(j,1),-(any(F0>1) | any(F0<0)));
+        case 20
+            res(j,1) = F0(1)^F0(end)*F0(2)^(1-F0(end)) - norm(F0(3:end-1));
         case 21
-            res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
+            if F0(2)==0
+                if F0(1)>0
+                    res(j,1) = -inf;
+                else
+                    res(j,1) = F0(3);
+                end
+            else
+                res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
+            end
         case 54
             res(j,1) = inf;
             for k = 1:size(F0,2)
                 res(j,1) = min(res(j,1),full(F0(1,k)-norm(F0(2:end,k))));
-            end                
+            end 
+        case 58
+            res(j,1) = inf;
+            for k = 1:size(F0,2)
+                res(j,1) = min(res(j,1),F0(1,k)^F0(end,k)*F0(2,k)^(1-F0(end,k)) - norm(F0(3:end-1,k)));
+            end 
         case 11
                  
             [v,ParVar] = sosd(F.clauses{j}.data);

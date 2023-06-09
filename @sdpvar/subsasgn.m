@@ -10,7 +10,12 @@ try
         end
         if any(I.subs{1} <=0)
             error('Index into matrix is negative or zero.');
-        end       
+        end 
+        
+        if length(I.subs)>2 && X_is_spdvar
+            y = subsasgn(ndsdpvar(X),I,Y);
+            return
+        end
 
         switch 2*X_is_spdvar+Y_is_spdvar
             case 1 
@@ -35,8 +40,7 @@ try
                     y.basis = sparse(y.basis);
                     if length(dim)>2
                         y = ndsdpvar(y);
-                    end
-                    y = flush(y);
+                    end                    
                 catch
                     error(lasterr)
                 end
@@ -77,8 +81,7 @@ try
                      y = clean(y);
                      % Reset info about conic terms
                      if isa(y,'sdpvar')
-                         y.conicinfo = [0 0];
-                         y = flush(y);
+                         y.conicinfo = [0 0];                         
                      end
                      return;
                 end
@@ -126,11 +129,12 @@ try
                          
                 y.dim(1) = size(subX,1);
                 y.dim(2) = size(subX,2);
-                y = clean(y);
+                if ~isempty(x_lmi_variables)
+                    y = clean(y);
+                end
                 if isa(y,'sdpvar')
                     % Reset info about conic terms
-                    y.conicinfo = [0 0];
-                    y = flush(y);
+                    y.conicinfo = [0 0];                    
                 end
                 
             case 3
@@ -236,8 +240,7 @@ try
                 z.lmi_variables = all_lmi_variables(:)';
                 y = z;	                
                 % Reset info about conic terms
-                y.conicinfo = [0 0];                 
-                y = flush(y);
+                y.conicinfo = [0 0];                                 
             otherwise
         end
     else

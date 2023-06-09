@@ -12,6 +12,7 @@ lmiinfo{8} = 'binary';
 lmiinfo{9} = 'kyp';
 lmiinfo{10} = 'eig';
 lmiinfo{11} = 'sos';
+lmiinfo{56} = 'meta';
 if (nlmi == 0)
     x = 'empty';
 elseif nlmi == 1;

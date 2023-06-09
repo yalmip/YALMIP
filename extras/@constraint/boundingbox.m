@@ -1,4 +1,5 @@
-function varargout = boundingbox(F,ops,x,fun_eval)
+function V = boundingbox(P)
+
 %BOUNDINGBOX Computes bounding box of a constraint
 %
 % If only one output is requested, only the symbolic model is returned
@@ -17,6 +18,8 @@ function varargout = boundingbox(F,ops,x,fun_eval)
 % values in L and U relate to
 %  [B,L,U] = boundingbox(F,[],x)
 % B will now be the box [L <= x <= U] (infinite bounds not included)
+%
+% See also VERTEX, CHEBYBALL, POLYTOPE
 
 if nargin < 2
     ops = sdpsettings('verbose',0);

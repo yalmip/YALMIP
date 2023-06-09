@@ -169,16 +169,16 @@ for i = 1:size(W,1)
             end
             
         else
-            % Case 4
-            vars = getvariables(thevars);
-            indicies = find(ismember(vars,global_LinearVariables));
-            
-            for i = indicies
-                index_in_p = find(ismember(global_LinearVariables,vars(i)));
-                if ~isempty(index_in_p) & isempty(global_names{index_in_p})
-                    global_names{index_in_p}=['internal(' num2str(vars(i)) ')'];
-                end
-            end
+%             % Case 4
+%             vars = getvariables(thevars);
+%             indicies = find(ismember(vars,global_LinearVariables));
+%             
+%             for i = indicies
+%                 index_in_p = find(ismember(global_LinearVariables,vars(i)));
+%                 if ~isempty(index_in_p) & isempty(global_names{index_in_p})
+%                     global_names{index_in_p}=['internal(' num2str(vars(i)) ')'];
+%                 end
+%             end
             
         end
     end

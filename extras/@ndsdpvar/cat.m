@@ -57,15 +57,13 @@ if isa(x,'ndsdpvar') && isa(y,'ndsdpvar')
         z = x;
         z.basis = [A*x.basis(:,1)+B*y.basis(:,1) A*x.basis(:,2:end) B*y.basis(:,2:end)];
         z.lmi_variables = [x.lmi_variables y.lmi_variables];
-        z.dim = zdim;
-        z = flush(z);
+        z.dim = zdim;        
         return
     elseif max(y.lmi_variables) < min(x.lmi_variables)
         z = x;
         z.basis = [A*x.basis(:,1)+B*y.basis(:,1) B*y.basis(:,2:end) A*x.basis(:,2:end)];
         z.lmi_variables = [y.lmi_variables x.lmi_variables];
-        z.dim = zdim;
-        z = flush(z);
+        z.dim = zdim;        
         return
     end
 end

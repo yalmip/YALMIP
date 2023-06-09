@@ -87,7 +87,6 @@ if options.verbose
 end
 
 problem = 0;
-infostr = yalmiperror(problem,'MPT');
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -110,7 +109,7 @@ end
 % Standard interface
 Primal      = nan*ones(length(interfacedata.c),1);
 Dual        = [];
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function Matrices = initialize_binary_equalities(Matrices)
 binary_var_index = Matrices.binary_var_index;

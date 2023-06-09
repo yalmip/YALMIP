@@ -30,7 +30,7 @@ function [sol,m,Q,residuals,everything] = solvesos(F,obj,options,params,candidat
 %    sol       : Solution diagnostic from SDP problem
 %    v         : Cell with monomials used in decompositions
 %    Q         : Cell with Gram matrices, p = v{i}'*Q{i}*v{i}, where p is the ith SOS polynomial in your model.
-%    residuals : Mismatch between p and decompositions. Same values (modulo numerical issue) as checkset(find(is(F,'sos')))
+%    residuals : Mismatch between p and decompositions. Same values (modulo numerical issue) as check(find(is(F,'sos')))
 %                Warning, these residuals are not computed on matrix sos-of-squares
 %
 %   EXAMPLE
@@ -111,7 +111,7 @@ end
 
 [F,obj,m,everything,modeltype] = compilesos(F,obj,options,params,candidateMonomials);
 
-if isempty(everything)
+if isempty(everything) || ~isfield(everything,'p')
     % compilesos has detected trivially infeasible
     sol.yalmipversion = yalmip('version');
     sol.matlabversion = version;

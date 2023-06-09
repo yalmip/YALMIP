@@ -1,4 +1,4 @@
-function model = sedumi2opticsdp(interfacedata)
+function model = yalmip2opticsdp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -21,7 +21,7 @@ model.lb = lb;
 model.ub = ub;
 model.f = c;
 
-if K.s(1)>0
+if any(K.s)
     top = 1 + K.l + K.f;
     for j = 1:length(K.s)
         n = K.s(j);

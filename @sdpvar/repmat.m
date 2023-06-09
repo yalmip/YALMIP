@@ -9,7 +9,6 @@ index = reshape(index,Y.dim);
 index = repmat(index,resize);
 Y.basis = Y.basis(index(:),:);
 Y.dim = size(index);
-Y = flush(Y);
 % Reset info about conic terms
 Y.conicinfo = [0 0];
 if length(Y.dim)>2

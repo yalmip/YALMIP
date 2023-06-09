@@ -78,7 +78,7 @@ end
 p_upper.options.saveduals = 0;
 
 % Solve upper bounding problem
-p_upper.options.usex0 = 1;
+p_upper.options.warmstart = 1;
 tstart = tic;
 try
     output = feval(uppersolver,p_upper);

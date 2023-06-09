@@ -1,4 +1,4 @@
-function [lb,ub,redundant] = detect_and_improve_bounds(Matrices,lb,ub,binary_var_index,options);
+function [lb,ub,redundant] = mpt_detect_and_improve_bounds(Matrices,lb,ub,binary_var_index,options);
 
 A = [ Matrices.G -Matrices.E];
 b = [ Matrices.W ];

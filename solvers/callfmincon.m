@@ -5,21 +5,10 @@ tempF = model.F_struc;
 tempK = model.K;
 tempx0 = model.x0;
 model = yalmip2nonlinearsolver(model);
-% % Try to propagate initial values now that nonlinear evaluation logic is
-% % set up. Do this if some of the intials are nan
-if any(isnan(model.x0)) & ~all(isnan(model.x0))        
-    [~,~,xevaledout] = fmincon_fun(model.x0,model);
-    startNan = nnz(isnan(xevaledout));
-    goon = 1;
-    while goon
-        temp = propagatex0(xevaledout,tempF,tempK);
-        model.x0 = temp(model.linearindicies);
-        [~,~,xevaledout] = fmincon_fun(model.x0,model);
-        goon =  nnz(isnan(xevaledout)) < startNan;
-        startNan = nnz(isnan(xevaledout));
-    end     
-end
-model.x0(isnan(model.x0))=0;
+
+%% Try to propagate initial values now that nonlinear evaluation logic is
+%% set up. Do this if some of the intials are nan
+model = propagateInitial(model,tempF,tempK,tempx0);
 
 switch model.options.verbose
     case 0
@@ -76,12 +65,25 @@ end
 
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.oldGradient = cell(length(model.K.s),1);
+sdpLayer.reordering  = cell(length(model.K.s),1);
+sdpLayer.nullVectors = cell(length(model.K.s),1);
+sdpLayer.eigenVectors = cell(length(model.K.s),1);
+
+if isequal(model.options.slayer.m,inf)
+    sdpLayer.n  = model.K.s;
+elseif isequal(model.options.slayer.m,-1)
+    sdpLayer.n  = min(length(model.c),model.K.s);
+else
+    sdpLayer.n = repmat(model.options.slayer.m,1,length(model.K.s));
+end
 
 showprogress('Calling FMINCON',model.options.showprogress);
 
-if model.linearconstraints
+if model.linearconstraints && ~any(model.K.s)
     g = [];
 else
     g = @(x)fmincon_con_liftlayer(x,model);
@@ -157,4 +159,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'FMINCON',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);

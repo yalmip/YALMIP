@@ -83,7 +83,6 @@ if options.verbose
 end
 
 problem = 0;
-infostr = yalmiperror(problem,'MPT');
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -106,7 +105,7 @@ end
 % Standard interface
 Primal      = nan*ones(length(interfacedata.c),1);
 Dual        = [];
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function Matrices = removeExplorationConstraints(Matrices);
 candidates = find((~any(Matrices.G,2)) & (sum(Matrices.E | Matrices.E,2) == 1));

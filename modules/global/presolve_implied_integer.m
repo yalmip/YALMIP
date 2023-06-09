@@ -1,4 +1,4 @@
-function p = preprocess_bilinear_bounds(p)
+function p = presolve_implied_integer(p)
 
 if ~isempty(p.integer_variables)
     for i = 1:size(p.bilinears,1)
@@ -8,7 +8,7 @@ if ~isempty(p.integer_variables)
             end
         end
     end
-    if p.K.f > 0
+    if any(p.K.f)
         for i = 1:p.K.f
             if all(ismember(p.F_struc(i,:),[0 1 -1]))
                 involved = find(p.F_struc(i,2:end));

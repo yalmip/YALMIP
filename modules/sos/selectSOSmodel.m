@@ -1,9 +1,9 @@
-function options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData);
+function options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData,obj)
 switch options.sos.model
     case 0
         constraint_classes = constraintclass(F);
         noCOMPLICATING = ~any(ismember([7 8 9 10 12 13 14 15],constraint_classes));
-        if noCOMPLICATING & ~NonLinearParameterization & noRANK & ~IntegerData
+        if noCOMPLICATING & ~NonLinearParameterization && noRANK && ~IntegerData && ~isa(obj,'logdet')
             options.sos.model = 1;
             if options.verbose>0;disp('Using kernel representation (options.sos.model=1).');end
         else
@@ -15,6 +15,8 @@ switch options.sos.model
                 if options.verbose>0;disp('Using image representation (options.sos.model=2). Integrality constraint was found.');end
             elseif UncertainData
                 if options.verbose>0;disp('Using image representation (options.sos.model=2). Uncertain data was found.');end                
+            elseif isa(obj,'logdet')
+                if options.verbose>0;disp('Using image representation (options.sos.model=2). Logdet objective was found.');end 
             else
                 if options.verbose>0;disp('Using image representation (options.sos.model=2). Integer data, KYPs or similar was found.');end
             end

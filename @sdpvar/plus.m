@@ -36,23 +36,15 @@ if ~Y_is_spdvar
     end
 end
 
-if X_is_spdvar
-    if X.typeflag == 40
-        y = addgkyp(X,Y);
-        return
-    end
-else
+if isnumeric(X)
     if any(isnan(X))
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
         error('Adding NaN to an SDPVAR makes no sense.');
     end
 end
-if Y_is_spdvar
-    if Y.typeflag == 40
-        y = addgkyp(Y,X);
-        return
-    end
-else
+if isnumeric(Y)
      if any(isnan(Y))
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
         error('Adding NaN to an SDPVAR makes no sense.');
      end
 end
@@ -68,6 +60,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             return
         end
 
+        if isequal(X,0)
+            y = Y;
+            return
+        end
+        
         y = Y;
         n_Y = Y.dim(1);
         m_Y = Y.dim(2);
@@ -85,8 +82,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % Reset info about conic terms
             y.conicinfo = [0 0];
             y.extra.opname='';
-            y.extra.createTime = definecreationtime;
-            y = addfactors(y,X,Y);
+            y.extra.createTime = definecreationtime;            
             return
          end
          
@@ -106,8 +102,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         end
         % Reset info about conic terms
         y.conicinfo = [0 0];
-        y.extra.opname='';
-        y = addfactors(y,X,Y);
+        y.extra.opname='';        
     case 2
 
         if isempty(Y)
@@ -116,6 +111,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             catch
                 error(lasterr);
             end
+            return
+        end
+        
+        if isequal(Y,0)
+            y = X;
             return
         end
 
@@ -137,8 +137,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
              % Reset info about conic terms
              y.conicinfo = [0 0];
              y.extra.opname='';
-             y.extra.createTime = definecreationtime;
-             y = addfactors(y,X,Y);
+             y.extra.createTime = definecreationtime;             
              return
          end
          
@@ -159,8 +158,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname='';
-        y.extra.createTime = definecreationtime;
-        y = addfactors(y,X,Y);
+        y.extra.createTime = definecreationtime;        
              
     case 3
 
@@ -218,8 +216,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                  else
                      % Reset info about conic terms
                      y.conicinfo = [0 0];
-                     y.extra.opname='';
-                     y = addfactors(y,X,Y);
+                     y.extra.opname='';                     
                  end
                 return
             end
@@ -234,8 +231,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     basis(:,size(y.basis,2)+1) = [];
                     y.basis = basis;
                     y.conicinfo = [0 0];
-                    y.extra.opname='';
-                    y = addfactors(y,X,Y);
+                    y.extra.opname='';                    
                     return
                 else
                    % [ix,jx,sx] = find(y.basis);y.basis = [];
@@ -280,8 +276,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         % Reset info about conic terms
         y.conicinfo = [0 0];
         y.extra.opname=''; 
-        y.extra.createTime = definecreationtime;
-        y = addfactors(y,X,Y);
+        y.extra.createTime = definecreationtime;        
         if nnz(in_X_logical & in_Y_logical)>0
             y = clean(y);
         end

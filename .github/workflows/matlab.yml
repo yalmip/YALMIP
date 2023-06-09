@@ -1,0 +1,207 @@
+# This is a basic workflow to help you get started with MATLAB Actions
+
+name: Complete integration test
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+  
+  workflow_dispatch:
+  
+jobs:
+  
+  job1:
+    name: Complete integration (basics)
+    runs-on: ubuntu-latest
+    
+    permissions:
+      checks: write
+      contents: write
+      pull-requests: write
+      statuses: write      
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Confirm
+        run: ls -l
+            
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+        with:
+          release: R2020a
+       
+      - name: Test core
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/core'); assertSuccess(results);
+
+      - name: Test operators
+        if: success() || failure() 
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/operators'); assertSuccess(results);
+          
+      - name: Test misc
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/misc'); assertSuccess(results);
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Report (basics)                 # Name of the check run which will be created
+          path: '*.xml'               # Path to test results
+          reporter: java-junit        # Format of test results      
+          fail-on-error: 'false'             
+
+  job2:
+    name: Complete integration (modules)    
+    runs-on: ubuntu-latest
+    
+    permissions:
+      checks: write
+      contents: write
+      pull-requests: write
+      statuses: write 
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Confirm
+        run: ls -l
+            
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+        with:
+          release: R2020a
+              
+      - name: Test optimizer module
+        if: success() || failure() 
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/optimizer'); assertSuccess(results);   
+
+      - name: Test robust optimization module
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/robust'); assertSuccess(results);                 
+                
+      - name: Test dualize
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/dualize'); assertSuccess(results);
+
+      - name: Test geometric programming layer
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/geometric'); assertSuccess(results);
+
+      - name: Test sum-of-squares module
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/sos'); assertSuccess(results);
+
+      - name: Test moment relaxations module
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/moment'); assertSuccess(results);
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Report (modules)                 # Name of the check run which will be created
+          path: '*.xml'               # Path to test results
+          reporter: java-junit        # Format of test results      
+          fail-on-error: 'false'             
+
+
+  job3:
+    name: Complete integration (solvers)   
+    runs-on: ubuntu-latest
+        
+    permissions:
+      checks: write
+      contents: write
+      pull-requests: write
+      statuses: write 
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v2
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          
+      - name: Confirm
+        run: ls -l
+            
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v0
+        with:
+          release: R2020a
+              
+      - name: Test BNB solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/bnb'); assertSuccess(results);
+
+      - name: Test BMIBNB solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/bmibnb'); assertSuccess(results);
+
+      - name: Test BILEVEL solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/bilevel'); assertSuccess(results);
+            
+      - name: Test CUTSDP solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/cutsdp'); assertSuccess(results);
+
+      - name: Test SLAYER solver
+        if: success() || failure()       
+        uses: matlab-actions/run-command@v0
+        with:
+          command: addpath(genpath(pwd));warning off; results = runxunittests('dev/tests/slayer'); assertSuccess(results);
+                                    
+      - name: Test Report
+        uses: dorny/test-reporter@v1.4.3
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Report (solvers)      # Name of the check run which will be created
+          path: '*.xml'               # Path to test results
+          reporter: java-junit        # Format of test results      
+          fail-on-error: 'false'             

@@ -1,7 +1,5 @@
 function [model,nonlinearremain] = yalmip2cplex(interfacedata)
 
-% Author Johan Löfberg
-
 % Retrieve needed data
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -43,7 +41,7 @@ else
     NegativeSemiVar = [];
 end
 
-if K.f > 0
+if any(K.f)
     Aeq = Aineq(1:K.f,:);
     beq = bineq(1:K.f);
     % Code around performance bugs in older version of MATLAB

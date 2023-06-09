@@ -84,12 +84,12 @@ if K.l>0
     Slack = [Slack;Z{top}(:)];
     top = top + 1;
 end
-if K.q(1)>0
+if any(K.q)
     Dual = [Dual;X{top}(:)];
     Slack = [Slack;Z{top}(:)];
     top = top + 1;
 end
-if K.s(1)>0  
+if any(K.s)  
     % Messy format in SDPT3 to block and sort small SDPs
     u = blk(:,1);
     u = find([u{:}]=='s');
@@ -131,8 +131,6 @@ problem = -7;
 %         problem = 11;
 % end
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 if options.savesolveroutput
     solveroutput.obj = obj;
     solveroutput.X = X;
@@ -158,7 +156,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function [F_struc,K] = deblock(F_struc,K);
 X = any(F_struc(end-K.s(end)^2+1:end,:),2);

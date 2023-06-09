@@ -8,10 +8,10 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('callback');
-        operator.monotinicity = @monotinicity;
+        operator.monotonicity = @(xL,xU)decreasing_except_at(xL,xU,0);
         operator.derivative = @(x)(-1./(abs(x).*sqrt(1 + x.^2)));
-        operator.singularity = 0;
-        operator.inflection = [0 1];
+        operator.singularity = [0 -inf inf];
+        operator.inflection = [-inf -1 0 1];
 
         varargout{1} = [];
         varargout{2} = operator;
@@ -19,13 +19,4 @@ switch class(varargin{1})
 
     otherwise
         error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
-end
-
-function mono = monotinicity(xL,xU)
-if xU <= 0
-    mono = 'decreasing';
-elseif xL >= 0
-    mono = 'decreasing';
-else
-    mono = 'none';
 end

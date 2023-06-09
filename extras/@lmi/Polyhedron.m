@@ -16,7 +16,7 @@ end
     
 [p,recoverdata,solver,diagnostic,F] = compileinterfacedata(X,[],[],[],options,0);
 
-if p.K.q(1) > 0 | p.K.s(1) > 0 | any(p.variabletype)
+if any(p.K.q) | any(p.K.s) | any(p.variabletype)
   error('Polyhedron can only be applied to MILP-representable constraints.')
 end
 

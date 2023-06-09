@@ -175,7 +175,7 @@ else
     end
 end
 
-function [Ax, Ay, b] = power_convexhull(xL,xU,power)
+function [Ax, Ay, b, K] = power_convexhull(xL,xU,power)
 fL = xL^power;
 fU = xU^power;
 dfL = power*xL^(power-1);
@@ -184,7 +184,15 @@ if xL<0 & xU>0
     % Nasty crossing
     Ax = [];
     Ay = [];
+    b = [];  
+    K = []; 
+    return
+elseif fU-fL < 1e-4
+    % We're basically empty
+    Ax = [];
+    Ay = [];
     b = [];
+    K = []; 
     return
 end
 
@@ -197,9 +205,9 @@ fM = xM^power;
 dfM = power*xM^(power-1);
 
 if ((power > 1 | power < 0) & (xL >=0)) | ((power < 1 & power > 0) & (xU <=0))
-    [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 end
 if ~isempty(Ax)
     if isinf(Ax(1))
@@ -209,12 +217,14 @@ if ~isempty(Ax)
     end
 end
 
-function [Ax, Ay, b] = inverse_convexhull(xL,xU)
+function [Ax, Ay, b, K] = inverse_convexhull(xL,xU)
 if xL<0 & xU>0
     % Nasty crossing
     Ax = [1;-1];
     Ay = [0;0];
     b = [xU;-xL];
+    K.f = 0;
+    K.l = 2;
     return
 end
 fL = xL^-1;
@@ -225,9 +235,9 @@ xM = (xL + xU)/2;
 fM = xM^(-1);
 dfM = -1*xM^(-2);
 if xL >= 0
-    [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 end
 
 function  f = inverse_internal2_operator(model,variable,in);

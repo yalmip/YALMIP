@@ -91,12 +91,12 @@ if isfield(K,'schur_funs')
             options.sdpt3.schurfun_par{top,1} = [];
             top = top+1;
         end
-        if K.l > 0
+        if any(K.l)
             options.sdpt3.schurfun{top} = '';
             options.sdpt3.schurfun_par{top,1} = [];
             top = top+1;
         end
-        if K.q > 0
+        if any(K.q)
             options.sdpt3.schurfun{top} = '';
             options.sdpt3.schurfun_par{top,1} = [];
             top = top+1;
@@ -166,12 +166,12 @@ if K.l>0
     Slack = [Slack;Z{top}(:)];
     top = top + 1;
 end
-if K.q(1)>0
+if any(K.q)
     Dual = [Dual;X{top}(:)];
     Slack = [Slack;Z{top}(:)];
     top = top + 1;
 end
-if K.s(1)>0  
+if any(K.s)  
     % Messy format in SDPT3 to block and sort small SDPs
     u = blk(:,1);
     u = find([u{:}]=='s');
@@ -217,7 +217,6 @@ switch info.termcode
     otherwise
         problem = -1; % Unknown error
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolveroutput
     solveroutput.obj = obj;
@@ -244,7 +243,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function [F_struc,K] = deblock(F_struc,K);
 X = any(F_struc(end-K.s(end)^2+1:end,:),2);

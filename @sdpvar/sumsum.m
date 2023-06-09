@@ -1,4 +1,4 @@
-function Y=sum(Y)
+function Y=sumsum(Y)
 %SUM (overloaded)
 
 Y.basis = sum(Y.basis,1);

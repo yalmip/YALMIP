@@ -9,7 +9,6 @@ if X.typeflag~=0
 	error('Relational objects cannot be manipulated')
 end
 
-X = flush(X);
 Y = X;
 x_lmi_variables = X.lmi_variables;
 lmi_variables = [];

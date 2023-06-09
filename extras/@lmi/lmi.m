@@ -94,6 +94,7 @@ end
 %54 : Stacked SOCP
 %55 : Complementary
 %56 : Meta constraint to be expanded (implies, iff)
+%58 : Stacked power cone
 %60 : Chance constraint
 
 switch class(X)
@@ -199,7 +200,7 @@ while i <= length(Fi)
         if TypeofConstraint(i) == 2
 
             % remove constraint of the type set(0 >= 0)
-            B = getbase(thisFi);            
+            B = getbase(thisFi(:));            
             if ~noprune
                 Bv = B(:,2:end);
                 notused = find((~any(Bv,2)) & (B(:,1)>=0));
@@ -214,7 +215,7 @@ while i <= length(Fi)
         Fi{i} = thisFi;
 
         switch TypeofConstraint(i)
-            case {1,2,3,4,5,7,8,9,10,11,12,13,15,16,20,21,22,30,40,50,51,52,53,54,57}
+            case {1,2,3,4,5,7,8,9,10,11,12,13,15,16,20,21,22,30,40,50,51,52,53,54,57,58}
                 i = i + 1;
             otherwise
                 error('Error in argument in LMI. Please report bug');
@@ -292,7 +293,7 @@ if all(TypeofConstraint == 2) && all(strict==strict(1))
 else
     for i = 1:length(Fi)
         switch TypeofConstraint(i)
-            case {1,2,3,4,5,7,8,9,10,11,12,13,15,16,20,21,22,30,40,50,51,52,53,54,57}
+            case {1,2,3,4,5,7,8,9,10,11,12,13,15,16,20,21,22,30,40,50,51,52,53,54,57,58}
                 F.clauses{1}{i}.data=Fi{i};
                 F.clauses{1}{i}.type = TypeofConstraint(i);
                 F.clauses{1}{i}.symbolic=X;

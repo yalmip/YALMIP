@@ -1,8 +1,5 @@
-function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds);
+function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds)
 %TIGHTENBOUNDS Internal function to perform bound tightening
-
-% Author Johan Löfberg
-% $Id: tightenbounds.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
 
 % Simple bound pre-processing (paper by Savelsbergh)
 % No code optimization at all
@@ -28,7 +25,7 @@ At = A';
 use_indicies=ones(length(b),1);
 used = full(any(A(:,find(changed_bounds)),2));
 isbinary  = ismembcYALMIP(1:length(lb),binary_variables);
-isinteger = ismembcYALMIP(1:length(lb),binary_variables);
+isinteger = ismembcYALMIP(1:length(lb),integer_variables);
 
 goon = all(lb<=ub);
 infeasible = ~goon;

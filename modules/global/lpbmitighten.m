@@ -73,10 +73,9 @@ if p.options.bmibnb.cut.evalvariable
     p_test = addEvalVariableCuts(p_test);
 end
 
-% Add equalities to model
-p_test.K.l = size(p_test.F_struc,1);
+% Add original equalities to model
 p_test.F_struc = [p.F_struc(1:1:p.K.f,:);p_test.F_struc];
-p_test.K.f = p.K.f;
+p_test.K.f = p_test.K.f + p.K.f;
 
 % Norm bound cuts can explot equalities, thus placed down here
 if p.options.bmibnb.cut.normbound
@@ -129,6 +128,7 @@ while feasible & j<=length(jj)
                 end
             end
             if output.problem == 1
+                seen_x{end+1} = (p.lb + p.ub)/2;
                 feasible = 0;
             end
         end

@@ -1,4 +1,6 @@
-function [upperhere,xtempwork] = monotoneSDPHeuristics(p,upper,x,aux1,aux2)
+function [upperhere,xtempwork,auxout] = fixandresolve(p,upper,x,aux1,aux2,aux3,aux4,aux5,aux6)
+
+auxout = [];
 xtempwork = [];
 upperhere = inf;
 
@@ -29,7 +31,7 @@ relaxed_p = p;
 relaxed_p.integer_variables = [];
 relaxed_p.binary_variables = [];
 
-output = bnb_solvelower(p.solver.lower.call,relaxed_p,inf,-inf,[],0,[]);
+output = bnb_solvelower(p.solver.lower.call,relaxed_p,inf,-inf);
 xtempwork = output.Primal;
 xtempwork = setnonlinearvariables(p,xtempwork);
 if checkfeasiblefast(p,xtempwork,p.options.bnb.feastol)

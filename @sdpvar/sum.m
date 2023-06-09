@@ -63,5 +63,4 @@ Y.dim(2) = size(temp,2);
 % Reset info about conic terms
 Y.conicinfo = [0 0];
 Y.extra.opname = '';
-Y = flush(Y);
 Y = clean(Y);

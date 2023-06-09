@@ -9,7 +9,7 @@ for i = 1:length(p.evalMap)
             
     properties = p.evalMap{i}.properties;
     % Can convexity be fixed for xL <= x <= xL?
-    if any(xL<xU) && (isa(properties.convexity,'function_handle') | isequal(properties.convexity,'none'))
+    if any(xL<xU) && (isa(properties.convexity,'function_handle') || ~isempty(properties.inflection) || strcmp(properties.convexity,'none'))
         vexity = 'none';
         % User-supplied code to derive convexity
         if isa(properties.convexity,'function_handle')
@@ -25,10 +25,12 @@ for i = 1:length(p.evalMap)
             % Since convexity is known, we can append a convex hull method
             if isempty(properties.convexhull) && ~isempty(properties.derivative)
                 if isequal(vexity,'convex')
-                    f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    %f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    f0 = p.evalMap{i}.properties.function;
                     f = @(xL,xU)createConvexHullMethodConvex(xL,xU,f0,properties.derivative);
                 elseif isequal(vexity,'concave')
-                    f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    %f0 = @(x)real(eval([p.evalMap{i}.fcn '(x)']));
+                    f0 = p.evalMap{i}.properties.function;
                     f = @(xL,xU)createConvexHullMethodConcave(xL,xU,f0,properties.derivative);
                 else
                     f = [];
@@ -52,4 +54,25 @@ for i = 1:length(p.evalMap)
     end
     % Save possibly updated properties
     p.evalMap{i}.properties = properties;
+    
+    if isempty(p.evalMap{i}.properties.f_upper)
+        if isequal(p.evalMap{i}.properties.convexity,'convex')
+            %f = makefunction(p.evalMap{i}.fcn);
+            f = p.evalMap{i}.properties.function;
+            f_upper = @(z,xL,xU)(f(xL) + (z-xL)*(f(xU)-f(xL))/(xU-xL));            
+            df_upper = @(z,xL,xU)((f(xU)-f(xL))/(xU-xL));            
+            p.evalMap{i}.properties.f_upper = f_upper;
+            p.evalMap{i}.properties.df_upper = df_upper;
+        end
+    end
+    if isempty(p.evalMap{i}.properties.f_lower)
+         if isequal(p.evalMap{i}.properties.convexity,'concave')
+            %f = makefunction(p.evalMap{i}.fcn);
+            f = p.evalMap{i}.properties.function;
+            f_lower = @(z,xL,xU)(f(xL) + (z-xL)*(f(xU)-f(xL))/(xU-xL));            
+            df_lower = @(z,xL,xU)((f(xU)-f(xL))/(xU-xL));            
+            p.evalMap{i}.properties.f_lower = f_lower;
+            p.evalMap{i}.properties.df_lower = df_lower;
+        end
+    end
 end

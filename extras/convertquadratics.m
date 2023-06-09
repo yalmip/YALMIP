@@ -34,7 +34,7 @@ for i = 1:1:length(F)
     if max(variabletype(getvariables(F(i)))) <= 1
         % Definitely no quadratic to model as all variables are bilinear at
         % most
-         Fconv = Fconv + F(i);
+        Fconv = Fconv + F(i);
     elseif is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'sigmonial')
         % f-c'*x-x'*Q*x>0
         fi = sdpvar(F(i));fi = fi(:);
@@ -43,18 +43,18 @@ for i = 1:1:length(F)
             fij = fi(j);
             if isa(fij,'double')
                 if fij < 0
-                    infeasible = 1;                    
+                    infeasible = 1;
                     warning('The problem is trivially infeasible. You have a term POSITIVE NUMBER < 0.');
                     return
                 end
             end
-           % Q = Qs{j};c = cs{j};f = fs{j};
-           if max(variabletype(getvariables(fij))) <= 1
-               % There are at most bilinear terms, so it cannot be convex
-               info = 1;
-           else
-               [Q,c,f,x,info] = quaddecomp(fij);
-           end
+            % Q = Qs{j};c = cs{j};f = fs{j};
+            if max(variabletype(getvariables(fij))) <= 1
+                % There are at most bilinear terms, so it cannot be convex
+                info = 1;
+            else
+                [Q,c,f,x,info] = quaddecomp(fij);
+            end
             if info==0
                 if nnz(Q)==0
                     % Oh, linear,...
@@ -68,48 +68,66 @@ for i = 1:1:length(F)
                     % Semi-definite case when only part of x in Q
                     % Occurs, e.g, in constraints like y'*Q*y < t
                     used = find(any(Q));Qred=Q(:,used);Qred = Qred(used,:);xred = x(used);
-                    [R,p]=chol(Qred);
+                    [R,p] = factorize(Qred);
                     done = 0;
-                    if p
-                        % Safety check to account for low rank problems
-                        if all(eig(full(Qred))>=-1e-12)
-                            [u,s,v]=svd(full(Qred));
-                            r=find(diag(s)>1e-12);
-                            R=(u(:,r)*sqrt(s(r,r)))';
-                            R(abs(R)<eps)=0;
-                            p=0;
-                        else
-                            % Try to detect rotated SOCP (x-d)'*A*(x-d)+k<= C*y*z
-                            yzCandidates = find(~diag(Qred));
-                            if length(yzCandidates) == 2 && nnz(c(yzCandidates))==0
-                                %LU = yalmip('getbounds',getvariables(xred(yzCandidates)));
-                                LU = LUhere(getvariables(xred(yzCandidates)),:);
-                                if all(LU(:,1)>=0)
-                                    yzSubQ = Qred(yzCandidates,yzCandidates);
-                                    if yzSubQ(1,2) < 0
-                                        C = -2*yzSubQ(1,2);
-                                        xCandidates = setdiff(1:length(used),yzCandidates);
-                                        A = Qred(xCandidates,xCandidates);
-                                        [B,p]=chol(A);
-                                        if ~p
-                                            y = xred(yzCandidates(1));
-                                            z = xred(yzCandidates(2));
-                                            d = -A\(c(xCandidates)/2);
-                                            k = f-d'*A*d;
-                                            if abs(k)<= 1e-12
-                                                Fconv=Fconv + lmi(rcone(B*(xred(xCandidates)-d),.5*C*y,z));
-                                                no_changed = no_changed + 1;
-                                                i_changed = [i_changed i];
-                                                done = 1;
-                                            elseif k >= -1e-12
-                                                Fconv=Fconv + lmi(rcone([B*(xred(xCandidates)-d);sqrt(abs(k))],.5*C*y,z));
-                                                no_changed = no_changed + 1;
-                                                i_changed = [i_changed i];
-                                                done = 1;
-                                            else
-                                                p = 1;
-                                            end
+                    if p                                                
+                        % Try to detect rotated SOCP (x-d)'*A*(x-d)+k<= C*y*z
+                        yzCandidates = find(~diag(Qred));
+                        if length(yzCandidates) == 2 && nnz(c(yzCandidates))==0                            
+                            LU = LUhere(getvariables(xred(yzCandidates)),:);
+                            if all(LU(:,1)>=0)
+                                yzSubQ = Qred(yzCandidates,yzCandidates);
+                                if yzSubQ(1,2) < 0
+                                    C = -2*yzSubQ(1,2);
+                                    xCandidates = setdiff(1:length(used),yzCandidates);
+                                    A = Qred(xCandidates,xCandidates);
+                                    [B,p]=chol(A);
+                                    if ~p
+                                        y = xred(yzCandidates(1));
+                                        z = xred(yzCandidates(2));
+                                        d = -A\(c(xCandidates)/2);
+                                        k = f-d'*A*d;
+                                        if abs(k)<= 1e-12
+                                            Fconv=Fconv + lmi(rcone(B*(xred(xCandidates)-d),.5*C*y,z));
+                                            no_changed = no_changed + 1;
+                                            i_changed = [i_changed i];
+                                            done = 1;
+                                        elseif k >= -1e-12
+                                            Fconv=Fconv + lmi(rcone([B*(xred(xCandidates)-d);sqrt(abs(k))],.5*C*y,z));
+                                            no_changed = no_changed + 1;
+                                            i_changed = [i_changed i];
+                                            done = 1;
+                                        else
+                                            p = 1;
                                         end
+                                    end
+                                end
+                            end
+                        else
+                            % Detect (x-c)'*(x-c) + k <= z^2, z>=0
+                            zCandidates = find(diag(Qred)<0);
+                            if length(zCandidates) == 1 && nnz(c(zCandidates))==0
+                                LU = LUhere(getvariables(xred(zCandidates)),:);
+                                q = Qred(zCandidates,zCandidates);
+                                xCandidates = setdiff(1:length(used),zCandidates);
+                                A = Qred(xCandidates,xCandidates);                                
+                                [B,p]=factorize(A);
+                                if ~p
+                                    z = xred(zCandidates);                                  
+                                    d = -pinv(full(B'))*(c(xCandidates)/2);                                    
+                                    k = f-d'*d;
+                                    if abs(k)<= 1e-12
+                                        Fconv=Fconv + lmi(cone([B*xred(xCandidates)-d],z));
+                                        no_changed = no_changed + 1;
+                                        i_changed = [i_changed i];
+                                        done = 1;
+                                    elseif k >= -1e-12
+                                        Fconv=Fconv + lmi(cone([B*xred(xCandidates)-d;sqrt(abs(k))],z));                                        
+                                        no_changed = no_changed + 1;
+                                        i_changed = [i_changed i];
+                                        done = 1;
+                                    else
+                                        p = 1;
                                     end
                                 end
                             end
@@ -126,15 +144,10 @@ for i = 1:1:length(F)
                                 Fconv=Fconv + lmi(cone([R*xred],sqrt(d)));
                             end
                         else
-                            if length(c) == length(xred)
-                                ctilde = -(R')\(c/2);                             
-                                Fconv=Fconv + lmi(cone([R*xred;.5*(1-d)],.5*(1+d)));                             
-                            else
-                                Fconv=Fconv + lmi(cone([R*xred;.5*(1-d)],.5*(1+d)));
-                            end
+                            Fconv=Fconv + lmi(cone([R*xred;.5*(1-d)],.5*(1+d)));
                         end
                         no_changed = no_changed + 1;
-                        i_changed = [i_changed i];                        
+                        i_changed = [i_changed i];
                     elseif ~done
                         Fconv = Fconv + lmi(fi(j));
                     end
@@ -151,4 +164,22 @@ if ~isempty(i_changed)
     Forigquad = F(i_changed);
 else
     Fconv = F;
+end
+
+function [R,p] = factorize(A)
+if isempty(A)
+    R = [];
+    p = 1;
+else
+    [R,p]=chol(A);
+    if p
+        % Low rank problems?
+        if all(eig(full(A)) >= -1e-12)
+            [u,s,v] = svd(full(A));
+            r = find(diag(s)>1e-12);
+            R = (u(:,r)*sqrt(s(r,r)))';
+            R(abs(R)<eps) = 0;
+            p = 0;
+        end
+    end
 end

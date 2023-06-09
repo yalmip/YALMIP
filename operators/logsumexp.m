@@ -5,16 +5,25 @@ function varargout = logsumexp(varargin)
 %
 % Computes/declares log of sum of exponentials log(sum(exp(x)))
 %
-% Implemented as evalutation based nonlinear operator. Hence, the convexity
-% of this function is exploited to perform convexity analysis and rigorous
-% modelling.
+% Implemented as either evalutation based-nonlinear operator, or
+% represented using exponential cones depending on solver. Hence, the
+% convexity of this function is exploited to perform convexity analysis and
+% rigorous modelling. 
+%
+% See also ENTROPY, CROSSENTROPY, KULLBACKLEIBLER, PEXP, EXPCONE
 
 switch class(varargin{1})
 
     case 'double'
         x = varargin{1};
-        varargout{1} = log(sum(exp(x)));
-
+        temp = sum(exp(x));
+        if isinf(temp)
+            % Saturated as something was close to infinite
+            varargout{1} = max(x);
+        else
+            varargout{1} = log(sum(exp(x)));
+        end      
+        
     case 'sdpvar'
 
         if min(size(varargin{1}))>1
@@ -34,7 +43,7 @@ switch class(varargin{1})
               
         operator = CreateBasicOperator('convex','callback');        
         operator.bounds = @bounds;
-        operator.derivative = @(x) exp(x)./(sum(exp(x)));
+        operator.derivative = @derivative;
         operator.convexhull = @convexhull;
                 
         varargout{1} = [];
@@ -45,13 +54,18 @@ switch class(varargin{1})
         error([upper(mfilename) ' called with weird argument']);
 end
 
+function df=derivative(x)
 
+df = exp(x)./(sum(exp(x)));
+if any(isnan(df))
+    df(isnan(df)) = 1;
+end
 function [L, U] = bounds(xL,xU)
 
 L = log(sum(exp(xL)));
 U = log(sum(exp(xU)));
 
-function [Ax, Ay, b] = convexhull(xL,xU)
+function [Ax, Ay, b, K] = convexhull(xL,xU)
 % Ax*x + Ay*y < b
 % Use lower cut from center point
 c = (xL + xU)/2;
@@ -94,3 +108,5 @@ shift = -min(xL)+log(n^(1/(n-1)));
 Ay = [Ay;1];
 Ax = [Ax;-ones(1,n)];
 b = [b;log(exp(-shift)) + n*(shift)];
+K.f = 0;
+K.l = length(b);

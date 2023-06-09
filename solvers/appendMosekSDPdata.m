@@ -16,7 +16,7 @@ A = -F_struc(:,2:end);
 
 % -- Faster fix by Shahar
 tops = [1 cumsum(K.s.^2)+1];
-top = 1+K.f+K.l+sum(K.q)+3*K.e;
+top = 1+K.f+K.l+sum(K.q)+3*K.e+sum(K.p);
 [ii,jj,kk] = find(A(top:top + sum(K.s.^2)-1,:));
 allcon = floor(interp1(tops,1:length(tops),ii,'linear'));
 all_iilocal = ii-tops(allcon)'+1;

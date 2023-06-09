@@ -13,6 +13,9 @@ switch class(varargin{1})
         operator.monotonicity  = @monotonicity;
         operator.convexity  = @convexity;
         operator.bounds     = @bounds;     
+        operator.stationary = @stationary; 
+        operator.inflection = @inflection;
+        operator.periodic = pi; 
         operator.derivative = @(x)(cos(x));
         operator.range = [-1 1];
                
@@ -71,6 +74,29 @@ else
         vexity = 'none';
     end
 end
+
+function inflections = inflection(xL,xU)
+r = floor(xU/(pi/2));
+t = ceil(xL/(pi/2));
+spots = [t:r];
+spots = spots(rem(spots,2)==0);
+dir = double(abs(rem(spots/2,2))==1);
+dir(dir==0)=-1;
+xS = spots*pi/2;
+if isempty(xS)
+    inflections = [];
+else
+    xS = [-inf xS];
+    dir = [-dir(1) dir];
+    inflections = reshape([xS;dir],1,[]);
+end
+function [xS,fS] = stationary(xL,xU)
+r = floor(xU/(pi/2));
+t = ceil(xL/(pi/2));
+spots = [t:r];
+spots = spots(rem(spots,2)~=0);
+xS = spots*pi/2;
+fS = sign(sin(xS));
 
 function [L,U] = bounds(xL,xU)
 if xU-xL >= 2*pi

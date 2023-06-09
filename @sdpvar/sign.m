@@ -26,6 +26,12 @@ switch class(varargin{1})
                     % Numerically unstable case with continuous X
                     F = [X >= m*d1, X <= M*d3, X <= (1-d1)*M,X >=(1-d3)*m, m*(1-d2) <= X <= M*(1-d2), t == -d1 + d3,d1+d2+d3==1];
                 end
+                if M >= 0
+                    F = [F, d1==0];
+                end
+                if m <= 0
+                    F = [F, d3==0];
+                end
 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none');

@@ -62,7 +62,6 @@ switch exitflag
     otherwise
         problem = -1;
 end
-infostr = yalmiperror(problem,'FICO Xpress');
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -94,4 +93,4 @@ if isempty(x)
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

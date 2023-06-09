@@ -9,6 +9,8 @@ switch class(varargin{1})
 
         operator = CreateBasicOperator('callback');
         operator.derivative = @(x)(-csc(x).^2);
+        operator.singularity = [0 -inf inf];
+        operator.inflection = [-inf -1 0 1];
 
         varargout{1} = [];
         varargout{2} = operator;

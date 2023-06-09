@@ -1,4 +1,4 @@
-function x_opt = PlotInternalModel(internalmodel,x,n,localindex,color,opts)
+function x_opt = plotInternalModel(internalmodel,x,n,localindex,color,opts)
 % Code used by both lmi/plot and optimizer/plot
 
 if isempty(internalmodel.binary_variables)
@@ -192,13 +192,13 @@ catch
     end
 end
 
-function pLP = extractLP(p);
+function pLP = extractLP(p)
 pLP = p;
 pLP.F_struc = pLP.F_struc(1:p.K.f+p.K.l,:);
 pLP.K.q = 0;
 pLP.K.s = 0;
 
-function pRed = extractOnly(p,these);
+function pRed = extractOnly(p,these)
 pRed = p;
 p.F_struc(:,1+these) = 0;
 removeEQ = find(any(p.F_struc(1:pRed.K.f,2:end),2));

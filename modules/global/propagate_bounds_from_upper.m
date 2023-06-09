@@ -18,7 +18,8 @@ if ~isinf(upper)
             % We are maximizing x(i), since an lower bound is -UPPER
             % this means x(i) has to be > -UPPER in optimal solution
             p.lb(i) = max([p.lb(i) -(upper-p.f)/abs(p.c(i))]);
-        end            
+        end 
+        return
     end
     if nnz(p.Q)==0
         % Very basic, simply propagate from f + sum c_i m_i(x) <= upper
@@ -64,14 +65,15 @@ if ~isinf(upper)
         if ~isempty(quad_v) %& ~any(isinf(p.lb(quad_x))) & ~any(isinf(p.ub(quad_x)))
             % x'*D*x + c'*x + f + h(x) < U
             D = diag(p.c(quad_v));
-            if all(diag(D)>0)
+            if all(diag(D)>1e-5)
                 c = p.c(quad_x);
                 h = p.c;
                 h(quad_x) = 0;
                 h(quad_v) = 0;
                 % Complete
                 % (x + D^-0.5*c/2)'*D*(x + D^-0.5*c/2) - c'*D*c/4 + f + h(x) < U
-                xc = -(D^-1)*c/2;
+                % xc = -(D^-1)*c/2;
+                xc = -D\(c/2);
                 %rhs = upper - p.f - (h(h<0)'*p.ub(h<0) + h(h>=0)'*p.lb(h>=0)) + xc'*D*xc;
                 rhs = upper - p.f + xc'*D*xc;
                 ix = find(h<0);

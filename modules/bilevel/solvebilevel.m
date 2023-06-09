@@ -1,5 +1,5 @@
 function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstraints,InnerObjective,InnerVariables,options)
-%SOLVEBILEVEL Simple global bilevel solver
+%SOLVEBILEVEL Simple bilevel solver
 %
 %   min        OO(x,y)
 %   subject to CO(x,y)>=0
@@ -12,18 +12,26 @@ function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstrai
 %   info       : Bilevel solver specific information
 %
 %   Input
-%      CO       : Outer constraints (linear elementwise)
-%      OO       : Outer objective (convex quadratic)
+%      CO       : Outer constraints 
+%      OO       : Outer objective
 %      CI       : Inner constraints (linear elementwise)
 %      OI       : Inner objective (convex quadratic)
-%      y        : Inner variables
+%      y        : Inner variables (continuous)
 %      options  : solver options from SDPSETTINGS.
 %
 %   The behaviour of the bilevel solver can be controlled
 %   using the field 'bilevel' in SDPSETTINGS
 %
-%      bilevel.outersolver : Solver for outer problems with inner KKT removed
-%      bilevel.innersolver : Solver for inner problem
+%      bilevel.algorithm   : 'external' or 'internal'
+%
+%      If 'external' is selected, the KKT conditions are derived and added
+%      to outer model, and then 'solver' in sdpsettings is called
+%
+%      If 'internal' is selected, a branching strategy on the complementary
+%      slackness constraints is performed, with the following settings
+%
+%      bilevel.outersolver : Solver for outer problems + partial KKT for inner KKT removed
+%      bilevel.innersolver : Solver for inner problem in nodes
 %      bilevel.rootcut     : Number of cuts (based on complementary
 %                            constraints) added in root (experimental)
 %      bilevel.relgaptol   : Termination tolerance
@@ -31,7 +39,7 @@ function [sol,info] = solvebilevel(OuterConstraints,OuterObjective,InnerConstrai
 %      bilevel.feastol     : Tolerance for feasibility in outer problem
 %
 %
-%   See also SDPVAR, SDPSETTINGS, SOLVESDP
+%   See also KKT
 
 % min f(x,y) s.t g(x,y)<0, y = argmin  [x;y]'*H*[x;y]+e'[x;y]+f, E[x;y]<d
 
@@ -524,6 +532,13 @@ while length(list)>0 & gap > options.bilevel.relgaptol & iter < options.bilevel.
     if options.verbose
         fprintf(' %4.0f : %12.3E  %7.2f   %12.3E  %2.0f  %s\n',iter,full(upper),100*full(gap),full(lower),length(list),Comment)
     end
+end
+if iter == options.bilevel.maxiter && length(list)>0
+    sol.problem = 5;
+elseif ~isempty(sol) && length(list)==0
+    sol.problem = 0;
+elseif isempty(sol) && iter <= options.bilevel.maxiter
+    sol.problem = 1;
 end
 info.upper = upper;
 info.iter = iter;

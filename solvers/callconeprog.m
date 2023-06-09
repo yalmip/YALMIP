@@ -42,16 +42,11 @@ else
         end
     end
 end
-infostr = yalmiperror(problem,'CONEPROG');       
-
+    
 % Save all data sent to solver?
 if options.savesolverinput
-    solverinput.A = A;
-    solverinput.b = b;
-    solverinput.Aeq = Aeq;
-    solverinput.beq = beq;
-    solverinput.c = c;
-    solverinput.options = options.linprog;
+    solverinput.model = model;   
+    solverinput.options = options.coneprog;
 else
     solverinput = [];
 end
@@ -67,4 +62,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

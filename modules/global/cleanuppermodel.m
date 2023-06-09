@@ -1,13 +1,12 @@
-function p = cleanuppermodel(p);
+function p = cleanuppermodel(p)
 
 % We might have created a bilinear model from an original polynomial model.
 % We should use the original model when we solve the upper bound problem.
 p_bilinear = p;
 p = p.originalModel;
 
-% Remove cuts
-p.F_struc(p.K.f+p.KCut.l,:)=[];
-p.K.l = p.K.l - length(p.KCut.l);
+p = removeCuts(p);
+
 n_start = length(p.c);
 
 % Quadratic mode, and quadratic aware solver?
@@ -31,17 +30,6 @@ if ~isempty(bilinear_variables)
     end
 end
 
-% Remove SDP cuts
-if length(p.KCut.s)>0
-    starts = p.K.f+p.K.l + [1 1+cumsum((p.K.s).^2)];
-    remove_these = [];
-    for i = 1:length(p.KCut.s)
-        j = p.KCut.s(i);
-        remove_these = [remove_these;(starts(j):starts(j+1)-1)'];
-    end
-    p.F_struc(remove_these,:)=[];
-    p.K.s(p.KCut.s) = [];
-end
 p.lb = p_bilinear.lb(1:length(p.c));
 p.ub = p_bilinear.ub(1:length(p.c));
 p.bilinears = [];

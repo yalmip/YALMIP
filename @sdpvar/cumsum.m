@@ -18,5 +18,4 @@ else
 end
 X.conicinfo = [0 0];
 X.extra.opname = '';
-X = flush(X);
 X = clean(X);

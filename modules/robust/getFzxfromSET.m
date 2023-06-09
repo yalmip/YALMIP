@@ -1,4 +1,4 @@
-function [F0,Fz,Fx,Fxz] = getEF(F,z,x);
+function [F0,Fz,Fx,Fxz] = getFzxfromSET(F,z,x)
 
 F = sdpvar(F);
 F0 = -getbasematrix(F,0);

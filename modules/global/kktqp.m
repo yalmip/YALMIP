@@ -5,11 +5,16 @@ function output = kktqp(interfacedata)
 % the high-level KKT operator. This version is only kept for compatibility
 % reasons.
 %
-% See also kkt
+% See also KKT
 
-
-% Author Johan Löfberg
-% $Id: kktqp.m,v 1.2 2008-06-10 14:47:59 joloef Exp $
+% ********************************
+%% Setup timing
+% ********************************
+timing.total = tic;
+timing.boundingbox = 0;
+timing.boundingall = 0;
+timing.milpsolve = 0;
+solvertime = clock;
 
 % ********************************
 %% INITIALIZE DIAGNOSTICS IN YALMIP
@@ -36,6 +41,7 @@ end
 
 x = sdpvar(length(c),1);
 [dummy, L, U,sols,vals] = boundingbox(A*x <= b,[],[],interfacedata.f + interfacedata.c'*x + x'*interfacedata.Q'*x);
+timing.boundingbox = toc(timing.total);
 
 % Formulation here assumes maximization...
 Q = -2*interfacedata.Q;
@@ -49,6 +55,7 @@ ds = binvar(length(b),1); % indicater slack==0
 s = b-A*x;                % slack 
 
 % Derive bounds on primal slack
+tstart = tic;
 [M,m] = derivebounds(s);
 
 % Let us try to derive bounds on the dual variables
@@ -71,13 +78,19 @@ if ~isempty(vals)
     F = [F, -0.5*(c'*x+b'*y) <= min([vals{:}])];
 end
 
-solvertime = clock;
 My = derivedualbounds(F,y,b,S,n);
+timing.boundingall = toc(tstart);
+
 F = F + (y <= dy.*My);
-
 obj = -0.5*(c'*x+b'*y); % ==cost in optimal points 
-sol = solvesdp(F,obj,sdpsettings(interfacedata.options,'solver',interfacedata.options.kktqp.solver));
 
+% Adjust remaining time the MILP solver has
+interfacedata = adjustMaxTime(interfacedata,interfacedata.options.kktqp.maxtime,toc(timing.total));
+
+% And call MILP solver
+sol = solvesdp(F,obj,sdpsettings(interfacedata.options,'solver',interfacedata.options.kktqp.solver));
+timing.milpsolve = sol.solvertime;
+timing.total = toc(timing.total);
 % **********************************
 %% CREATE SOLUTION
 % **********************************
@@ -88,11 +101,15 @@ output.Slack       = [];
 output.infostr      = yalmiperror(output.problem,'KKTQP');
 output.solverinput  = 0;
 if interfacedata.options.savesolveroutput
-    output.solveroutput.solved_nodes = solved_nodes;
-    output.solveroutput.lower = lower;
-    output.solveroutput.upper = upper;    
+    output.solveroutput.timing = timing;
 else
     output.solveroutput =[];
+end
+if interfacedata.options.savesolverinput
+    output.solverinput.F = F;
+    output.solverinput.obj = obj;
+else
+    output.solverinput =[];
 end
 output.solvertime = etime(clock,solvertime);
 

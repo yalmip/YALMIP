@@ -4,12 +4,12 @@ function createsdplibfile(F_struc,K, c, filename,integer_variables)
 fid = fopen(filename,'w');
 
 F_blksz = [];
-if K.l > 0
+if any(K.l)
     F_blksz = ones(1,K.l);
 else
     F_blksz = [];
 end
-if K.s(1)>0
+if any(K.s)
     F_blksz = [F_blksz K.s];
 end
 

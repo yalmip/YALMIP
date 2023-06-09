@@ -26,7 +26,7 @@ if K.f>0
     INDEQ(1:K.f) = 1:K.f;
 end
 
-if K.q(1)>0
+if any(K.q)
     top = K.f+K.l + 1;
     for i = 1:length(K.q)
         % [cx+d;Ax+b]   |Ax+b|<cx+d, originally a QCQP

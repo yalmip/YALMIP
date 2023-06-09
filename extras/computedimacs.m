@@ -30,7 +30,7 @@ if K.l>0
 end
 
 % Errors in quadratic cone
-if K.q(1)>0
+if any(K.q)
     top = K.f+K.l;
     for i = 1:length(K.q)
         X = x(1+top:top+K.q(i));
@@ -42,7 +42,7 @@ if K.q(1)>0
 end
 
 % Errors in semidefinite cone
-if K.s(1)>0
+if any(K.s)
     top = K.f+K.l+K.q+K.r;
     for i = 1:length(K.s)
         X = reshape(x(1+top:top+K.s(i)^2),K.s(i),K.s(i));
@@ -82,14 +82,14 @@ if K.f + K.l>0
 end
 
 top = 1+K.f+K.l;
-if K.q(1)>0
+if any(K.q)
     for i = 1:length(K.q)
         t = t + norm(s(top:top+K.q(i)-1));
         top  = top + K.q(i);
     end
 end
 
-if K.s(1)>0
+if any(K.s)
     for i = 1:length(K.s)
         S = reshape(s(top:top+K.s(i)^2-1),K.s(i),K.s(i));
         t = t + norm(S,'fro');

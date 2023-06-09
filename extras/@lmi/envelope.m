@@ -39,8 +39,6 @@ function [E,P] = envelope(C,x)
 %   plot(E,[x;u],[],[],sdpsettings('relax',1))
 %   xx = (-1:0.01:1);hold on;plot(xx,xx+sin(pi*xx),xx,4-xx.^2)
 
-% Author Johan Löfberg
-
 [aux1,aux2,aux3,p] = export(C,[],sdpsettings('solver','bmibnb'));
 
 if isempty(p)
@@ -73,6 +71,8 @@ p = presolveOneMagicRound(p);
 
 % Copied from solvelower
 p_cut = p;
+p_cut = propagate_bounds_from_monomials(p_cut);
+p_cut = propagate_bounds_from_evaluations(p_cut);
 p_cut = addNormBoundCut(p_cut);
 p_cut = addBilinearVariableCuts(p_cut);
 p_cut = addEvalVariableCuts(p_cut);
@@ -125,7 +125,7 @@ else
             top = top + n;
         end
     end
-    if p_cut.K.s(1) > 0
+    if any(p_cut.K.s)
         top = 1 + p_cut.K.f + p_cut.K.l + sum(p_cut.K.q);
         for i = 1:length(p_cut.K.s)
             n = p_cut.K.s(i);

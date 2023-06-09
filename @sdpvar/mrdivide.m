@@ -19,6 +19,7 @@ try
             y = X;
             y.basis = y.basis/Y;
         end
+        y.conicinfo = [0 0];
         return
     end
 
@@ -42,8 +43,7 @@ try
     end
     
     y.dim(1) = size(temp,1);
-    y.dim(2) = size(temp,2);
-    y = flush(y);
+    y.dim(2) = size(temp,2);    
 catch
     error(lasterr);
 end

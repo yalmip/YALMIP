@@ -50,7 +50,7 @@ keepingthese = model.keepingthese;
 % Look for constraints which evaluate to inf + a'*x + b >= 0
 infinite_monoms = removethese(isinf(monomvalue(removethese)));
 if ~isempty(infinite_monoms)
-    if model.K.l > 0
+    if any(model.K.l)
         A = model.F_struc(model.K.f + 1:model.K.f + model.K.l,1 + infinite_monoms);
         redundant = find(all(A,2));
         model.F_struc(model.K.f + redundant,:)=[];
@@ -70,9 +70,13 @@ if ~isempty(model.F_struc)
     model.F_struc(:,1) = model.F_struc(:,1)+model.F_struc(:,1+removethese)*value;
     model.F_struc(:,1+removethese) = [];
     model.F_struc = model.F_struc*diag(sparse([1;monomgain]));
+else
+    % Clean up 0-dim row
+    model.F_struc = [];
 end
+
 infeasible = 0;
-if model.K.f > 0
+if any(model.K.f)
     candidates = find(~any(model.F_struc(1:model.K.f,2:end),2));
     %candidates = find(sum(abs(model.F_struc(1:model.K.f,2:end)),2) == 0);
     if ~isempty(candidates)
@@ -86,7 +90,7 @@ if model.K.f > 0
         end
     end
 end
-if model.K.l > 0
+if any(model.K.l)
     % Find infeasible constraints
     candidates = find(~any(model.F_struc(model.K.f + (1:model.K.l),2:end),2));
     if ~isempty(candidates)                
@@ -105,10 +109,10 @@ if model.K.l > 0
         model.K.l = model.K.l - length(candidates);        
     end
 end
-if model.K.q(1) > 0
+if any(model.K.q)
     removeqs = [];
     removeRows = [];
-    top = model.K.f + model.K.l + 1;  
+    top = startofSOCPCone(model.K);  
     F_struc = model.F_struc(top:top+sum(model.K.q)-1,:);   
     top = 1;
     if all(any(F_struc(:,2:end),2))
@@ -136,9 +140,9 @@ if model.K.q(1) > 0
         end
     end
 end
-if model.K.s(1) > 0  
+if any(model.K.s)  
     % Nonlinear semidefinite program with parameter
-    top = model.K.f + model.K.l + sum(model.K.q) + 1;
+    top = startofSDPCone(model.K);
     removeqs = [];
     removeRows = [];
     for i = 1:length(model.K.s)
@@ -286,7 +290,7 @@ if ~model.solver.objective.sigmonial & any(model.variabletype == 4)
         involved = [involved;find(m ~= fix(m) | m < 0)];
     end
     involved = unique(involved);
-    [lb,ub] = findulb(model.F_struc,model.K,model.lb,model.ub);
+    [lb,ub] = find_lp_bounds(model.F_struc,model.K,model.lb,model.ub);
     if all(lb(involved) == ub(involved))
         % Now add equality constraints to enforce       
         for i = signomials

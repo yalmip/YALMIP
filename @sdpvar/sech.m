@@ -10,7 +10,7 @@ switch class(varargin{1})
         operator = CreateBasicOperator('bell-shape','callback');        
         operator.derivative = @(x)(-tanh(x).*sech(x)); 
         operator.stationary = [0 1];
-        operator.inflection = [-0.881493604 -1 0.881493604 1];
+        operator.inflection = [-inf 1 -0.881493604 -1 0.881493604 1];
         operator.range = [0 1];
         
         varargout{1} = [];

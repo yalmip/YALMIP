@@ -17,7 +17,7 @@ t = cidx(:,ones(p,1)) + ridx(ones(m,1),:);
 if isrow(t)
     t = extsubsref(x,t).';
 else
-    t = extsubsref(x,t)
+    t = extsubsref(x,t);
 end
 if isa(t,'sdpvar')
     t.conicinfo = [0 0];

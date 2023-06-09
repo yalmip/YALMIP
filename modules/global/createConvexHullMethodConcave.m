@@ -1,4 +1,5 @@
-function [Ax,Ay,b] = createConvexHullMethodConcave(xL,xU,f,df)
+function [Ax,Ay,b,K] = createConvexHullMethodConcave(xL,xU,f,df,dummy)
+% dummy is operator struct sent by blackbox
 xM = (xL+xU)/2;
 fL = real(f(xL));
 fM = real(f(xM));
@@ -15,4 +16,4 @@ for i = 1:4
         x1 = xM;xM = (x1+x2)/2;fM = real(f(xM));dfM = real(df(xM));
     end
 end
-[Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+[Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);

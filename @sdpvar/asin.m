@@ -12,7 +12,7 @@ switch class(varargin{1})
         operator.inverse = @(x)sin(x);
         operator.range = [-pi/2 pi/2];        
         operator.domain = [-1 1];
-        operator.inflection = [0 1];
+        operator.inflection = [-inf -1 0 1];
 
         varargout{1} = [];
         varargout{2} = operator;

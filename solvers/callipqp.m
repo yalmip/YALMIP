@@ -48,15 +48,11 @@ D_struc = [];
 
 switch problem
 case 0
-    problem = 0;
-    infostr = yalmiperror(problem,'IPQP');       
+    problem = 0;   
 case 1
     problem = 1;
-    infostr = yalmiperror(problem,'IPQP');   
 otherwise
-    
-    problem = 2;
-    infostr = yalmiperror(problem,'IPQP');       
+    problem = 2;   
 end    
 
 % Save all data sent to solver?
@@ -84,4 +80,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

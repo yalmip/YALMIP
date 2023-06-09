@@ -101,7 +101,6 @@ Primal = y_s;
 Dual   = x_s;
 
 problem = info.problem;
-infostr = yalmiperror(problem,model.solver.tag);
 
 if (problem > 0) && (options.verbose >= 1)
     disp(infostr(1:find(infostr=='(',1,'first')-1));
@@ -127,9 +126,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
-
-
+output = createOutputStructure(Primal,Dual,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 return;
 
 
@@ -342,7 +339,7 @@ if ((nbIter > 1) && refinePrimal) || ((nbIter == 1) && solvePrimalFirst)
             fval = [];
             x = value(x)+[zeros(K.f,1);l];
             y = dual(F(1));
-            if K.l > 0
+            if any(K.l)
                 z = dual(F(2));
             else
                 z = [];
@@ -360,7 +357,7 @@ if ((nbIter > 1) && refinePrimal) || ((nbIter == 1) && solvePrimalFirst)
         % We save the result
         xi = gemify_f(value(x))+[zeros(K.f,1);l];
         yi = gemify_f(dual(F(1)));
-        if K.l > 0
+        if any(K.l)
             zi = gemify_f(dual(F(2)));
         else
             zi = [];
@@ -431,7 +428,7 @@ if ((nbIter > 1) && refineDual) || ((nbIter == 1) && ~solvePrimalFirst)
             fval = [];
             x = value(xdd)+[zeros(K.f,1);ld];
             y = dual(Fdd(1));
-            if K.l > 0
+            if any(K.l)
                 z = dual(Fdd(2))+Ld;
             else
                 z = Ld;
@@ -448,7 +445,7 @@ if ((nbIter > 1) && refineDual) || ((nbIter == 1) && ~solvePrimalFirst)
         
         xdi = gemify_f(value(xdd))+[zeros(K.f,1);ld];
         ydi = gemify_f(dual(Fdd(1)));
-        if K.l > 0
+        if any(K.l)
             zdi = gemify_f(dual(Fdd(2))+Ld);
         else
             zdi = Ld;

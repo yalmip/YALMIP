@@ -27,3 +27,15 @@ for i = Quadratics
 end
 p.Quadratics = Quadratics;
 p.QuadraticsList = QuadraticsList;
+
+Univariates = find(p.variabletype(:)==3 & sum(p.monomtable | p.monomtable,2)==1);
+UnivariatesList = zeros(length(p.c),2);
+for i = Univariates(:)'
+    vars = find(p.monomtable(i,:));
+    UnivariatesList(i,1) = vars;
+    UnivariatesList(i,2) = p.monomtable(i,vars);
+end
+p.Univariates = Univariates;
+p.UnivariatesList = UnivariatesList;
+
+

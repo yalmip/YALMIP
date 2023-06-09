@@ -1,5 +1,17 @@
-function LinearVariables = depends(F)
+function LinearVariables = depends(varargin)
 
+if nargin > 1
+    LinearVariables = [];
+    for i = 1:nargin
+        LinearVariables_i = depends(varargin{i});
+        LinearVariables = [LinearVariables;LinearVariables_i(:)];
+    end
+    LinearVariables = unique(LinearVariables);
+    return
+else
+    F = varargin{1};
+end
+        
 F = flatten(F);
 
 % Get all used variables in this LMI object

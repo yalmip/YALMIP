@@ -10,46 +10,39 @@ switch class(varargin{1})
         X = varargin{3};
         Y = varargin{4};        
       
-        F = ([]);                
-        switch class(X)
-            case 'sdpvar'
-                x = X;
-                xvars = getvariables(x);               
-                allextvars = yalmip('extvariables');
-                if (length(xvars)==1) & ismembcYALMIP(xvars,allextvars)
-                    [x,F] = expandor(x,allextvars,F);
-                end
+        F = ([]); 
+        x = [];
+        q = [];
+        for j = 3:nargin
+            X = varargin{j};
+            switch class(X)
+                case 'sdpvar'
+                    xi = X;
+                    q = [q;X(:)];
+                    xvars = getvariables(x);               
+                    allextvars = yalmip('extvariables');
+                    if (length(xvars)==1) & ismembcYALMIP(xvars,allextvars)
+                        [xi,F] = expandor(xi,allextvars,F);
+                    end
+                    x = [x xi];
 
-            case 'constraint'
-                x = binvar(1,1); 
-                F = F + (implies_internal(x,X));
-            otherwise
+                    case 'constraint'
+                        xi = binvar(1,1); 
+                        F = F + (implies_internal(xi,X));
+                        x = [x xi];
+                        q = [q;reshape(sdpvar(X),[],1)];
+                otherwise
+            end       
         end
-        switch class(Y)
-            case 'sdpvar'
-                y = Y;
-                yvars = getvariables(y);
-                allextvars = yalmip('extvariables');
-                if (length(yvars)==1) & ismembcYALMIP(yvars,allextvars)
-                    [y,F] = expandor(y,allextvars,F);
-                end
-            case {'constraint','lmi'}
-                y = binvar(1,1);
-                F = F + (implies_internal(y,Y));
-            otherwise
-        end
-
-        xy = [x y];
+        
         [M,m] = derivebounds(z);
         if m>=1
-            varargout{1} = F + (sum(xy) >= 1);
+            varargout{1} = F + (sum(x) >= 1);
         else
-            varargout{1} = F + (sum(xy) >= z) + (z >= xy) +(binary(z));
+            varargout{1} = F + (sum(x) >= z) + (z >= x) +(binary(z));
         end
-        X = sdpvar(X);
-        Y = sdpvar(Y);
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
-        varargout{3} = [xy(:);X(:);Y(:)];
+        varargout{3} = [x(:);q];
 
     case {'sdpvar','constraint'}             
         varargout{1} = yalmip('define','or',varargin{:});       

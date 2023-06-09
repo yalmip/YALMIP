@@ -58,7 +58,7 @@ if options.saveduals | options.dimacs
     u = u(:);
     D_struc = u(1:1:K.l);
     if length(K.s)>0
-        if K.s(1)>0
+        if any(K.s)
             pos = K.l+1;
             for i = 1:length(K.s)
                 temp = zeros(K.s(i),K.s(i));
@@ -98,7 +98,6 @@ case 7
 otherwise
     problem = -1;
 end    
-infostr = yalmiperror(problem,'PENSDP/PENOPT');	
 
 if options.savesolveroutput
     solveroutput.f = f;
@@ -117,6 +116,6 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 

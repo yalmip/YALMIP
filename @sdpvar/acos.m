@@ -10,7 +10,7 @@ switch class(varargin{1})
         operator = CreateBasicOperator('decreasing','callback');                    
         operator.derivative = @(x)real(-((1 - x.^2).^-0.5));
         operator.inverse = @(x)cos(x);
-        operator.inflection = [0 -1];
+        operator.inflection = [-inf 1 0 -1];
         operator.range = [0 pi];
         operator.domain = [-1 1];
         

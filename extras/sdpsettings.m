@@ -22,7 +22,7 @@ function options = sdpsettings(varargin)
 %
 %   GENERAL
 %
-%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|kypd|mpt|refiner|none ('')]
+%    solver             - Specify solver [''|sdpt3|sedumi|sdpa|pensdp|penbmi|csdp|dsdp|maxdet|lmilab|cdd|cplex|xpress|mosek|nag|quadprog|linprog|bnb|bmibnb|mpt|refiner|none ('')]
 %    verbose            - Display-level [0|1|2|...(0)] (0 silent, 1 normal, >1 increasingly louder)
 %    usex0              - Use the current values obtained from VALUE as initial iterate if solver supports that [0|1 (0)]
 %    relax              - Disregard integrality constraint and/or relax nonlinear terms  [0 | 1 (both) 2 (relax integrality) 3 (relax nonlinear terms) (0)]
@@ -39,6 +39,7 @@ function options = sdpsettings(varargin)
 %    removeequalities   - Let YALMIP remove equality constraints [-1|0|1 (0)] (-1:with double inequalities, 0:don't, 1:by QR decomposition, 2:basis from constraints)
 %    convertconvexquad  - Convert convex quadratic constraints to second order cones [0|1 (1)]
 %    allowmilp          - Allow introduction of binary variables to model nonlinear operators [0 | 1 (0)]
+%    forceglobal        - Only allow global solvers [0 | 1 (0)]
 %    expand             - Expand nonlinear operators [0|1 (1)]. Should always be true except in rare debugging cases.
 %    plot               - Options when plotting sets
 %
@@ -154,6 +155,9 @@ else
     options.csdp = setup_csdp_options;
     Names = appendOptionNames(Names,options.csdp,'csdp');
 
+    options.daqp = setup_daqp_options;
+    Names = appendOptionNames(Names,options.daqp,'daqp');
+
     options.dsdp = setup_dsdp_options;
     Names = appendOptionNames(Names,options.dsdp,'dsdp');
 
@@ -207,24 +211,15 @@ else
 
     options.lsqlin = setup_lsqlin_options;
     Names = appendOptionNames(Names,options.lsqlin,'lsqlin');
-
-    options.kypd = setup_kypd_options;
-    Names = appendOptionNames(Names,options.kypd,'kypd');
     
     options.kktqp = setup_kktqp_options;
     Names = appendOptionNames(Names,options.kktqp,'kktqp');    
-
-    options.nag = setup_nag_options;
-    Names = appendOptionNames(Names,options.nag,'nag');
 
     options.mosek = setup_mosek_options;
     Names = appendOptionNames(Names,options.mosek,'mosek');
 
     options.nomad = setup_nomad_options;
     Names = appendOptionNames(Names,options.nomad,'nomad');
-
-    options.ooqp = setup_ooqp_options;
-    Names = appendOptionNames(Names,options.ooqp,'ooqp');
 
     options.penbmi = setup_penbmi_options;
     Names = appendOptionNames(Names,options.penbmi,'penbmi');
@@ -301,10 +296,12 @@ i = paramstart;
 if rem(nargin-i+1,2) ~= 0
     error('Arguments must occur in name-value pairs.');
 end
-expectval = 0;                          % start expecting a name, not a value
+usex0wasused = 0;
+warmstartwasused = 0;
+expectval = 0; % start expecting a name, not a value
 while i <= nargin
     arg = varargin{i};
-
+    
     if ~expectval
         if ~ischar(arg)
             error(sprintf('Expected argument %d to be a string property name.', i));
@@ -312,7 +309,19 @@ while i <= nargin
 
         lowArg = strtrim(lower(arg));
 
+        if strcmp(lowArg,'usex0')
+            usex0wasused = 1;
+            warmstartwasused = 0;
+        elseif strcmp(lowArg,'warmstart')
+            usex0wasused = 0;
+            warmstartwasused = 1;
+        end
+        
         j = strmatch_octavesafe(lowArg,names);
+        % Try to expand to solver options
+        if isempty(j)
+            j = strmatch_octavesafe([options.solver '.' lowArg],names);
+        end
         if isempty(j)                       % if no matches
             error(sprintf('Unrecognized property name ''%s''.', arg));
         elseif length(j) > 1                % if more than one match
@@ -335,7 +344,13 @@ while i <= nargin
         eval(['options.' Names{j} '= arg;']);
         expectval = 0;
     end
-    i = i + 1;
+    i = i + 1;    
+end
+
+if usex0wasused
+    options.warmstart = options.usex0;
+elseif warmstartwasused
+     options.usex0 = options.warmstart;
 end
 
 if isequal(options.solver,'swarm')
@@ -350,6 +365,8 @@ if isa(options.verbose,'char')
     error('Verbosity level should be an non-negative integer.');
 end
 
+options.warmstart = options.warmstart;
+
 
 function [solverops] = trytoset(solver)
 
@@ -362,20 +379,6 @@ try
 catch
     solverops = optimset;
 end
-
-% if isequal(solver, 'quadprog') && isfield(solverops, 'Algorithm') && ~isempty(solverops.Algorithm)
-%     solverops.Algorithm = 'active-set';
-% end
-%
-% if  any(strcmp(solvernames,'LargeScale'))
-%     if isequal(solver, 'quadprog')
-%         solverops.LargeScale = 'off';
-%     end
-% else
-%     solvernames{end+1} = 'LargeScale';
-%     solverops.LargeScale = 'off';
-% end
-
 
 
 function cNames = recursivefieldnames(options,append)
@@ -419,7 +422,11 @@ function options = setup_core_options
 options.solver = '';
 options.verbose = 1;
 options.debug = 0;
-options.usex0 = 0;
+options.warmstart = 0;
+options.savedebug = 0;
+options.slayer.algorithm = 'convex';
+options.slayer.m = inf;
+options.slayer.stabilize = 1;
 options.warning = 1;
 options.cachesolvers = 0;
 options.showprogress = 0;
@@ -431,18 +438,19 @@ options.saveyalmipmodel  = 0;
 options.convertconvexquad = 1;
 options.assertgpnonnegativity = 1;
 options.thisisnotagp = 0;
+options.debugplot = 0;
 options.radius = inf;
 options.relax = 0;
 options.dualize = 0;
-options.usex0 = 0;
-options.savedebug = 0;
 options.expand = 1;
 options.allowmilp = 1;
 options.allownonconvex = 1;
+options.forceglobal = 0;
 options.shift = 0;
 options.dimacs = 0;
 options.beeponproblem = [-5 -4 -3 -2 -1];
 options.mosektaskfile = '';
+options.usex0 = 0;
 
 function bisection = setup_bisection_options
 bisection.absgaptol = 1e-5;
@@ -464,7 +472,7 @@ bmibnb.lowersolver = '';
 bmibnb.uppersolver = '';
 bmibnb.lpsolver = '';
 bmibnb.sdpsolver = '';
-bmibnb.uppersdprelax = 1;
+bmibnb.uppersdprelax = -1;
 bmibnb.target =  -inf;
 bmibnb.lowertarget =  inf;
 bmibnb.relgaptol = 1e-2;
@@ -474,7 +482,10 @@ bmibnb.branchrule = 'omega';
 bmibnb.cut.multipliedequality = 0;
 bmibnb.cut.multipliedinequality = 0;
 bmibnb.cut.squaredlinearequality = -1;
+bmibnb.cut.disjointbilinearsdp = 1;
+bmibnb.cut.hiddensdpconvex = 1;
 bmibnb.cut.normbound = 1;
+bmibnb.cut.convexupperbound = 1;
 bmibnb.cut.evalvariable = 1;
 bmibnb.cut.bilinear = 1;
 bmibnb.cut.monomial = 1;
@@ -487,9 +498,8 @@ bmibnb.sdpcuts = 0;
 bmibnb.sdpbounder = -1;
 bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
-bmibnb.diagonalize  = 1;
+bmibnb.diagonalize  = -1;
 bmibnb.onlyrunupperinroot = 0;
-bmibnb.uppersdprelax = 1;
 bmibnb.uppersdprelaxmethod = 'element';
 bmibnb.lowerpsdfix =  -1;
 bmibnb.vartol = 1e-3;
@@ -501,6 +511,9 @@ bmibnb.roottight = -1;
 bmibnb.numglobal = inf;
 bmibnb.localstart = 'relaxed';
 bmibnb.presolvescheme = [];
+bmibnb.balancetarget = 0.9;
+bmibnb.rebalancefreq = 20;
+bmibnb.plot = 0;
 bmibnb.strengthscheme = [8 1 2 1 3 1 4 1 6 1 5 1 4 1 6 1 4 1 8];
 function bnb = setup_bnb_options
 bnb.solver = '';
@@ -518,6 +531,10 @@ bnb.rounding = {'ceil','floor','round','shifted round','fix'};
 bnb.uppersolver = 'rounder';
 bnb.branchrule = 'max';
 bnb.method = 'depthbest';
+bnb.cardinalitypropagations = 1;
+bnb.cuts = -1;
+bnb.cut.knapsack.cover = 1;
+bnb.cut.sdpknapsack.cover = 1;
 bnb.round = 1;
 bnb.profile = 0;
 function cutsdp = setup_cutsdp_options
@@ -671,6 +688,13 @@ catch
     end
 end
 
+function daqp_opts = setup_daqp_options
+try
+    daqp_opts = daqp().settings();
+catch
+    daqp_opts=[];
+end
+
 function ecos = setup_ecos_options
 try
     ecos = ecosoptimset;
@@ -708,70 +732,98 @@ glpk.presol = 1;
 glpk.save = 0;
 
 function gurobi = setup_gurobi_options
-gurobi.BarIterLimit = 1000;
-gurobi.BestBdStop = inf;
-gurobi.BestObjStop = -inf;
-gurobi.Cutoff = inf;
-gurobi.IterationLimit = inf;
-gurobi.NodeLimit = inf;
-gurobi.SolutionLimit = inf;
-gurobi.TimeLimit = inf;
+
+gurobi.AggFill = -1;
+gurobi.Aggregate = 1;
 gurobi.BarConvTol =	1e-8;
-gurobi.BarQCPConvTol = 1e-6;
-gurobi.FeasibilityTol = 1e-6;
-gurobi.IntFeasTol = 1e-5;
-gurobi.MarkowitzTol = 0.0078125;
-gurobi.MIPGap = 1e-4;
-gurobi.MIPGapAbs = 1e-10;
-gurobi.OptimalityTol = 1e-6;
-gurobi.PSDTol = 1e-6;
-gurobi.InfUnbdInfo = 0;
-gurobi.NormAdjust = -1;
-gurobi.ObjScale = 0;
-gurobi.PerturbValue = 0.0002;
-gurobi.Quad = -1;
-gurobi.ScaleFlag = -1;
-gurobi.Sifting = -1;
-gurobi.SiftMethod = -1;
-gurobi.SimplexPricing = -1;
 gurobi.BarCorrectors = -1;
 gurobi.BarHomogeneous = -1;
+gurobi.BarIterLimit = 1000;
 gurobi.BarOrder = -1;
-gurobi.Crossover = -1;
-gurobi.CrossoverBasis = 0;
-gurobi.QCPDual = 0;
+gurobi.BarQCPConvTol = 1e-6;
+gurobi.BestBdStop = inf;
+gurobi.BestObjStop = -inf;
+gurobi.BQPCuts = -1;
 gurobi.BranchDir = 0;
+gurobi.CliqueCuts = -1;
 gurobi.ConcurrentJobs = 0;
 gurobi.ConcurrentMIP = 1;
+gurobi.CoverCuts =-1;
+gurobi.Crossover = -1;
+gurobi.CrossoverBasis = -1;
+gurobi.CutAggPasses = -1;
+gurobi.Cutoff = inf;
+gurobi.CutPasses = -1;
+gurobi.Cuts = -1;
 gurobi.DegenMoves = -1;
 gurobi.Disconnected = -1;
+gurobi.DisplayInterval = 5;
 gurobi.DistributedMIPJobs = 0;
+gurobi.DualReductions = 1;
+gurobi.FeasibilityTol = 1e-6;
+gurobi.FeasRelaxBigM = 1e6;
+gurobi.FlowCoverCuts = -1;
+gurobi.FlowPathCuts = -1;
+gurobi.FuncMaxVal = 1e6;
+gurobi.FuncPieceError = 1e-3;
+gurobi.FuncPieceLength = 1e-2;
+gurobi.FuncPieceRatio = -1;
+gurobi.FuncPieces = 0;
+gurobi.GomoryPasses = -1;
+gurobi.GUBCoverCuts = -1;
 gurobi.Heuristics = 0.05;
+gurobi.IgnoreNames = 0;
+gurobi.IISMethod = -1;
+gurobi.ImpliedCuts = -1;
 gurobi.ImproveStartGap = 0;
 gurobi.ImproveStartNodes = inf;
 gurobi.ImproveStartTime = inf;
+gurobi.InfProofCuts = -1;
+gurobi.InfUnbdInfo = 0;
+gurobi.IntegralityFocus = 0;
+gurobi.IntFeasTol = 1e-5;
+gurobi.IterationLimit = inf;
+gurobi.JSONSolDetail = 0;
 gurobi.LazyConstraints = 0;
-gurobi.MinRelNodes	 = -1;
+gurobi.LiftProjectCuts = -1;
+gurobi.LogFile = '';
+gurobi.LogToConsole = 1;
+gurobi.MarkowitzTol = 0.0078125;
+gurobi.MemLimit = inf;
+gurobi.Method = -1;
+gurobi.MinRelNodes = -1;
 gurobi.MIPFocus	 = 0;
+gurobi.MIPGap = 1e-4;
+gurobi.MIPGapAbs = 1e-10;
+gurobi.MIPSepCuts = -1;
 gurobi.MIQCPMethod = -1;	
-gurobi.NodefileDir	 = '';
+gurobi.MIRCuts = -1;
+gurobi.ModKCuts = -1;
+gurobi.MultiObjMethod = -1;
+gurobi.MultiObjPre = -1;
+gurobi.NetworkAlg = -1;
+gurobi.NetworkCuts = -1;
+gurobi.NLPHeur = 1;
+gurobi.NodefileDir = '';
 gurobi.NodefileStart = inf;
+gurobi.NodeLimit = inf;
 gurobi.NodeMethod = -1;
 gurobi.NonConvex = -1;
+gurobi.NoRelHeurTime = 0;
+gurobi.NoRelHeurWork = 0;
+gurobi.NormAdjust = -1;
+gurobi.NumericFocus = 0;
+gurobi.OBBT = -1;
+gurobi.ObjNumber = 0;
+gurobi.ObjScale = 0;
+gurobi.OptimalityTol = 1e-6;
+gurobi.OutputFlag = 1;
 gurobi.PartitionPlace = 15;
-gurobi.PumpPasses = -1;
-gurobi.RINS = -1;
-gurobi.SolFiles = '';
-gurobi.SolutionNumber = 0;
-gurobi.StartNodeLimit = -1;
-gurobi.StartNumber = 0;
-gurobi.SubMIPNodes = 500;
-gurobi.Symmetry = -1;
-gurobi.VarBranch = -1;
-gurobi.ZeroObjNodes = -1;
-gurobi.AggFill = -1;
-gurobi.Aggregate = 1;
-gurobi.DualReductions = 1;
+gurobi.PerturbValue = 0.0002;
+gurobi.PoolGap = inf;
+gurobi.PoolGapAbs = inf;
+gurobi.PoolSearchMode = 0;
+gurobi.PoolSolutions = 10;
 gurobi.PreCrush = 0;
 gurobi.PreDepRow = -1;
 gurobi.PreDual = -1;
@@ -780,92 +832,84 @@ gurobi.PrePasses = -1;
 gurobi.PreQLinearize = -1;
 gurobi.Presolve = -1;
 gurobi.PreSOS1BigM = -1;
-gurobi.PreSOS2BigM = 0;
+gurobi.PreSOS1Encoding = -1;
+gurobi.PreSOS2BigM = -1;
+gurobi.PreSOS2Encoding = -1;
 gurobi.PreSparsify = -1;
-gurobi.TuneCriterion = -1;
-gurobi.TuneJobs	 = 0;
-gurobi.TuneOutput = 2;	
-gurobi.TuneResults = -1;
-gurobi.TuneTimeLimit = -1;
-gurobi.TuneTrials = 3;
-gurobi.PoolGap = inf;
-gurobi.PoolSearchMode = 0;
-gurobi.PoolSolutions = 10;
-gurobi.BQPCuts = -1;
-gurobi.Cuts = -1;
-gurobi.CliqueCuts = -1;
-gurobi.CoverCuts =-1;
-gurobi.CutAggPasses = -1;
-gurobi.CutPasses = -1;
-gurobi.FlowCoverCuts = -1;
-gurobi.FlowPathCuts = -1;
-gurobi.GomoryPasses = -1;
-gurobi.GUBCoverCuts = -1;
-gurobi.ImpliedCuts = -1;
-gurobi.InfProofCuts = -1;
-gurobi.MIPSepCuts = -1;
-gurobi.MIRCuts = -1;
-gurobi.ModKCuts = -1;
-gurobi.NetworkCuts = -1;
 gurobi.ProjImpliedCuts = -1;
+gurobi.PSDCuts = -1;
+gurobi.PSDTol = 1e-6;
+gurobi.PumpPasses = -1;
+gurobi.QCPDual = 0;
+gurobi.Quad = -1;
+gurobi.Record = 0;
+gurobi.RelaxLiftCuts = -1;
+gurobi.ResultFile = '';
+gurobi.RINS = -1;
 gurobi.RelaxLiftCuts = -1;
 gurobi.RLTCuts = -1;
-gurobi.StrongCGCuts = -1;
-gurobi.SubMIPCuts = -1;
-gurobi.ZeroHalfCuts = -1;
-gurobi.WorkerPassword = '';
-gurobi.WorkerPool = '';
-gurobi.CloudAccessID = '';
-gurobi.CloudHost = '';
-gurobi.CloudSecretKey = '';
-gurobi.CloudPool = '';
-gurobi.ComputeServer = '';
-gurobi.ServerPassword = '';
-gurobi.ServerTimeout = 60;
-gurobi.CSPriority = 0;
-gurobi.CSQueueTimeout = -1;
-gurobi.CSRouter = '';
-gurobi.CSGroup = '';
-gurobi.CSTLSInsecure = 0;
-gurobi.CSIdleTimeout = -1;
-gurobi.JobID = '';
-gurobi.CSAPIAccessID = '';
-gurobi.CSAPISecret = '';
-gurobi.CSAppName = '';
-gurobi.CSAuthToken = '';
-gurobi.CSBatchMode = 0;
-gurobi.CSClientLog = 0;
-gurobi.CSManager = '';
-% gurobi.UserName = '';
-gurobi.ServerPassword = '';
-gurobi.TokenServer = '';
-gurobi.TSPort = 41954;
-gurobi.DisplayInterval = 5;
-gurobi.FeasRelaxBigM = 1e6;
-gurobi.FuncPieceError = 1e-3;
-gurobi.FuncPieceLength = 1e-2;
-gurobi.FuncPieceRatio = -1;
-gurobi.FuncPieces = 0;
-gurobi.FuncMaxVal = 1e6;
-gurobi.IgnoreNames = 0;
-gurobi.IISMethod = -1;
-gurobi.JSONSolDetail = 0;
-gurobi.LogFile = '';
-gurobi.LogToConsole = 1;
-gurobi.Method = -1;
-gurobi.MultiObjMethod = -1;
-gurobi.MultiObjPre = -1;
-gurobi.NumericFocus = 0;
-gurobi.ObjNumber = 0;
-gurobi.OutputFlag = 1;
-gurobi.Record = 0;
-gurobi.ResultFile = '';
+gurobi.ScaleFlag = -1;
 gurobi.ScenarioNumber = 0;
 gurobi.Seed = 0;
+gurobi.Sifting = -1;
+gurobi.SiftMethod = -1;
+gurobi.SimplexPricing = -1;
+gurobi.SoftMemLimit = inf;
+gurobi.SolutionLimit = inf;
+gurobi.SolutionTarget = -1;
+gurobi.SolFiles = '';
+gurobi.SolutionNumber = 0;
+gurobi.StartNodeLimit = -1;
+gurobi.StartNumber = 0;
+gurobi.StrongCGCuts = -1;
+gurobi.SubMIPCuts = -1;
+gurobi.SubMIPNodes = 500;
+gurobi.Symmetry = -1;
 gurobi.Threads = 0;
+gurobi.TimeLimit = inf;
+gurobi.TuneBaseSettings = '';
+gurobi.TuneCleanup = 0;
+gurobi.TuneCriterion = -1;
+gurobi.TuneJobs	 = 0;
+gurobi.TuneMetric = -1;
+gurobi.TuneOutput = 2;	
+gurobi.TuneResults = -1;
+gurobi.TuneTargetMIPGap = 0;
+gurobi.TuneTargetTime = 0.005;
+gurobi.TuneTimeLimit = -1;
+gurobi.TuneTrials = 0;
 gurobi.UpdateMode = 1;
-gurobi.NoRelHeurWork = 0;
-gurobi.NoRelHeurTime = 0;
+gurobi.VarBranch = -1;
+gurobi.ZeroHalfCuts = -1;
+gurobi.ZeroObjNodes = -1;
+% gurobi.WorkerPassword = '';
+% gurobi.WorkerPool = '';
+% gurobi.CloudAccessID = '';
+% gurobi.CloudHost = '';
+% gurobi.CloudSecretKey = '';
+% gurobi.CloudPool = '';
+% gurobi.ComputeServer = '';
+% gurobi.ServerPassword = '';
+% gurobi.ServerTimeout = 60;
+% gurobi.CSPriority = 0;
+% gurobi.CSQueueTimeout = -1;
+% gurobi.CSRouter = '';
+% gurobi.CSGroup = '';
+% gurobi.CSTLSInsecure = 0;
+% gurobi.CSIdleTimeout = -1;
+% gurobi.JobID = '';
+% gurobi.CSAPIAccessID = '';
+% gurobi.CSAPISecret = '';
+% gurobi.CSAppName = '';
+% gurobi.CSAuthToken = '';
+% gurobi.CSBatchMode = 0;
+% gurobi.CSClientLog = 0;
+% gurobi.CSManager = '';
+% gurobi.UserName = '';
+% gurobi.ServerPassword = '';
+% gurobi.TokenServer = '';
+% gurobi.TSPort = 41954;
+
 
 function intlinprog = setup_intlinprog_options
 try
@@ -879,16 +923,7 @@ end
 
 function kktqp = setup_kktqp_options
 kktqp.solver = '';
-kktqp.maxtime = '';
-
-function kypd = setup_kypd_options
-kypd.solver = '';
-kypd.lyapunovsolver = 'schur';
-kypd.reduce = 0;
-kypd.transform = 0;
-kypd.rho = 1;
-kypd.tol = 1e-8;
-kypd.lowrank = 0;
+kktqp.maxtime = 3600;
 
 function lmilab = setup_lmilab_options
 lmilab.reltol = 1e-3;
@@ -918,12 +953,6 @@ logdetppa.switch_alt_newton_tol = 1e-2;
 
 function lpsolve = setup_lpsolve_options
 lpsolve.scalemode = 0;
-
-function nag = setup_nag_options
-nag.featol = sqrt(eps);
-nag.itmax = 500;
-nag.bigbnd = 1e10;
-nag.orthog = 0;
 
 function penbmi = setup_penbmi_options
 penbmi.DEF = 1;
@@ -1192,13 +1221,6 @@ catch
     nomad =[];
 end
 
-function ooqp = setup_ooqp_options
-try
-    ooqp = ooqpset;
-catch
-    ooqp = [];
-end
-
 function xpress = setup_xpress_options
 try
     xpress = xprsoptimset;
@@ -1290,15 +1312,23 @@ catch
 end
 
 function scs = setup_scs_options
-scs.alpha = 1.5;
-scs.rho_x = 1e-3;
-scs.max_iters = 2500;
-scs.eps = 1e-3;
-scs.normalize = 1;
-scs.scale = 5;
-scs.cg_rate = 2;
-scs.eliminateequalities = 0;
-scs.gpu = false;
+    scs.normalize = 1;
+    scs.scale = 0.1;
+    scs.adaptive_scale = 1;
+    scs.rho_x = 1e-6;
+    scs.max_iters = 100000;
+    scs.eps_abs = 1e-4;
+    scs.eps_rel = 1e-4;
+    scs.eps_infeas = 1e-7;
+    scs.alpha = 1.5;
+    scs.time_limit_secs = 0;
+    scs.acceleration_lookback = 10;
+    scs.acceleration_interval = 10;
+    scs.write_data_filename = "";
+    scs.log_csv_filename = "";
+    scs.eliminateequalities = 0;
+    scs.gpu = false;
+
 
 function dsdp = setup_dsdp_options
 try

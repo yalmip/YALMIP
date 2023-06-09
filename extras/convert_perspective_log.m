@@ -120,7 +120,7 @@ else
     L = min([x1 x2 x3 x4]);
 end
 
-function [Ax,Ay,b] = nplog_convexhull(xL,xU);
+function [Ax,Ay,b,K] = nplog_convexhull(xL,xU);
 
 x1 = [xL(1);xL(2)];
 x2 = [xU(1);xL(2)];
@@ -140,4 +140,4 @@ df3 = nplog_derivative(x3);
 df4 = nplog_derivative(x4);
 df5 = nplog_derivative(x5);
 
-[Ax,Ay,b] = convexhullConvex2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
+[Ax,Ay,b,K] = convexhullConvex2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);

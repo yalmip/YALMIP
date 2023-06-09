@@ -1,17 +1,5 @@
 function assign(X,value,ls)
-%ASSIGN Assigns a numerical value to an sdpvar
-%
-% ASSIGN(X,value)   Tries to set the free variables in X so that
-%                   double(X)=value. Notice that other variables
-%                   sharing the same free variables will be affected.
-%                   If the assignment is infeasible, an error message
-%                   will be issued.
-%
-% ASSIGN(X,value,1) Least square assignment.
-%
-% After assigning values to decision variables, these can be communicated
-% to the solver as an initial guess by turning on the option 'usex0' in the
-% options structure sent to optimize.
+%Obsolete, see WARMSTART
 
 if nargin<3
     ls = 0;
@@ -35,6 +23,11 @@ end
 
 if isempty(value)
     return
+end
+
+if min(size(X))==1 && min(size(value))==1 && (length(size(X))==2) && (length(size(value))==2)
+    X = reshape(X,[],1);
+    value = reshape(value,[],1);
 end
 
 if ~isequal(size(X),size(value))

@@ -10,6 +10,8 @@ function varargout = chebyball(F)
 %
 % If only one output is requested, only the symbolic constraint is returned
 % C = chebyball(F)
+%
+% See also VERTEX, BOUNDINGBOX, POLYTOPE
 
 switch nargout
     case 0

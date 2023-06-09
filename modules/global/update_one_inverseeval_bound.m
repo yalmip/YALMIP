@@ -1,4 +1,4 @@
-function p = update_one_inverseeval_bound(p,i);
+function p = update_one_inverseeval_bound(p,i)
 
 arg = p.evalMap{i}.variableIndex;
 xL = p.lb(arg);

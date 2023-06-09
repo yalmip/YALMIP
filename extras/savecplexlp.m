@@ -77,7 +77,7 @@ for i = 1:length(b)
 end
 for i = 1:length(beq)
     rowtext = lptext(-Aeq(i,:));
-    rowtext = [rowtext(1:end-2) '== ' sprintf('%0.20g',full(-beq(i)))];    
+    rowtext = [rowtext(1:end-2) '= ' sprintf('%0.20g',full(-beq(i)))];    
     fprintf(fid,[' eq%i: ' strrep(rowtext,'+ -','-') ''],i);
     fprintf(fid,'\r\n');
 end

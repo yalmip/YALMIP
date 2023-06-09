@@ -14,21 +14,10 @@ tempF = model.F_struc;
 tempK = model.K;
 tempx0 = model.x0;
 model = yalmip2nonlinearsolver(model);
-% % Try to propagate initial values now that nonlinear evaluation logic is
-% % set up. Do this if some of the intials are nan
-if any(isnan(model.x0)) & ~all(isnan(model.x0))        
-    [~,~,xevaledout] = fmincon_fun(model.x0,model);
-    startNan = nnz(isnan(xevaledout));
-    goon = 1;
-    while goon
-        temp = propagatex0(xevaledout,tempF,tempK);
-        model.x0 = temp(model.linearindicies);
-        [~,~,xevaledout] = fmincon_fun(model.x0,model);
-        goon =  nnz(isnan(xevaledout)) < startNan;
-        startNan = nnz(isnan(xevaledout));
-    end     
-end
-model.x0(isnan(model.x0))=0;
+
+%% Try to propagate initial values now that nonlinear evaluation logic is
+%% set up. Do this if some of the intials are nan
+model = propagateInitial(model,tempF,tempK,tempx0);
 
 % Figure out which variables are artificially introduced to normalize
 % arguments in callback operators to simplify chain rules etc. We can do
@@ -51,27 +40,56 @@ model.options.knitro.JacobPattern = jacobiansparsityfromnonlinear(model,0);
 % If quadratic objective and no nonlinear constraints, we can supply an
 % Hessian of the Lagrangian
 usedinObjective = find(model.c | any(model.Q,2));
-if ~any(model.variabletype(usedinObjective)) & any(model.Q)
-    if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
-        H = model.Q(:,model.linearindicies);
-        H = H(model.linearindicies,:);
-        model.options.knitro.Hessian = 'user-supplied';
-        model.options.knitro.HessPattern = sparse(H | H);
-        model.options.knitro.HessFcn = @(x,l) 2*H;
+if ~any(model.variabletype(usedinObjective)) & any(any(model.Q))
+    if ~any(model.K.q) && ~any(model.K.e) && ~any(model.K.p) && ~any(model.K.s)
+        if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
+            H = model.Q(:,model.linearindicies);
+            H = H(model.linearindicies,:);
+            model.options.knitro.Hessian = 'user-supplied';
+            model.options.knitro.HessPattern = sparse(H | H);
+            model.options.knitro.HessFcn = @(x,l) 2*H;
+        end
     end
 end
 
 global latest_xevaled
 global latest_x_xevaled
+global latest_x_g
+global latest_x_f
+global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+latest_x_g = [];
+latest_x_f = [];
+sdpLayer.nullVectors = cell(length(model.K.s),1);
+sdpLayer.eigenVectors = cell(length(model.K.s),1);
+sdpLayer.oldGradient = cell(length(model.K.s),1);
+sdpLayer.reordering  = cell(length(model.K.s),1);
+sdpLayer.n  = inf;
+
+if sdpLayer.n > max(model.K.s)
+    sdpLayer.n  = inf;
+end
+if ~isinf(sdpLayer.n)
+    % Prune jacobian sparsity
+    J = model.options.knitro.JacobPattern(1:end-sum(model.K.s),:);
+    Jsdp = model.options.knitro.JacobPattern(end-sum(model.K.s)+1:end,:);
+    top = 1;
+    for i = 1:length(model.K.s)
+        J = [J;Jsdp(top:top + min(model.K.s(i),sdpLayer.n)-1,:)];
+        top = top + model.K.s(i);
+    end
+    model.options.knitro.JacobPattern = J;
+end
 
 showprogress('Calling KNITRO',model.options.showprogress);
 
-% FMINCON callbacks can be used, except that we must ensure the model is
-% sent to the callbacks also (KNITRO only sends x)
-funcs.objective = @(x)fmincon_fun_liftlayer(x,model);
-funcs.constraints = @(x)fmincon_con_liftlayer(x,model);
+% FMINCON callbacks can be used, except that we 
+% must ensure the model is sent to the callbacks also 
+% KNITRO also calls twice, so we compute everything in first
+% and then save stuff
+funcs.constraints = @(x)knitro_callback_g(x,model);
+funcs.objective = @(x)knitro_callback_f(x,model);
 
 switch model.options.verbose
     case 0
@@ -125,13 +143,13 @@ D_struc = [];
 % Check, currently not exhaustive...
 problem = 0;
 switch exitflag
-    case 0
+    case {0,-101}
         problem = 0;
     case {-200,-204,-205,-515}
         problem = 1;
     case {-101,-300}
         problem = 2;
-    case {-400,-401}
+    case {-202,-400,-401,-410}
         problem = 3;
     otherwise
         problem = 11;
@@ -157,4 +175,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'KNITRO',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);

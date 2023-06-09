@@ -1,4 +1,4 @@
-function output = callfmincongp(interfacedata)
+function output = callipoptgp(interfacedata)
 
 % Retrieve needed data
 options = interfacedata.options;
@@ -11,6 +11,14 @@ extended_variables = interfacedata.extended_variables;
 ub      = interfacedata.ub;
 lb      = interfacedata.lb;
 mt      = interfacedata.monomtable;
+
+options = [];
+try
+    options.ipopt = optiRemoveDefaults(interfacedata.options.ipopt,ipoptset());
+catch
+    options.ipopt = options.ipopt;
+end
+options.ipopt.print_level = 2+interfacedata.options.verbose;
 
 % *********************************
 % What type of variables do we have
@@ -31,161 +39,137 @@ lbtemp(linear_variables(fixed)) = -inf;
 fixed_in_bound = [];
 fixed_bound=[];
 if ~isempty(fixed)
-    if 0
-        % Remove variables
-        fixfactors = prod(repmat(ub(linear_variables(fixed(:)))',size(prob.A,1),1).^prob.A(:,fixed),2);
-        prob.A(:,fixed) = [];
-        prob.b = (prob.b) .* fixfactors;
-        for j = 1:max(prob.map)
-            in_this = find(prob.map == j);
-            if ~isempty(in_this)
-                constants = find(~any(prob.A(in_this,:),2));
-                if ~isempty(constants)
-                    prob.b(in_this) = prob.b(in_this)./(1 - sum(prob.b(in_this(constants))));
-                end
-            end
-        end
-        fixed_in_bound = linear_variables(fixed);
-        fixed_bound = ub(linear_variables(fixed));
-        linear_variables(fixed) = [];
-        em = find(~any(prob.A,2));
-        prob.A(em,:) = [];
-        prob.b(em,:) = [];
-        nn = max(prob.map);
-        prob.map(em,:) = [];
-        length(unique(prob.map)) - (nn + 1)
-        1;
-    else
-        prob.G = [prob.G;-sparse(1:length(fixed),fixed,1,length(fixed),length(linear_variables))];
-        prob.h = [prob.h;lb(linear_variables(fixed))];
-    end
+    prob.G = [prob.G;-sparse(1:length(fixed),fixed,1,length(fixed),length(linear_variables))];
+    prob.h = [prob.h;lb(linear_variables(fixed))];
 end
 
-%something failed, perhaps a QP
-if problem & isempty(sigmonial_variables)
-    % This is an LP or QP!
+%something failed
+if problem
     % Go to standard fmincon
-    if options.verbose
-        disp('Conversion to geometric program failed. Trying general non-convex model in fmincon');
+    if interfacedata.options.verbose
+        disp('Conversion to geometric program failed. Trying general non-convex model in ipopt');
         disp(' ');
     end
     interfacedata.solver.tag = strrep(interfacedata.solver.tag,'-geometric','');
-    output = callipoptmex(interfacedata);
+    output = callipopt(interfacedata);
     return
 end
 
-if problem == 0
- 
-    if isempty(x0)
-        x0 = zeros(length(linear_variables),1);
-    else
-        x0 = x0(linear_variables);
-    end
-
-    % Fake logarithm (extend linearly for small values)
-    ind = find(x0<1e-2);
-    x0(ind) = exp(log(1e-2)+(x0(ind)-1e-2)/1e-2);
-    x0 = log(x0);
-
-    % Clean up the bounds (from branch and bound)
-    % Note, these bounds are in the
-    % logarithmic variables.
-    if ~isempty(lb)
-        lb = lb(linear_variables);
-        ind = find(lb<1e-2);
-        lb(ind) = exp(log(1e-2)+(lb(ind)-1e-2)/1e-2);
-        lb = log(lb+sqrt(eps));
-    end
-    if ~isempty(ub)
-        ub = ub(linear_variables);
-        ind = find(ub<1e-2);
-        ub(ind) = exp(log(1e-2)+(ub(ind)-1e-2)/1e-2);
-        ub = log(ub+sqrt(eps));
-    end
-
-    if options.savedebug
-        ops = options.fmincon;
-        save ipoptgpdebug prob x0 ops lb ub
-    end
-    
-    prob = precalcgpstruct(prob);
- 
-    Fupp = [repmat(0,size(prob.G,1)+max(prob.map),1);];
-    Flow = [repmat(-inf,max(prob.map),1);repmat(0,size(prob.G,1),1)];
-
-    jac_c_constant = 'no';
-    jac_d_constant = 'no';
-
-    fields = fieldnames(options.ipopt);
-    values = struct2cell(options.ipopt);
-    ops = cell(2*length(fields),1);
-    for i = 1:length(fields)
-        ops{2*i-1} = fields{i};
-        ops{2*i} = values{i};
-    end
-    ops{end+1} = 'print_level';
-    ops{end+1} = 3*options.verbose;
-    
-    % These are needed to avoid recomputation due to ipopts double call to get
-    % f and df, and g and dg (not fully done yet in geometric version)
-    global latest_x_f
-    global latest_x_g
-    global latest_df
-    global latest_f
-    global latest_G
-    global latest_g
-    latest_G= [];
-    latest_g = [];
-    latest_x_f = [];
-    latest_x_g = [];
-
-    solvertime = tic;
-    [xout,lambda,iters] = ipopt(x0,lb,ub,Flow,Fupp,...
-        @ipoptgp_callback_f,@ipoptgp_callback_df,@ipoptgp_callback_g,@ipoptgp_callback_dg,'',...
-        prob,'',[],...
-        'jac_c_constant',jac_c_constant,'jac_d_constant',jac_d_constant,ops{:});
-    ssolvertime = toc(solvertime);
-
-    x = zeros(length(c),1);
-    x(linear_variables) = exp(xout);
-    x(fixed_in_bound) = fixed_bound;
-
-    % No flag supplied!
-    problem = 0;
-
-    % Internal format for duals, not supported yet
-    D_struc = [];
-
+if isempty(x0)
+    x0 = zeros(length(linear_variables),1);
 else
-    x = [];
-    solvertime = 0;
+    x0 = x0(linear_variables);
 end
 
-% Internal format for duals (currently not supported in GP)
+% Fake logarithm (extend linearly for small values)
+ind = find(x0<1e-2);
+x0(ind) = exp(log(1e-2)+(x0(ind)-1e-2)/1e-2);
+x0 = log(x0);
+
+% Clean up the bounds (from branch and bound)
+% Note, these bounds are in the
+% logarithmic variables.
+if ~isempty(lb)
+    lb = lb(linear_variables);
+    ind = find(lb<1e-2);
+    lb(ind) = exp(log(1e-2)+(lb(ind)-1e-2)/1e-2);
+    lb = log(lb+sqrt(eps));
+end
+if ~isempty(ub)
+    ub = ub(linear_variables);
+    ind = find(ub<1e-2);
+    ub(ind) = exp(log(1e-2)+(ub(ind)-1e-2)/1e-2);
+    ub = log(ub+sqrt(eps));
+end
+
+if interfacedata.options.savedebug
+    ops = options.ipopt;
+    save ipoptgpdebug prob x0 ops lb ub
+end
+
+prob = precalcgpstruct(prob);
+
+Fupp = [repmat(0,size(prob.G,1)+max(prob.map),1);];
+Flow = [repmat(-inf,max(prob.map),1);repmat(0,size(prob.G,1),1)];
+
+% These are needed to avoid recomputation due to ipopts double call to get
+% f and df, and g and dg (not fully done yet in geometric version)
+global latest_x_f
+global latest_x_g
+global latest_df
+global latest_f
+global latest_G
+global latest_g
+latest_G = [];
+latest_g = [];
+latest_x_f = [];
+latest_x_g = [];
+
+funcs.objective = @(x)ipoptgp_callback_f(x,prob);
+funcs.gradient = @(x)ipoptgp_callback_df(x,prob);
+if ~isempty(Fupp)
+    funcs.constraints = @(x)ipoptgp_callback_g(x,prob);
+    funcs.jacobian  = @(x)ipoptgp_callback_dg(x,prob);
+end
+
+options.lb = lb(:)';
+options.ub = ub(:)';
+if ~isempty(Fupp)
+    options.cl = Flow;
+    options.cu = Fupp;
+end
+
+if ~isempty(Fupp)
+    Z = double([(prob.B~=0)*(prob.A~=0);prob.G] | [prob.B*prob.A;prob.G]);
+    Z = sparse(Z);
+    funcs.jacobianstructure = @() Z;
+end
+
+solvertime = tic;
+[xout,info] = ipopt(x0,funcs,options);
+solvertime = toc(solvertime);
+
+x = zeros(length(c),1);
+x(linear_variables) = exp(xout);
+x(fixed_in_bound) = fixed_bound;
+
+switch info.status
+    case {0,1}
+        problem = 0;
+    case {2}
+        problem = 1;
+    case {-1}
+        problem = 3;
+    case {3,4,-2,-3}
+        problem = 4;
+    case {-11,-12,-13}
+        problem = 7;
+    case {-10,-100,-101,-102,-199}
+        problem = 11;
+    otherwise
+        problem = -1;
+end
+
+% Internal format for duals, not supported yet
 D_struc = [];
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
-if options.savesolverinput
+if interfacedata.options.savesolverinput
     solverinput.A = [];
     solverinput.b = [];
     solverinput.Aeq = [];
     solverinput.beq = [];
-    solverinput.options = options.fmincon;
+    solverinput.options = options;
 else
     solverinput = [];
 end
 
 % Save all data from the solver?
-if options.savesolveroutput
-    solveroutput.x = x;
-    solveroutput.fmin = fmin;
-    solveroutput.flag = flag;
-    solveroutput.output=output;
-    solveroutput.lambda=lambda;
+if interfacedata.options.savesolveroutput
+    solveroutput.xout = xout;    
+    solveroutput.info = info;
 else
     solveroutput = [];
 end
 
-% Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+% Standard interface
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

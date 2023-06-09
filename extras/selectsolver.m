@@ -69,6 +69,37 @@ if length(options.solver)>0 & isempty(strfind(options.solver,'*'))
 end
 
 % ************************************************
+% Prune based on forced global solver
+% ************************************************
+if  ~forced_choice && options.forceglobal
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)
+        keep(i) = solvers(i).global;                         
+    end    
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'global optimization');
+end
+% Prune based on avoiding global solver (in BMIBNB we don't want that as
+% upper solver)
+if isfield(options,'avoidGlobalSolver')
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)
+        keep(i) = ~solvers(i).global;                         
+    end    
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'global optimization');
+end    
+
+% ************************************************
+% Prune based on objective
+% ************************************************
+if ProblemClass.objective.sigmonial & ~forced_choice & length(solvers)>0
+    keep = ones(length(solvers),1);
+    for i = 1:length(solvers)
+        keep(i) = solvers(i).objective.sigmonial;                         
+    end    
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial terms in objective');
+end   
+
+% ************************************************
 % Prune based on objective
 % ************************************************
 if ProblemClass.objective.sigmonial & ~forced_choice & length(solvers)>0
@@ -230,13 +261,13 @@ if ProblemClass.constraint.inequalities.rotatedsecondordercone.nonlinear & ~forc
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'nonlinear rotated second-order cone constraints');
 end
-if ProblemClass.constraint.inequalities.powercone & ~forced_choice  & length(solvers)>0
-    keep = ones(length(solvers),1);
-    for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.powercone;
-    end
-    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'power cone constraints');
-end  
+% if ProblemClass.constraint.inequalities.powercone && ~forced_choice  && length(solvers)>0
+%     keep = ones(length(solvers),1);
+%     for i = 1:length(solvers)                      
+%         keep(i) = solvers(i).powercone;
+%     end
+%     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'power cone constraints');
+% end  
 
 % ******************************************************
 % Prune based on element-wise inequality constraints
@@ -421,6 +452,16 @@ if ~forced_choice  & length(solvers)>0
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'exponential cones');
 end
+% ******************************************************
+% Power cone representable 
+% ******************************************************
+keep = ones(length(solvers),1);
+if ~forced_choice  & length(solvers)>0
+    for i = 1:length(solvers)
+        keep(i) = (ProblemClass.constraint.inequalities.powercone <= solvers(i).powercone) || (ProblemClass.constraint.inequalities.powercone <= solvers(i).evaluation);
+    end
+    [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'exponential cones');
+end
 
 % ******************************************************
 % General functions (sin, cos,...)
@@ -514,7 +555,14 @@ if ~isempty(solver)
             solver.constraint.inequalities.elementwise.quadratic.convex = 1;
             solver.constraint.inequalities.elementwise.quadratic.nonconvex = 1;
             solver.constraint.inequalities.elementwise.polynomial = 1;
-            solver.constraint.inequalities.elementwise.sigmonial = 1;            
+            solver.constraint.inequalities.elementwise.sigmonial = 1;
+            solver.constraint.inequalities.secondordercone.linear = 1;
+            solver.constraint.inequalities.semidefinite.linear = 1;
+            solver.constraint.inequalities.semidefinite.quadratic = 1;
+            solver.constraint.inequalities.semidefinite.polynomial = 1;
+            solver.constraint.inequalities.semidefinite.nonlinear = 1;
+            solver.exponentialcone = 1;
+            solver.powercone = 1;
             solver.dual = 1;
             solver.evaluation = 1;
         end

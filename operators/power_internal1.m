@@ -81,9 +81,9 @@ end
 f = base.^x;
 df = log(base)*f;
 
-function [Ax, Ay, b] = convexhull_power(xL,xU,base)
+function [Ax, Ay, b, K] = convexhull_power(xL,xU,base)
 fL = base^xL;
 fU = base^xU;
 dfL = log(base)*fL;
 dfU = log(base)*fU;
-[Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
+[Ax,Ay,b,K] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
