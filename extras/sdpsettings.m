@@ -1256,7 +1256,7 @@ end
 
 function knitro = setup_knitro_options
 try
-    knitro = optimset;
+    knitro = knitro_options;
     knitro.optionsfile = '';
 catch
     knitro.optionsfile = '';

@@ -67,16 +67,21 @@ sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 sdpLayer.n  = inf;
 
-if sdpLayer.n > max(model.K.s)
-    sdpLayer.n  = inf;
+if isequal(model.options.slayer.m,inf)
+    sdpLayer.n  = model.K.s;
+elseif isequal(model.options.slayer.m,-1)
+    sdpLayer.n  = min(length(model.c),model.K.s);
+else
+    sdpLayer.n = repmat(model.options.slayer.m,1,length(model.K.s));
 end
-if ~isinf(sdpLayer.n)
+
+if ~isinf(model.options.slayer.m)
     % Prune jacobian sparsity
     J = model.options.knitro.JacobPattern(1:end-sum(model.K.s),:);
     Jsdp = model.options.knitro.JacobPattern(end-sum(model.K.s)+1:end,:);
     top = 1;
     for i = 1:length(model.K.s)
-        J = [J;Jsdp(top:top + min(model.K.s(i),sdpLayer.n)-1,:)];
+        J = [J;Jsdp(top:top + min(model.K.s(i),sdpLayer.n(i))-1,:)];
         top = top + model.K.s(i);
     end
     model.options.knitro.JacobPattern = J;
@@ -125,7 +130,11 @@ model.xType(model.integer_variables) = 1;
 model.cineqFnType = repmat(2,length(model.bnonlinineq)+nnz(model.K.q),1);
 
 solvertime = tic;
-[xout,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro,model.options.knitro.optionsfile);
+if strcmpi(model.solver.tag,'knitro-legacy')
+    [xout,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro,model.options.knitro.optionsfile);
+else
+    [xout,fval,exitflag,output,lambda] = knitro_minlp(funcs.objective,model.x0,model.xType, model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.extendedFeatures,model.options.knitro);
+end
 solvertime = toc(solvertime);
 
 if ~isempty(xout) && ~isempty(model.lift);
