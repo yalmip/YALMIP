@@ -108,7 +108,9 @@ else
     model.A = sparse(A);
 end
 model.obj   = full(c);
-model.Q     = interfacedata.Q;
+if any(interfacedata.Q)
+    model.Q     = interfacedata.Q;
+end
 model.lb    = LB;
 model.ub    = UB;
 model.vtype = VARTYPE;
@@ -124,7 +126,9 @@ if K.q(1) > 0
     model.lb    = [model.lb; -inf(nconevar, 1)];
     model.ub    = [model.ub; +inf(nconevar, 1)];
     model.vtype = [model.vtype; char(ones(nconevar, 1) * 67)];
-    model.Q(length(model.obj),length(model.obj)) =0;
+    if any(interfacedata.Q)
+        model.Q(length(model.obj),length(model.obj)) =0;
+    end
 
     model.lhs(1 + K.f + K.l:end) = model.rhs(1 + K.f + K.l:end);
 
