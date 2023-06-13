@@ -117,6 +117,10 @@ model.vtype = VARTYPE;
 model.lhs   = LHS;
 model.rhs   = RHS;
 
+if ~isempty(x0)
+    model.start = x0;
+end
+
 if K.q(1) > 0
     nconevar = sum(K.q);
     top = size(F_struc, 2) - 1;
@@ -128,6 +132,9 @@ if K.q(1) > 0
     model.vtype = [model.vtype; char(ones(nconevar, 1) * 67)];
     if any(interfacedata.Q)
         model.Q(length(model.obj),length(model.obj)) =0;
+    end
+    if ~isempty(model.start)
+        model.start(length(model.obj))=0;
     end
 
     model.lhs(1 + K.f + K.l:end) = model.rhs(1 + K.f + K.l:end);
@@ -156,9 +163,5 @@ if interfacedata.options.verbose == 0
     model.params.Logging = 0;
 else
     model.params.Logging = 1;
-end
-
-if ~isempty(x0)
-    model.start = x0;
 end
 

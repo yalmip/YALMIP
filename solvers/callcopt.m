@@ -35,6 +35,7 @@ if isfield(solution, 'rowmap')
         dims = model.conedata.K;
 
         D_struc = y(1:dims.f + dims.l + sum(dims.q) + sum(dims.r));
+        
         if isfield(solution, 'psdx')
             top = 1 + dims.f + dims.l + sum(dims.q) + sum(dims.r);
             for i = 1:length(dims.s)
@@ -110,6 +111,4 @@ else
     solveroutput = [];
 end
 
-infostr = yalmiperror(problem, interfacedata.solver.tag);
-
-output  = createOutputStructure(x, D_struc, [], problem, infostr, solverinput, solveroutput, solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

@@ -114,41 +114,6 @@ i = 1;
 % ****************************
 
 solver(i) = qpsolver;
-solver(i).tag = 'COPT';
-solver(i).version = 'COPTMEX';
-solver(i).checkfor = {'copt_solve'};
-solver(i).call = 'callcopt';
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-solver(i).constraint.sos1 = 1;
-solver(i).constraint.sos2 = 1;
-solver(i).supportsinitial = 1;
-solver(i).supportsinitialNAN = 1;
-i = i + 1;
-
-solver(i) = qpsolver;
-solver(i).tag     = 'COPT';
-solver(i).version = 'COPTMEX';
-solver(i).checkfor= {'copt_solve'};
-solver(i).call    = 'callcopt';
-solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
-solver(i).constraint.inequalities.secondordercone.linear = 1;
-solver(i).constraint.integer = 1;
-solver(i).constraint.binary = 1;
-solver(i).constraint.semivar = 1;
-solver(i).constraint.sos2 = 1;
-solver(i).supportsinitial = 1;
-solver(i).supportsinitialNAN = 1;
-i = i+1;
-
-solver(i) = sdpsolver;
-solver(i).tag = 'COPT';
-solver(i).version = 'COPTMEX';
-solver(i).checkfor = {'copt_solve'};
-solver(i).call = 'callcopt';
-i = i + 1;
-
-solver(i) = qpsolver;
 solver(i).tag     = 'GUROBI';
 solver(i).version = '';
 solver(i).checkfor= {'gurobi'};
@@ -606,6 +571,28 @@ solver(i).constraint.equalities.polynomial = 1;
 solver(i).constraint.equalities.sigmonial = 1;
 solver(i).constraint.equalities.multiterm  = 0;
 i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'COPT';
+solver(i).version = 'COPTMEX';
+solver(i).checkfor= {'copt_solve'};
+solver(i).call    = 'callcopt';
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+solver(i).constraint.semivar = 1;
+solver(i).constraint.sos2 = 1;
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
+i = i+1;
+
+solver(i) = sdpsolver;
+solver(i).tag = 'COPT';
+solver(i).version = 'COPTMEX';
+solver(i).checkfor = {'copt_solve'};
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).call = 'callcopt';
+i = i + 1;
 
 solver(i) = lpsolver;
 solver(i).tag     = 'SCIP';
