@@ -151,6 +151,8 @@ end
 % CONVERT
 % ******************************************
 switch lower(solver.tag)
+    case 'copt'
+        model = yalmip2copt(interfacedata);
 
     case 'cplex'
 

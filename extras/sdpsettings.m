@@ -146,6 +146,9 @@ else
     options.clp = setup_clp_options;
     Names = appendOptionNames(Names,options.clp,'clp');
 
+    options.copt = setup_copt_options;
+    Names = appendOptionNames(Names,options.copt,'copt');
+
     options.cplex = setup_cplex_options;
     Names = appendOptionNames(Names,options.cplex,'cplex');
 
@@ -280,7 +283,8 @@ else
 
     options.xpress = setup_xpress_options;
     Names = appendOptionNames(Names,options.xpress,'xpress');
-      
+    
+    options.default.copt = options.copt;
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
     options.default.mosek = options.mosek;   
@@ -652,6 +656,49 @@ catch
     clp.primalpivot = 1;
     clp.dualpivot = 1;
 end
+
+function copt = setup_copt_options
+copt.TimeLimit         = 1e20;
+copt.MatrixTol         = 1e-10;
+copt.FeasTol           = 1e-6;
+copt.DualTol           = 1e-6;
+copt.IntTol            = 1e-6;
+copt.RelGap            = 1e-4;
+copt.Logging           = 1;
+copt.LogToConsole      = 1;
+copt.Presolve          = -1;
+copt.Scaling           = -1;
+copt.Dualize           = -1;
+copt.LpMethod          = -1;
+copt.ReqFarkasRay      = 0;
+copt.DualPrice         = -1;
+copt.DualPerturb       = -1;
+copt.CutLevel          = -1;
+copt.RootCutLevel      = -1;
+copt.TreeCutLevel      = -1;
+copt.RootCutRounds     = -1;
+copt.NodeCutRounds     = -1;
+copt.HeurLevel         = -1;
+copt.RoundingHeurLevel = -1;
+copt.DivingHeurLevel   = -1;
+copt.SubMipHeurLevel   = -1;
+copt.StrongBranching   = -1;
+copt.ConflictAnalysis  = -1;
+copt.NodeLimit         = -1;
+copt.MipTasks          = -1;
+copt.BarHomogeneous    = -1;
+copt.BarOrder          = -1;
+copt.BarIterLimit      = 500;
+copt.Threads           = -1;
+copt.BarThreads        = -1;
+copt.SimplexThreads    = -1;
+copt.CrossoverThreads  = -1;
+copt.Crossover         = 1;
+copt.SDPMethod         = -1;
+copt.IISMethod         = -1;
+copt.FeasRelaxMode     = 0;
+copt.MipStartMode      = -1;
+copt.MipStartNodeLimit = -1;
 
 function cplex = setup_cplex_options
 try
