@@ -1,5 +1,15 @@
 function options = pruneOptions(options)
 
+if isempty(options.copt)
+    return
+elseif isequal(options.copt,options.default.copt)
+    options.copt = [];
+else
+    [same,opsDiff] = isequalInf(options.copt,options.default.copt);
+    if ~same
+        options.copt = opsDiff;
+    end
+end
 % Mosek is easy to check since there are no inf parameters...
 if isempty(options.mosek)
     return

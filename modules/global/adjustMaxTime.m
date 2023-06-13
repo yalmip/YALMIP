@@ -5,6 +5,7 @@ remaining = maxtime-elapsed;
 budgetForSolver = max(1,ceil(remaining));
 
 % TODO: Support more solvers
+p.options.copt.TimeLimit = budgetForSolver;
 p.options.cplex.timelimit = budgetForSolver;
 p.options.mosek.MSK_DPAR_MIO_MAX_TIME = budgetForSolver;
 p.options.gurobi.TimeLimit = budgetForSolver;
