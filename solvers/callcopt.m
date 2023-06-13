@@ -1,7 +1,7 @@
 function output = callcopt(interfacedata)
 
 options = interfacedata.options;
-problem = yalmip2copt(interfacedata);
+model = yalmip2copt(interfacedata);
 
 if interfacedata.options.savedebug
     save coptdebug problem
@@ -9,7 +9,7 @@ end
 
 if options.showprogress; showprogress('Call COPT', options.showprogress); end
 solvertime = tic;
-solution   = copt_solve(problem, problem.params);
+solution   = copt_solve(model, model.params);
 solvertime = toc(solvertime);
 
 if isfield(solution, 'rowmap')
@@ -32,7 +32,7 @@ if isfield(solution, 'rowmap')
             y = solution.psdx;
         end
 
-        dims = problem.conedata.K;
+        dims = model.conedata.K;
 
         D_struc = y(1:dims.f + dims.l + sum(dims.q) + sum(dims.r));
         if isfield(solution, 'psdx')
@@ -81,25 +81,25 @@ end
 
 switch solution.status
     case 'optimal'
-        status = 0;
+        problem = 0;
     case 'infeasible'
-        status = 1;
+        problem = 1;
     case 'unbounded'
-        status = 2;
+        problem = 2;
     case {'timeout', 'nodelimit'}
-        status = 3;
+        problem = 3;
     case 'numerical'
-        status = 4;
+        problem = 4;
     case 'interrupted'
-        status = 16;
+        problem = 16;
     case 'unstarted'
-        status = -4;
+        problem = -4;
     otherwise
-        status = -1;
+        problem = -1;
 end
 
 if interfacedata.options.savesolverinput
-    solverinput.model = problem;
+    solverinput.model = model;
 else
     solverinput = [];
 end
@@ -110,6 +110,6 @@ else
     solveroutput = [];
 end
 
-infostr = yalmiperror(status, interfacedata.solver.tag);
+infostr = yalmiperror(problem, interfacedata.solver.tag);
 
-output  = createOutputStructure(x, D_struc, [], status, infostr, solverinput, solveroutput, solvertime);
+output  = createOutputStructure(x, D_struc, [], problem, infostr, solverinput, solveroutput, solvertime);

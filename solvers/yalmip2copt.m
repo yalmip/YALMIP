@@ -121,6 +121,7 @@ else
     model.A = sparse(A);
 end
 model.obj   = full(c);
+model.Q     = interfacedata.Q;
 model.lb    = LB;
 model.ub    = UB;
 model.vtype = VARTYPE;
@@ -158,8 +159,6 @@ if ~isempty(K.sos.type)
     end
 end
 
-interfacedata.options = pruneOptions(interfacedata.options);
-
 model.params = interfacedata.options.copt;
 if interfacedata.options.verbose == 0
     model.params.Logging = 0;
@@ -169,4 +168,9 @@ end
 
 if ~isempty(x0)
     model.start = x0;
+end
+
+n = length(model.obj);
+if size(model.Q,1) < n
+    model.Q(n,n)=0;
 end
