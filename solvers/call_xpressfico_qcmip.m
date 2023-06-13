@@ -18,18 +18,10 @@ if options.savedebug
 end
 
 solvertime = tic;
-if isempty(model.extra.integer_variables) & isempty(model.extra.binary_variables) & isempty(model.extra.semicont_variables) & isempty(model.sos)
-    if options.verbose
-        [x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);
-    else
-        evalc('[x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);');
-    end
+if isempty(model.extra.integer_variables) && isempty(model.extra.binary_variables) && isempty(model.extra.semicont_variables) && isempty(model.sos)
+    [x,fval,exitflag,output,lambda] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.lb,model.ub,model.ops);
 else
-    if options.verbose
-        [x,fval,exitflag,output] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);
-    else
-        evalc('[x,fval,exitflag,output] = xprsqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);        ');
-    end
+    [x,fval,exitflag,output] = xprsmiqcqp(model.H,model.f,model.A,model.Q,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);   
     lambda = [];
 end
 solvertime = toc(solvertime);

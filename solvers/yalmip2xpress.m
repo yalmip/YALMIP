@@ -69,11 +69,11 @@ ctype(binary_variables)  = 'B';
 ctype(setdiff(semicont_variables,integer_variables)) = 'S';
 ctype(intersect(semicont_variables,integer_variables)) = 'R';
 
-options.xpress = setupOptions(options);
+model.ops=options.xpress;  
 if options.verbose == 0
-    options.xpress.OUTPUTLOG = 0;
-    options.xpress.MIPLOG = 0;
-    options.xpress.LPLOG = 0;
+    model.ops.OUTPUTLOG = 0;
+    model.ops.MIPLOG = 0;
+    model.ops.LPLOG = 0;
 end
 
 sos = [];
@@ -114,25 +114,7 @@ model.ctype = ctype;
 model.rtype = rtype;
 model.clim = clim;
 model.sos = sos;
-model.ops = options.xpress;
 model.extra.semicont_variables = semicont_variables;
 model.extra.integer_variables = integer_variables;
 model.extra.binary_variables = binary_variables;
 model.extra.NegatedSemiVar = NegativeSemiVar;
-
-function ops = setupOptions(options);
-
-ops = options;
-if options.verbose == 0
-    ops.OUTPUTLOG = 0;
-    ops.MIPLOG = 0;
-    ops.LPLOG = 0;
-end
-
-% cNames = fieldnames(options.xpress);
-% for i = 1:length(cNames)
-%     s = getfield(options.xpress,cNames{i});
-%     if ~isempty(s)
-%         ops = setfield(ops,cNames{i},s);
-%     end
-% end

@@ -9,18 +9,11 @@ if options.savedebug
 end
 
 solvertime = tic;
-if isempty(model.extra.integer_variables) & isempty(model.extra.binary_variables) & isempty(model.extra.semicont_variables) & isempty(model.sos)
-    if options.verbose
-        [x,fval,exitflag,output,lambda] = xprslp(model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops.xpress);
-    else
-        evalc('[x,fval,exitflag,output,lambda] = xprslp(model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops.xpress);');
-    end
+if isempty(model.extra.integer_variables) && isempty(model.extra.binary_variables) && isempty(model.extra.semicont_variables) && isempty(model.sos)
+    [x,fval,exitflag,output,lambda] = xprslp(model.f,model.A,model.b,model.rtype,model.lb,model.ub,model.ops);
+    
 else
-    if options.verbose
-        [x,fval,exitflag,output] = xprsmip(model.f,model.A,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops.xpress);
-    else
-        evalc('[x,fval,exitflag,output] = xprsmip(model.f,model.A,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops.xpress);        ');
-    end
+    [x,fval,exitflag,output] = xprsmip(model.f,model.A,model.b,model.rtype,model.ctype,model.clim,model.sos,model.lb,model.ub,[],model.ops);
     lambda = [];
 end
 solvertime = toc(solvertime);

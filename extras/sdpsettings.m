@@ -292,6 +292,7 @@ else
     options.default.gurobi = options.gurobi;
     options.default.mosek = options.mosek;   
     options.default.osqp = options.osqp;   
+    options.default.xpress = options.xpress;   
 end
 
 names = lower(Names);
