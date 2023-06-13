@@ -133,7 +133,7 @@ if K.q(1) > 0
     if any(interfacedata.Q)
         model.Q(length(model.obj),length(model.obj)) =0;
     end
-    if ~isempty(model.start)
+    if ~isempty(x0)
         model.start(length(model.obj))=0;
     end
 
