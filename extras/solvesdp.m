@@ -141,6 +141,10 @@ else
     options = sdpsettings;
 end
 options.solver = lower(options.solver);
+if ~isfield(options,'forceglobal')
+    % User has loaded something old
+    options.forceglobal = 0;
+end
 
 % If user has logdet term, but no preference on solver, we try to hook up
 % with SDPT3 if possible.
