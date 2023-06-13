@@ -12,9 +12,6 @@ semicont_variables = interfacedata.semicont_variables;
 n                  = length(c);
 
 if ~isempty(K.s) && any(K.s)
-    if ~isempty(integer_variables) || ~isempty(binary_variables) || ~isempty(semicont_variables)
-        warning('WARNING: Unsupported problem types for COPT');
-    end
 
     if ~isempty(ub)
         [F_struc, K] = addStructureBounds(F_struc, K, ub, lb);
@@ -84,10 +81,6 @@ else
     UB = +inf(n, 1);
 end
 
-if ~isempty(semicont_variables)
-    warning('WARNING: Semi-continuous or semi-integer variables are not supported.');
-end
-
 if size(F_struc, 1) > 0
     A   = -F_struc(:, 2:end);
     RHS = full(F_struc(:, 1));
@@ -106,14 +99,8 @@ VARTYPE = char(ones(length(c), 1) * 67);
 if isempty(semicont_variables)
     VARTYPE(integer_variables) = 'I';
     VARTYPE(binary_variables)  = 'B';
-else
-    VARTYPE(setdiff(integer_variables, semicont_variables)) = 'I';
-    VARTYPE(binary_variables) = 'B';
-    VARTYPE(setdiff(semicont_variables, integer_variables)) = 'C';
-    VARTYPE(intersect(semicont_variables, integer_variables)) = 'I';
 end
 
-% model.objsen = 'min';
 model.objcon = full(interfacedata.f);
 if isempty(A)
     model.A = spalloc(0, length(c), 0);
@@ -137,6 +124,7 @@ if K.q(1) > 0
     model.lb    = [model.lb; -inf(nconevar, 1)];
     model.ub    = [model.ub; +inf(nconevar, 1)];
     model.vtype = [model.vtype; char(ones(nconevar, 1) * 67)];
+    model.Q(length(model.obj),length(model.obj)) =0;
 
     model.lhs(1 + K.f + K.l:end) = model.rhs(1 + K.f + K.l:end);
 
@@ -170,7 +158,3 @@ if ~isempty(x0)
     model.start = x0;
 end
 
-n = length(model.obj);
-if size(model.Q,1) < n
-    model.Q(n,n)=0;
-end
