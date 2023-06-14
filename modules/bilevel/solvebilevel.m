@@ -79,16 +79,9 @@ if isa(InnerObjective, 'double') || is(InnerObjective,'linear')
 elseif is(InnerObjective,'quadratic')
     % We have to be a bit careful about cases such as x'y. This is convex in
     % the inner problem, since x is constant there.
-    % [Q,c,f,dummy,nonquadratic] = vecquaddecomp(InnerObjective);
-    % Extract model for a fake quadratic model
-    % [InnerConstraints,failure] = expandmodel(InnerConstraints,InnerObjective)
-    %[Imodel,Iax1,Iax2,inner_p] = export(InnerConstraints,dummy'*diag(1+diag(Q{1}))*dummy+c{1}'*dummy,options,[],[],0);
-   % toptions = options;
-   % toptions.expandbilinear = 1;
     yy = recover(setdiff(depends(y),setdiff(depends(InnerObjective),depends(y))));
     [Imodel,Iax1,Iax2,inner_p] = export(InnerConstraints,yy'*yy+sum(recover(depends(InnerObjective))),options,[],[],0);
     [Q,c,f,dummy,nonquadratic] = vecquaddecomp(InnerObjective,recover(inner_p.used_variables));
-    %[Imodel,Iax1,Iax2,inner_p] = export(InnerConstraints,InnerObjective,options,[],[],0);
     % Now plug in the real quadratic function
     if ~isequal(getvariables(dummy),inner_p.used_variables)
         error('This quadratic form is not supported yet. Please make feature request')
@@ -117,8 +110,6 @@ if isstruct(Oax2)
    info = 2;
    return
 end
-% Export a joint model with KKT removed, to simplify some setup later
-% [Auxmodel,Auxax1,Auxax2,outerinner_p] = export([OuterConstraints,InnerConstraints],OuterObjective+pi*InnerObjective,options,[],[],0);
 
 if ~all(inner_p.variabletype==0) | ~isequal(inner_p.K.s,0) | ~isequal(inner_p.K.q,0)
     error('Only LPs or convex QPs allowed as inner problem');
@@ -204,7 +195,6 @@ nequalities   = inner_p.K.f;
 
 % Add dual related to inequalities in inner model to the model
 dual_var = length(all_variables)+1:length(all_variables)+ninequalities;
-%dual_var = length(inner_p.c)+1:length(inner_p.c)+ninequalities;
 
 % Add dual related to inequalities in inner model to the model
 eqdual_var = dual_var(end)+1:dual_var(end)+inner_p.K.f;
@@ -252,19 +242,12 @@ p.K.f = p.K.f + inner_p.K.f;
 p.K.l = p.K.l + inner_p.K.l;
 slack_index = p.K.f+1:+p.K.f+ninequalities;
 
-%p.lb = outerinner_p.lb;
-%p.ub = outerinner_p.ub;
 p.lb(dual_var) = 0;
 p.ub(dual_var) =  inf;
 p.lb(eqdual_var) = -inf;
 p.ub(eqdual_var) =  inf;
 p.x0 = [];
 
-
-%p.variabletype = outerinner_p.variabletype;
-%p.monomtable   = outerinner_p.monomtable;
-%p.evalMap = outerinner_p.evalMap;
-%p.evalVariables = outerinner_p.evalVariables;
 for i = 1:length(dual_var)
     p.monomtable(dual_var(i),dual_var(i))=1;
     p.variabletype(dual_var(i)) = 0;
@@ -274,17 +257,8 @@ for i = 1:length(eqdual_var)
     p.variabletype(eqdual_var(i)) = 0;
 end
 
-% xy = sdpvar(length(x_var)+length(y_var),1);
-% z = sdpvar(length(dual_var),1);
-% res = p.F_struc*[1;xy;z]
-% 
-% F_bilevel = [res(1:p.K.f) == 0,res(p.K.f+1:end)>0]
-% 
-
 % Enable outer problem to be nonconvex etc
 p = build_recursive_scheme(p);
-% Turned off, generates crash. Unit test in test_bilevel_1
-% p = compress_evaluation_scheme(p);
 
 p.lower = -inf;
 p.options.verbose = max([0 options.verbose-1]);
@@ -583,7 +557,7 @@ p = list{j};
 list = {list{1:j-1},list{j+1:end}};
 lower = min(l);
 
-function p = addzero(p,i);
+function p = addzero(p,i)
 
 p.K.f = p.K.f + 1;
 p.F_struc = [zeros(1,size(p.F_struc,2));p.F_struc];
@@ -613,9 +587,6 @@ if ~isempty(p.F_struc)
     p.F_struc(:,1+loc) = outer_p.F_struc(:,2:end);
 end
 
-% if ~isempty(p.binary_variables)
-% end
-
 p.Q = spalloc(length(all_variables),length(all_variables),nnz(outer_p.Q));
 p.Q(loc,loc) = outer_p.Q;
 
@@ -637,15 +608,6 @@ A1 =  Ab1(:,2:end);
 b2 = -Ab2(:,1);
 A2 = Ab2(:,2:end);
 
-% b1c = [0;-p.F_struc(:,1)];
-% b2c = [const(1);-p.F_struc(:,1)];
-% A1c = [-eyev(length(p.c),variable)';p.F_struc(:,2:end)];
-% A2c = [-const(2:end);p.F_struc(:,2:end)];
-%norm(b1-b1c)
-%norm(b2-b2c)
-%norm(A1-A1c,inf)
-%norm(A2-A2c,inf)
-
 alpha = sdpvar(length(xstar),1);
 beta = sdpvar(1);
 mu1 = sdpvar(length(b1),1);
@@ -653,11 +615,7 @@ mu2 = sdpvar(length(b2),1);
 
 Objective  = alpha'*xstar-beta;
 Constraint = [alpha' == mu1'*A1,alpha' == mu2'*A2,beta <= mu1'*b1, beta <= mu2'*b2,mu1(neq+1:end)>0,mu2(neq+1:end)>0];
-%Constraint = [alpha' == mu1'*A1,alpha' == mu2'*A2,beta == mu1'*b1, beta == mu2'*b2,mu1(neq+1:end)>0,mu2(neq+1:end)>0];
-%Constraint = [Constraint,-10<alpha<10,sum(mu1(neq+1:end))-sum(mu1(1:neq))<10,sum(mu2(neq+1:end))-sum(mu2(1:neq))<10];
-%Constraint = [Constraint,-1<alpha<1,mu1(1)+mu2(1) == 1];
 Constraint = [Constraint,-1<alpha<1,sum(mu1)+sum(mu2)==1];
-%Constraint = [Constraint,sum(mu1(neq+1:end))-sum(mu1(1:neq))<10,sum(mu2(neq+1:end))-sum(mu2(1:neq))<10];
 
 solvesdp(Constraint,Objective,sdpsettings('verbose',0));
 p.K.l = p.K.l + 1;
@@ -725,24 +683,8 @@ function feas = isfeasible(p,x)
 feas = checkfeasiblefast(p,x,1e-8);
 
 
-function p = detectdisjoint(p);
-
+function p = detectdisjoint(p)
 p.disjoints = [];
-% for i = 1:p.K.l
-%     row1 = p.F_struc(i+p.K.f,:);
-%     for j = 2:1:p.K.l
-%         row2 = p.F_struc(j+p.K.f,:);
-%         
-%         if all(abs(row1)-abs(row2)==0)
-%             % candidate
-%             if nnz(row1 == -row2 & row1~=0)==1
-%                 p.disjoints = [p.disjoints;i j];
-%             end
-%         end
-%     end
-% end
-% 
-
 
 function FRP = fixvariables(FRP0,x_var,xi,y_var);
 % Copy current model                        
@@ -759,19 +701,7 @@ B = FRP.F_struc(:,1+x_var);
 FRP.F_struc(:,1+x_var)=[];
 FRP.F_struc(:,1) = FRP.F_struc(:,1) + B*xi;
 
-%                         FRP.F_struc = [xi -sparse(1:length(x_var),x_var,ones(length(x_var),1),length(x_var),length(x_var)+length(y_var));FRP.F_struc];
-%                         FRP.K.f = FRP.K.f + length(xi);
-%                         FRP.options.verbose = 0;
-%                         QQ = FRP0.Q;
-%                         cc = FRP0.c;
-%                         FRP.c(y_var) = FRP.c(y_var) + 2*FRP.Q(x_var,y_var)'*xi;
-%                         FRP.Q(x_var,y_var)=0;
-%                         FRP.Q(y_var,x_var)=0;
-%                         FRP.Q(x_var,x_var)=0;
-
-
-
-function [merged_mt,merged_vt] = mergemonoms(inner_p,outer_p);
+function [merged_mt,merged_vt] = mergemonoms(inner_p,outer_p)
 
 if isequal(inner_p.used_variables,outer_p.used_variables)
     merged_mt = inner_p.monomtable;
