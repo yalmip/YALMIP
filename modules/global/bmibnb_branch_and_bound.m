@@ -969,9 +969,13 @@ p.shiftedQP = [];
 p.nonshiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
 
-p.canshift = zeros(1,length(p.c));
-for j = find(c)
-    p.canshift(j) = nnz(p.F_struc(:,1+j))==0;
+if isempty(p.F_struc)
+    p.canshift = ones(1,length(p.c));
+else   
+    p.canshift = zeros(1,length(p.c));
+    for j = find(c)
+        p.canshift(j) = nnz(p.F_struc(:,1+j))==0;
+    end
 end
 
 f = p.f;
