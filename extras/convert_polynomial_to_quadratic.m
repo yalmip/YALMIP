@@ -6,14 +6,29 @@ changed = 0;
 % Are there really any non-quadratic terms?
 already_done = 0;
 model.bilinearizations = [];
-while any(model.variabletype > 2)
+while any(model.variabletype > 2)% & any(model.variabletype >= 3 & (sum(model.monomtable|model.monomtable,2)==2)')
     % Bugger...
     changed = 1;
-
-    % Find a higher order term
-    polynomials = find(model.variabletype >= 3);
+    
     model = update_monomial_bounds(model,(already_done+1):size(model.monomtable,1));
     already_done = size(model.monomtable,1);
+
+    % We start with x^n*x^m terms
+    polynomials = find(model.variabletype >= 3 & (sum(model.monomtable|model.monomtable,2)==2)');
+    found = 0;
+    for q = 1:length(polynomials)
+        s = model.monomtable(polynomials(q),:);
+        if diff(nonzeros(s))==0
+            polynomials = polynomials(q);
+            found = 1;
+            break
+        end
+    end  
+    if ~found
+        % Find a higher order term then
+        polynomials = find(model.variabletype >= 3);  
+    end
+    
     % Start with the highest order monomial (the bilinearization is not
     % unique, but by starting here, we get a reasonable small
     % bilineared model
@@ -103,12 +118,39 @@ else
     powers_1(variables_2) = 0;
     powers_2(variables_1) = 0;
 end
-
-[model,index1] = findoraddlinearmonomial(model,powers_1);
-[model,index2] = findoraddlinearmonomial(model,powers_2);
-model.monomtable(polynomial,:) = 0;
-model.monomtable(polynomial,index1) = model.monomtable(polynomial,index1) + 1;
-model.monomtable(polynomial,index2) = model.monomtable(polynomial,index2) + 1;
+if nnz(powers_1)==1 && nnz(powers_2)==1 && nonzeros(powers_1) == nonzeros(powers_2)
+    % We have x^n*y^n. Instead of writing as (x^n)*(y^n)=u*v,u==x^n,v==y^n we intrduce
+    % (x*y)^n = u^n, u == x*y
+    n = nonzeros(powers_1);
+    powers_1_ = powers_1/n + powers_2/n;
+    [model,index1] = findoraddlinearmonomial(model,powers_1_);
+    model.monomtable(polynomial,:) = 0;
+    model.monomtable(polynomial,index1) = n;
+    if even(n)
+        % FIXME: Why is this placed here?
+        invbound = model.ub(polynomial)^(1/n);
+        model.lb(index1) = max(model.lb(index1),-invbound);
+        model.ub(index1) = min(model.ub(index1),invbound);
+    end    
+    if n > 2
+        model.variabletype(polynomial) = 3;
+    elseif n == 2
+        model.variabletype(polynomial) = 2;
+    else 
+        model.variabletype(polynomial) = 1;
+    end
+else
+    [model,index1] = findoraddlinearmonomial(model,powers_1);
+    [model,index2] = findoraddlinearmonomial(model,powers_2);
+    model.monomtable(polynomial,:) = 0;
+    model.monomtable(polynomial,index1) = model.monomtable(polynomial,index1) + 1;
+    model.monomtable(polynomial,index2) = model.monomtable(polynomial,index2) + 1;
+    if index1 == index2
+        model.variabletype(polynomial) = 2;
+    else
+        model.variabletype(polynomial) = 1;
+    end
+end
 if all(ismember(find(powers_1),model.binary_variables))
     model.binary_variables =  unique([model.binary_variables index1]);
     if nnz(powers_1) == 2 && sum(powers_1)==2
@@ -124,14 +166,8 @@ if all(ismember(find(powers_2),model.binary_variables))
     end    
 end
 
-if index1 == index2
-    model.variabletype(polynomial) = 2;
-else
-    model.variabletype(polynomial) = 1;
-end
 
-
-function [model,index] = findoraddmonomial(model,powers);
+function [model,index] = findoraddmonomial(model,powers)
 
 if length(powers) < size(model.monomtable,2)
     powers(size(model.monomtable,1)) = 0;

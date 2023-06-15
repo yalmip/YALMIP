@@ -331,7 +331,7 @@ p = convert_sigmonial_to_sdpfun(p);
 % *************************************************************************
 original_variables = find(p.variabletype == 0);
 [p_bilin,changed] = convert_polynomial_to_quadratic(p);
-if (p.solver.uppersolver.constraint.equalities.polynomial &  p.solver.uppersolver.objective.polynomial)
+if (p.solver.uppersolver.constraint.equalities.polynomial &&  p.solver.uppersolver.objective.polynomial)
     p_bilin.originalModel = p;
     p = p_bilin;
 else

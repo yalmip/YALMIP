@@ -27,7 +27,7 @@ options = p.options;
 p = fixOperatorProperties(p);
 
 % *************************************************************************
-% Try to perform a convexifying hift of the quadratic for the lower bound
+% Try to perform a convexifying shift of the quadratic for the lower bound
 % QP solver
 % *************************************************************************
 p = addShiftedQP(p);
@@ -963,10 +963,17 @@ function p = addShiftedQP(p)
 % 0: Do nothing (i.e. will be relaxed as LP in lower bound)
 % 1: Add term to diagonal by eigenalue shift
 % 2: Solve SDP to compute diagonal convexifying shift
-% 3:
+
+
 p.shiftedQP = [];
 p.nonshiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
+
+p.canshift = zeros(1,length(p.c));
+for j = find(c)
+    p.canshift(j) = nnz(p.F_struc(:,1+j))==0;
+end
+
 f = p.f;
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;

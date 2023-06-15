@@ -97,8 +97,8 @@ else
         p_cut.f = p.shiftedQP.f;          
     elseif p.solver.lowersolver.objective.quadratic.convex 
         % If we have a QP solver, we can at least try to strengthen the
-        % relaxation by using the positive diagonal terms
-        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);        
+        % relaxation by using the positive diagonal terms      
+        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3,p.canshift);        
     end
     
     fixed = p_cut.lb >= p_cut.ub;
