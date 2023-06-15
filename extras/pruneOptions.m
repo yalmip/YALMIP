@@ -51,8 +51,16 @@ end
 
 function [same,d] = isequalInf(a,b)
 same = 1;
-anames = fieldnames(a);
-bnames = fieldnames(b);
+if ~isempty(a)
+    anames = fieldnames(a);
+else
+    anames = [];
+end
+if ~isempty(b)
+    bnames = fieldnames(b);
+else
+    bnames = [];
+end
 d = [];
 for i = 1:length(anames)
     e = getfield(a,anames{i});
