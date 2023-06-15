@@ -17,6 +17,10 @@ else
 end
 solvertime = toc(solvertime);
 
+if size(interfacedata.F_struc,2) < length(x)
+   x = x(1:length(interfacedata.c)); 
+end
+
 if ~isempty(lambda)
     D_struc = [lambda.lin];
 else
