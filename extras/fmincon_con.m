@@ -245,7 +245,7 @@ if any(model.K.e)
     for i = 1:model.K.e
         c1 = model.F_struc(top,2:end);
         c2 = model.F_struc(top+1,2:end);
-        c3 = model.F_struc(top+1,2:end);
+        c3 = model.F_struc(top+2,2:end);
         x = model.F_struc(top:top+2,:)*[1;z];
         x1 = x(1);x2 = x(2);x3 = x(3);
         % x3 - x2exp(x1/x2) >= 0
