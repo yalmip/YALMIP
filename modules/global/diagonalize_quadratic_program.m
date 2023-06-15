@@ -37,6 +37,9 @@ if isempty(p.F_struc)
     return
 end
 
+p.canshift = ones(1,length(p.c));
+pnew.canshift = ones(1,length(pnew.c));
+
 nonlinear = find(p.variabletype > 0);
 linear = find(p.variabletype == 0);
 if ~isempty(p.F_struc)
