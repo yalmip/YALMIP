@@ -221,8 +221,12 @@ for i = 1:length(test)
         else
             sols{i} = cleanversion(info.yalmipmodel.solver.tag);
         end                    
-        pass(i) = 1;
-        results{i}='Success';
+        pass(i) = info.problem == 0;
+        if pass(i)
+            results{i}='Success';
+        else
+            results{i}='Failed'; 
+        end
     catch
         pass(i) = 0;
         results{i} = 'Failed';
@@ -301,15 +305,11 @@ disp('See <a href="https://yalmip.github.io/allsolvers">guide on interfaced solv
 
 
 
-function info = test_core(ops)
-if nargout > 0
-    % Fake
-    info.yalmipmodel.solver.tag = '';
-    return
-end
-% Test the sdpvar implementation
-pass = 1;
-sol.info = yalmiperror(0,'YALMIP');
+function sol = test_core(ops)
+
+% Fake
+sol.yalmipmodel.solver.tag = '';
+sol.problem = 0;
 try
     x = sdpvar(2,2);
     x = sdpvar(2,2,'symmetric');
@@ -390,106 +390,20 @@ try
     x = sdpvar(5,1);
     res = A*x-b;
     assert(nnz(clean([res res]'*[res res]-res'*res,1e-8))==0)
-    assert(isreal(clean(res'*res,1e-8)))
-    
-    assert(isreal(x*x'))
-    
-    result = 'N/A';
+    assert(isreal(clean(res'*res,1e-8)))    
+    assert(isreal(x*x'))    
 catch
-    sol.info = 'Problems';
-    result = 'N/A';
-    pass = 0;
+    sol.problem = 9;
+    sol.info = 'Problems';        
 end
 
-
 function sol = test_semidefinite_programming(ops)
-%%
 t = sdpvar(1,1);
 Y = sdpvar(2,2);
 F = [Y<=t*eye(2), Y>=[1 0.2;0.2 1]];
 sol = optimize(F,t,ops);
-if nargout > 0
-    return
-end
-assert(ismember(sol.problem,[0 3 4 5]) && abs(value(t)-1.2)<=1e-4);
-%%
-A = [1 0;0.4 1];
-B = [0.4;0.08];
-L = [1.9034 1.1501];
-Y = sdpvar(2,2);
-F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
-F = F+[L*Y*L'<=1];
-sol = optimize(F,-logdet(Y),ops);
-Y = double(Y);
-assert(ismember(sol.problem,[0 3 4 5]) && norm(value(Y)-[2.9957 -4.1514;-4.1514 6.2918])<=1e-3)
-%
-x = sdpvar(1,1);
-y = sdpvar(1,1);
-z = sdpvar(1,1);
-X = [[x 1 2];[1 y 3];[2 3 100]];
-F = [X>=0,x>=10,y>=0,z>=0, x<=1000, y<=1000,z<=1000];
-sol = optimize(F,x+y+z,ops);
-x   = double(x);
-y   = double(y);
-z   = double(z);
-assert(ismember(sol.problem,[0 3 4 5]) && norm(value([x;y;z])-[10;0.1787;0])<=1e-3)
-%%
-x = sdpvar(1,1);
-z = sdpvar(1,1);
-X = [[x 2];[2 z]];
-F = [X>=0, x>=0,z>=0,x<=10,z<=10];
-sol = optimize(F,x+z,ops);
-assert(~sol.problem)
-%%
-% Upper bound on maxcut of a n-cycle
-n = 15;
-Q = zeros(n);
-for i = 1:n-1
-    Q(i,i+1) = 1;Q(i+1,i)  = 1;
-end
-Q(n,1) = 1;Q(1,n) = 1;
-Q = 0.25*(diag(Q*ones(n,1))-Q);
-t = sdpvar(1,1);
-tau = sdpvar(n,1);
-F = t>=0;
-M = [[-Q zeros(n,1)];[zeros(1,n) t]];
-for i = 1:n
-    ei = zeros(n,1);ei(i,1) = 1;
-    M = M+tau(i)*[ei*ei' zeros(n,1);zeros(1,n) -1];
-end
-F = F+[M>=0];
-sol = optimize(F,t,ops);
-t   = double(t);
-tau = double(t);
-pass = ismember(sol.problem,[0 3 4 5]);
-assert(sol.problem == 0 && abs(value(t)-14.8361)<=1e-3)
-%%
-n = 5;
-P = magic(n);
-Z = sdpvar(n,n,'toeplitz');
-t = sdpvar(n,n,'full');
-F = (P(:)-Z(:)<=t(:))+(P(:)-Z(:)>=-t(:));
-sol = optimize(F,sum(sum(t)),ops);
-assert(~sol.problem)
-assert(abs(value(sum(sum(t)))-156)<=1e-3)
-%%
-n = 5;
-P = magic(n);
-Z = sdpvar(n,n,'toeplitz');
-t = sdpvar(n,n,'full');
-resid = P-Z;resid = resid(:);
-sol = optimize([],resid'*resid,ops);
-assert(~sol.problem)
-assert(abs(value(resid'*resid)-1300)<=1e-2)
-%%
-A = magic(6);
-A = A*A';
-P = sdpvar(6,6);
-sol = optimize((A'*P+P*A <= -P) + (P>=eye(6)),trace(P),ops);
-assert(sol.problem==1)
 
 function sol = test_linear_programming(ops)
-%%
 N = 5;
 A = [2 -1;1 0];
 B = [1;0];
@@ -504,16 +418,6 @@ F = F+(Y(N)>=-1);
 F = F+(Y(N)<=1);
 F = F+([Y;U]<=t)+([Y;U]>=-t);
 sol = optimize(F,sum(t),ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(sum(t))-12.66666)<=1e-3)
-%%
-t = sdpvar(1,1);
-F = [t>=0, t<=-10];
-sol = optimize(F,t,ops);
-assert(sol.problem~=0)
 
 function sol = test_socp_programming(ops)
 x = sdpvar(2,1);
@@ -522,41 +426,6 @@ b = [1;1];
 F = norm(x-a)<=1;
 F = F+[norm(x-b) <= 1];
 sol = optimize(F,sum(x),ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(sum(x))-0.58578)<=1e-3)
-z = sdpvar(3,1);
-x = sdpvar(3,1);
-y = sdpvar(3,1);
-a = [0;1;0];
-b = [1;1;0];
-F = norm(x-a)<=1;
-F = F+[norm(x-b)<=1];
-F = F+[x(1)==0.35];
-F = F+[z(2:3)==[5;6]];
-sol = optimize(F,sum(x),ops);
-assert(~sol.problem)
-x = double(x);
-y = double(y);
-z = double(z);
-assert(abs(sum(x)-0.27592)<=1e-3);
-z = sdpvar(2,1);
-x = sdpvar(2,1);
-y = sdpvar(3,1);
-a = [0;1];
-b = [1;1];
-F = norm(x-a)<=1;
-F = F+[norm(x-b)<=1];
-F = F+[x(1)==0.35];
-F = F+[z(1,end)>=5];
-F = F+[z(2,end)<=100];
-F = F+[z(2)==5];
-sol = optimize(F,sum(x),ops);
-assert(~sol.problem)
-x = double(x);
-assert(abs(sum(x)-0.59)<=1e-3)
 
 function sol = test_misdp_programming(ops)
 x = intvar(4,1);
@@ -564,87 +433,44 @@ e = magic(4)*x-1;
 sdpvar t
 obj = t;
 sol = optimize([t e';e eye(4)]>=0,obj,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-4)<=1e-3)
 
 function sol = test_misocp_programming(ops)
 x = intvar(4,1);
 obj = norm(magic(4)*x-1,2);
 sol = optimize([-5 <= x <= 5],obj,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-2)<=1e-3)
 
 function sol = test_miquadratic_programming(ops)
 x = intvar(4,1);
-obj = norm(magic(4)*x-1,2)^2
+obj = norm(magic(4)*x-1,2)^2;
 sol = optimize([-5 <= x <= 5],obj,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-4)<=1e-3)
 
 function sol = test_milinear_programming(ops)
 x = intvar(4,1);
-obj = norm(magic(4)*x-1,1)
+obj = norm(magic(4)*x-1,1);
 sol = optimize([-5 <= x <= 5],obj,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-2)<=1e-3)
 
 function sol = test_quadratic_programming(ops)
 x = sdpvar(10,1);
 sol = optimize([sum(x)==2, -1 <= x <= 1],x'*x,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-.4)<=1e-3)
 
 function sol = test_nonconvex_quadratic_programming(ops)
 x = sdpvar(10,1);
 ops.forceglobal = 1;
 sol = optimize([sum(x)==2, -1 <= x <= 1],-x'*x,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-10)<=1e-3)
 
 function sol = test_nonconvex_global_programming(ops)
 x = sdpvar(3,1);
 ops.forceglobal = 1;
 sol = optimize([sum(x.^3)==2, -1 <= x <= 1],-x'*x,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(obj)-2.28)<=1e-1)
-
 
 function sol = test_nonlinear_semidefinite_programming(ops)
-%%
 A = [-1 2;-3 -4];
 P = sdpvar(2,2);
 alpha = sdpvar(1,1);
 F = (P>=eye(2))+(A'*P+P*A <= -2*alpha*P)+(alpha >= 0);
 sol = optimize([F,P(:) <= 100],-alpha,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem);
-assert(abs(value(alpha)-2.5)<= 1e-3)
 
 function sol = test_geometric_programming(ops)
-%%
 t1 = sdpvar(1,1);
 t2 = sdpvar(1,1);
 t3 = sdpvar(1,1);
@@ -653,27 +479,14 @@ obj = (40*t1^-1*t2^-0.5*t3^-1)+(20*t1*t3)+(40*t1*t2*t3);
 F = ((1/3)*t1^-2*t2^-2+(4/3)*t2^0.5*t3^-1 <= 1);
 F = [F, t>=0];
 sol = optimize(F,obj,ops);
-if nargout > 0
-    return
-end
-assert(~sol.problem)
-assert(abs(value(D)-133.1371)<=1e-3)
 
 function sol = test_nonlinear_programming(ops)
 sdpvar x y
-sol = optimize(x^2 + x^4 + exp(x) <= 1, x^2+y^2,ops)
-if nargout > 0
-    return
-end
-assert(sol.problem == 0);
+sol = optimize(x^2 + x^4 + exp(x) <= 1, x^2+y^2,ops);
 
 function sol = test_exponential_cone_programming(ops)
 sdpvar x y z
-sol = optimize([expcone([x;2;z]),x==1],z,ops)
-if nargout > 0
-    return
-end
-assert(sol.problem == 0);
+sol = optimize([expcone([x;2;z]),x==1],z,ops);
 
 function html = addLink(x)
 
