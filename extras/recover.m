@@ -4,7 +4,7 @@ function varargout = recover(lmi_variables)
 if isempty(lmi_variables)
     varargout{1} = [];
 else
-    if isa(lmi_variables,'sdpvar') || isa(lmi_variables,'lmi') || isa(lmi_variables,'constraint')
+    if isa(lmi_variables,'ndsdpvar') || isa(lmi_variables,'sdpvar') || isa(lmi_variables,'lmi') || isa(lmi_variables,'constraint')
         varargout{1} = recover(depends(lmi_variables));
     else
         n = length(lmi_variables);
