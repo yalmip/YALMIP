@@ -103,7 +103,7 @@ switch errorcode
         if flag
             error_string = ['Either infeasible or unbounded ' solver ];
         else
-            error_string = ['Either infeasible or unbounded (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ];
+            error_string = ['Either infeasible or unbounded (<a href="yalmip.github.io/infeasibleorunbounded">learn to debug</a>) ' solver ];
         end
     case 13
         error_string = ['YALMIP cannot determine status in solver ' solver ];
@@ -113,7 +113,7 @@ switch errorcode
         if flag
             error_string = ['Infeasible or unbounded problem ' solver ];
         else
-            error_string = ['Infeasible or unbounded problem (<a href="yalmip.github.io/debuggingunbounded">learn to debug</a>) ' solver ];
+            error_string = ['Infeasible or unbounded problem (<a href="yalmip.github.io/infeasibleorunbounded">learn to debug</a>) ' solver ];
         end
     case 16
         error_string = ['User terminated ' solver ];
