@@ -1,6 +1,6 @@
 function p = presolve_strengthen_coefficients(p)
 
-if isempty(p.nonlinear) && p.feasible
+if p.feasible % && isempty(p.nonlinear)
     if p.K.f>0
         Aeq = -p.F_struc(1:p.K.f,2:end);
         beq = p.F_struc(1:p.K.f,1);
@@ -17,7 +17,7 @@ if isempty(p.nonlinear) && p.feasible
             p = presolve_infs(A,b,p);
         end        
         [p.lb,p.ub,redundant,pss] = tightenbounds(A,b,p.lb,p.ub,p.integer_variables,p.binary_variables,ones(length(p.lb),1));
-        if length(redundant)>0
+        if ~isempty(redundant)
             pss.AL0A(redundant,:)=[];
             pss.AG0A(redundant,:)=[];
             p.F_struc(p.K.f+redundant,:)=[];

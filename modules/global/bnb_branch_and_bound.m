@@ -70,6 +70,19 @@ p = detectAndAdd3x3SDPGUBGroups(p);
 % Extract more info from some combinatorial AND structure
 p = cross_binary_product_cardinality(p);
 
+pp=p;pp.Q=pp.Q*0;pp.F_struc = pp.F_struc(1:p.K.f+p.K.l,:);
+pp.K.s=0;p.K.e=0;
+pp.c=pp.c*0;pp.c(p.binary_variables)=1;
+op=feval(lowersolver,integer_relax(pp));
+p.binarycardinality.down = max(p.binarycardinality.down,ceil(op.Primal'*pp.c-1e-5));
+pp.c=pp.c*0;pp.c(p.binary_variables)=-1;
+op=feval(lowersolver,integer_relax(pp));
+p.binarycardinality.up = min(p.binarycardinality.up, floor(-op.Primal'*pp.c+1e-5));
+% e = unique(p.binaryProduct(:,2:3));
+% s = length(e)*(length(e)-1)/2-size(p.binaryProduct,1);
+% q = 17;
+% q + q*(q-1)/2 <= p.binarycardinality.up + s
+
 if p.options.bnb.verbose
     
     pc = p.problemclass;
@@ -1301,15 +1314,19 @@ if any(p.ub < p.lb)
 end
 
 function [p,poriginal] = propagate_binary_product_on_cut(p,poriginal,p_binarycut)
-if p.feasible
+if p.feasible && ~isempty(p.binaryProduct)
     for i = 1:p_binarycut.K.l
         row = p_binarycut.F_struc(i,:);
         if all(row(2:end) <= 0)
             % we have c - sum xi*(ai>0) >=0
             r = row(2:end);
-            if ~isempty(p.binaryProduct) && all(ismember(find(r),p.binaryProduct(:,2:3)))
+            e = p.binaryProduct(:,2:3);
+            e = unique(e);
+            if all(ismember(find(r),e))
                 r = sort(r(r<0),'descend');
                 n = max(find(row(1) + cumsum(r) >= 0));
+                % Not all of them where in knapsack?
+                n = n + length(setdiff(e,find(r)));
                 % All active variables in the model is
                 % contained in the z = xi*xj structures via x
                 if all(ismember(find(poriginal.ub == 1),p.binaryProduct))

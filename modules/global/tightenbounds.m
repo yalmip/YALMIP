@@ -98,7 +98,7 @@ if ~infeasible & (iter1 < 10)
         iter2 = iter2 + 1;
     end
     iter1 = iter1 + 1;
-    redundant = find(bi_up<=b-0.001);
+    redundant = find(bi_up<=b);
 else
     redundant=[];
 end
