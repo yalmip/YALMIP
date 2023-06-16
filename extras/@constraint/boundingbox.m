@@ -1,4 +1,4 @@
-function V = boundingbox(P)
+function varargout = boundingbox(F,ops,x,fun_eval)
 
 %BOUNDINGBOX Computes bounding box of a constraint
 %
