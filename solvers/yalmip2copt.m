@@ -53,8 +53,6 @@ if ~isempty(K.s) && any(K.s)
     conedata.objsen = 'max';
     model.conedata = conedata;
 
-    interfacedata.options = pruneOptions(interfacedata.options);
-
     model.params = interfacedata.options.copt;
     if interfacedata.options.verbose == 0
         model.params.Logging = 0;
