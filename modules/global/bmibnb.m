@@ -213,10 +213,12 @@ p = propagate_bounds_from_evaluations(p);
 p = update_monomial_bounds(p);
 p = propagate_bounds_from_convex_quadratic_ball(p);
 
-p = presolve_remove_repeatedrows(p);
-p = presolve_remove_dominatedinequalities(p);
-p = presolve_remove_equalitydominateinequality(p);
-p = presolve_strengthen_coefficients(p);
+if isempty(p.KCut.f==0) && isempty(p.KCut.l==0)
+    p = presolve_remove_repeatedrows(p);
+    p = presolve_remove_dominatedinequalities(p);
+    p = presolve_remove_equalitydominateinequality(p);
+    p = presolve_strengthen_coefficients(p);
+end
 
 % *************************************************************************
 % For quadratic nonconvex programming over linear constraints, we
