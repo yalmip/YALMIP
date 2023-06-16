@@ -964,26 +964,16 @@ function p = addShiftedQP(p)
 % 1: Add term to diagonal by eigenalue shift
 % 2: Solve SDP to compute diagonal convexifying shift
 
-
 p.shiftedQP = [];
 p.nonshiftedQP = [];
 [Q,c] = compileQuadratic(p.c,p,0);
-
-if isempty(p.F_struc)
-    p.canshift = ones(1,length(p.c));
-else   
-    p.canshift = zeros(1,length(p.c));
-    for j = find(c)
-        p.canshift(j) = nnz(p.F_struc(:,1+j))==0;
-    end
-end
 
 f = p.f;
 p.nonshiftedQP.Q = Q;
 p.nonshiftedQP.c = c;
 p.nonshiftedQP.f = f;
-if isempty(p.evalMap) && ~any(p.variabletype > 2) && ~p.diagonalized
-    if nnz(Q)>0 && p.options.bmibnb.lowerpsdfix
+if p.options.bmibnb.lowerpsdfix && isempty(p.evalMap) && ~any(p.variabletype > 2) && ~p.diagonalized
+    if nnz(Q)>0
         r = find(any(Q,2));
         e = eig(full(Q(r,r)));
         if min(e) >= 0 && ~(p.options.bmibnb.lowerpsdfix == 1)

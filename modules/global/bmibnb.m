@@ -70,6 +70,11 @@ if strcmpi(p.solver.lowersolver.tag,'mosek')
     end
 end
 
+% QP strengthening only done on originally quadratic models
+if any(p.variabletype>2) || ~isempty(p.evalMap)
+    p.options.bmibnb.lowerpsdfix = 0;
+end
+
 timing.total = tic;
 timing.uppersolve = 0;
 timing.lowersolve = 0;
@@ -370,7 +375,9 @@ p = compile_nonlinear_table(p);
 % *************************************************************************
 p.branch_variables = decide_branch_variables(p);
 p.branch_variables = setdiff(p.branch_variables,p.evalVariables);
-p.branch_variables = intersect(p.branch_variables,original_variables);
+if p.options.bmibnb.branchinoriginal
+    p.branch_variables = intersect(p.branch_variables,original_variables);
+end
 
 if p.diagonalized
     if p.solver.lowersolver.objective.quadratic.convex

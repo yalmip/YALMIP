@@ -19,7 +19,7 @@ if all(p.variabletype == 0)
 end
 
 % Any polynomial terms or simple linear by some reason
-if any(p.variabletype > 2) & ~all(p.variabletype == 0) | p.options.bmibnb.diagonalize==0
+if any(p.variabletype > 2) && ~all(p.variabletype == 0) || p.options.bmibnb.diagonalize==0
     return
 end
 
@@ -27,7 +27,7 @@ if ~isempty(p.evalVariables)
     return
 end
 
-if ~isempty(p.binary_variables) | ~isempty(p.integer_variables)
+if ~isempty(p.binary_variables) || ~isempty(p.integer_variables)
     return
 end
 
@@ -36,9 +36,6 @@ if isempty(p.F_struc)
     % form as we can exploit concavity
     return
 end
-
-p.canshift = ones(1,length(p.c));
-pnew.canshift = ones(1,length(pnew.c));
 
 nonlinear = find(p.variabletype > 0);
 linear = find(p.variabletype == 0);
