@@ -70,14 +70,14 @@ p = detectAndAdd3x3SDPGUBGroups(p);
 % Extract more info from some combinatorial AND structure
 p = cross_binary_product_cardinality(p);
 
-pp=p;pp.Q=pp.Q*0;pp.F_struc = pp.F_struc(1:p.K.f+p.K.l,:);
-pp.K.s=0;p.K.e=0;
-pp.c=pp.c*0;pp.c(p.binary_variables)=1;
-op=feval(lowersolver,integer_relax(pp));
-p.binarycardinality.down = max(p.binarycardinality.down,ceil(op.Primal'*pp.c-1e-5));
-pp.c=pp.c*0;pp.c(p.binary_variables)=-1;
-op=feval(lowersolver,integer_relax(pp));
-p.binarycardinality.up = min(p.binarycardinality.up, floor(-op.Primal'*pp.c+1e-5));
+% pp=p;pp.Q=pp.Q*0;pp.F_struc = pp.F_struc(1:p.K.f+p.K.l,:);
+% pp.K.s=0;p.K.e=0;
+% pp.c=pp.c*0;pp.c(p.binary_variables)=1;
+% op=feval(lowersolver,integer_relax(pp));
+% p.binarycardinality.down = max(p.binarycardinality.down,ceil(op.Primal'*pp.c-1e-5));
+% pp.c=pp.c*0;pp.c(p.binary_variables)=-1;
+% op=feval(lowersolver,integer_relax(pp));
+% p.binarycardinality.up = min(p.binarycardinality.up, floor(-op.Primal'*pp.c+1e-5));
 % e = unique(p.binaryProduct(:,2:3));
 % s = length(e)*(length(e)-1)/2-size(p.binaryProduct,1);
 % q = 17;
