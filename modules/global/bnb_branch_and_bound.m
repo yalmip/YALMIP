@@ -208,7 +208,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
             output.problem = 1;
-            Message = 'Infeasible node.'
+            Message = 'Infeasible node.';
         elseif output.problem == -1
             % This is the dreaded unknown state from mosek. Try without
             % objective to see if it is infeasible?

@@ -276,7 +276,7 @@ if isequal(interfacedata.solver.version,'NONCONVEX')
 end
 
 if ~isempty(x0)  
-    model.start = x0(find(interfacedata.variabletype == 0));
+    model.start = x0;
 end
 model.NegativeSemiVar=NegativeSemiVar;
 
