@@ -9,7 +9,7 @@ for i = 1:length(Fc)
     C2 = X(:,2);
     if solver.constraint.equalities.polynomial == 1
         [M,m]=derivebounds(C1);
-        F = [F,C1>=0, C2>=0, C1'*C2 == 0];
+        F = [F,C1>=0, C2>=0, C1'*C2 == 0, C1.*C2 == 0];
         ProblemClass.constraint.equalities.polynomial = 1;
     elseif (solver.constraint.binary == 1) | (solver.constraint.integer == 1)
         [M1,m1]=derivebounds(C1);
