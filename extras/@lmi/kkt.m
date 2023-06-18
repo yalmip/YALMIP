@@ -21,6 +21,31 @@ if iscell(parametricVariables)
     parametricVariables = newParameters;
 end
 
+% sort out tricky cases where the problem is nonlinear in the parameters
+% but linear/convex QP in the remaining
+nonlinear_parameters = [];
+if ~((all(is(F,'linear')) && (is(h,'quadratic') || is(h,'linear'))))
+    % All monomials 
+    nonlinear_parameters = [];
+    all_terms = recover(unique([getvariables(F) getvariables(h)]));
+    for i = 1:length(all_terms)
+        if ~is(all_terms(i),'linear')
+           if all(ismember(depends(all_terms(i)),getvariables(parametricVariables)))
+               nonlinear_parameters = [nonlinear_parameters all_terms(i)];
+           end    
+        end
+    end        
+end
+
+if ~isempty(nonlinear_parameters)
+    temporary_parameters = sdpvar(length(nonlinear_parameters),1);
+    for i = 1:length(nonlinear_parameters)
+        F = replace(F,nonlinear_parameters(i),temporary_parameters(i));
+        h = replace(h,nonlinear_parameters(i),temporary_parameters(i));
+    end
+    parametricVariables  = [parametricVariables(:); temporary_parameters];
+end
+
 [aux1,aux2,aux3,model] = export(F,h,sdpsettings('solver','quadprog','relax',2));
 if isempty(model)
     error('KKT system can only be derived for LPs or QPs');
@@ -250,7 +275,12 @@ if isempty(U)
     U = repmat(inf,length(b),1);
 end
 details.dualbounds = U;
-
+if ~isempty(nonlinear_parameters)
+    KKTConstraints = replace(KKTConstraints,temporary_parameters,nonlinear_parameters);
+    if isa(details.b,'sdpvar')
+        details.b =  replace(details.b,temporary_parameters,nonlinear_parameters);
+    end   
+end
 
 function [Alicq,blicq] = createLICQCut(A);
 Alicq = ones(1,size(A,1));
