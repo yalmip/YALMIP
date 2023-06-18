@@ -1,5 +1,36 @@
 function Z = variable_replace(X,Y,W)
 
+[mt,variabletype] = yalmip('monomtable');
+if isequal(getbase(Y),[0 1]) && isequal(getbase(W),[0 1])    
+    % Super standard case, replace monom with other monom
+    % However, it is a nonlinear monom to be replaced
+    % so it must mean monom replacement, not actually replacing a variable
+    % i.e. replace(x+x^2,x,y) means y+y^2 but we have
+    % i.e. replace(x+x^2,x^2,y) meaning x+y but we have
+    % Special case added for the nonlinear kkt rewrite to work
+    k = getvariables(Y);
+    if variabletype(k)
+       % Yep, that's the case here
+       k_new = getvariables(W);
+       Z = X;
+       Z = struct(Z);
+       i = find(Z.lmi_variables == k);
+       if ~isempty(i)         
+        Z.lmi_variables(i) = k_new;
+        % Messed up order (lmi_variables should be sorted)
+        if any(diff(Z.lmi_variables)<0)
+            [i,j]=sort(Z.lmi_variables);
+            Z.basis = [Z.basis(:,1) Z.basis(:,j+1)];
+            Z.lmi_variables = Z.lmi_variables(j);
+        end
+        Z = sdpvar(Z.dim(1),Z.dim(2),[],Z.lmi_variables,Z.basis);
+       else
+           Z = X;
+       end          
+       return
+    end
+end
+
 % Check so that Y is a simple unit variable
 Ybase = getbase(Y);
 Yvariables = getvariablesSORTED(Y);
@@ -13,40 +44,17 @@ end
 if ~all(k == 1)
 end
 
-[mt,variabletype] = yalmip('monomtable');
 % Linear, or at least linear in Y
 if all(variabletype(Xvariables) == 0) %| all(sum(mt(any(mt(getvariables(X),getvariables(Y)),2),:),2)==1)
-    % Simple linear replacement
-    v = 1;
-    if 0
-        v1 = [];
-        v2 = [];
-        i1 = [];
-        i2 = [];
-        for i = 1:length(Xvariables)
-            XisinY = find(Xvariables(i) == Yvariables);
-            if ~isempty(XisinY)
-                %   v = [v;W(XisinY)];
-                v1 = [v1 XisinY];
-                i1 = [i1 i];
-            else
-                %   v = [v;recover(Xvariables(i))];
-                v2 = [v2 Xvariables(i)];
-                i2 = [i2 i];
-            end
-        end
-    else
-        [aa,bb] = ismember(Xvariables,Yvariables);
-        i1 = find(aa);
-        v1 = bb(i1);
-        i2 = find(~aa);
-        v2 = Xvariables(i2);
-    end
+    % Simple linear replacement    
+    [aa,bb] = ismember(Xvariables,Yvariables);
+    i1 = find(aa);
+    v1 = bb(i1);
+    i2 = find(~aa);
+    v2 = Xvariables(i2);    
     v = sparse(i1,ones(length(i1),1),W(v1),length(Xvariables),1);
-    v = v + sparse(i2,ones(length(i2),1),recover(v2),length(Xvariables),1);
-    
-    Z = Xbase*[1;v];
-    %Z = Xbase*[v];
+    v = v + sparse(i2,ones(length(i2),1),recover(v2),length(Xvariables),1);    
+    Z = Xbase*[1;v];    
     Z = reshape(Z,size(X,1),size(X,2));
 else
     if nnz(mt(getvariables(X),getvariables(Y)))==0
@@ -55,7 +63,6 @@ else
         Z = nonlinearreplace(X,Y,W);
     end
     return
-%    error('Nonlinear replacement not supported yet')
 end
 
 % This has not been tested (copied from variable_replace) so it is placed

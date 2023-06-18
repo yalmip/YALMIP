@@ -22,10 +22,6 @@ if ~isa(Y,'sdpvar')
     error('Second arguments must be an sdpvar object')
 end
 
-if ~is(Y,'linear') 
-    error('Second arguments must be linear')
-end
-
 if prod(size(W)) == 1
     W = repmat(W,size(Y));
 end
