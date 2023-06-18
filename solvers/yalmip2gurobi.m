@@ -277,6 +277,9 @@ end
 
 if ~isempty(x0)  
     model.start = x0;
+    if length(model.start)~=length(model.obj)
+        model.start=[];
+    end
 end
 model.NegativeSemiVar=NegativeSemiVar;
 
