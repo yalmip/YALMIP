@@ -74,6 +74,10 @@ end
 if any(p.variabletype>2) || ~isempty(p.evalMap)
     p.options.bmibnb.lowerpsdfix = 0;
 end
+if strcmpi(p.solver.sdpsolver.tag,'lmilab')
+    % Not, not doing SDP stuff with lmilab...
+     p.options.bmibnb.lowerpsdfix = 0;
+end
 
 timing.total = tic;
 timing.uppersolve = 0;
