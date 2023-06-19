@@ -230,12 +230,10 @@ if ~isempty(nonconvexdata)
         end
         di = row(monomials);
         Qi = spalloc(m,m,0);
-        for k = 1:length(monomials)
-            if di(k)
-                Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
-                Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;
-            end
-        end      
+        for k = find(di)            
+            Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
+            Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;            
+        end
         model.quadcon(end+1).Qc = -Qi;
         model.quadcon(end).q = -qi;
         model.quadcon(end).rhs = bi;
@@ -245,7 +243,7 @@ if ~isempty(nonconvexdata)
         bi = nonconvexdata.ineq(i,1);
         row = nonconvexdata.ineq(i,2:end);
         qi = row(find(variabletype_original == 0))';
-         if length(qi)<m
+        if length(qi)<m
             % The number of variables has been extended above when SOCPs
             % have been normalized and cast as convex quadratics
             qi(m)=0;
