@@ -29,11 +29,19 @@ if isempty(C) % Only do this if we don't have complementarity. FIXME
 end
 
 if model.derivative_available
-    model.options.knitro.GradObj = 'on';
-    model.options.knitro.GradConstr = 'on';
+    if strcmpi(model.solver.tag,'knitro-legacy')
+        model.options.knitro.GradObj = 'on';
+        model.options.knitro.GradConstr = 'on';
+    else
+        model.options.knitro.gradopt = 1;
+    end
 else
-    model.options.knitro.GradObj = 'off';
-    model.options.knitro.GradConstr = 'off';
+    if strcmpi(model.solver.tag,'knitro-legacy')
+        model.options.knitro.GradObj = 'off';
+        model.options.knitro.GradConstr = 'off';
+    else
+        model.options.knitro.gradopt = 0;
+    end
 end
 model.options.knitro.JacobPattern = jacobiansparsityfromnonlinear(model,0);
 
@@ -96,11 +104,19 @@ showprogress('Calling KNITRO',model.options.showprogress);
 funcs.constraints = @(x)knitro_callback_g(x,model);
 funcs.objective = @(x)knitro_callback_f(x,model);
 
-switch model.options.verbose
-    case 0
-        model.options.knitro.Display = 'off';
-    otherwise
-        model.options.knitro.Display = 'iter';
+if strcmpi(model.solver.tag,'knitro-legacy')    
+    switch model.options.verbose
+        case 0
+            model.options.knitro.Display = 'off';
+        otherwise
+            model.options.knitro.Display = 'iter';
+    end
+else
+    if model.options.verbose
+        model.options.knitro.outlev = 1 + model.options.verbose;    
+    else
+        model.options.knitro.outlev = 0;
+    end
 end
 
 % SETUP complementarity information
@@ -133,7 +149,11 @@ solvertime = tic;
 if strcmpi(model.solver.tag,'knitro-legacy')
     [xout,fval,exitflag,output,lambda] = knitromatlab_mip(funcs.objective,model.x0,model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.xType,model.objFnType,model.cineqFnType,model.extendedFeatures,model.options.knitro,model.options.knitro.optionsfile);
 else
-    [xout,fval,exitflag,output,lambda] = knitro_minlp(funcs.objective,model.x0,model.xType, model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.extendedFeatures,model.options.knitro);
+    if isempty(model.binary_variables) && isempty(model.integer_variables)
+        [xout,fval,exitflag,output,lambda] = knitro_nlp(funcs.objective,model.x0, model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.extendedFeatures,model.options.knitro);
+    else
+        [xout,fval,exitflag,output,lambda] = knitro_minlp(funcs.objective,model.x0,model.xType, model.A,full(model.b),model.Aeq,full(model.beq),model.lb,model.ub,funcs.constraints,model.extendedFeatures,model.options.knitro);
+    end
 end
 solvertime = toc(solvertime);
 
