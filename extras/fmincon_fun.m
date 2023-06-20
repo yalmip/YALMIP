@@ -47,6 +47,7 @@ elseif model.SimpleNonlinearObjective
     xevaled(linearindicies) = x;
     X = repmat(xevaled,size(mtNonlinear,1),1);
     r = find(mtNonlinear);
+    [aaa,bbb,ccc] = find(mtNonlinear');
     used = find(any(mtNonlinear,1));
     mtCompressed = mtNonlinear(:,used);
     rCompressed = find(mtCompressed);
@@ -61,7 +62,20 @@ elseif model.SimpleNonlinearObjective
             XX = Xones;          
             XX(rCompressed) = Z;
             xevaledNonLinear = prod(XX,2);
-            xevaledNonLinear = xevaledNonLinear(:)'.*oldpower';xevaledNonLinear(isnan(xevaledNonLinear))=0;
+            
+            ddd = x(aaa).^ccc;
+            eee = find((aaa == i));
+            ddd(eee) = x(aaa(eee)).^(ccc(eee)-1);
+            sparse(aaa,bbb,ddd)';
+            sparse(aaa,bbb,x(aaa).^ccc)';
+            product = accumarray(bbb,ddd,[],@prod).*(oldpower);                                   
+            product = product(:)';
+            xevaledNonLinear = xevaledNonLinear(:)'.*oldpower';
+            if norm(xevaledNonLinear - product) > 1e-12
+                error
+            end
+            
+            xevaledNonLinear(isnan(xevaledNonLinear))=0;
             dx = zeros(1,n);
             dx(linearindicies(i)) = 1;
             dx(model.nonlinearindicies) = xevaledNonLinear;
