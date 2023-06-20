@@ -1167,7 +1167,7 @@ if strcmpi(solver.tag,'bmibnb')
     interfacedata.presolveequalities = 1;
 else
     interfacedata.equalitypresolved = 1;
-    interfacedata.presolveequalities = 1;
+    interfacedata.presolveequalities = ~isempty(interfacedata.evalMap);
 end
 interfacedata.ProblemClass = ProblemClass;
 interfacedata.dualized = is(F,'dualized');
