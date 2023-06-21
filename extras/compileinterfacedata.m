@@ -51,6 +51,18 @@ if isa(options.shift,'sdpvar') | (options.shift~=0)
     F = shift(F,options.shift);
 end
 
+switch options.relax
+    case {'integer','binary'}
+        options.relax = 2;
+    case 'nonlinear'
+        options.relax = 3;
+    case 'all'
+        options.relax = 1;
+    case ''
+        options.relax = 0;
+    otherwise
+end
+
 % *************************************************************************
 %% ADD RADIUS CONSTRAINT
 % *************************************************************************
