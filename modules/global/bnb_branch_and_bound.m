@@ -70,18 +70,7 @@ p = detectAndAdd3x3SDPGUBGroups(p);
 % Extract more info from some combinatorial AND structure
 p = cross_binary_product_cardinality(p);
 
-% pp=p;pp.Q=pp.Q*0;pp.F_struc = pp.F_struc(1:p.K.f+p.K.l,:);
-% pp.K.s=0;p.K.e=0;
-% pp.c=pp.c*0;pp.c(p.binary_variables)=1;
-% op=feval(lowersolver,integer_relax(pp));
-% p.binarycardinality.down = max(p.binarycardinality.down,ceil(op.Primal'*pp.c-1e-5));
-% pp.c=pp.c*0;pp.c(p.binary_variables)=-1;
-% op=feval(lowersolver,integer_relax(pp));
-% p.binarycardinality.up = min(p.binarycardinality.up, floor(-op.Primal'*pp.c+1e-5));
-% e = unique(p.binaryProduct(:,2:3));
-% s = length(e)*(length(e)-1)/2-size(p.binaryProduct,1);
-% q = 17;
-% q + q*(q-1)/2 <= p.binarycardinality.up + s
+p = lpcardinality(p);
 
 if p.options.bnb.verbose
     
@@ -155,6 +144,24 @@ if p.options.bnb.verbose
     disp('Node      Incumbent      Gap        Bound   Open  Cut     Time  Diagnostics');
 end
 
+[q,loc]=sort(p.c,'ascend');
+loc=loc(q>0);
+q=q(q>0);
+% N = 14;
+% j = 1;
+% row = zeros(1,1+length(p.c));
+% row(1) = N;row(1+loc(j:end))=-1;
+% p = addInequality(p,row)
+% j = 2;
+% for N = 13:-1:4
+%     while sum(q(j:j+N-1))< 769
+%         j = j+1;
+%     end
+%     row = zeros(1,1+length(p.c));
+%     row(1) = N;row(1+loc(j-1:end))=-1;
+%     p = addInequality(p,row)
+% end
+
 % Save the root node to keep data which does not have to
 % be copied to every node, and to keep global information
 poriginal = p;
@@ -202,8 +209,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         % Solve node relaxation
         if p.feasible
             use = ~p.cutredundant(:) & p.cutactivate(:);
-            p_node = addInequality(relaxed_p,globalcuts,use);
-            output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);
+            p_node = addInequality(relaxed_p,globalcuts,use);           
+            output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);            
         end
         
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
@@ -380,7 +387,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             end
         case 0
             if p.IntegerCost
-                lower = ceil(lower-1e-6);
+                lower = ceil(lower-1e-5);
             end
         case {1,12,-4,22,24}
             Message = 'Infeasible node.';
@@ -509,42 +516,8 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
         % **********************************
         [index,whatsplit,globalindex] = branchvariable(x,p.integer_variables,p.binary_variables,p.options,x_min,[],p);
         
-        if size(globalcuts,1) > 0
-            % Implementing cutting plane management and selection techniques
-            % Franz Wesselmann, Uwe H. Suhl
-            if length(p.cutactivate)<size(globalcuts,1)
-                p.cutactivate(size(globalcuts,1)) = 0;
-            end
-            if length(p.cutredundant)<size(globalcuts,1)
-                p.cutredundant(size(globalcuts,1)) = 0;
-            end
-            for i = 1:size(globalcuts,1)
-                a0 = globalcuts(i,1);
-                a  = -globalcuts(i,2:end);
-                eff(i,1) = (a*x - a0)/norm(a);
-                isp(i,1) = nnz(p.c(p.binary_variables))/nnz(p.c);
-                obp(i,1) = abs(a*p.c/(norm(a)*norm(p.c)));
-            end
-            meas = [eff isp obp]*[1/3;1/3;1/3];
-            meas(eff<0) = -inf;
-            meas(obp<0.1) = -inf;
-            meas(find(p.cutactivate))=-inf;
-            for loops = 1:4
-                if any(~isinf(meas))
-                    [~,j] = max(meas);
-                    p.cutactivate(j) = 1;
-                    meas(j) = -inf;
-                    a = globalcuts(j,2:end);
-                    for k = 1:size(globalcuts,1)
-                        b = globalcuts(k,2:end);
-                        if (abs(a*b')/(norm(a)*norm(b)))>0.9
-                            meas(k) = -inf;
-                        end
-                    end
-                end
-            end
-        end
-        
+        p = activateCuts(p,globalcuts,x);
+              
         % **********************************
         % CREATE NEW PROBLEMS
         % **********************************
@@ -596,7 +569,7 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
             lower = upper;
         else
             if p.IntegerCost
-                lower = ceil(lower-1e-6);
+                lower = ceil(lower-1e-5);
             end
         end
     end
@@ -1357,3 +1330,58 @@ if ~isempty(globalcuts)
     p.cutredundant(s(locally_redundant)) = 1;
 end
 
+function p = activateCuts(p,globalcuts,x)
+if size(globalcuts,1) > 0
+    % Implementing cutting plane management and selection techniques
+    % Franz Wesselmann, Uwe H. Suhl
+    if length(p.cutactivate)<size(globalcuts,1)
+        p.cutactivate(size(globalcuts,1)) = 0;
+    end
+    if length(p.cutredundant)<size(globalcuts,1)
+        p.cutredundant(size(globalcuts,1)) = 0;
+    end
+    for i = 1:size(globalcuts,1)
+        a0 = globalcuts(i,1);
+        a  = -globalcuts(i,2:end);
+        eff(i,1) = (a*x - a0)/norm(a);
+        isp(i,1) = nnz(p.c(p.binary_variables))/nnz(p.c);
+        obp(i,1) = abs(a*p.c/(norm(a)*norm(p.c)));
+    end
+    meas = [eff isp obp]*[1/3;1/3;1/3];
+    meas(eff<0) = -inf;
+    meas(obp<0.1) = -inf;
+    meas(find(p.cutactivate))=-inf;
+    for loops = 1:4
+        if any(~isinf(meas))
+            [~,j] = max(meas);
+            p.cutactivate(j) = 1;
+            meas(j) = -inf;
+            a = globalcuts(j,2:end);
+            for k = 1:size(globalcuts,1)
+                b = globalcuts(k,2:end);
+                if (abs(a*b')/(norm(a)*norm(b)))>0.9
+                    meas(k) = -inf;
+                end
+            end
+        end
+    end
+end
+
+function p = lpcardinality(p)
+
+% Create a model with only LP stuff
+pLP=p;
+pLP.Q=pLP.Q*0;pLP.evalMap = [];
+pLP.F_struc = pLP.F_struc(1:p.K.f+p.K.l,:);
+pLP.K.s=0;pLP.K.e=0;pLP.K.q=[];pLP.K.p = [];
+pLP.c=pLP.c*0;
+
+% Minimize sum of all binary variables
+pLP.c(p.binary_variables)=1;
+output=feval(p.solver.lower.call,integer_relax(pLP));
+p.binarycardinality.down = max(p.binarycardinality.down,ceil(output.Primal'*pLP.c-1e-5));
+
+% Maximize sum of all binaries
+pLP.c=pLP.c*0;pLP.c(p.binary_variables)=-1;
+output=feval(p.solver.lower.call,integer_relax(pLP));
+p.binarycardinality.up = min(p.binarycardinality.up, floor(-output.Primal'*pLP.c+1e-5));
