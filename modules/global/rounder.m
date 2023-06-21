@@ -96,34 +96,3 @@ for i = 1:length(p.semicont_variables)
         end
     end
 end
-
-function xtemp = fix_cardinality(p,xtemp,x)
-would = zeros(1,length(x));
-for i = find(ismember(p.knapsack.type,[2 3 4 5]))
-    k = p.knapsack.variables{i};
-    b = p.knapsack.b{i};
-    if nnz(xtemp(k)) > b
-        n_should_be_zero = length(k) - b;
-        [y,loc] = sort(abs(x(k)),'ascend');
-        xtemp(k(loc(1:n_should_be_zero))) = 0;
-    end
-end
-for i = find(ismember(p.knapsack.type,[9 10]))
-    k = p.knapsack.variables{i};
-    b = p.knapsack.b{i};
-    if nnz(xtemp(k)) < b
-        n_should_be_one = b;
-        [y,loc] = sort(abs(x(k)),'descend');
-        xtemp(k(loc(1:n_should_be_one))) = 1;
-    end
-end
-
-function x = fix_downforce(p,x)
-% ensure x1 + x2 + ... <= y
-for i = 1:length(p.downForce)
-    forcing = p.downForce{i}.forcing;
-    if x(forcing)==0
-        forced = p.downForce{i}.forced;
-        x(forced)=0;
-    end
-end
