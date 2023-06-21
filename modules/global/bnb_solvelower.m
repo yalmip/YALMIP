@@ -51,12 +51,7 @@ if nnz(removethese)>0 && all(p.variabletype == 0) && isempty(p.evalMap) && p.opt
     p = smashFixed(p,'delete');
     p = smashQPOjective(p,removethese);    
     idx = find(removethese);    
-    
-    % FIX: should be updated
-    % safe fix now where we just remove
-    %p.cardinalityvariables = [];
-    %p.cardinalitygroups = [];
-        
+            
     p.lb(idx)=[];
     p.ub(idx)=[];
     if ~isempty(x_min)

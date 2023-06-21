@@ -49,8 +49,7 @@ if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
         if isequal(p_cut.solver.lowercall,'callmosek')
             % Mosek SDP module does not support binary
             p_cut.binary_variables = [];
-            p_cut.integer_variables = [];
-            p_cut.binary_variables = [];
+            p_cut.integer_variables = [];        
         end
     end
 end
@@ -61,16 +60,6 @@ end
 
 if ~isempty(p.delayedconvex)
  	p_cut = mergeNumericalModels(p_cut,p.delayedconvex);
-end
-
-if p.options.bmibnb.cut.convexupperbound && ~isinf(p.upper)
-    xc = [(p.lb+p.ub)/2];
-    if ~any(isinf(xc)) && ~any(isnan(xc))
-       % p_cut = add_convex_upper_bound_cut_generalized(p_cut,p.upper,xc);
-    end
-  %  xx = zeros(length(p.c),1);
-  %  xx(1:length(xmin)) = xmin;
- %	p_cut = add_convex_upper_bound_cut(p_cut,p.upper,xx);
 end
 
 if p.options.bmibnb.plot
