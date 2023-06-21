@@ -617,7 +617,6 @@ solver(i).version = '';
 solver(i).checkfor= {'quadprog'};
 solver(i).call    = 'callquadprog';
 solver(i).supportsinitial = 1;
-solver(i).global = 1;
 i = i+1;
 
 solver(i) = lpsolver;
@@ -1471,6 +1470,7 @@ solver(i).version = 'qp';
 solver(i).checkfor= {'knitro_matlab'};
 solver(i).call    = 'callknitro_qp';
 solver(i).supportsinitial = 1;
+solver(i).objective.quadratic.nonconvex = 1;
 i = i+1;
 
 solver(i) = emptysolver;
