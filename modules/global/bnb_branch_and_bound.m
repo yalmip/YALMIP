@@ -144,24 +144,6 @@ if p.options.bnb.verbose
     disp('Node      Incumbent      Gap        Bound   Open  Cut     Time  Diagnostics');
 end
 
-[q,loc]=sort(p.c,'ascend');
-loc=loc(q>0);
-q=q(q>0);
-% N = 14;
-% j = 1;
-% row = zeros(1,1+length(p.c));
-% row(1) = N;row(1+loc(j:end))=-1;
-% p = addInequality(p,row)
-% j = 2;
-% for N = 13:-1:4
-%     while sum(q(j:j+N-1))< 769
-%         j = j+1;
-%     end
-%     row = zeros(1,1+length(p.c));
-%     row(1) = N;row(1+loc(j-1:end))=-1;
-%     p = addInequality(p,row)
-% end
-
 % Save the root node to keep data which does not have to
 % be copied to every node, and to keep global information
 poriginal = p;
