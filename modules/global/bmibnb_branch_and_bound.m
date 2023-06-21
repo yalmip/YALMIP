@@ -108,7 +108,7 @@ solved_nodes = 0;
 numGlobalSolutions = 0;
 balanceIndicator = 1;
 
-if p.options.bmibnb.plot
+if p.options.bmibnb.plotregions
     p.plotter.x = sdpvar(length(p.c),1);
     p.plotter.ops = p.options;
     p.plotter.ops.solver = '';
@@ -176,7 +176,7 @@ while go_on
     
     % Debug with plot
     pin = p;
-    if p.feasible && p.options.bmibnb.plot
+    if p.feasible && p.options.bmibnb.plotregions
         plotNodeModel(p,'b');
         drawnow
     end
@@ -282,10 +282,10 @@ while go_on
     end
     
     % Debug with plot
-    if p.feasible && p.options.bmibnb.plot
+    if p.feasible && p.options.bmibnb.plotregions
         plotNodeModel(p,'b');
         drawnow
-    elseif ~p.feasible && p.options.bmibnb.plot
+    elseif ~p.feasible && p.options.bmibnb.plotregions
          plotNodeModel(pin,'r',1);
         drawnow
     end
@@ -460,7 +460,7 @@ while go_on
     solved_nodes = solved_nodes+1;
     
       % Debug with plot
-    if p.options.bmibnb.plot
+    if p.options.bmibnb.plotregions
         if ~keep_digging
             if p.feasible
                 plotNodeModel(pin,'y',1);

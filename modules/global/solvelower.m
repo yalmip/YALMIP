@@ -62,9 +62,8 @@ if ~isempty(p.delayedconvex)
  	p_cut = mergeNumericalModels(p_cut,p.delayedconvex);
 end
 
-if p.options.bmibnb.plot
-    plotNodeModel(p_cut,'g')
-    axis([-3 3 -5 5])
+if p.options.bmibnb.plotregions
+    plotNodeModel(p_cut,'g') 
     drawnow
 end
 

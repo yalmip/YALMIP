@@ -5,7 +5,9 @@ P = [p.lpcuts;
 P = [P, p.lb<=p.plotter.x<=p.ub];
 if any(p.c)
     % Could be feasibility problem
-    P = [P, p.c'*p.plotter.x<=p.upper];
+    if ~isinf(p.upper)
+        P = [P, p.c'*p.plotter.x<=p.upper];
+    end
 end
 if any(p.K.q)
     for i = 1:length(p.K.q)
