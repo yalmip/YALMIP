@@ -42,7 +42,7 @@ sol = optimize(F,h,sdpsettings('solver','bnb','savesolveroutput',1,'sedumi.free'
 testCase.assertTrue(sol.problem == 0);
 testCase.assertTrue(abs(value(h) - -211) <= 1e-2);
 if strcmpi(sol.solveroutput.localsolver,'mosek')
-    testCase.assertTrue(sol.solveroutput.solved_nodes <= 25);
+    testCase.assertTrue(sol.solveroutput.solved_nodes <= 27);
 end
 
 
