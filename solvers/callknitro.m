@@ -53,9 +53,15 @@ if ~any(model.variabletype(usedinObjective)) & any(any(model.Q))
         if  length(model.bnonlinineq)==0 & length(model.bnonlineq)==0
             H = model.Q(:,model.linearindicies);
             H = H(model.linearindicies,:);
-            model.options.knitro.Hessian = 'user-supplied';
-            model.options.knitro.HessPattern = sparse(H | H);
-            model.options.knitro.HessFcn = @(x,l) 2*H;
+            if strcmpi(model.solver.tag,'knitro-legacy')   
+                model.options.knitro.Hessian = 'user-supplied';
+                model.options.knitro.HessPattern = sparse(H | H);
+                model.options.knitro.HessFcn = @(x,l) 2*H;
+            else
+                model.options.knitro.hessopt = 1;
+                model.extendedFeatures.HessPattern = sparse(H | H);
+                model.extendedFeatures.HessFcn = @(x,l) 2*H;
+            end
         end
     end
 end
