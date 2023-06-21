@@ -1368,20 +1368,30 @@ if size(globalcuts,1) > 0
 end
 
 function p = lpcardinality(p)
-
-% Create a model with only LP stuff
-pLP=p;
-pLP.Q=pLP.Q*0;pLP.evalMap = [];
-pLP.F_struc = pLP.F_struc(1:p.K.f+p.K.l,:);
-pLP.K.s=0;pLP.K.e=0;pLP.K.q=[];pLP.K.p = [];
-pLP.c=pLP.c*0;
-
-% Minimize sum of all binary variables
-pLP.c(p.binary_variables)=1;
-output=feval(p.solver.lower.call,integer_relax(pLP));
-p.binarycardinality.down = max(p.binarycardinality.down,ceil(output.Primal'*pLP.c-1e-5));
-
-% Maximize sum of all binaries
-pLP.c=pLP.c*0;pLP.c(p.binary_variables)=-1;
-output=feval(p.solver.lower.call,integer_relax(pLP));
-p.binarycardinality.up = min(p.binarycardinality.up, floor(-output.Primal'*pLP.c+1e-5));
+% Waste two LPs on figuring out binary cardinality
+if any(p.isbinary)
+    % Create a model with only LP stuff
+    pLP=p;
+    pLP.Q=pLP.Q*0;pLP.evalMap = [];
+    pLP.F_struc = pLP.F_struc(1:p.K.f+p.K.l,:);
+    pLP.variabletype = spalloc(1,length(pLP.c),0);
+    pLP.monomtable = eye(length(pLP.c));
+    pLP.K.s=0;pLP.K.e=0;pLP.K.q=[];pLP.K.p = [];
+    pLP.c=pLP.c*0;
+    
+    try
+        % We put this in a catch, in case some weird lower solver is used
+        % such as a GP solver or something
+        
+        % Minimize sum of all binary variables
+        pLP.c(p.binary_variables)=1;
+        output=feval(pLP.solver.lower.call,integer_relax(pLP));
+        p.binarycardinality.down = max(p.binarycardinality.down,ceil(output.Primal'*pLP.c-1e-5));
+        
+        % Maximize sum of all binaries
+        pLP.c=pLP.c*0;pLP.c(p.binary_variables)=-1;
+        output=feval(pLP.solver.lower.call,integer_relax(pLP));
+        p.binarycardinality.up = min(p.binarycardinality.up, floor(-output.Primal'*pLP.c+1e-5));
+    catch
+    end
+end
