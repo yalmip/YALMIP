@@ -46,7 +46,7 @@ if ~isempty(nonlinear_parameters)
     parametricVariables  = [parametricVariables(:); temporary_parameters];
 end
 
-[aux1,aux2,aux3,model] = export(F,h,sdpsettings('solver','quadprog','relax',2));
+[aux1,aux2,aux3,model] = export(F,h,sdpsettings('solver','+quadprog','relax',2));
 if isempty(model)
     error('KKT system can only be derived for LPs or QPs');
 end
