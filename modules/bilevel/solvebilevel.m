@@ -57,6 +57,10 @@ if ~isempty(InnerConstraints)
     end
 end
 
+if numel(OuterObjective) > 1  || numel(InnerObjective) > 1
+    error('The objective functions have to be scalar functions');
+end
+
 % User wants to use fmincon, cplex or something like
 if strcmp(options.bilevel.algorithm,'external')
     % Derive KKT conditions of inner problem, append with outer, and solve
