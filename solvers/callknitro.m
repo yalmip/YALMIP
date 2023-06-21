@@ -44,7 +44,8 @@ else
     end
 end
 model.options.knitro.JacobPattern = jacobiansparsityfromnonlinear(model,0);
-
+model.extendedFeatures = [];
+  
 % If quadratic objective and no nonlinear constraints, we can supply an
 % Hessian of the Lagrangian
 usedinObjective = find(model.c | any(model.Q,2));
@@ -142,8 +143,6 @@ if model.K.c(1) > 0
         end
         top = top + 2*n;
     end
-else
-    model.extendedFeatures = [];
 end
 model.objFnType = [];
 model.xType = zeros(length(model.lb),1);
