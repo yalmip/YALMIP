@@ -35,6 +35,12 @@ showprogress('Branch and bound started',p.options.showprogress);
 % *************************************************************************
 % INITIALIZE DIAGNOSTICS AND DISPLAY LOGICS (LOWER VERBOSE IN SOLVERS)
 % *************************************************************************
+if p.options.verbose ~= fix(p.options.verbose)
+    p.options.print_interval = ceil(1/p.options.verbose);
+    p.options.verbose = ceil(p.options.verbose);
+else
+    p.options.print_interval = 1;
+end
 switch max(min(p.options.verbose,3),0)
 case 0
     p.options.bmibnb.verbose = 0;
@@ -518,8 +524,9 @@ if p.feasible
         end
         solved_nodes = 0;
         lower = -inf;
-        lower_hist = -inf;
-        upper_hist = upper;
+        History.lower = lower;
+        History.upper = upper;
+        History.solutions = x_min;
         problem = 0;
         counter = p.counter;
     elseif ~isinf(upper) && isequal(p.options.bmibnb.lowertarget,-inf)
@@ -529,12 +536,13 @@ if p.feasible
         end
         solved_nodes = 0;
         lower = -inf;
-        lower_hist = -inf;
-        upper_hist = upper;
+        History.lower = lower;
+        History.upper = upper;
+        History.solutions = x_min;
         problem = 0;
         counter = p.counter;
     else
-        [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = bmibnb_branch_and_bound(p,x_min,upper,timing,solution_hist);
+        [x_min,solved_nodes,lower,upper,History,timing,counter,problem] = bmibnb_branch_and_bound(p,x_min,upper,timing,solution_hist);
         
         % ********************************
         % ADJUST DIAGNOSTICS
@@ -558,17 +566,18 @@ else
         problem = 0;        
         solved_nodes = 0;
         lower = nan;
-        lower_hist = [-inf];
-        upper_hist = [upper];        
+        History.lower = -inf;
+        History.upper = upper;
+        History.solutions = x_min;
     else
         counter = p.counter;
         problem = 1;
         x_min = repmat(nan,length(p.c),1);
         solved_nodes = 0;
         lower = inf;
-        lower_hist = [];
-        upper_hist = [];
-        solution_hist = [];
+        History.lower = inf;
+        History.upper = inf;
+        History.solutions = [];        
     end
 end
 
@@ -590,13 +599,11 @@ output.infostr      = yalmiperror(output.problem,'BMIBNB');
 output.solvertime   = timing.total;
 output.timing = timing;
 output.lower = lower;
-output.solveroutput.nodes = length(lower_hist);
+output.solveroutput.nodes = solved_nodes;
 output.solveroutput.counter = counter;
 output.solveroutput.timing = timing;
 output.solveroutput.lower = lower;
-output.solveroutput.lower_hist = lower_hist;
-output.solveroutput.upper_hist = upper_hist;
-output.solveroutput.solution_hist = solution_hist;
+output.solveroutput.history = History;
 output.extra.propagatedlb = lb;
 output.extra.propagatedub = ub;
 

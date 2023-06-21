@@ -1,9 +1,13 @@
-function [x_min,solved_nodes,lower,upper,lower_hist,upper_hist,solution_hist,timing,counter,problem] = bmibnb_branch_and_bound(p,x_min,upper,timing,solution_hist)
+function [x_min,solved_nodes,lower,upper,History,timing,counter,problem] = bmibnb_branch_and_bound(p,x_min,upper,timing,solution_hist)
 
 % *************************************************************************
 % Initialize diagnostic code
 % *************************************************************************
 problem = 0;
+History.lower = [];
+History.upper = [];
+History.stacksize = [];
+History.solutions = solution_hist;
 
 % *************************************************************************
 % Create handles to solvers
@@ -146,9 +150,6 @@ if options.bmibnb.verbose>0
 end
 
 go_on  = 1;
-
-lower_hist = [];
-upper_hist = [];
 p.branchwidth = [];
 
 % Create a default propagator structure
@@ -171,6 +172,7 @@ if any(options.bmibnb.strengthscheme < 1) || any(options.bmibnb.strengthscheme >
 end
 
 p.quadraticCutFailure = 0;
+lastUpper = upper;
 p.upper = upper;
 while go_on
     
@@ -262,12 +264,12 @@ while go_on
             break
         end
     end
-    if size(solution_hist,1)>1
-        if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))            
-            solution_hist = [solution_hist x_min(p.originallinears(:))];
+    if size(History.solutions,1)>1
+        if ~isequal(x_min(p.originallinears(:)),History.solutions(:,end))            
+            History.solutions = [History.solutions x_min(p.originallinears(:))];
         end
     elseif ~isempty(x_min)        
-        solution_hist = x_min(p.originallinears(:));
+        History.solutions = x_min(p.originallinears(:));
     end
     
     % Maybe we managed to get rid of a disjoint forbidden region
@@ -410,12 +412,12 @@ while go_on
                         tstart = tic;
                         [upper,x_min,cost,info_text2,numGlobalSolutions] = heuristics_from_relaxed(p_upper,x,upper,x_min,cost,numGlobalSolutions);
                         timing.heuristics = timing.heuristics + toc(tstart);
-                        if size(solution_hist,1)>1
-                            if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
-                                solution_hist = [solution_hist x_min(p.originallinears(:))];
+                        if size(History.solutions,1)>1
+                            if ~isequal(x_min(p.originallinears(:)),History.solutions(:,end))
+                                History.solutions = [History.solutions x_min(p.originallinears(:))];
                             end
                         elseif ~isempty(x_min)
-                            solution_hist = x_min(p.originallinears(:));;
+                            History.solutions = x_min(p.originallinears(:));;
                         end
                         
                         p.counter.heuristics = p.counter.heuristics + 1;
@@ -429,12 +431,12 @@ while go_on
                                 if options.bmibnb.lowertarget > lower
                                     [upper,x_min,info_text,numGlobalSolutions,timing,p_upper] = solve_upper_in_node(p,p_upper,x,upper,x_min,uppersolver,info_text,numGlobalSolutions,timing,p.options.bmibnb.uppersdprelax);
                                     p.counter.uppersolved = p.counter.uppersolved + 1;
-                                    if size(solution_hist,1)>1
-                                        if ~isequal(x_min(p.originallinears(:)),solution_hist(:,end))
-                                            solution_hist = [solution_hist x_min(p.originallinears(:))];
+                                    if size(History.solutions,1)>1
+                                        if ~isequal(x_min(p.originallinears(:)),History.solutions(:,end))
+                                            History.solutions = [History.solutions x_min(p.originallinears(:))];
                                         end
                                     elseif ~isempty(x_min)
-                                        solution_hist = x_min(p.originallinears(:));;
+                                        History.solutions = x_min(p.originallinears(:));;
                                     end
                                 end
                             end
@@ -614,8 +616,32 @@ while go_on
         relgap = 100*(upper-lower)/(1+max(abs(lower)+abs(upper))/2);
         depth = p.depth;
     end
+    History.lower = [History.lower lower];
+    History.upper = [History.upper upper];
+    History.stacksize = [History.stacksize length(stack)];
     if options.bmibnb.verbose>0
-        fprintf(' %4.0f :  %12.5E  %7.2f   %12.5E   %2.0f   %3.0fs  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),floor(toc(timing.total)),info_text);
+        if isempty(p) || mod(solved_nodes-1,p.options.print_interval)==0 || isempty(node) || (gap == 0) || (lastUpper-1e-6 > upper)
+            fprintf(' %4.0f :  %12.5E  %7.2f   %12.5E   %2.0f   %3.0fs  %s  \n',solved_nodes,upper,relgap,lower,length(stack)+length(p),floor(toc(timing.total)),info_text);
+            
+            if options.bmibnb.plot
+                hold off
+                subplot(1,3,1);
+                l = stairs([History.lower' History.upper']);set(l,'linewidth',2);
+                grid on
+                title('Upper/lower bounds')
+                subplot(1,3,2);
+                l = stairs(History.stacksize);set(l,'linewidth',2);
+                grid on
+                title('Open nodes')
+                drawnow
+                subplot(1,3,3);
+                if ~isempty(stack)
+                hist(getStackLowers(stack),25);
+                end
+                title('Histogram lower bounds')
+                drawnow
+            end
+        end
     end
     
     absgap = upper-lower;
@@ -629,9 +655,8 @@ while go_on
     absgap_too_big = (isinf(lower) | isnan(absgap) | absgap>options.bmibnb.absgaptol);
     uppertarget_not_met = upper > options.bmibnb.target;
     lowertarget_not_met = lower < options.bmibnb.lowertarget;
-    go_on = uppertarget_not_met & lowertarget_not_met & time_ok & any_nodes & iter_ok & relgap_too_big & absgap_too_big;
-    lower_hist = [lower_hist lower];
-    upper_hist = [upper_hist upper];
+    go_on = uppertarget_not_met & lowertarget_not_met & time_ok & any_nodes & iter_ok & relgap_too_big & absgap_too_big;   
+    lastUpper = upper;
 end
 
 if options.bmibnb.verbose>0
@@ -1205,3 +1230,11 @@ for k = 1:length(p.branch_variables)
 end
 [~,loc] = min(vol);
 j = p.branch_variables(loc);
+
+function L = getStackLowers(stack)
+if isempty(stack)
+    L = [];
+else
+    L = [stack.lower];
+    L = L(~isinf(L));
+end

@@ -520,6 +520,7 @@ bmibnb.presolvescheme = [];
 bmibnb.balancetarget = 0.9;
 bmibnb.rebalancefreq = 20;
 bmibnb.plotregions = 0;
+bmibnb.plot = 0;
 bmibnb.strengthscheme = [8 1 2 1 3 1 4 1 6 1 5 1 4 1 6 1 4 1 8];
 function bnb = setup_bnb_options
 bnb.solver = '';
