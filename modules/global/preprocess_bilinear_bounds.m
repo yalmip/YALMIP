@@ -55,10 +55,10 @@ if ~isempty(p.F_struc)
         end
     end
 end
-p.lb(p.binary_variables) = max(0,p.lb(p.binary_variables));
-p.ub(p.binary_variables) = min(1,p.ub(p.binary_variables));
-p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables));
-p.ub(p.integer_variables) = floor(p.ub(p.integer_variables));
+p.lb(p.binary_variables) = max(0,p.lb(p.binary_variables)-1e-6);
+p.ub(p.binary_variables) = min(1,p.ub(p.binary_variables)+1e-6);
+p.lb(p.integer_variables) = ceil(p.lb(p.integer_variables)-1e-6);
+p.ub(p.integer_variables) = floor(p.ub(p.integer_variables)+1e-6);
 p = clean_bounds(p);
 if size(p.F_struc,1)==0
     p.F_struc = [];
