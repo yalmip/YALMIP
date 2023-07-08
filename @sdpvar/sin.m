@@ -76,6 +76,10 @@ else
 end
 
 function inflections = inflection(xL,xU)
+if isinf(xL) || isinf(xU)
+    inflections = [];
+    return
+end
 r = floor(xU/(pi/2));
 t = ceil(xL/(pi/2));
 spots = [t:r];
