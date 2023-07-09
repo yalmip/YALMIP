@@ -107,6 +107,11 @@ else
 end
 
 function [xS,fS] = stationary(xL,xU)
+if isinf(xL) || isinf(xU)
+    xS = [];
+    fS = [];
+    return
+end
 r = floor(xU/(pi/2));
 t = ceil(xL/(pi/2));
 spots = [t:r];
