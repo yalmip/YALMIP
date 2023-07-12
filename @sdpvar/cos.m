@@ -14,7 +14,7 @@ switch class(varargin{1})
         operator.monotonicity  = @monotonicity;
         operator.stationary = @stationary; 
         operator.inflection = @inflection;
-        operator.periodic = pi;         
+        operator.periodic = 2*pi;         
         operator.derivative = @(x)(-sin(x));
         operator.range = [-1 1];        
  
