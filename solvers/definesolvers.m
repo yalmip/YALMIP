@@ -711,6 +711,13 @@ solver(i).constraint.binary = 1;
 i = i+1;
 
 solver(i) = qpsolver;
+solver(i).tag     = 'PIQP';
+solver(i).version = '';
+solver(i).checkfor= {'piqp'};
+solver(i).call    = 'callpiqp';
+i = i+1;
+
+solver(i) = qpsolver;
 solver(i).tag     = 'qpOASES';
 solver(i).version = '';
 solver(i).checkfor= {'qpOASES'};
