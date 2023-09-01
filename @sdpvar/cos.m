@@ -14,7 +14,7 @@ switch class(varargin{1})
         operator.monotonicity  = @monotonicity;
         operator.stationary = @stationary; 
         operator.inflection = @inflection;
-        operator.periodic = pi;         
+        operator.periodic = 2*pi;         
         operator.derivative = @(x)(-sin(x));
         operator.range = [-1 1];        
  
@@ -87,6 +87,10 @@ else
 end
 
 function inflections = inflection(xL,xU)
+if isinf(xL) || isinf(xU)
+    inflections = [];
+    return
+end
 r = floor(xU/(pi/2));
 t = ceil(xL/(pi/2));
 spots = [t:r];
@@ -103,6 +107,11 @@ else
 end
 
 function [xS,fS] = stationary(xL,xU)
+if isinf(xL) || isinf(xU)
+    xS = [];
+    fS = [];
+    return
+end
 r = floor(xU/(pi/2));
 t = ceil(xL/(pi/2));
 spots = [t:r];

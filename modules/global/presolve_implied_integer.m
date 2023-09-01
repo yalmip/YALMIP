@@ -41,3 +41,5 @@ if ~isempty(p.binary_variables)
     end
     p.binary_variables = unique(p.binary_variables );
 end
+p.integer_variables = unique(p.integer_variables );
+p.integer_variables = setdiff(p.integer_variables ,p.binary_variables);

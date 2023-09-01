@@ -10,10 +10,14 @@ try
         end
         if any(I.subs{1} <=0)
             error('Index into matrix is negative or zero.');
-        end 
-        
+        end         
         if length(I.subs)>2 && X_is_spdvar
-            y = subsasgn(ndsdpvar(X),I,Y);
+            if isequal(I.subs{end},':')
+                I.subs = {I.subs{1:end-1}};
+                y = subsasgn(X,I,Y);               
+            else
+                y = subsasgn(ndsdpvar(X),I,Y);
+            end           
             return
         end
 
