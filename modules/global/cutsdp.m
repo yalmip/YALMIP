@@ -38,6 +38,9 @@ p.feasible = 1;
 p.binarycardinality.up = length(p.binary_variables);
 p.binarycardinality.down = 0;
 p.hash = randn(length(p.c),1);
+p.isbinary  = ismember(1:length(p.c),p.binary_variables);
+p.isinteger = ismember(1:length(p.c),p.integer_variables);
+p.isintegral = p.isbinary | p.isinteger;
 
 % ********************************
 %% Remove options if none has been changed
