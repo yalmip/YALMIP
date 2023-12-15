@@ -233,6 +233,9 @@ else
     options.pensdp = setup_pensdp_options;
     Names = appendOptionNames(Names,options.pensdp,'pensdp');
 
+    options.piqp = setup_piqp_options;
+    Names = appendOptionNames(Names,options.piqp,'piqp');
+
     options.pop = setup_pop_options;
     Names = appendOptionNames(Names,options.pop,'pop');
 
@@ -290,7 +293,7 @@ else
     options.default.copt = options.copt;
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
-    options.default.mosek = options.mosek;   
+    options.default.mosek = options.mosek;
     options.default.osqp = options.osqp;   
     options.default.xpress = options.xpress;   
 end
@@ -1049,6 +1052,14 @@ pensdp.P_EPS = 1e-6;
 pensdp.UMIN = 1e-14;
 pensdp.ALPHA = 1e-2;
 pensdp.P0 = 0.9;
+
+function piqp_options = setup_piqp_options
+try
+    s = piqp('dense');
+    piqp_options = s.get_settings();
+catch
+    piqp_options =[];
+end
 
 function sparsecolo = setup_sparsecolo_options
 sparsecolo.SDPsolver = '';

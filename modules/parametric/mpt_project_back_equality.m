@@ -27,6 +27,10 @@ else
             for i=1:length(Fi)
                 details.Bi{i} = OriginalMatrices.H*Fi{i} + OriginalMatrices.F;
                 details.Ci{i} = OriginalMatrices.H*Gi{i};
+                if isfield(OriginalMatrices,'D')
+                  %  details.Ai{i} = Fi{i}'*OriginalMatrices.D;
+                    details.Bi{i} = details.Bi{i} + Gi{i}'*OriginalMatrices.D;
+                end
             end
         end
     end

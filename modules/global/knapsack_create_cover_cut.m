@@ -17,7 +17,7 @@ end
 if ~all(a)
     nz = find(a);
     a_ = a(nz); 
-    cut_ = knapsack_create_cover_cut(a_,b,x(nz),alg);
+    cut_ = knapsack_create_cover_cut(a_,b,x(nz),alg);  
     if ~isempty(cut_)
         cut = spalloc(1,length(a)+1,0);
         cut(1) = cut_(1);
@@ -65,10 +65,19 @@ C = min(find(cumsum(a(loc))>b));
 
 % Apply Balas lifting
 q = knapsack_cover_lift_balas(a,loc(1:C));
+%q = extendcover(q,a);
 % Return row where row*[1;x] hopefully is violated
 cut = spalloc(1,length(a)+1,0);
 cut(1) = C-1;
 cut(2:end)=-q;
+
+function q = extendcover(q,a);
+if any(q)
+    a_C_max = max(a(find(q)));
+    s = find(a >= a_C_max);
+    q(s) = 1;
+end
+
 
 
 

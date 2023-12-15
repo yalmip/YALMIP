@@ -167,6 +167,9 @@ switch lower(solver.tag)
     case 'osqp'
         model = yalmip2osqp(interfacedata);
 
+    case 'piqp'
+        model = yalmip2piqp(interfacedata);
+
     case 'cbc'
         model = yalmip2cbc(interfacedata);
 
