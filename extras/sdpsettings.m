@@ -1350,8 +1350,8 @@ function scs = setup_scs_options
     scs.time_limit_secs = 0;
     scs.acceleration_lookback = 10;
     scs.acceleration_interval = 10;
-    scs.write_data_filename = "";
-    scs.log_csv_filename = "";
+    scs.write_data_filename = '';
+    scs.log_csv_filename = '';
     scs.eliminateequalities = 0;
     scs.gpu = false;
 
