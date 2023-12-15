@@ -501,6 +501,7 @@ bmibnb.cut.exponential = 0;
 bmibnb.cut.sincos = 0;
 bmibnb.sdpcuts = 0;
 bmibnb.sdpbounder = -1;
+bmibnb.gradientpropagateqp = 1;
 bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = -1;
