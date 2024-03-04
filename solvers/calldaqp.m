@@ -27,12 +27,7 @@ sense(find(isinf(lb)&isinf(ub))) = int32(4); % "ignore" if lb and ub are inf
 sense(bin_vars) = int32(16);
 
 % create a structure with the problem data
-model.H = H;
-model.f = f;
-model.A = A;
-model.bupper = bupper;
-model.blower = blower;
-model.sense = sense;
+model = struct('H',H,'f',f,'A',A,'bupper',bupper,'blower',blower,'sense',sense);
 
 if options.savedebug
     save debugfile model
