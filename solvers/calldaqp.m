@@ -26,6 +26,14 @@ sense =  [zeros(length(ub),1,'int32');5*ones(meq,1,'int32');zeros(m,1,'int32')];
 sense(find(isinf(lb)&isinf(ub))) = int32(4); % "ignore" if lb and ub are inf
 sense(bin_vars) = int32(16);
 
+% create a structure with the problem data
+model.H = H;
+model.f = f;
+model.A = A;
+model.bupper = bupper;
+model.blower = blower;
+model.sense = sense;
+
 if options.savedebug
     save debugfile model
 end
