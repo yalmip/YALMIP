@@ -53,10 +53,10 @@ if nnz(model.Q) == 0
     % cases. To avoid seeing this when we don't want the lambdas anyway, we
     % don't ask for it
     if options.saveduals
-        [x,fmin,flag,output,lambda] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0,model.ops);
+        [x,fmin,flag,output,lambda] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.ops);
     else
         lambda = [];
-        [x,fmin,flag,output] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0,model.ops);
+        [x,fmin,flag,output] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.ops);
     end
 else
     if options.saveduals

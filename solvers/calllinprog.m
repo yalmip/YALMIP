@@ -5,10 +5,8 @@ options = interfacedata.options;
 F_struc = interfacedata.F_struc;
 c       = interfacedata.c;
 K       = interfacedata.K;
-Q       = interfacedata.Q;
 lb      = interfacedata.lb;
 ub      = interfacedata.ub;
-x0      = interfacedata.x0;
 
 showprogress('Calling LINPROG',options.showprogress);
 
@@ -43,17 +41,13 @@ if isfield(options.linprog,'LargeScale')
     end
 end
 
-if ~options.warmstart
-    x0 = [];
-end
-
 if options.savedebug
     ops = options.linprog;
-    save linprogdebug c A b Aeq beq lb ub ops x0
+    save linprogdebug c A b Aeq beq lb ub ops
 end
 
 solvertime = tic;
-[x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
+[x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, options.linprog);
 solvertime = toc(solvertime);
 problem = 0;
 
