@@ -74,6 +74,10 @@ emptysolver.powercone = 0;
 emptysolver.uncertain  = 0;
 emptysolver.global = 0;
 
+MATLAB_lexversion = version('-release');
+MATLAB_lexversion = MATLAB_lexversion(1:5); %Prune possible hotfix?
+MATLAB_lexversion = strrep(strrep(MATLAB_lexversion,'a','.1'),'b','.2');
+
 % **************************************
 % Some standard solvers to simplify code
 % **************************************
@@ -606,14 +610,14 @@ i = i+1;
 
 solver(i) = lpsolver;
 solver(i).tag     = 'LINPROG';
-solver(i).version = '';
+solver(i).version = MATLAB_lexversion;
 solver(i).checkfor= {'linprog'};
 solver(i).call    = 'calllinprog';
 i = i+1;
 
 solver(i) = qpsolver;
 solver(i).tag     = 'QUADPROG';
-solver(i).version = '';
+solver(i).version =  MATLAB_lexversion;
 solver(i).checkfor= {'quadprog'};
 solver(i).call    = 'callquadprog';
 solver(i).supportsinitial = 1;

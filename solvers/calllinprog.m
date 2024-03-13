@@ -53,7 +53,12 @@ if options.savedebug
 end
 
 solvertime = tic;
-[x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
+if isVersionRecent(interfacedata.solver.version,'2017.1')   
+    [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, options.linprog);
+else
+    [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0, options.linprog);
+end
+
 solvertime = toc(solvertime);
 problem = 0;
 
