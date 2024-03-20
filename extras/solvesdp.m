@@ -545,7 +545,7 @@ if interfacedata.options.saveduals & solver.dual
     end
 end
 % Hack to recover original QCQP duals from gurobi
-if strcmp(solver.tag,'GUROBI-GUROBI')
+if any(strfind(solver.tag,'GUROBI'))
     if length(ForiginalQuadratics) > 0
         if isfield(output,'qcDual')
             if length(output.qcDual) == length(ForiginalQuadratics)               
