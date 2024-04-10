@@ -176,7 +176,7 @@ switch lower(solver.tag)
     case 'dsdp-opti'
         model = yalmip2optidsdp(interfacedata);
 
-    case {'gurobi','gurobi-gurobi'}
+    case {'gurobi','gurobi-gurobi','gurobi-nonconvex'}
         model = yalmip2gurobi(interfacedata);
 
     case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
