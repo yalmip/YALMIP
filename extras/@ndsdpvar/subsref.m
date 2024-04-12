@@ -42,4 +42,8 @@ base = subsref(base,refs);
 X.basis = X.basis(base(:),:);
 X.conicinfo = [0 0];
 X.dim = size(base);
-X = clean(X);
+if nnz(X.basis)>0
+    X = clean(X);
+else
+    X = reshape(full(X.basis(:,1)),X.dim);
+end
