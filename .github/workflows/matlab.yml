@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: sqlp/sedumi
           path: sedumi
@@ -39,8 +39,13 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
         with:
-          release: R2020a
-       
+          release: R2024a
+
+      - name: Build SeDuMi
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "cd('sedumi');install_sedumi -rebuild:"
+          
       - name: Test core
         uses: matlab-actions/run-command@v0
         with:
@@ -81,7 +86,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: sqlp/sedumi
           path: sedumi
@@ -92,7 +97,12 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
         with:
-          release: R2020a
+          release: R2024a
+
+      - name: Build SeDuMi
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "cd('sedumi');install_sedumi -rebuild:"          
               
       - name: Test optimizer module
         if: success() || failure() 
@@ -154,7 +164,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: sqlp/sedumi
           path: sedumi
@@ -165,7 +175,12 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
         with:
-          release: R2020a
+          release: R2024a
+
+      - name: Build SeDuMi
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "cd('sedumi');install_sedumi -rebuild:"          
               
       - name: Test BNB solver
         if: success() || failure()       
