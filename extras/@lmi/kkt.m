@@ -50,18 +50,14 @@ end
 if isempty(model)
     error('KKT system can only be derived for LPs or QPs');
 end
-model.problemclass.constraint.binary = 0;
-model.problemclass.constraint.integer = 0;
-model.problemclass.constraint.semicont = 0;
-model.problemclass.constraint.sos1 = 0;
-model.problemclass.constraint.sos2 = 0;
 if ~ismember(problemclass(model), {'LP', 'Convex QP', 'Nonconvex QP'})
     error('KKT system can only be derived for LPs or QPs');
 end
-if ~isempty(model.binary_variables) | ~isempty(model.integer_variables) | ~isempty(model.semicont_variables)
-    comb = [model.used_variables(model.binary_variables) model.used_variables(model.integer_variables) model.used_variables(model.semicont_variables) ];
-    if ~isempty(intersect(comb,getvariables(decisionvariables)))
-        error('KKT system cannot be derived due to binary or integer decision variables');
+integer_variables = union(yalmip('intvariables'),yalmip('binvariables'));
+if ~isempty(integer_variables)
+    decisionvariables = setdiff(model.used_variables, getvariables(parametricVariables));
+    if ~isempty(intersect(integer_variables, decisionvariables))
+         error('KKT system cannot be derived due to binary or integer decision variables');
     end
 end
 
