@@ -41,10 +41,10 @@ jobs:
         with:
           release: R2020a
 
-      - name: Build and test
+      - name: Build SeDuMi
         uses: matlab-actions/run-command@v2
         with:
-          command: "install_sedumi -rebuild:"
+          command: "cd('sedumi');install_sedumi -rebuild:"
           
       - name: Test core
         uses: matlab-actions/run-command@v0
