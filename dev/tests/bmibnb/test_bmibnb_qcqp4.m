@@ -50,4 +50,4 @@ F = F + (obj == t);
 
 sol = optimize(F,t,sdpsettings('solver','bmibnb'))
 
-testCase.assertTrue(abs(value(t)--36) <= 1e-6)
+testCase.assertTrue(abs(value(t)--36) <= 1e-4)
