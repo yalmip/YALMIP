@@ -39,7 +39,7 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
         with:
-          release: R2020a
+          release: R2024a
 
       - name: Build SeDuMi
         uses: matlab-actions/run-command@v2
@@ -97,7 +97,7 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
         with:
-          release: R2020a
+          release: R2024a
 
       - name: Build SeDuMi
         uses: matlab-actions/run-command@v2
@@ -175,7 +175,7 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v0
         with:
-          release: R2020a
+          release: R2024a
 
       - name: Build SeDuMi
         uses: matlab-actions/run-command@v2
