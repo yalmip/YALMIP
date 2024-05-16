@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: sqlp/sedumi
           path: sedumi
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: sqlp/sedumi
           path: sedumi
@@ -154,7 +154,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Checkout tools repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: sqlp/sedumi
           path: sedumi
