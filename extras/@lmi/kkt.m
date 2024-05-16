@@ -1,4 +1,4 @@
-function [KKTConstraints, details] = kkt(F,h,parametricVariables,ops);
+function [KKTConstraints, details] = kkt(F,h,parametricVariables,ops)
 %KKT Create KKT system
 %
 % [KKTConstraints, details] = kkt(Constraints,Objective,parameters,options)
