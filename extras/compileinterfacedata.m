@@ -1181,7 +1181,6 @@ else
     interfacedata.equalitypresolved = 1;
     interfacedata.presolveequalities = ~isempty(interfacedata.evalMap);
 end
-interfacedata.ProblemClass = ProblemClass;
 interfacedata.dualized = is(F,'dualized');
 interfacedata.presolved = 0;
 if interfacedata.options.usex0==1
