@@ -511,7 +511,7 @@ for i = 1:length(sdp_con)
     %lmi_variables = getvariables(Fi);
     if length(lmi_variables) == nvars
         % No remap needed
-        F_structemp =  Fconj(Fibase');
+        F_structemp =  conj(Fibase');
     else
         mapX = [1 1+lmi_variables];
         [ix,jx,sx] = find(Fibase);
