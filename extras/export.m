@@ -93,12 +93,8 @@ else
 end
 options.solver = lower(options.solver);
 
-if nargin<6
-    if isequal(options.solver,'')
-        findallsolvers = 1;
-    else
-        findallsolvers = 0;
-    end
+if nargin<6    
+    findallsolvers = 1;    
 else
     findallsolvers = varargin{6};
 end
