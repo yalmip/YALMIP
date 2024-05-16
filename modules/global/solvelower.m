@@ -1,6 +1,7 @@
 function [output,cost,psave,timing] = solvelower(p,options,lowersolver,xmin,upper,timing)
 
 psave = p;
+p.solver.version = p.solver.lowersolver.version;
 removeThese = find(p.InequalityConstraintState==inf);
 p.F_struc(p.K.f + removeThese,:) = [];
 p.K.l = p.K.l - length(removeThese);
@@ -14,6 +15,20 @@ p_cut = p;
 % Add cuts for x^2==x and variants for box QP
 p_cut.F_struc = [p_cut.concavityEqualities;p_cut.F_struc];
 p_cut.K.f = p_cut.K.f + size(p_cut.concavityEqualities,1);
+
+for i = 1:size(p.possibleSol,1)
+    % If we know x is either -s or +s, we know x^2=s^2
+    x = p.possibleSol(i,1);
+    L = p.possibleSol(i,2)^2;
+    U = p.possibleSol(i,3)^2;
+    j = find(p.bilinears(:,1)==x);
+    if L==U        
+        f = p.bilinears(j,2);
+        p.lb(f)=L;
+        p.ub(f)=U;
+    end         
+end
+
 
 if p.options.bmibnb.cut.bilinear
     p_cut = addBilinearVariableCuts(p_cut);
@@ -201,7 +216,8 @@ else
             if strcmpi(p_cut.solver.lowersolver.tag,'mosek') && any(p_cut.K.s) && nnz(p_cut.Q)>0
                 output = moseksdpqpshim(removenonlinearity(p_cut));
             else
-                output = feval(lowersolver,removenonlinearity(p_cut));
+                p_temp = removenonlinearity(p_cut);p_temp.solver.version = p_temp.solver.lowersolver.version;
+                output = feval(lowersolver,p_temp);
             end
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
