@@ -98,6 +98,11 @@ jobs:
         uses: matlab-actions/setup-matlab@v0
         with:
           release: R2020a
+
+      - name: Build SeDuMi
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "cd('sedumi');install_sedumi -rebuild:"          
               
       - name: Test optimizer module
         if: success() || failure() 
@@ -171,6 +176,11 @@ jobs:
         uses: matlab-actions/setup-matlab@v0
         with:
           release: R2020a
+
+      - name: Build SeDuMi
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "cd('sedumi');install_sedumi -rebuild:"          
               
       - name: Test BNB solver
         if: success() || failure()       
