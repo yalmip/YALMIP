@@ -511,13 +511,13 @@ for i = 1:length(sdp_con)
     %lmi_variables = getvariables(Fi);
     if length(lmi_variables) == nvars
         % No remap needed
-        F_structemp =  Fibase';
+        F_structemp =  Fconj(Fibase');
     else
         mapX = [1 1+lmi_variables];
         [ix,jx,sx] = find(Fibase);
         clear Fibase;
         % Seems to be faster to transpose generation
-        F_structemp = sparse(ix,mapX(jx),sx,ntimesm,1+nvars)';
+        F_structemp = conj(sparse(ix,mapX(jx),sx,ntimesm,1+nvars)');
         clear jx ix sx
     end
     F_struc = [F_struc F_structemp];
