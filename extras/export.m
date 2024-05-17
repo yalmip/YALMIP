@@ -146,6 +146,14 @@ end
 % ******************************************
 % CONVERT
 % ******************************************
+
+% Silly fix for the recent addition of release to solver name
+if findstr('linprog',lower(solver.tag))
+    solver.tag = 'linprog';
+elseif findstr('quadprog',lower(solver.tag))
+    solver.tag = 'quadprog';
+end
+
 switch lower(solver.tag)
     case 'copt'
         model = yalmip2copt(interfacedata);
