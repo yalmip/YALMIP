@@ -69,7 +69,7 @@ else
     D_struc = [lambda.eqlin;lambda.ineqlin];
 end
 if isempty(x)
-    x = zeros(length(c),1);
+    x = nan(length(c),1);
 end
 
 % Check, currently not exhaustive...
