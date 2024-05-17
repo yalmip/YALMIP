@@ -12,7 +12,12 @@ if any(sum(mt(Fvars,wvars),2)>order)
         if any(sum(mt(getvariables(Fi),wvars),2)>order)
             [BilinearizeringConstraints,failure] = deriveBilinearizing(Fi,w,order);
             if failure
-                error('Cannot get rid of nonlinear uncertainty in uncertain constraint')
+                if is(F_xw(i),'equality')
+                    disp('<a href="https://yalmip.github.io/equalityinuncertainty">You might want to read this article to debug.</a>')
+                    error('Cannot get rid of uncertainty in uncertain equality.')
+                else
+                    error('Cannot get rid of uncertainty in uncertain constraint')
+                end
             else
                 % remove all the violating terms from the expression
                 F_xw(i) = clear_poly_dep(F_xw(i),w,order);
