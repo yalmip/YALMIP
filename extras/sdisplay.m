@@ -213,7 +213,24 @@ x = recover(LinearVariables);
 [exponent_p,ordered_list] = exponents(p,x);
 exponent_p = full(exponent_p);
 [~,map] = ismember(LinearVariables,global_LinearVariables);
+for j = 1:length(map)
+    if map(j) == 0 
+        map(j) = length(global_names)+1;
+        global_names{end+1} = ['internal(' num2str(LinearVariables(j)) ')'];
+    end
+end
 names = {global_names{map}};
+for i = 1:length(x)
+    if is(x(i),'compound')
+        E = yalmip('extstruct',LinearVariables(i));
+        if length(E.arg)==2
+           arg = E.arg{1};
+           symb_arg = createSymbolicExpression(arg,global_LinearVariables,global_names,precision);
+           names{i} = [E.fcn '(' symb_arg ')'];
+        end
+    end
+end
+
 
 % Remove 0 constant
 symb_p = '';
