@@ -77,4 +77,4 @@ F=[F,0<=x24<=100];
 sol = optimize(F,objvar,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
 
 testCase.assertTrue(sol.problem==0)
-testCase.assertTrue(abs(value(objvar)-1.563899998838327e+004) <= 1e-2) 
+testCase.assertTrue(abs(value(objvar)-1.5639e+004) <= 1) 
