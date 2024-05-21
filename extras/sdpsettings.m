@@ -317,12 +317,16 @@ while i <= nargin
 
         lowArg = strtrim(lower(arg));
 
-        if strcmp(lowArg,'usex0')
-            usex0wasused = 1;
-            warmstartwasused = 0;
-        elseif strcmp(lowArg,'warmstart')
-            usex0wasused = 0;
-            warmstartwasused = 1;
+        switch lowArg
+            case 'usex0'
+                usex0wasused = 1;
+                warmstartwasused = 0;
+            case 'warmstart'
+                usex0wasused = 0;
+                warmstartwasused = 1;
+            case {'shift','radius'}
+                warning(['Option ''' lowArg ''' will be removed in a future version and is no longer effective']);
+            otherwise
         end
         
         j = strmatch_octavesafe(lowArg,names);
