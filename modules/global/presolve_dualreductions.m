@@ -15,8 +15,8 @@ if p.feasible && nnz(p.Q)==0
                     if p.c(i) == 0
                         if s(1)>0 && ~isinf(p.ub(i))
                             p.lb(i) = p.ub(i);
-                            n = n+1;
-                        elseif ~isinf(p.lb(i))
+                            n = n+1;                       
+                        elseif s(1)<0 && ~isinf(p.lb(i))
                             p.ub(i) = p.lb(i);
                             n = n+1;
                         end
