@@ -69,7 +69,7 @@ if p.feasible && nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
     for i = (find(~isnan(fixable)))
         if fixable(i) == 1 && ~isinf(p.ub(candidates(fixable(i))))
             p.lb(candidates(fixable(i))) = p.ub(candidates(fixable(i)));
-            p.F_struc(4,1+candidates(fixable(i)))=  0;
+            p.F_struc(4,1+candidates(fixable(i))) =  0;
         elseif fixable(i) == -1 && ~isinf(p.lb(candidates(fixable(i))))
             p.ub(candidates(i)) = p.lb(candidates((i)));
             p.F_struc(4,1+candidates(i))=  0;
