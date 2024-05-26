@@ -31,9 +31,9 @@ switch class(varargin{1})
         Y = varargin{4};
         F=[];
         if Y>=1
-            operator = CreateBasicOperator('increasing','positive','callback');
+            operator = CreateBasicOperator('increasing','positive','callback','range',[0 inf]);
         elseif Y>=0
-            operator = CreateBasicOperator('decreasing','positive','callback');
+            operator = CreateBasicOperator('decreasing','positive','callback','range',[0 inf]);
         else
             % Base is negative, so the power has to be an integer
             F = (integer(X));
