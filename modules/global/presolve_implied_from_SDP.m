@@ -1,4 +1,4 @@
-function p = addImpliedSDP(p)
+function p = presolve_implied_from_SDP(p)
 if p.feasible && nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
     % Search for rows where there is a constant, and a diagonal term 
     % which thus has to be strictly positive, we might leads us to a
@@ -67,10 +67,10 @@ if p.feasible && nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
         top = top + p.K.s(j)^2;
     end   
     for i = (find(~isnan(fixable)))
-        if fixable(i) == 1 && ~isinf(p.ub(candidates(fixable(i))))
-            p.lb(candidates(fixable(i))) = p.ub(candidates(fixable(i)));
-            p.F_struc(4,1+candidates(fixable(i))) =  0;
-        elseif fixable(i) == -1 && ~isinf(p.lb(candidates(fixable(i))))
+        if fixable(i) == 1 && ~isinf(p.ub(candidates((i))))
+            p.lb(candidates((i))) = p.ub(candidates((i)));
+            p.F_struc(4,1+candidates((i))) =  0;
+        elseif fixable(i) == -1 && ~isinf(p.lb(candidates((i))))
             p.ub(candidates(i)) = p.lb(candidates((i)));
             p.F_struc(4,1+candidates(i))=  0;
         end
