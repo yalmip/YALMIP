@@ -787,6 +787,7 @@ gurobi.FuncPieceError = 1e-3;
 gurobi.FuncPieceLength = 1e-2;
 gurobi.FuncPieceRatio = -1;
 gurobi.FuncPieces = 0;
+gurobi.FuncNonLinear = 1;
 gurobi.GomoryPasses = -1;
 gurobi.GUBCoverCuts = -1;
 gurobi.Heuristics = 0.05;

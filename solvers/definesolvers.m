@@ -148,6 +148,7 @@ solver(i).constraint.semivar = 1;
 solver(i).constraint.sos2 = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
+solver(i).evaluation = 1;
 i = i+1;
 
 solver(i) = qpsolver;
