@@ -10,7 +10,6 @@ function solution = savesdpafile(varargin)
 
 F = varargin{1};
 h = varargin{2};
-nvars = yalmip('nvars');
 
 if isa(F,'constraint')
     F = lmi(F);
@@ -22,6 +21,8 @@ end
 
 % Expand nonlinear operators
 [F,failure,cause] = expandmodel(F,h,sdpsettings);
+nvars = yalmip('nvars');
+
 if failure % Convexity propgation failed
     interfacedata = [];
     recoverdata = [];
