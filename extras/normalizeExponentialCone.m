@@ -187,14 +187,15 @@ if ~isempty(model.evalMap)
                           -sparse([1;3],[x z],-1,3,size(data.A,2))];
                 data.b = [data.b;[0;1;0]];
             case 'plog'
-                % xv(1)log(xv(2)/xv(1))>=xc i.e.
-                % -xc >= -xv(1)log(xv(2)/xv(1))
-                z = model.evalMap{i}.computes;
+                % xv(1)log(xv(2)/xv(1))>=xc i.e.                
+                % xv(2) >= xv(1)*exp(xc/xv(1))
+                z = model.evalMap{i}.variableIndex(2);
                 y = model.evalMap{i}.variableIndex(1);
-                x = model.evalMap{i}.variableIndex(2);
-                data.A = [data.A;
-                          -sparse([1;2;3],[x y z],[1 -1 1],3,size(data.A,2))];
+                x = model.evalMap{i}.computes;
+                 data.A = [data.A;
+                          -sparse([1;2;3],[x y z],[-1 -1 -1],3,size(data.A,2))];
                 data.b = [data.b;[0;0;0]];
+                               
             case 'slog'
                 % log(1+xv) >= xc i.e. (1+xv) >= exp(xc/1)*1
                 z = model.evalMap{i}.variableIndex;
