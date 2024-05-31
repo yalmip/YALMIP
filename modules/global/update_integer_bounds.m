@@ -1,5 +1,25 @@
 function model = update_integer_bounds(model);
 
+if ~isempty(model.implied_integers)
+    I = model.implied_integers;
+    % Clean up things like 0.00001 <= x <= 0.999999 to 0 <= x <= 1
+    % however, don't kill equalities 1 <= x <= 1
+    lbfixed = fix(model.lb(I));
+    ubfixed = fix(model.ub(I));
+    fixlb = find(model.lb(I) == lbfixed);
+    fixub = find(model.ub(I) == ubfixed);
+    model.lb(I) = ceil(model.lb(I)-1e-4);
+    model.ub(I) = floor(model.ub(I)+1e-4);
+    if ~isempty(fixlb)
+        model.lb(I(fixlb)) = lbfixed(fixlb);
+    end
+    if ~isempty(fixub)
+        model.ub(I(fixub)) = ubfixed(fixub);
+    end
+    if any(model.lb(I) > model.ub(I))
+        model.feasible = 0;
+    end
+end
 if ~isempty(model.integer_variables)
     I = model.integer_variables;
     % Clean up things like 0.00001 <= x <= 0.999999 to 0 <= x <= 1
