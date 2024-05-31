@@ -148,8 +148,9 @@ solver(i).constraint.semivar = 1;
 solver(i).constraint.sos2 = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
-solver(i).evaluation = 1;
 i = i+1;
+
+% The general nonlinear Gugobi definition is placed below fmincon
 
 solver(i) = qpsolver;
 solver(i).tag     = 'CPLEX';
@@ -1638,6 +1639,30 @@ solver(i).call    = 'callintlinprog';
 solver(i).constraint.binary = 1;
 solver(i).constraint.integer = 1;
 solver(i).dual = 0;
+i = i+1;
+
+% Gurobi nonlinear solver is placed down here to make sure it is not
+% selected as a general nonlinear programming solver
+solver(i) = qpsolver;
+solver(i).tag     = 'GUROBI';
+solver(i).version = 'NONLINEAR';
+solver(i).checkfor= {'gurobi'};
+solver(i).call    = 'callgurobi';
+solver(i).objective.quadratic.nonconvex = 1;
+solver(i).objective.polynomial = 1;
+solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
+solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
+solver(i).constraint.inequalities.elementwise.polynomial = 1;
+solver(i).constraint.equalities.quadratic = 1;
+solver(i).constraint.equalities.polynomial = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+solver(i).constraint.semivar = 1;
+solver(i).constraint.sos2 = 1;
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
+solver(i).evaluation = 1;
 i = i+1;
 
 % % ***************************************

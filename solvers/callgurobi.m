@@ -6,10 +6,11 @@ if ~isempty(interfacedata.options.gurobi)
         interfacedata.options.gurobi = [];
     end
 end
-
+         
 options = interfacedata.options;
+% Keep track if we add variables to normalize SOCPs
 nOriginal = nnz(interfacedata.variabletype == 0);
-model = yalmip2gurobi(interfacedata);
+model = yalmip2gurobinonlinear(interfacedata);
 
 if interfacedata.options.savedebug
     save gurobidebug model
