@@ -4,6 +4,7 @@ function [x_min,upper] = root_node_heuristics(p,x_min,upper)
 x = zeros(length(p.c),1);
 x(p.lb == p.ub) = p.lb(p.lb==p.ub);
 x = fix_binary_products(p,x);
+[upper,x_min] = upper_from_sdpextension(p,x,upper,x_min);
 upperhere = computecost(p.f,p.c,p.Q,x,p);
 if upperhere < upper
     if checkfeasiblefast(p,x,p.options.bnb.feastol)
@@ -19,6 +20,7 @@ x = zeros(length(p.c),1);
 x(p.binary_variables) = 1;
 x(p.lb == p.ub) = p.lb(p.lb==p.ub);
 x = fix_binary_products(p,x);
+[upper,x_min] = upper_from_sdpextension(p,x,upper,x_min);
 upperhere = computecost(p.f,p.c,p.Q,x,p);
 if upperhere < upper
     if checkfeasiblefast(p,x,p.options.bnb.feastol)
@@ -46,6 +48,7 @@ if ~isempty(p.knapsack.variables)
             end
         end
         x = fix_binary_products(p,x);
+        [upper,x_min] = upper_from_sdpextension(p,x,upper,x_min);
         upperhere = computecost(p.f,p.c,p.Q,x,p);
         if upperhere < upper            
             if checkfeasiblefast(p,x,p.options.bnb.feastol)
@@ -68,6 +71,7 @@ if ~isempty(p.knapsack.variables)
             end
         end
         x = fix_binary_products(p,x);
+        [upper,x_min] = upper_from_sdpextension(p,x,upper,x_min);
         upperhere = computecost(p.f,p.c,p.Q,x,p);
         if upperhere < upper            
             if checkfeasiblefast(p,x,p.options.bnb.feastol)
