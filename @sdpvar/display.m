@@ -72,8 +72,14 @@ switch(X.typeflag)
             if any(ismember(depends(X),yalmip('parvariables')))
                 classification = [classification ', parametric'];
             end
-            if ~isnan(value(X))
-                classification = [classification '\nCurrent value: ' num2str(value(X))];
+          
+            try
+                v = value(X);
+            catch
+                v = nan;
+            end
+             if ~isnan(v)
+                classification = [classification '\nCurrent value: ' num2str(v)];                
             end
             
             B = getbase(X);
@@ -81,7 +87,7 @@ switch(X.typeflag)
             [ii,jj,ss2] = find(imag(getbase(B)));
             ss = [ss1;ss2];
             DynamicalRange = [num2str( min(abs(ss))) ' to ' num2str( max(abs(ss)))];
-            classification = [classification '\nCoeffiecient range: ' DynamicalRange];                      
+            classification = [classification '\nCoefficients range: ' DynamicalRange];                      
             fprintf([classification '\n']);  
         else
 
@@ -161,7 +167,7 @@ switch(X.typeflag)
                     doubleX = double(X);
                     try
                     eigX = eig(doubleX);
-                    info = [info '\nEigenvalues between [' num2str(min(eigX)) ',' num2str(max(eigX)) ']'];               
+                    info = [info '\nEigenvalues between [' num2str(min(eigX)) ',' num2str(max(eigX)) '], '  num2str(nnz(doubleX)) ' nonzeros'];               
                     catch
                     end
                 end
@@ -170,7 +176,7 @@ switch(X.typeflag)
                 if ~any(any(isnan(value(x))))
                     doubleX = value(X);
                     try                       
-                        info = [info '\nValues in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) ']'];
+                        info = [info '\nValues in range [' num2str(min(min(doubleX))) ',' num2str(max(max(doubleX))) '], ' num2str(nnz(doubleX)) ' nonzeros'];
                     catch
                     end
                 end
@@ -180,8 +186,13 @@ switch(X.typeflag)
             [ii,jj,ss1] = find(real(getbase(B)));
             [ii,jj,ss2] = find(imag(getbase(B)));
             ss = [ss1;ss2];
-            DynamicalRange = [num2str( min(abs(ss))) ' to ' num2str( max(abs(ss)))];
-            info = [info '\nCoeffiecient range: ' DynamicalRange];                      
+            if any(ss)
+                DynamicalRange = [num2str( min(abs(ss))) ' to ' num2str( max(abs(ss)))];
+            else
+                DynamicalRange = ['0 to 0'];
+            end
+            
+            info = [info '\nCoefficient range: ' DynamicalRange];                      
             fprintf([classification num2str(n) 'x' num2str(m) info '\n']);
         end;
     case 1

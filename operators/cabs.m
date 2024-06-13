@@ -1,5 +1,4 @@
 function varargout = cabs(varargin)
-%cabs (overloaded)
 
 switch class(varargin{1})
 
@@ -11,16 +10,17 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','convex','monotonicity','none','definiteness','positive','model','callback');
+        operator = CreateBasicOperator('convex','positive','callback');
         operator.derivative = @derivative;        
         operator.bounds = @bounds;                        
-        operator.convexhull = @convexhull;                        
+        operator.convexhull = @convexhull;  
+        
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/CABS called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function df = derivative(x)
@@ -40,26 +40,4 @@ elseif xL >= 0
 else
     L = abs(xU);
     U = abs(xL);
-end
-
-function [Ax, Ay, b, K] = convexhull(xL,xU)
-fL = abs(xL);
-fU = abs(xU);
-if fL == fU || xL>=0
-    Ax = -1;
-    Ay = 1;
-    b = 0;
-    K.f = 1;
-    K.l = 0;
-elseif xU<=0
-    Ax = 1;
-    Ay = 1;
-    b = 0;
-    K.f = 1;
-    K.l = 0;
-elseif xL < 0 && xU > 0
-    dfL = -1;
-    dfU = 1;   
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
-    K = [];
 end

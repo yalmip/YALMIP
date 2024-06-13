@@ -1,4 +1,4 @@
-function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric)
+function [interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,aux_obsolete,logdetStruct,h,options,findallsolvers,parametric,solvers_from_solvesdp)
 
 persistent CACHED_SOLVERS
 persistent allsolvers
@@ -18,9 +18,8 @@ if nargin<7
     parametric = 0;
 end
 
-%% Clean objective to default empty
-if isa(h,'double')
-    h = [];
+if nargin < 8
+	solvers_from_solvesdp = [];
 end
 
 % *************************************************************************
@@ -50,6 +49,18 @@ end
 % *************************************************************************
 if isa(options.shift,'sdpvar') | (options.shift~=0)
     F = shift(F,options.shift);
+end
+
+switch options.relax
+    case {'integer','binary'}
+        options.relax = 2;
+    case 'nonlinear'
+        options.relax = 3;
+    case 'all'
+        options.relax = 1;
+    case ''
+        options.relax = 0;
+    otherwise
 end
 
 % *************************************************************************
@@ -161,7 +172,7 @@ end
 % Finding solvers can be very slow on some systems. To alleviate this
 % problem, YALMIP can cache the list of available solvers.
 % *************************************************************************
-if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
+if ((options.cachesolvers==0) | isempty(CACHED_SOLVERS)) & isempty(solvers_from_solvesdp)
     getsolvertime = clock;
     [solvers,kept,allsolvers] = getavailablesolvers(findallsolvers,options);
     getsolvertime = etime(clock,getsolvertime);
@@ -186,8 +197,11 @@ if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
         NCHECKS = 5;
     end
     CACHED_SOLVERS = solvers;
-else
+elseif isempty(solvers_from_solvesdp)
     solvers = CACHED_SOLVERS;
+else
+	solvers = solvers_from_solvesdp;
+	allsolvers = definesolvers;
 end
 
 % *************************************************************************
@@ -202,7 +216,7 @@ if isempty(solvers)
         diagnostic.info = yalmiperror(-3,'YALMIP');
         diagnostic.problem = -3;
     end
-    if warningon & options.warning & isempty(findstr(diagnostic.info,'No problems detected'))
+    if warningon & options.warning & isempty(strfind(diagnostic.info,'No problems detected'))
         disp(['Warning: ' diagnostic.info]);
     end
     return
@@ -218,37 +232,43 @@ end
 [monomtable,variabletype] = yalmip('monomtable');
 F_vars = getvariables(F);
 do_not_convert = any(variabletype(F_vars)==4);
+% Handle case where optimizer adds a '+'
+selected_solver = options.solver;
+if ~isempty(selected_solver) && selected_solver(1) == '+'
+    selected_solver(1)=[];
+end
 %do_not_convert = do_not_convert | ~solverCapable(solvers,options.solver,'constraint.inequalities.secondordercone');
-do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
-do_not_convert = do_not_convert | strcmpi(options.solver,'scip');
-do_not_convert = do_not_convert | strcmpi(options.solver,'snopt');
-do_not_convert = do_not_convert | strcmpi(options.solver,'knitro');
-do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-geometric'); 
-do_not_convert = do_not_convert | strcmpi(options.solver,'snopt-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt');
-do_not_convert = do_not_convert | strcmpi(options.solver,'bonmin');
-do_not_convert = do_not_convert | strcmpi(options.solver,'nomad');
-do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-geometric');
-do_not_convert = do_not_convert | strcmpi(options.solver,'ipopt-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'filtersd');
-do_not_convert = do_not_convert | strcmpi(options.solver,'filtersd-dense');
-do_not_convert = do_not_convert | strcmpi(options.solver,'filtersd-sparse');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennon');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-geometric');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennon-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'pennlp');
-do_not_convert = do_not_convert | strcmpi(options.solver,'penbmi');
-do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon');
-do_not_convert = do_not_convert | strcmpi(options.solver,'lindo');
-do_not_convert = do_not_convert | strcmpi(options.solver,'sqplab');
-do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon-geometric');
-do_not_convert = do_not_convert | strcmpi(options.solver,'fmincon-standard');
-do_not_convert = do_not_convert | strcmpi(options.solver,'bmibnb');
-do_not_convert = do_not_convert | strcmpi(options.solver,'moment');
-do_not_convert = do_not_convert | strcmpi(options.solver,'sparsepop');
-do_not_convert = do_not_convert | strcmpi(options.solver,'baron');
-do_not_convert = do_not_convert | strcmpi(options.solver,'penlab');
-do_not_convert = do_not_convert | strcmpi(options.solver,'scip-nl');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'bmibnb');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'scip');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'snopt');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'knitro');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'knitro-standard');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'knitro-geometric');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'snopt-geometric'); 
+do_not_convert = do_not_convert | strcmpi(selected_solver,'snopt-standard');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'bonmin');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'nomad');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'ipopt');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'ipopt-standard');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'ipopt-geometric');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'filtersd');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'filtersd-dense');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'filtersd-sparse');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'pennon');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'pennon-geometric');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'pennon-standard');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'pennlp');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'penbmi');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'fmincon');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'fmincon-standard');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'fmincon-geometric');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'sqplab');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'bmibnb');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'moment');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'sparsepop');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'baron');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'penlab');
+do_not_convert = do_not_convert | strcmpi(selected_solver,'scip-nl');
 do_not_convert = do_not_convert | (options.convertconvexquad == 0);
 do_not_convert = do_not_convert | (options.relax == 1);
 if ~do_not_convert & any(variabletype(F_vars))
@@ -294,11 +314,15 @@ end
 % *************************************************************************
 %% SELECT SUITABLE SOLVER
 % *************************************************************************
-[solver,problem] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc,allsolvers);
+[solver,problem,~,failureMode] = selectsolver(options,ProblemClass,solvers,socp_are_really_qc,allsolvers);
 if isempty(solver)
     diagnostic.solvertime = 0;
-    if problem == -4 || problem == -3 || problem == -9 
-        diagnostic.info = yalmiperror(problem,options.solver);
+    if problem == -4 
+        s = [options.solver ' does not support ' failureMode];
+        diagnostic.info = yalmiperror(problem,s);
+    elseif problem == -3 || problem == -9 
+        s = options.solver;
+        diagnostic.info = yalmiperror(problem,s);
     else
         diagnostic.info = yalmiperror(problem,'YALMIP');
     end
@@ -366,8 +390,9 @@ if strcmpi(solver.tag,'bnb')
     end 
 end
 
-if findstr(lower(solver.tag),'sparsecolo')
+if strfind(lower(solver.tag),'sparsecolo')
     temp_options = options;
+    temp_options.options.forceglobal = 0;
     temp_options.solver = options.sparsecolo.SDPsolver;
     tempProblemClass = ProblemClass;   
     localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
@@ -380,8 +405,9 @@ if findstr(lower(solver.tag),'sparsecolo')
     solver.sdpsolver = localsolver;
 end
 
-if findstr(lower(solver.tag),'frlib')
+if strfind(lower(solver.tag),'frlib')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = options.frlib.solver;
     tempProblemClass = ProblemClass;   
     localsolver = selectsolver(temp_options,tempProblemClass,solvers,socp_are_really_qc,allsolvers);
@@ -425,6 +451,7 @@ localsolver.qc = 0;
 localsolver = solver;
 if strcmpi(solver.tag,'kktqp')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = '';
     tempProblemClass = ProblemClass;
     tempProblemClass.constraint.binary = 1;
@@ -446,6 +473,7 @@ end
 % *************************************************************************
 if strcmpi(solver.tag,'lmirank')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = options.lmirank.solver;
     tempProblemClass = ProblemClass;
     tempProblemClass.constraint.inequalities.rank = 0;
@@ -464,8 +492,9 @@ end
 % *************************************************************************
 %% DID WE SELECT THE VSDP SOLVER? Define a solver for VSDP to use
 % *************************************************************************
-if findstr(solver.tag,'VSDP')
+if strfind(solver.tag,'VSDP')
     temp_options = options;
+    temp_options.forceglobal = 0;
     temp_options.solver = options.vsdp.solver;
     tempProblemClass = ProblemClass;
     tempProblemClass.interval = 0;
@@ -553,7 +582,7 @@ if ~isempty(logdetStruct)
     end
     if ~can_solve_maxdet
         if isempty(h)
-            h = 0;
+            h = 0;       
         end
         if 0%can_solve_expcone
             for i = 1:length(logdetStruct.P)
@@ -639,7 +668,7 @@ if convertQuadraticObjective
         f = quad_info.f;
         F = F + lmi(cone([2*R*x;1-(t-f)],1+t-f));
         h = t+c'*x;
-        if options.usex0
+        if options.warmstart
             xx = value(x);
             ff = norm(quad_info.R*xx)^2+f;
             if ~isnan(ff)
@@ -721,7 +750,15 @@ try
         tempoptions.relax = 1;
         [c,Q,f]=createobjective(h,logdetStruct,tempoptions,quad_info);
     else
-        [c,Q,f]=createobjective(h,logdetStruct,options,quad_info);
+        if isa(h,'double')
+            [c,Q,f]=createobjective([],logdetStruct,options,quad_info);
+            f = h;
+        else
+            [c,Q,f]=createobjective(h,logdetStruct,options,quad_info);
+        end
+    end
+    if isempty(f)
+        f = 0;
     end
 catch
     error(lasterr)
@@ -895,9 +932,6 @@ if ~isempty(K.sos)
     end
 end
 
-% if ~isempty(semicont_variables) &&  ~solver.constraint.semivar
-%     [F_struc,K,binary_variables] = expandsemivar(F_struc,K,semicont_variables);
-% end
 % *************************************************************************
 %% Equality constraints not supported or supposed to be removed
 % *************************************************************************
@@ -956,7 +990,7 @@ if (K.f>0)
             % And we are done! Save the result
             % Note, no dual is saved
             yalmip('setSolution',solution);
-            p = checkset(F);
+            p = check(F);
             if any(p<1e-5)
                 diagnostic.info = yalmiperror(1,'YALMIP');
                 diagnostic.problem = 1;
@@ -999,9 +1033,9 @@ end
 %% Setup the initial solution
 % *************************************************************************
 x0 = [];
-if options.usex0
+if options.warmstart
     if solver.supportsinitial == 0
-        error('You have specified an initial point, but the selected solver does not support warm-starts through YALMIP');
+        error(['You have specified an initial point, but the selected solver (' solver.tag ') does not support warm-starts through YALMIP']);
     end
     if options.relax
         x0_used = relaxdouble(recover(used_variables));
@@ -1052,29 +1086,18 @@ if ~isempty(oldc)
 end
 
 % Sanity check
-if ~isempty(c)
-    if any(isnan(c) )
-        error('You have NaNs in your objective!. Read more: https://yalmip.github.io/naninmodel/')
-    end
+if (~isempty(c) && any(isnan(c) )) || (~isempty(Q) && any(any(isnan(Q))))
+    disp('You have NaNs in objective (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+    error('NaN in objective')
 end
-if ~isempty(Q)
-    if any(any(isnan(Q)))
-        error('You have NaNs in your quadratic objective!. Read more: https://yalmip.github.io/naninmodel/')
-    end
-end
-if ~isempty(lb)
-    if any(isnan(lb))
-        error('You have NaNs in a lower bound!. Read more: https://yalmip.github.io/naninmodel/')
-    end
-end
-if ~isempty(ub)
-    if any(isnan(ub))
-        error('You have NaNs in an upper bound!.Read more: https://yalmip.github.io/naninmodel/')
-    end
+if (~isempty(ub) && any(isnan(ub))) || (~isempty(lb) && any(isnan(lb)))
+    disp('You have NaNs in a bound (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+    error('NaN in bounds')
 end
 if ~isempty(F_struc)
     if any(any(isnan(F_struc)))
-        error('You have NaNs in your constraints!. Read more: https://yalmip.github.io/naninmodel/')        
+        disp('You have NaNs in your constraints (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('NaN in model')
     end
 end
 
@@ -1132,6 +1155,7 @@ interfacedata.variabletype = variabletype;
 interfacedata.integer_variables   = integer_variables;
 interfacedata.binary_variables    = binary_variables;
 interfacedata.semicont_variables    = semicont_variables;
+interfacedata.implied_integers = [];
 interfacedata.semibounds = [];
 interfacedata.uncertain_variables = [];
 interfacedata.parametric_variables= parametric_variables;
@@ -1157,10 +1181,13 @@ if strcmpi(solver.tag,'bmibnb')
     interfacedata.presolveequalities = 1;
 else
     interfacedata.equalitypresolved = 1;
-    interfacedata.presolveequalities = 1;
+    interfacedata.presolveequalities = ~isempty(interfacedata.evalMap);
 end
-interfacedata.ProblemClass = ProblemClass;
 interfacedata.dualized = is(F,'dualized');
+interfacedata.presolved = 0;
+if interfacedata.options.usex0==1
+    interfacedata.options.warmstart=1;
+end
 
 % *************************************************************************
 %% GENERAL DATA EXCANGE TO RECOVER SOLUTION AND UPDATE YALMIP VARIABLES

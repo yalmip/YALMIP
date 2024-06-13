@@ -1,4 +1,7 @@
-function test_mpt_pwa_1
+function tests = test_mpt_pwa_1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Data
 A = [2 -1;1 0];nx = 2;
@@ -92,4 +95,4 @@ Y.constraints = Y.constraints + [ -1 <= C*Y.variables.x(:, end) <= 1 ];
 new = ctrl.fromYALMIP(Y).toExplicit();
 fun1 = mpt_mpsol2pu(mpsol{1});
 result =  fun1.join().compare(new.optimizer.join(), 'obj');
-assertTrue(result == 0);
+assert(result == 0)

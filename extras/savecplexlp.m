@@ -44,7 +44,7 @@ if nargin<3
         return % User cancelled
     else
         % Did the user change the extension
-        if isempty(findstr(filename,'.'))
+        if isempty(strfind(filename,'.'))
             filename = [pathname filename '.lp'];
         else
             filename = [pathname filename];
@@ -77,7 +77,7 @@ for i = 1:length(b)
 end
 for i = 1:length(beq)
     rowtext = lptext(-Aeq(i,:));
-    rowtext = [rowtext(1:end-2) '== ' sprintf('%0.20g',full(-beq(i)))];    
+    rowtext = [rowtext(1:end-2) '= ' sprintf('%0.20g',full(-beq(i)))];    
     fprintf(fid,[' eq%i: ' strrep(rowtext,'+ -','-') ''],i);
     fprintf(fid,'\r\n');
 end

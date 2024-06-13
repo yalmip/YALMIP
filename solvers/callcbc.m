@@ -43,8 +43,6 @@ switch exitflag
         problem = -1;
 end
 
-infostr = yalmiperror(problem,'CBC');
-
 % Save all data sent to solver?
 if options.savesolverinput
     solverinput.model = model;
@@ -64,4 +62,4 @@ else
 end
 
 % Standard interface
-output = createOutputStructure(x(:),[],[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),[],[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

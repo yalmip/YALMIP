@@ -1,5 +1,4 @@
 function varargout = interp1(varargin)
-%INTERP1 (overloaded)
 
 switch class(varargin{3})
 
@@ -13,7 +12,7 @@ switch class(varargin{3})
             varargin{5} = [];
         end        
         
-        if isa(varargin{2},'function_handle')
+        if isa(varargin{2},'function_handle') && length(varargin{1}) > 1
             varargin{2} = varargin{2}(varargin{1});
         end
         
@@ -62,10 +61,12 @@ switch class(varargin{3})
             end            
             % Column vector assumed format
             varargin{1} = reshape(varargin{1},[],1);
-            varargin{2} = reshape(varargin{2},[],1);            
+            if ~isa(varargin{2},'function_handle')
+                varargin{2} = reshape(varargin{2},[],1);            
+            end
         end
         
-        if ~isa(varargin{1},'double') || ~isa(varargin{2},'double')
+        if ~isa(varargin{1},'double') || ~(isa(varargin{2},'double') || isa(varargin{2},'function_handle'))
             error('First 2 arguments in interp1 should be approximation data');
         end
         
@@ -131,7 +132,7 @@ switch class(varargin{3})
         end
         
     otherwise
-        error('SDPVAR/INTERP1 called with strange argument!');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function isconvex = isconvexdata(xi,yi)

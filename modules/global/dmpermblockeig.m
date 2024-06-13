@@ -15,7 +15,7 @@ for i = 1:length(blocks)-1
     Xi = Xpermuted(blocks(i):blocks(i+1)-1,blocks(i):blocks(i+1)-1);
     [R,fail] = chol(Xi);
     anycholfail = anycholfail | fail;
-    if fail
+    if fail && nnz(Xi)>0
         if length(Xi) >= switchtosparse           
             [vi,di,eigfail] = eigs(Xi,5,'SA');            
             if eigfail || isempty(di)

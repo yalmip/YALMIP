@@ -97,7 +97,7 @@ switch model.options.verbose
     otherwise
         pen.ioptions(3) = 3;
 end
-if model.options.usex0
+if model.options.warmstart
     pen.ioptions(8) = 0;
 else
     pen.ioptions(8) = 1;
@@ -187,4 +187,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'PENNON',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'PENNON',solverinput,solveroutput,solvertime);

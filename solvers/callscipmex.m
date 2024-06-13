@@ -41,7 +41,7 @@ VARTYPE = char(ones(n,1)*67);
 VARTYPE(integer_variables) = 'I'; 
 VARTYPE(binary_variables)  = 'B';  % Should not happen except from bmibnb
 
-if K.q(1)>0
+if any(K.q)
     top = K.f+K.l+1; 
     qc.l = [];
     qc.r = [];
@@ -148,7 +148,5 @@ else
 	solveroutput = [];
 end
 
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

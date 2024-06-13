@@ -7,19 +7,20 @@ function y = cone(Axplusb,cxplusd)
 %
 % Example
 %
-% Standard SOCP constraint norm(z,2)<=x where z is a vector and x is a scalar
+% Standard SOCP constraint normally conveniently written as norm(z,2)<=x
+% where z is a vector and x is a scalar 
 %    F = cone(z,x)
 %
 % Alternative syntax with only one argument is also possible
 %    F = cone(z)
-% This command is equivalent to cone(z(2:end),z(1))
+% This is equivalent to cone(z(2:end),z(1))
 %
 % To quickly define several cones, the argument can be a matrix, and the
 % command is then short-hand for 
 % for i = 1:size(z,2);F = [F,cone(z(:,i))];end 
-% The code will however run much faster than the manual version
+% The code will however run much faster than the non-vectorized version
 %
-% See also  @SDPVAR/NORM
+% See also  @SDPVAR/EXPCONE, @SDPVAR/PCONE, @SDPVAR/NORM
 
 [n,m] = size(Axplusb);
 if min(n,m)>1 & nargin>1

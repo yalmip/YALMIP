@@ -1,8 +1,7 @@
-function LU = extract_bounds_from_milpsubsref_operator(LU,extstruct,extvariables,i);
+function LU = extract_bounds_from_milpsubsref_operator(LU,extstruct,extvariables,i)
 arg = extstruct(i).arg{1};
-% epi = arg{2}(arg{3})
 epi = getvariables(extstruct(i).var);
-[M,m] = derivebounds(arg,LU);
+[M,m] = derivebounds(reshape(arg,[],1),LU);
 LU(epi,1) = min(m);
 LU(epi,2) = max(M);
 for j = 1:length(extstruct(i).arg{2}.subs)

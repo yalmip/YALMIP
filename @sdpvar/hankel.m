@@ -13,7 +13,11 @@ x = [c;extsubsref(r,2:nr)];
 cidx = (1:nc)';
 ridx = 0:(nr-1);
 H = cidx(:,ones(nr,1)) + ridx(ones(nc,1),:);
-H = extsubsref(x,H);
+if isrow(H)
+    H = extsubsref(x,H).';
+else
+    H = extsubsref(x,H);
+end
 if isa(H,'sdpvar')
     H.conicinfo = [0 0];
 end

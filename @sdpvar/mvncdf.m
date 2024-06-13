@@ -1,9 +1,4 @@
 function varargout = mvncdf(varargin)
-%MVNCDF
-%
-% y = MVNCDF(x)
-%
-% Computes/declares multivariate normal cumulative distribution function
 
 switch class(varargin{1})
 
@@ -18,15 +13,35 @@ switch class(varargin{1})
     case 'char'
 
         X = varargin{3};
-        F = (X >= 0);
+        F = [];
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
-        operator.range = [0 1];
-        operator.domain = [0 inf];                        
+        operator = CreateBasicOperator('positive','increasing','callback');  
+        if length(X) == 1
+            operator.convexity = @convexity; 
+            operator.derivative = @(x)(1/2)*(1/sqrt(2))*exp(-(x/sqrt(2)).^2)*2/sqrt(pi);
+            operator.inverse = @(x)(sqrt(2)*erfinv(2*x-1));
+        else
+            operator.bounds = @bounds;
+        end
+        
+        operator.range = [0 1];        
         varargout{1} = F;
         varargout{2} = operator;
         varargout{3} = X;
 
     otherwise
-        error('SDPVAR/MVNCDF called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
+end
+
+function [L,U] = bounds(xL,xU)
+L = mvncdf(xL);
+U = mvncdf(xU);
+
+function vexity = convexity(xL,xU)
+if xL >= 0  
+    vexity = 'concave';
+elseif xU <= 0
+    vexity = 'convex';
+else
+    vexity = 'none';
 end

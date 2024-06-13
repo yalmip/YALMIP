@@ -24,7 +24,7 @@ function x = process_evaluations(x,p)
 for i = 1:length(p.evalMap)
     arguments = {p.evalMap{i}.fcn,x(p.evalMap{i}.variableIndex)};
     arguments = {arguments{:},p.evalMap{i}.arg{2:end-1}};
-    x(p.evalVariables(i)) = feval(arguments{:});
+    x(p.evalVariables(i)) = real(feval(arguments{:}));
     if ~isempty(p.bilinears)
         x = process_bilinear(x,p);
     end

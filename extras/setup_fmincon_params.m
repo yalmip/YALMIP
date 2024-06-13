@@ -20,8 +20,8 @@ if ~isempty(model.evalMap)
             model.evalinconstraint = 1;
         end
     end
-    if any(model.K.q)
-        if nnz(model.F_struc(1+model.K.f + model.K.l:end,1+evalInvolved)) > 0
+    if anyCones(model.K)
+        if nnz(model.F_struc(startofSOCPCone(model.K):end,1+evalInvolved)) > 0
             model.evalinconstraint = 1;
         end
     end
@@ -85,11 +85,11 @@ else
     model.SimpleNonlinearObjective = 0;
 end
 
-model.linearconstraints = isempty(model.Anonlinineq) & isempty(model.Anonlineq) & nnz(model.K.q)==0;
+model.linearconstraints = isempty(model.Anonlinineq) && isempty(model.Anonlineq) && ~anyCones(model.K);
 model.nonlinearinequalities = ~isempty(model.Anonlinineq);
 model.nonlinearequalities = ~isempty(model.Anonlineq);
-if any(model.K.q)
-    if nnz(model.F_struc(1+model.K.f + model.K.l:end,1+model.nonlinearindicies)) > 0
+if anyCones(model.K)
+    if nnz(model.F_struc(startofSOCPCone(model.K):end,1+model.nonlinearindicies)) > 0
         model.nonlinearcones = 1;
     else
         model.nonlinearcones = 0;
@@ -99,8 +99,12 @@ else
 end
 
 % Structure for fast evaluation of monomial terms in differentiation
- if isempty(model.evalMap) & (model.nonlinearinequalities | model.nonlinearequalities | model.nonlinearcones) & ~isfield(model,'fastdiff')     
-    allA = [model.Anonlineq;model.Anonlinineq];
+if isempty(model.evalMap) && (model.nonlinearinequalities || model.nonlinearequalities || model.nonlinearcones) && ~isfield(model,'fastdiff')
+%     allA = [model.Anonlineq;model.Anonlinineq];
+%     if anyCones(model.K)
+%         allA = [allA;model.F_struc(startofSOCPCone(model.K):end,2:end)];
+%         allA = allA(any(allA,2),:);
+%     end    
     dgAll = [];
     n = length(model.c);
     linearindicies = model.linearindicies;
@@ -156,8 +160,8 @@ end
     end
  else
       allA = [model.Anonlineq;model.Anonlinineq]; 
-      if any(model.K.q)
-          allA = [allA;model.F_struc(1+model.K.f + model.K.f:end,2:end)];
+      if anyCones(model.K)
+          allA = [allA;model.F_struc(startofSOCPCone(model.K):end,2:end)];
       end
       requested = any(allA',2); 
       [i,j,k] = find((model.deppattern(find(requested),:))); 

@@ -16,12 +16,12 @@ if model.options.savedebug
 end
 showprogress('Calling filterSD',model.options.showprogress);
 
-cu = [ repmat(0,length(model.bnonlinineq),1);
+cu = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-cl = [ repmat(-inf,length(model.bnonlinineq),1);
+cl = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
@@ -47,6 +47,11 @@ latest_x_f = [];
 latest_x_g = [];
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.n  = inf;
+sdpLayer.f = @(x)((x>=0).*(1*x) + (x<0).*(3*x));
+sdpLayer.df = @(x)((x>=0)*1 + (x<0)*3);
+sdpLayer.f = @(x)(x);
+sdpLayer.df = @(x)(1);
 
 funcs.objective = @(x)ipopt_callback_f(x,model);
 funcs.gradient = @(x)ipopt_callback_df(x,model);
@@ -61,7 +66,7 @@ end
 lb  = model.lb(:)';
 ub = model.ub(:)';
 
-if ~model.options.usex0
+if ~model.options.warmstart
     model.x0 = (lb+ub)/2;
     model.x0(isinf(ub)) = lb(isinf(ub))+1;
     model.x0(isinf(lb)) = ub(isinf(lb))-1;
@@ -115,6 +120,6 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'filterSD',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'filterSD',solverinput,solveroutput,solvertime);
 
 

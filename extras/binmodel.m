@@ -165,14 +165,14 @@ if ~isempty(bilinear)
     if all(ismember(xi,allbinary)) & all(ismember(yi,allbinary))
         % fast case for binary*binary
         z_bilinear = binvar(length(bilinear),1);
-        F = [F, binary(z_bilinear), x >= z_bilinear, y >= z_bilinear, 1+z_bilinear >= x + y, 0 <= z_bilinear <= 1];
+        F = [F, binary(z_bilinear), x >= z_bilinear, y >= z_bilinear, 1+z_bilinear >= x + y, (0 <= z_bilinear <= 1):'Global bound'];
     else
         z_bilinear = sdpvar(length(bilinear),1);
         theseAreBinaries = find(ismember(xi,allbinary) & ismember(yi,allbinary));
         z_bilinear(theseAreBinaries) = binvar(length(theseAreBinaries),1);
         for i = 1:length(bilinear)
             if ismember(xi(i),allbinary) & ismember(yi(i),allbinary)
-                F = [F, x(i) >= z_bilinear(i), y(i) >= z_bilinear(i), 1+z_bilinear(i) >= x(i) + y(i), 0 <= z_bilinear(i) <= 1];
+                F = [F, x(i) >= z_bilinear(i), y(i) >= z_bilinear(i), 1+z_bilinear(i) >= x(i) + y(i), (0 <= z_bilinear(i) <= 1):'Global bound'];
             elseif ismember(xi(i),allbinary)
                 F = [F, binary_times_cont(x(i),y(i), z_bilinear(i))];
             else
@@ -241,7 +241,7 @@ function F = binary_times_cont(d,y, z)
 if infbound
     error('Some of your continuous variables are not explicitly bounded.')
 end
-F = [(1-d)*M >= y - z >= m*(1-d), d*m <= z <= d*M, min(0,m) <= z <= max(0,M)];
+F = [(1-d)*M >= y - z >= m*(1-d), d*m <= z <= d*M, (min(0,m) <= z <= max(0,M)):'Global bound', (m <= y <= M):'Global bound'];
                 
 
 

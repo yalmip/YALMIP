@@ -43,7 +43,7 @@ if isfield(options.linprog,'LargeScale')
     end
 end
 
-if ~options.usex0
+if ~options.warmstart
     x0 = [];
 end
 
@@ -53,7 +53,12 @@ if options.savedebug
 end
 
 solvertime = tic;
-[x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0,options.linprog);
+if isVersionRecent(interfacedata.solver.version,'2017.1')   
+    [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, options.linprog);
+else
+    [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0, options.linprog);
+end
+
 solvertime = toc(solvertime);
 problem = 0;
 
@@ -64,7 +69,7 @@ else
     D_struc = [lambda.eqlin;lambda.ineqlin];
 end
 if isempty(x)
-    x = zeros(length(c),1);
+    x = nan(length(c),1);
 end
 
 % Check, currently not exhaustive...
@@ -89,7 +94,6 @@ else
         end
     end
 end
-infostr = yalmiperror(problem,'LINPROG');       
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -114,4 +118,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

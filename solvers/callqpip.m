@@ -31,8 +31,6 @@ switch flag
         problem = 1;
 end
 
-infostr = yalmiperror(problem,'QPIP');
-
 % Save all data sent to solver?
 if options.savesolverinput
     solverinput = model;
@@ -50,4 +48,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x(:),D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x(:),D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

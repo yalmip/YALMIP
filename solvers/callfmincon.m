@@ -1,6 +1,14 @@
 function output = callfmincon(model)
 
+% Standard NONLINEAR setup
+tempF = model.F_struc;
+tempK = model.K;
+tempx0 = model.x0;
 model = yalmip2nonlinearsolver(model);
+
+%% Try to propagate initial values now that nonlinear evaluation logic is
+%% set up. Do this if some of the intials are nan
+model = propagateInitial(model,tempF,tempK,tempx0);
 
 switch model.options.verbose
     case 0
@@ -57,19 +65,38 @@ end
 
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 latest_xevaled = [];
 latest_x_xevaled = [];
+sdpLayer.oldGradient = cell(length(model.K.s),1);
+sdpLayer.reordering  = cell(length(model.K.s),1);
+sdpLayer.nullVectors = cell(length(model.K.s),1);
+sdpLayer.eigenVectors = cell(length(model.K.s),1);
+
+if isequal(model.options.slayer.m,inf)
+    sdpLayer.n  = model.K.s;
+elseif isequal(model.options.slayer.m,-1)
+    sdpLayer.n  = min(length(model.c),model.K.s);
+else
+    sdpLayer.n = repmat(model.options.slayer.m,1,length(model.K.s));
+end
 
 showprogress('Calling FMINCON',model.options.showprogress);
 
-if model.linearconstraints
-    callback_con = [];
+if model.linearconstraints && ~any(model.K.s)
+    g = [];
 else
-    callback_con = 'fmincon_con_liftlayer';
+    g = @(x)fmincon_con_liftlayer(x,model);
 end
 
 solvertime = tic;
-[xout,fmin,flag,output,lambda] = fmincon('fmincon_fun_liftlayer',model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,callback_con,model.options.fmincon,model);
+f = @(x)fmincon_fun_liftlayer(x,model);
+if ~exist('OCTAVE_VERSION','builtin')
+    [xout,fmin,flag,output,lambda] = fmincon(f,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,g,model.options.fmincon);
+else
+    [xout,fmin,flag,output] = fmincon(f,model.x0,model.A,model.b,model.Aeq,model.beq,model.lb,model.ub,g,model.options.fmincon);
+    lambda = [];
+end
 solvertime = toc(solvertime);
 
 if ~isempty(xout) && ~isempty(model.lift);
@@ -132,4 +159,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'FMINCON',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);

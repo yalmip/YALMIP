@@ -11,9 +11,9 @@ function y = expcone(x)
 %
 % To quickly define several cones, the argument can be a matrix, and the
 % command is then short-hand for 
-% for i = 1:size(x,2);F = [F,cone(x(:,i))];end 
+% for i = 1:size(x,2);F = [F,expcone(x(:,i))];end 
 %
-% See also  @SDPVAR/CONE, @SDPVAR/SDPCONE
+% See also  @SDPVAR/CONE, @SDPVAR/PCONE
 
 
 [n,m] = size(x);

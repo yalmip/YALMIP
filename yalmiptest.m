@@ -13,33 +13,55 @@ function out = yalmiptest(prefered_solver,auto)
 
 if ~exist('sedumi2pen.m')
     disp('Add /yalmip/extras etc to your path first...')
-    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')    
+    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')
     return
 end
 
 if ~exist('callsedumi.m')
     disp('Still missing paths...Just do an addpath(genpath(''yalmiprootdirectory''));')
-    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')        
+    disp('Read the <a href="https://yalmip.github.io/tutorial/installation/">Installation notes</a>.')
     return
 end
 
-detected = which('yalmip.m','-all');
-% Will not work in Octave as Octave only reports first item found?
-if isa(detected,'cell') 
-    if length(detected)>1
-        disp('You seem to have multiple installations of YALMIP in your path. Please correct this...');
-        detected
+% SDPT3 has a function called constraint.m which causes issues
+detected = which('constraint.m');
+if isa(detected,'cell')
+    if length(detected)>0
+        if isempty(strfind(detected{1},'extras\@constraint'))
+            clc
+            disp('You seem to have some other toolbox with a function called constraint.m');
+            disp('Delete that toolbox, or delete the function/class, or change path so that YALMIP is on top.');
+            disp(detected{1})
+        end
         return
     end
 end
 
-% Pagination really doesn't work well with solvers 
+detected = which('yalmip.m','-all');
+% Will not work in Octave as Octave only reports first item found?
+if isa(detected,'cell')
+    if length(detected)>1
+        clc
+        disp('You seem to have multiple installations of YALMIP in your path.')
+        disp('Please correct this...');
+        disp(detected)
+        return
+    end
+end
+
+% Pagination really doesn't work well with solvers
 more off
+
+if exist('OCTAVE_VERSION', 'builtin') 
+    OctaveRunning = 1;
+else
+    OctaveRunning = 0;
+end
 
 donttest = 0;
 if (nargin==1) && isa(prefered_solver,'char') && strcmp(prefered_solver,'test')
     donttest = 0;
-    prefered_solver = '';    
+    prefered_solver = '';
 else
     donttest = 1;
 end
@@ -50,60 +72,58 @@ else
     if ~(isa(prefered_solver,'struct') | isa(prefered_solver,'char'))
         error('Argument should be a solver tag, or a sdpsettings structure');
     end
-    if isa(prefered_solver,'char') 
+    if isa(prefered_solver,'char')
         donttest = 1;
     end
 end
 
 if ~(exist('callsedumi')==2)
+    clc
     disp('The directory yalmip/solvers is not in your path.')
-    disp('Put yalmip/, yalmip/solvers, yalmip/extras and yalmip/demos in your MATLAB path.');
+    disp('These must be in path:')
+    disp('                      yalmip/');
+    disp('                      yalmip/extras');
+    disp('                      yalmip/operators');
+    disp('                      yalmip/modules');
+    disp('                      yalmip/solvers');
+    disp('See <a href="https://yalmip.github.io/tutorial/installation/">installation guide</a>')
     return
 end
 
-foundstring = {'not found','found'};
+foundstring = {'not found','found','internal'};
 teststring = {'-failed','+passed'};
 if ~donttest
-    header = {'Solver','Version/module','Status','Unit test'};
+    header = {'Solver','Version','Status','Unit test'};
 else
-    header = {'Solver','Version/module','Status'};
-end    
+    header = {'Solver','Version','Status'};
+end
 
 [solvers,found] = getavailablesolvers(0);
-solvers = solvers([find(found);find(~found)]);
-found = [found(find(found));found(find(~found))];
 j = 1;
+status = ones(length(solvers),1);
+s = {solvers.tag};
 for i = 1:length(solvers)
     if solvers(i).show
-        data{j,1} = upper(solvers(i).tag); 
-        data{j,2} = solvers(i).version;
-        if length(solvers(i).subversion)>0
-            data{j,2} = [data{j,2} ' ' solvers(i).subversion];
+        same = find(strcmpi(solvers(i).tag,s));
+        % Find all instances of same solver different versions
+        for k = setdiff(same,i)
+            % No reason to show for all versions
+            solvers(k).show = 0;
         end
-        data{j,3} = foundstring{found(i)+1};   
-        if ~donttest
-            if found(i)
-                if options.verbose
-                    disp(['Testing ' solvers(i).tag '...']);    
-                end
-                try
-                    if solvers(i).maxdet
-                        pass = lyapell(sdpsettings('solver',solvers(i).tag,'verbose',0));            
-                    else
-                        if solvers(i).sdp
-                            pass = stabtest(sdpsettings('solver',solvers(i).tag,'verbose',0));
-                        else
-                            pass = feasiblelp(sdpsettings('solver',solvers(i).tag,'verbose',0));
-                        end
-                    end
-                    data{j,4} = teststring{pass+1};
-                catch
-                    data{j,4} = '-failed';
-                end
-            else
-                data{j,4} = 'not tested';
+        
+        data{j,1} = upper(solvers(i).tag);
+        found_versions = same(find(found(same)));
+        if ~isempty(found_versions)
+        	idx = min(found_versions);
+            version = solvers(idx).version;
+            if ~any(strcmpi(version,{'geometric','standard'}))
+                data{j,2} = [solvers(idx).version ' ' solvers(idx).subversion];
             end
+        else
+        	idx = i;
         end
+        status(j) = found(idx)+1+solvers(idx).builtin;
+        data{j,3} = foundstring{found(idx)+1+solvers(idx).builtin};
         j = j+1;
     end
 end
@@ -113,10 +133,12 @@ if isa(prefered_solver,'char')
 else
     ops = prefered_solver;
 end
+ops.saveyalmipmodel = 1;
 
 if ~((nargin==2) & (ops.verbose==0))
-    [sortedName,loc] = sort({data{:,1}});
-    dataSorted = reshape({data{loc,:}},[],3);
+    [sortedName,loc] = sort({data{:,1}});    
+    loc = [loc(find(status(loc)==3)) loc(find(status(loc)==2)) loc(find(status(loc)==1))];    
+    dataSorted = reshape({data{loc,:}},[],3);    
     yalmiptable({'Searching for installed solvers'},header,dataSorted);
     disp(' ')
 end
@@ -126,124 +148,95 @@ if nargin<2
 end
 
 i=1;
-test{i}.fcn  = 'testsdpvar';
+test{i}.fcn  = 'test_core';
 test{i}.desc = 'Core functionalities';
 i = i+1;
 
-test{i}.fcn  = 'feasiblelp'; 
-test{i}.desc = 'LP';
+test{i}.fcn  = 'test_linear_programming';
+test{i}.desc = 'Linear programming (LP)';
 i = i+1;
 
-test{i}.fcn  = 'toepapprox'; 
-test{i}.desc = 'LP';
+test{i}.fcn  = 'test_quadratic_programming';
+test{i}.desc = 'Quadratic programming (QP)';
 i = i+1;
 
-test{i}.fcn  = 'feasibleqp'; 
-test{i}.desc = 'QP';
+test{i}.fcn  = 'test_socp_programming';
+test{i}.desc = 'Second-order cone programming (SOCP)';
 i = i+1;
 
-test{i}.fcn  = 'toepapprox2'; 
-test{i}.desc = 'QP';
+test{i}.fcn  = 'test_semidefinite_programming';
+test{i}.desc = 'Semidefinite programming (SDP)';
 i = i+1;
 
-
-test{i}.fcn  = 'socptest1'; 
-test{i}.desc = 'SOCP';
+test{i}.fcn  = 'test_geometric_programming';
+test{i}.desc = 'Geometric programming (GP)';
 i = i+1;
 
-test{i}.fcn  = 'socptest2'; 
-test{i}.desc = 'SOCP'; 
+test{i}.fcn  = 'test_nonlinear_programming';
+test{i}.desc = 'Nonlinear programming (NLP)';
 i = i+1;
 
-test{i}.fcn  = 'socptest3'; 
-test{i}.desc = 'SOCP';   
+test{i}.fcn  = 'test_nonlinear_semidefinite_programming';
+test{i}.desc = 'Nonlinear SDP (NLSDP)';
 i = i+1;
 
-test{i}.fcn  = 'complete';
-test{i}.desc = 'SDP';
+test{i}.fcn  = 'test_exponential_cone_programming';
+test{i}.desc = 'Exponential cone programming (ECP)';
 i = i+1;
 
-test{i}.fcn  = 'complete_2'; 
-test{i}.desc = 'SDP';
+test{i}.fcn  = 'test_milinear_programming';
+test{i}.desc = 'Mixed-integer LP (MIQP)';
 i = i+1;
 
-test{i}.fcn  = 'maxcut';
-test{i}.desc = 'SDP';
+test{i}.fcn  = 'test_miquadratic_programming';
+test{i}.desc = 'Mixed-integer QP (MIQP)';
 i = i+1;
 
-test{i}.fcn  = 'feasible'; 
-test{i}.desc = 'SDP';
+test{i}.fcn  = 'test_misocp_programming';
+test{i}.desc = 'Mixed-integer SOCP (MISOCP)';
 i = i+1;
 
-test{i}.fcn  = 'lyapell'; 
-test{i}.desc = 'MAXDET';
+test{i}.fcn  = 'test_nonconvex_quadratic_programming';
+test{i}.desc = 'Global nonconvex quadratic programming';
 i = i+1;
 
-test{i}.fcn  = 'lyapell2'; 
-test{i}.desc = 'MAXDET';
+test{i}.fcn  = 'test_nonconvex_global_programming';
+test{i}.desc = 'Global nonconvex programming';
 i = i+1;
-
-%test{i}.fcn  = 'circuit1'; 
-%test{i}.desc = 'GP';
-%i = i+1;
-
-test{i}.fcn  = 'infeasible'; 
-test{i}.desc = 'Infeasible LP';
-i = i+1;
-
-test{i}.fcn  = 'infeasibleqp'; 
-test{i}.desc = 'Infeasible QP';
-i = i+1;
-
-test{i}.fcn  = 'infeasiblesdp'; 
-test{i}.desc = 'Infeasible SDP';
-i = i+1;
-
-test{i}.fcn  = 'momenttest'; 
-test{i}.desc = 'Moment relaxation';
-i = i+1;
-
-test{i}.fcn  = 'sostest'; 
-test{i}.desc = 'Sum-of-squares';
-i = i+1;
-
-test{i}.fcn  = 'bmitest'; 
-test{i}.desc = 'Bilinear SDP';
-i = i+1;
-
-
 
 pass_strings = {'Error','Passed','Solver not available'};
-
-tt = cputime;
 
 % Run test-problems
 for i = 1:length(test)
     try
-        t=cputime;           
         if ops.verbose
             disp(' ');
             disp(['Testing function ' test{i}.fcn]);
             disp(' ');
-        end       
-        [pp,ss,res] = eval([test{i}.fcn '(ops)']);
-        pass(i) = pp;
-        sols{i} = ss.info;
-        results{i}=res;
-        ttime(i) = cputime-t;
+        end
+        % First make call to figure out solver
+        info = eval([test{i}.fcn '(ops)']);
+        if ~OctaveRunning
+            sols{i} = addLink(upper(cleanversion(info.yalmipmodel.solver.tag)));
+        else
+            sols{i} = cleanversion(info.yalmipmodel.solver.tag);
+        end                    
+        pass(i) = info.problem == 0;
+        if pass(i)
+            results{i}='Success';
+        else
+            results{i}='Failed'; 
+        end
     catch
-        pass(i) = 0;   
-        results{i} = 'NAN';
-        sols{i} = 'Unknown problem in YALMIP';
-        ttime(i) = cputime-tt;
+        pass(i) = 0;
+        results{i} = 'Failed';
+        sols{i} = '';        
     end
 end
-totaltime = cputime-tt;
 
 clear data;
-header = {'Test','Solution', 'Solver message'};
+header = {'Test','Status', 'Solver'};
 for i = 1:length(pass)
-    thetime =  num2str(ttime(i),4);
     data{i,1} = test{i}.desc;
     data{i,2} = results{i};
     data{i,3} = sols{i};
@@ -265,34 +258,58 @@ yalmiptable([],header,data,formats)
 % Test if any LMI solver is installed.
 x = sdpvar(2);[p,aux1,aux2,m] = export(x>=0,[],[],[],[],0);
 if ~isempty(m)
-  only_lmilab = strcmpi(m.solver.tag,'lmilab');
+    only_lmilab = strcmpi(m.solver.tag,'lmilab');
+    only_fmincon = strcmpi(m.solver.tag,'fmincon-standard');
 else
-  only_lmilab = 0;
+    only_lmilab = 0;
+    only_fmincon = 0;
 end
-x = binvar(1);[p,aux1,aux2,m] = export(x>=0,[],[],[],[],0);
-if ~isempty(m)
-  only_bnb = strcmpi(m.solver.tag,'bnb');
+if isempty(m)
+    disp('You do not have any LMI solver installed')
+    disp(' If you intend to solve LMIs you must install a solver.')
 else
-  only_bnb = 0;
+    if only_lmilab
+        disp('You do not have any good LMI solver installed')
+        disp(' (only found <a href="https://yalmip.github.io/solver/lmilab/">LMILAB which should be avoided in YALMIP</a>).')
+        disp('If you intend to solve LMIs, please install a better solver.')
+    elseif only_fmincon
+        disp('You do not have any LMI solver installed')
+        disp(' (YALMIP will use a nonlinear solver which cannot be expected to work)')
+        disp(' If you intend to solve LMIs you must install a solver.')
+    end
 end
-if only_lmilab 
- disp('You do not have any efficient LMI solver installed (only found <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers.LMILAB">LMILAB</a>).')
- disp('If you intend to solve LMIs, please install a better solver.')
+x = binvar(1);[p,aux1,aux2,m] = export(x>=0,x,[],[],[],0);
+if isempty(m)
+    disp('You do not have any LP/MILP solver installed')
+    disp(' If you intend to solve LPs/MILPs, you have to install one.')
+else
+    only_bnb = strcmpi(m.solver.tag,'bnb');
+    if only_bnb
+        disp('You do not have any MILP solver installed')
+        disp(' (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>).')
+        disp(' If you intend to solve MILP, please install a better solver.')
+    end
 end
-if only_bnb 
- disp('You do not have any efficient MILP solver installed (only found internal <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers.BNB">BNB</a>).')
- disp('If you intend to solve MILPs, please install a better solver.')
+x = binvar(1);[p,aux1,aux2,m] = export(x>=0,x^2,[],[],[],0);
+if isempty(m)
+    disp('You do not have any QP/SOCP/MIQP/MISOCP solver installed')
+    disp(' If you intend to solve QP/SOCP/MIQP/MISOCP you must install solver.')
+else
+    only_bnb = strcmpi(m.solver.tag,'bnb');
+    if only_bnb
+        disp('You do not have any MIQP/MISOCP solver installed (only found internal <a href="https://yalmip.github.io/solver/bnb/">BNB</a>)')
+        disp(' If you intend to solve MIQP/MISOCP, please install a better solver.')
+    end
 end
-if only_lmilab  || only_bnb
-  disp('See <a href=" http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Solvers">Interfaced solvers in YALMIP</a>')
-end
+disp('See <a href="https://yalmip.github.io/allsolvers">guide on interfaced solvers</a>')
 
 
-function [pass,sol,result] = testsdpvar(ops)
 
-% Test the sdpvar implementation
-pass = 1;
-sol.info = yalmiperror(0,'YALMIP');
+function sol = test_core(ops)
+
+% Fake
+sol.yalmipmodel.solver.tag = '';
+sol.problem = 0;
 try
     x = sdpvar(2,2);
     x = sdpvar(2,2,'symmetric');
@@ -364,8 +381,8 @@ try
     % Regression ??
     yalmip('clear')
     sdpvar x
-
-    (1+x+x^4)*(1-x^2); 
+    
+    (1+x+x^4)*(1-x^2);
     
     % Regression complex multiplcation
     A = randn(10,5)+sqrt(-1)*randn(10,5);
@@ -373,226 +390,20 @@ try
     x = sdpvar(5,1);
     res = A*x-b;
     assert(nnz(clean([res res]'*[res res]-res'*res,1e-8))==0)
-    assert(isreal(clean(res'*res,1e-8)))
-
-    assert(isreal(x*x'))
-              
-    result = 'N/A';
+    assert(isreal(clean(res'*res,1e-8)))    
+    assert(isreal(x*x'))    
 catch
-    sol.info = 'Problems';
-    result = 'N/A';
-    pass = 0;
+    sol.problem = 9;
+    sol.info = 'Problems';        
 end
 
-
-function [pass,sol,result] = feasible(ops) 
+function sol = test_semidefinite_programming(ops)
 t = sdpvar(1,1);
 Y = sdpvar(2,2);
 F = [Y<=t*eye(2), Y>=[1 0.2;0.2 1]];
 sol = optimize(F,t,ops);
-pass = ismember(sol.problem,[0 3 4 5]);
-if pass
-    result = resultstring(t,1.2);
-else
-    result = 'N/A';
-end
-    
 
-
-function [pass,sol,result] = infeasible(ops)
-t = sdpvar(1,1);
-F = [t>=0, t<=-10];
-sol = optimize(F,t,ops);
-pass = ~(sol.problem==0);
-result = 'N/A';
-
-function [pass,sol,result] = lyapell(ops)
-A = [1 0;0.4 1];
-B = [0.4;0.08]; 
-L = [1.9034 1.1501];
-
-Y = sdpvar(2,2);
-F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
-F = F+[L*Y*L'<=1];
-sol = optimize(F,-logdet(Y),ops);
-Y = double(Y);
-pass = ismember(sol.problem,[0 3 4 5]);
-if pass
-    result = resultstring(Y,[2.9957 -4.1514;-4.1514 6.2918]);
-else
-    result = 'N/A';
-end
-%pass = pass & (sum(sum(abs(Y-[2.9957 -4.15;-4.15 6.29])))<0.01);
-
-function [pass,sol,result] = lyapell2(ops)
-A = [1 0;0.4 1];
-B = [0.4;0.08]; 
-L = [1.9034 1.1501];  
-Y = sdpvar(2,2);
-F = [Y Y*(A-B*L)';(A-B*L)*Y Y]>=0;
-F = F+[L*Y*L'<=1];
-sol = optimize(F,-logdet(Y),ops);
-Y = double(Y);
-pass = ismember(sol.problem,[0 3 4 5]);
-if pass
-    result = resultstring(Y,[2.9957 -4.1514;-4.1514 6.2918]);
-else
-    result = 'N/A';
-end
-
-function [pass,sol,result] = complete(ops)
-x = sdpvar(1,1);
-y = sdpvar(1,1);
-z = sdpvar(1,1);
-
-X = [[x 1 2];[1 y 3];[2 3 100]];
-
-F = [X>=0,x>=10,y>=0,z>=0, x<=1000, y<=1000,z<=1000];
-sol = optimize(F,x+y+z,ops);
-x   = double(x);
-y   = double(y);
-z   = double(z);
-
-pass = ismember(sol.problem,[0 3 4 5]);
-result = 'N/A';
-if pass
-    result = resultstring([x;y;z],[10;0.1787;0]);
-else
-    result = 'N/A';
-end
-
-
-function [pass,sol,result] = complete_2(ops)
-yalmip('clear')
-x = sdpvar(1,1);
-z = sdpvar(1,1);
-
-X = [[x 2];[2 z]];
-
-F = [X>=0, x>=0,z>=0,x<=10,z<=10];
-sol = optimize(F,x+z,ops);
-x   = double(x);
-z   = double(z);
-
-pass = ismember(sol.problem,[0 3 4 5]);
-result = 'N/A';
-if pass
-    result = resultstring([x;z],[2;2]);
-else
-    result = 'N/A';
-end
-
-
-
-function [pass,sol,result]  = maxcut(ops)
-% Upper bound on maxcut of a n-cycle
-n = 15;
-Q = zeros(n);
-for i = 1:n-1
-    Q(i,i+1) = 1;Q(i+1,i)  = 1;
-end
-Q(n,1) = 1;Q(1,n) = 1;  
-Q = 0.25*(diag(Q*ones(n,1))-Q);
-
-t = sdpvar(1,1);
-tau = sdpvar(n,1);
-
-F = t>=0;
-
-M = [[-Q zeros(n,1)];[zeros(1,n) t]];
-
-for i = 1:n
-    ei = zeros(n,1);ei(i,1) = 1;
-    M = M+tau(i)*[ei*ei' zeros(n,1);zeros(1,n) -1];
-end
-
-F = F+[M>=0];
-sol = optimize(F,t,ops);
-
-t   = double(t);
-tau = double(t);
-
-pass = ismember(sol.problem,[0 3 4 5]);
-if pass
-    result = resultstring(t,14.8361);
-else
-    result = 'N/A';
-end
-
-
-function [pass,sol,result] = socptest1(ops)
-yalmip('clear')
-x = sdpvar(2,1);
-a = [0;1];
-b = [1;1];
-F = norm(x-a)<=1;
-F = F+[norm(x-b) <= 1];
-sol = optimize(F,sum(x),ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-
-x = double(x);
-
-if pass
-    result = resultstring(sum(x),0.58578);
-else
-    result = 'N/A';
-end
-
-
-
-function [pass,sol,result] = socptest2(ops)
-z = sdpvar(3,1);
-x = sdpvar(3,1);
-y = sdpvar(3,1);
-a = [0;1;0];
-b = [1;1;0];
-F = norm(x-a)<=1;
-F = F+[norm(x-b)<=1];
-F = F+[x(1)==0.35];
-F = F+[z(2:3)==[5;6]];
-sol = optimize(F,sum(x),ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-
-x = double(x);
-y = double(y);
-z = double(z);
-
-if pass
-    result = resultstring(sum(x),0.27592);
-else
-    result = 'N/A';
-end
-
-
-
-function [pass,sol,result] = socptest3(ops)
-z = sdpvar(2,1);
-x = sdpvar(2,1);
-y = sdpvar(3,1);
-a = [0;1];
-b = [1;1];
-F = norm(x-a)<=1;
-F = F+[norm(x-b)<=1];
-F = F+[x(1)==0.35];
-F = F+[z(1,end)>=5];
-F = F+[z(2,end)<=100];
-F = F+[z(2)==5];
-
-sol = optimize(F,sum(x),ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-
-x = double(x);
-y = double(y);
-z = double(z);
-if pass
-    result = resultstring(sum(x),0.59);
-else
-    result = 'N/A';
-end
-
-
-
-function [pass,sol,result] = feasiblelp(ops)
+function sol = test_linear_programming(ops)
 N = 5;
 A = [2 -1;1 0];
 B = [1;0];
@@ -600,214 +411,94 @@ C = [0.5 0.5];
 [H,S] = create_CHS(A,B,C,N);
 x = [2;0];
 t = sdpvar(2*N,1);
-U = sdpvar(N,1);   
-Y = H*x+S*U; 
+U = sdpvar(N,1);
+Y = H*x+S*U;
 F = (U<=1)+(U>=-1);
-F = F+(Y(N)>=-1);  
-F = F+(Y(N)<=1); 
+F = F+(Y(N)>=-1);
+F = F+(Y(N)<=1);
 F = F+([Y;U]<=t)+([Y;U]>=-t);
 sol = optimize(F,sum(t),ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-if pass
-    result = resultstring(sum(t),12.66666);
-else
-    result = 'N/A';
-end
 
-function [pass,sol,result] = feasibleqp(ops)
-N = 5;
-A = [2 -1;1 0];
-B = [1;0];
-C = [0.5 0.5];
-[H,S] = create_CHS(A,B,C,N);
-x = [2;0];
-U = sdpvar(N,1);   
-Y = H*x+S*U; 
-F = (U<=1)+(U>=-1);
-F = F+(Y(N)>=-1);  
-F = F+(Y(N)<=1); 
-sol = optimize(F,Y'*Y+U'*U,ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-if pass
-    result = resultstring(Y'*Y+U'*U,26.35248);
-else
-    result = 'N/A';
-end
+function sol = test_socp_programming(ops)
+x = sdpvar(2,1);
+a = [0;1];
+b = [1;1];
+F = norm(x-a)<=1;
+F = F+[norm(x-b) <= 1];
+sol = optimize(F,sum(x),ops);
 
+function sol = test_misdp_programming(ops)
+x = intvar(4,1);
+e = magic(4)*x-1;
+sdpvar t
+obj = t;
+sol = optimize([t e';e eye(4)]>=0,obj,ops);
 
-function [pass,sol,result] = infeasibleqp(ops)
-N = 5;
-A = [2 -1;1 0];
-B = [1;0];
-C = [0.5 0.5];
-[H,S] = create_CHS(A,B,C,N);
-x = [2;0];
-U = sdpvar(N,1);   
-Y = H*x+S*U; 
-F = (U<=1)+(U>=-1);
-F = F+(Y(N)>=-1);  
-F = F+(Y(N)<=1); 
-F = F + (U>=0);
-sol = optimize(F,Y'*Y+U'*U,ops);
-pass = ismember(sol.problem,[1]); 
-result = 'N/A';
+function sol = test_misocp_programming(ops)
+x = intvar(4,1);
+obj = norm(magic(4)*x-1,2);
+sol = optimize([-5 <= x <= 5],obj,ops);
 
+function sol = test_miquadratic_programming(ops)
+x = intvar(4,1);
+obj = norm(magic(4)*x-1,2)^2;
+sol = optimize([-5 <= x <= 5],obj,ops);
 
+function sol = test_milinear_programming(ops)
+x = intvar(4,1);
+obj = norm(magic(4)*x-1,1);
+sol = optimize([-5 <= x <= 5],obj,ops);
 
-function [pass,sol,result] = infeasiblesdp(ops)
-A = magic(6);
-A = A*A';
-P = sdpvar(6,6);
-sol = optimize((A'*P+P*A <= -P) + (P>=eye(6)),trace(P),ops); 
-pass = (sol.problem==1);
-result = 'N/A';
+function sol = test_quadratic_programming(ops)
+x = sdpvar(10,1);
+sol = optimize([sum(x)==2, -1 <= x <= 1],x'*x,ops);
 
-function [pass,sol,result]=toepapprox(ops)
+function sol = test_nonconvex_quadratic_programming(ops)
+x = sdpvar(10,1);
+ops.forceglobal = 1;
+sol = optimize([sum(x)==2, -1 <= x <= 1],-x'*x,ops);
 
-n = 5;
-P = magic(n);
-Z = sdpvar(n,n,'toeplitz');
-t = sdpvar(n,n,'full');
-F = (P-Z<=t)+(P-Z>=-t);
-sol = optimize(F,sum(sum(t)),ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-result = 'N/A';
-if pass
-    result = resultstring(sum(sum(t)),156);
-else
-    result = 'N/A';
-end
+function sol = test_nonconvex_global_programming(ops)
+x = sdpvar(3,1);
+ops.forceglobal = 1;
+sol = optimize([sum(x.^3)==2, -1 <= x <= 1],-x'*x,ops);
 
-
-function [pass,sol,result]=toepapprox2(ops)
-
-n = 5;
-P = magic(n);
-Z = sdpvar(n,n,'toeplitz');
-t = sdpvar(n,n,'full');
-resid = P-Z;resid = resid(:);
-sol = optimize([],resid'*resid,ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-result = 'N/A';
-if pass
-    result = resultstring(resid'*resid,1300);
-else
-    result = 'N/A';
-end
-
-function [pass,sol,result]=momenttest(ops)
-
-x1 = sdpvar(1,1);
-x2 = sdpvar(1,1);
-x3 = sdpvar(1,1);
-
-objective = -2*x1+x2-x3;
-
-F = (x1*(4*x1-4*x2+4*x3-20)+x2*(2*x2-2*x3+9)+x3*(2*x3-13)+24>=0);
-F = F + (4-(x1+x2+x3)>=0);
-F = F + (6-(3*x2+x3)>=0);
-F = F + (x1>=0);
-F = F + (2-x1>=0);
-F = F + (x2>=0);
-F = F + (x3>=0);
-F = F + (3-x3>=0);
-sol = solvemoment(F,objective,ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-result = 'N/A';
-if pass
-    result = resultstring(objective,-6);
-else
-    result = 'N/A';
-end
-
-function [pass,sol,result]=sostest(ops)
-
-yalmip('clear')
-x = sdpvar(1,1);
-y = sdpvar(1,1);
-t = sdpvar(1,1);
-F = (sos(1+x^7+x^8+y^4-t));
-sol = solvesos(F,-t,ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-result = 'N/A';
-if pass
-    result = resultstring(t,0.9509);
-else
-    result = 'N/A';
-end
-
-function [pass,sol,result]=bmitest(ops)
-
+function sol = test_nonlinear_semidefinite_programming(ops)
 A = [-1 2;-3 -4];
 P = sdpvar(2,2);
 alpha = sdpvar(1,1);
 F = (P>=eye(2))+(A'*P+P*A <= -2*alpha*P)+(alpha >= 0);
 sol = optimize([F,P(:) <= 100],-alpha,ops);
-pass = ismember(sol.problem,[0 3 4 5]); 
-result = 'N/A';
-if pass
-    result = resultstring(alpha,2.5);
+
+function sol = test_geometric_programming(ops)
+t1 = sdpvar(1,1);
+t2 = sdpvar(1,1);
+t3 = sdpvar(1,1);
+t = [t1 t2 t3];
+obj = (40*t1^-1*t2^-0.5*t3^-1)+(20*t1*t3)+(40*t1*t2*t3);
+F = ((1/3)*t1^-2*t2^-2+(4/3)*t2^0.5*t3^-1 <= 1);
+F = [F, t>=0];
+sol = optimize(F,obj,ops);
+
+function sol = test_nonlinear_programming(ops)
+sdpvar x y
+sol = optimize(x^2 + x^4 + exp(x) <= 1, x^2+y^2,ops);
+
+function sol = test_exponential_cone_programming(ops)
+sdpvar x y z
+sol = optimize([expcone([x;2;z]),x==1],z,ops);
+
+function html = addLink(x)
+
+if length(x)>0
+    html = ['<a href="https://yalmip.github.io/solver/' lower(x) '">' upper(x) '</a>'];  
 else
-    result = 'N/A';
+    html = '';
 end
 
+function x = cleanversion(x)
 
-function [pass,sol,result]=circuit1(ops)
-x = sdpvar(7,1);
-
-% Data
-a     = ones(7,1);
-alpha = ones(7,1);
-beta  = ones(7,1);
-gamma = ones(7,1);
-f = [1 0.8 1 0.7 0.7 0.5 0.5]';
-e = [1 2 1 1.5 1.5 1 2]';
-Cout6 = 10;
-Cout7 = 10;
-
-% Model
-C = alpha+beta.*x;
-A = sum(a.*x);
-P = sum(f.*e.*x);
-R = gamma./x;
-
-D1 = R(1)*(C(4));
-D2 = R(2)*(C(4)+C(5));
-D3 = R(3)*(C(5)+C(7));
-D4 = R(4)*(C(6)+C(7));
-D5 = R(5)*(C(7));
-D6 = R(6)*Cout6;
-D7 = R(7)*Cout7;
-
-% Constraints
-F = (x >= 1) + (P <= 20) + (A <= 100);
-
-% Objective
-D = max((D1+D4+D6),(D1+D4+D7),(D2+D4+D6),(D2+D4+D7),(D2+D5+D7),(D3+D5+D6),(D3+D7));
-
-sol = optimize(F,D,ops);
-
-pass = ismember(sol.problem,[0 3 4 5]); 
-result = 'N/A';
-if pass
-    result = resultstring(D,7.8936);
-else
-    result = 'N/A';
+s = strfind(x,'-');
+if ~isempty(s)
+    x=x(1:s(1)-1);
 end
-
-
-
-
-
-function result = resultstring(x,xopt)
-if norm(double(x(:))-xopt(:))<=1e-3*(1+norm(xopt(:)))
-    result = 'Correct';
-else
-    result = 'Incorrect';
-end
-
-function assert(a)
-if ~a
-    error('Assertion failed!');
-end
-

@@ -90,34 +90,3 @@ y.lmi_variables = all_lmi_variables;
 y.conicinfo = [0 0];
 y.extra.opname='';
 y.extra.createTime = definecreationtime;
-y = unfactor(y);
-
-% Update the factors
-% But first, check to see that factors exist in all terms, if not simply
-% exit
-for i = 1:length(varargin)
-    if isa(varargin{i},'sdpvar')
-        if length(varargin{i}.leftfactors)==0
-            y = flush(y);
-            return
-        end
-    end
-end
-doublehere = [];
-for i = 1:length(varargin)
-    if isa(varargin{i},'sdpvar')      
-        for j = 1:length(varargin{i}.leftfactors)
-            w = size(varargin{i}.leftfactors{j},2);
-            y.leftfactors{end+1} = [spalloc(sum(n(1:1:i-1)),w,0); varargin{i}.leftfactors{j}; spalloc(sum(n(i+1:1:end)),w,0)];
-            y.midfactors{end+1} = varargin{i}.midfactors{j};
-            y.rightfactors{end+1} = varargin{i}.rightfactors{j};
-        end
-    elseif isnumeric(varargin{i})
-        here = length(y.midfactors)+1;
-        doublehere = [doublehere here];      
-        y.leftfactors{here} = [spalloc(sum(n(1:1:i-1)),size(varargin{i},1),0); speye(size(varargin{i},1)); spalloc(sum(n(i+1:1:end)),size(varargin{i},1),0)];
-        y.midfactors{here}  = varargin{i};
-        y.rightfactors{here}  = speye(size(varargin{i},2));
-    end
-end
-y = cleandoublefactors(y);

@@ -180,9 +180,9 @@ for i = 1:Counter
                 problem.constraint.inequalities.secondordercone.linear = 1;
             case 5
                 problem.constraint.inequalities.rotatedsecondordercone.linear = 1;
-            case 20
+            case {20,58}
                 problem.constraint.inequalities.powercone = 1;
-            case 21
+            case {21,22}
                 problem.exponentialcone = 1;
             case 50
                 problem.constraint.sos2 = 1;
@@ -275,6 +275,10 @@ for i = 1:Counter
                                 problem.constraint.inequalities.secondordercone.nonlinear = 1;
                             case 5
                                 problem.constraint.inequalities.rotatedsecondordercone.nonlinear = 1;
+                            case {21,22}
+                                problem.exponentialcone = 1;                                
+                            case {20,58}
+                                 problem.constraint.inequalities.powercone = 1;
                             case 55
                                 problem.constraint.complementarity.nonlinear = 1;
                             otherwise
@@ -394,7 +398,7 @@ else
     h_is_linear = 0;
 end
 
-if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
+if (~isempty(h)) & ~isa(h,'double') & ~h_is_linear &~(relax==1) &~(relax==3)
     if ~(isempty(binary_variables) & isempty(integer_variables))
         h_var = depends(h);
         if any(ismember(h_var,binary_variables))
@@ -406,7 +410,7 @@ if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
     end
     if any(ismember(getvariables(h),sigmonial_variables))
         problem.objective.sigmonial = 1;
-    else
+    else        
         [Q,c,f,x,info] = quaddecomp(h);
         if ~isreal(Q) % Numerical noise common on imaginary parts
             Qr = real(Q);
@@ -481,7 +485,7 @@ if (~isempty(h)) & ~h_is_linear &~(relax==1) &~(relax==3)
         end
     end
 else
-    problem.objective.linear = ~isempty(h);
+    problem.objective.linear = ~isempty(h) & ~isa(h,'double');
 end
 
 if (relax==1) | (relax==2)

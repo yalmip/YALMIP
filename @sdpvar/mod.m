@@ -43,7 +43,15 @@ switch class(varargin{1})
 
         % t = mod(x,y), i.e. t = x - n*y, n = floor(x/y)
         n = intvar(1,1);
-        F = (t == x - y*n)  + ((x/y) - 1 <= n <= (x/y));
+        [M,m] = derivebounds(x);        
+        F_floor = [(x/y) - 1 <= n <= (x/y)];
+        if ~isinf(m) && isa(y,'double')
+            F_floor = [F_floor, floor(m/y) <= n];
+        end
+        if ~isinf(M) && isa(y,'double')
+            F_floor = [F_floor, n <= floor(M/y)];
+        end
+        F = [t == x - y*n, F_floor];
 
         varargout{1} = F;
         varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

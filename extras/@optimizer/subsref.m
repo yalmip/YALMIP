@@ -111,7 +111,7 @@ elseif isequal(subs.type,'{}')
         return
     end
     
-    if self.model.options.usex0
+    if self.model.options.warmstart
         if nargout < 5
             warning('If you intend to use initial guesses, you must use a fifth output as [sol,problem,~,~,P] = P(p)');
         end
@@ -299,7 +299,11 @@ elseif isequal(subs.type,'{}')
             self.model.evalVariables = [];
             for k = 1:length(self.model.evalMap)
                 self.model.evalMap{k}.computes = find(self.model.evalMap{k}.computes == keptvariablesIndex);
-                self.model.evalMap{k}.variableIndex = find(self.model.evalMap{k}.variableIndex == keptvariablesIndex);
+                temp = [];
+                for j = 1:length(self.model.evalMap{k}.variableIndex)
+                    temp = [temp find(self.model.evalMap{k}.variableIndex(j) == keptvariablesIndex)];
+                end
+                self.model.evalMap{k}.variableIndex = temp;
                 self.model.evalVariables = [self.model.evalVariables self.model.evalMap{k}.computes];
             end                                         
             self.model.evalVariables = sort(self.model.evalVariables);            
@@ -309,10 +313,10 @@ elseif isequal(subs.type,'{}')
         % presolve has benefits when the are stuff like log
         self.model.presolveequalities = length(self.model.evalMap) > 0;
         if ~self.model.infeasible
-            if self.model.options.usex0 && ~isempty(self.lastsolution)
+            if self.model.options.warmstart && ~isempty(self.lastsolution)
                 self.model.x0 = zeros(length(self.model.c),1);
                 self.model.x0 = self.lastsolution;
-            elseif ~self.model.options.usex0
+            elseif ~self.model.options.warmstart
                 self.model.x0 = [];
             end
             if NoSolve
@@ -326,7 +330,7 @@ elseif isequal(subs.type,'{}')
                 eval(['output = ' self.model.solver.call '(self.model);']);
             end
             
-            if output.problem == 0 && self.model.options.usex0
+            if output.problem == 0 && self.model.options.warmstart
                 self.lastsolution = output.Primal;
             end
             x = self.instatiatedvalues;
@@ -366,7 +370,9 @@ elseif isequal(subs.type,'{}')
                 % problem
                 output.Primal = [nan;output.Primal];
                 assign(self.output.z,output.Primal(1+self.map));
-                assign(self.input.expression,thisData);
+                if ~isempty(thisData)
+                    assign(self.input.expression,thisData);
+                end
                 u = [u reshape(double(self.output.expression),self.dimout)];
             end
         end

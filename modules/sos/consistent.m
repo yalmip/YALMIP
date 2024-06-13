@@ -21,10 +21,6 @@ function keep = consistent(exponent_m,exponent_p)
 %
 % See also NEWTONREDUCE, NEWTONMONOMS, CONGRUENCEBLOCKS
 
-% Author Johan Löfberg
-% $Id: consistent.m,v 1.2 2009-11-24 14:53:54 joloef Exp $
-
-
 % Default high level call with SDPVAR polynomials
 % Convert to exponent form
 sdpvarout = 0;

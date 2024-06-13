@@ -1,5 +1,4 @@
 function varargout = interp2(varargin)
-%INTERP2 (overloaded)
 
 switch class(varargin{4})
     
@@ -30,5 +29,5 @@ switch class(varargin{4})
         varargout{1} = yalmip('define','interp2_internal',reordered{:});
         
     otherwise
-        error('SDPVAR/INTERP2 called with strange argument!');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

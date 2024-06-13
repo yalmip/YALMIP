@@ -23,7 +23,7 @@ end
 
 if isa(Z,'double')
     
-    if  size(Z,1)==size(Z,2) &&  norm(Z-Z',inf)<1e-12 && ~isequal(quantifier,'==')
+    if  size(Z,1)>1 && size(Z,1)==size(Z,2) &&  norm(Z-Z',inf)<1e-12 && ~isequal(quantifier,'==')
         checkSDP = 1;
     else
         checkSDP = 0;
@@ -31,17 +31,17 @@ if isa(Z,'double')
     
     if checkSDP
         if min(eig(Z))>=0
-            warning('SDP constraint evaluated to trivial true.')
+            warning('Inequality constraint evaluated to trivial true.')
             F = [];
             return
         else
-            error('SDP constraint evaluated to trivial false (no decision variable in constraint)')            
+            error('Inequality constraint evaluated to trivial false (no decision variable in constraint)')            
         end
     else
         Z = Z(:);
         switch quantifier
             case '=='
-                if all(Z)==0
+                if all(Z==0)
                     warning('Equality constraint evaluated to trivial true.')
                     F = [];
                     return
@@ -76,7 +76,13 @@ switch quantifier
     otherwise
         error('Quantifier not supported')
 end
-
+if isa(Z,'sdpvar') && ~isequal(quantifier,'==')
+    if issquare(Z)
+        if ~ishermitian(Z)
+            warning('YALMIP:SuspectNonSymmetry','Suspect non-symmetry in square constaint <a href="yalmip.github.io/inside/debuggingnonsymmetricsquare">(Learn more)</a> ')            
+        end
+    end
+end
 F.List={X,quantifier,Y};
 F.Evaluated{1} = Z;
 F.ConstraintID = yalmip('ConstraintID');

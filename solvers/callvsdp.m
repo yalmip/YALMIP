@@ -68,12 +68,12 @@ if K.l>0
     Slack = [Slack;[Zt{1:K.l}]'];
     top = top + K.l;
 end
-if K.q(1)>0
+if any(K.q)
     Dual = [Dual;Xt{top}(:)];
     Slack = [Slack;Zt{top}(:)];
     top = top + 1;
 end
-if K.s(1)>0     
+if any(K.s)     
     for i = 1:length(K.s)
         Dual = [Dual;Xt{top+i-1}(:)];     
         Slack = [Slack;Zt{top+i-1}(:)];     
@@ -107,7 +107,6 @@ switch info(1)
     otherwise
         problem = -1; % Unknown error
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 % always save output
 if options.savesolveroutput
@@ -137,7 +136,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,Slack,problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,Slack,problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 
 function [blk,A,C,b]=sedumi2vsdp(Cin,Ain,c,K);
@@ -149,7 +148,7 @@ blk = {};
 top = 1;
 k = 1;
 
-if K.f > 0
+if any(K.f)
     C{k,1} = Cin(top:top+K.f-1);
 %    A{k} = -Ain(top:top+K.f-1,:);
     for j = 1:length(c)
@@ -161,7 +160,7 @@ if K.f > 0
     k = k + 1;
 end
 
-if K.l > 0
+if any(K.l)
     K.s = [repmat(1,1,K.l) K.s];
     K.s(K.s == 0) = [];
 %     C{k,1} = Cin(top:top+K.l-1);
@@ -175,7 +174,7 @@ if K.l > 0
 %     k = k + 1;
 end
 
-if K.s(1)>0
+if any(K.s)
     for i = 1:length(K.s)
         C{k,1} = reshape(Cin(top:top+K.s(i)^2-1),K.s(i),K.s(i));
         for j = 1:length(c)

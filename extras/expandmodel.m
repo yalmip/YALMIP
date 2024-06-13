@@ -42,7 +42,7 @@ boundsAlreadySet = 0;
 if ~isempty(F)
     meta = find(is(F,'meta'));
     if ~isempty(meta)
-        LUbounds=setupBounds(F,options,extendedvariables);        
+        LUbounds=setupBounds(F+extractglobalboundsmeta(F),options,extendedvariables);        
         boundsAlreadySet = 1;
         F = expandmeta(F);
     end

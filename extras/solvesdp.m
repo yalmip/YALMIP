@@ -1,6 +1,11 @@
 function diagnostic = solvesdp(varargin)
 %SOLVESDP Obsolete command, please use OPTIMIZE
 
+persistent CACHED_SOLVERS
+persistent allsolvers
+persistent EXISTTIME
+persistent NCHECKS
+
 yalmiptime = clock; % Let us see how much time we spend
 
 % *********************************
@@ -23,7 +28,12 @@ end
 if nargin >= 3
     if isa(varargin{3},'struct')
         if isfield(varargin{3},'solver')
-            if isequal(varargin{3}.solver,'bisection')                
+            if isequal(varargin{3}.solver,'bisection')    
+                if any(is(varargin{1},'sos'))
+                    [F_sos,h_sos] = compilesos(varargin{1},varargin{2},varargin{3});
+                    varargin{1} = F_sos;
+                    varargin{2} = h_sos;
+                end
                 diagnostic = bisection(varargin{:});
                 return
             end
@@ -131,6 +141,10 @@ else
     options = sdpsettings;
 end
 options.solver = lower(options.solver);
+if ~isfield(options,'forceglobal')
+    % User has loaded something old
+    options.forceglobal = 0;
+end
 
 % If user has logdet term, but no preference on solver, we try to hook up
 % with SDPT3 if possible.
@@ -157,6 +171,8 @@ if length(F) > 0
                 display('Information on required paths https://yalmip.github.io/tutorial/installation/');
                 display(['For complete path, use addpath(genpath(''' fileparts(which('yalmiptest.m')) '''))']);
                 display('***');
+                error(lasterr)
+            else
                 error(lasterr)
             end
         end        
@@ -188,6 +204,49 @@ if length(F) == 0 & isempty(h) & isempty(logdetStruct)
    return
 end
 
+% *************************************************************************
+%% LOOK FOR AVAILABLE SOLVERS
+% Finding solvers can be very slow on some systems. To alleviate this
+% problem, YALMIP can cache the list of available solvers.
+% *************************************************************************
+if (options.cachesolvers==0) | isempty(CACHED_SOLVERS)
+    getsolvertime = clock;
+    solvers = getavailablesolvers(0,options);
+    getsolvertime = etime(clock,getsolvertime);
+    % CODE TO INFORM USERS ABOUT SLOW NETWORKS!
+    if isempty(EXISTTIME)
+        EXISTTIME = getsolvertime;
+        NCHECKS = 1;
+    else
+        EXISTTIME = [EXISTTIME getsolvertime];
+        NCHECKS = NCHECKS + 1;
+    end
+    if (options.cachesolvers==0)
+        if ((NCHECKS >= 3 & (sum(EXISTTIME)/NCHECKS > 1)) | EXISTTIME(end)>2)
+            if warningon
+                info = 'Warning: YALMIP has detected that your drive or network is unusually slow.\nThis causes a severe delay in OPTIMIZE when I try to find available solvers.\nTo avoid this, use the options CACHESOLVERS in SDPSETTINGS.\nSee the FAQ for more information.\n';
+                fprintf(info);
+            end
+        end
+    end
+    if length(EXISTTIME) > 5
+        EXISTTIME = EXISTTIME(end-4:end);
+        NCHECKS = 5;
+    end
+    CACHED_SOLVERS = solvers;
+else
+    solvers = CACHED_SOLVERS;
+end
+
+%here we are not actually selecting a solver, just checking whether it supports complex numbers
+solverindex = min(find(strcmpi(lower({solvers.tag}),lower(options.solver))));
+if isempty(solverindex)
+	complexsolver = 0;
+else
+	solver = solvers(solverindex);
+	complexsolver = solver.complex; 
+end
+
 % Dualize the problem?
 if ~isempty(F)
     if options.dualize == -1
@@ -200,7 +259,7 @@ if ~isempty(F)
     end
 end
 if options.dualize == 1   
-    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options);
+    [Fd,objd,aux1,aux2,aux3,complexInfo] = dualize(F,h,[],[],[],options,complexsolver);
     options.dualize = 0;
     diagnostic = solvesdp(Fd,-objd,options);
     if ~isempty(complexInfo)
@@ -232,7 +291,7 @@ end
 % ******************************************
 % COMPILE IN GENERALIZED YALMIP FORMAT
 % ******************************************
-[interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,[],logdetStruct,h,options,0,solving_parametric);
+[interfacedata,recoverdata,solver,diagnostic,F,Fremoved,ForiginalQuadratics] = compileinterfacedata(F,[],logdetStruct,h,options,0,solving_parametric,solvers);
 
 % ******************************************
 % FAILURE?
@@ -275,7 +334,7 @@ end
 % DID WE SELECT THE MPT solver (backwards comb)
 %******************************************
 actually_save_output = interfacedata.options.savesolveroutput;
-if strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.tag,'mpcvx') | strcmpi(solver.tag,'mplcp') | strcmpi(solver.tag,'pop')    
+if strcmpi(solver.tag,'mpt') | strcmpi(solver.tag,'mpt-2') | strcmpi(solver.tag,'mpt-3') | strcmpi(solver.tag,'mpcvx') | strcmpi(solver.tag,'mplcp') | strcmpi(solver.tag,'pop')    
     interfacedata.options.savesolveroutput = 1;
     if isempty(interfacedata.parametric_variables)
         if (nargin < 4 | ~isa(varargin{4},'sdpvar'))
@@ -314,7 +373,7 @@ if strcmpi(solver.version,'geometric') || (strcmpi(solver.tag,'bnb') && strcmpi(
         check = setdiff(check,interfacedata.aux_variables);
         check = setdiff(check,interfacedata.evalVariables);
         check = setdiff(check,interfacedata.extended_variables);
-        [lb,ub] = findulb(interfacedata.F_struc,interfacedata.K);
+        [lb,ub] = find_lp_bounds(interfacedata.F_struc,interfacedata.K);
         if ~all(lb(check)>=0)
             % User appears to have explictly selected a GP solver
             userdirect = ~isempty(strfind(options.solver,'geometric')) || ~isempty(strfind(options.solver,'mosek')) || ~isempty(strfind(options.solver,'gpposy'));
@@ -399,6 +458,7 @@ output.Primal = recoverdata.x_equ+recoverdata.H*output.Primal;
 % OUTPUT
 % ********************************
 diagnostic.yalmipversion = yalmip('ver');
+diagnostic.matlabversion = version;
 diagnostic.yalmiptime = etime(clock,yalmiptime)-output.solvertime;
 diagnostic.solvertime = output.solvertime;
 try
@@ -431,7 +491,7 @@ if interfacedata.options.saveyalmipmodel
     diagnostic.yalmipmodel = interfacedata;
 end
 
-if options.warning & warningon & isempty(findstr(diagnostic.info,'No problems detected'))
+if options.warning & warningon & isempty(strfind(diagnostic.info,'No problems detected'))
     disp(['Warning: ' output.infostr]);
 end
 
@@ -478,7 +538,7 @@ if interfacedata.options.saveduals & solver.dual
     end
 end
 % Hack to recover original QCQP duals from gurobi
-if strcmp(solver.tag,'GUROBI-GUROBI')
+if any(strfind(solver.tag,'GUROBI'))
     if length(ForiginalQuadratics) > 0
         if isfield(output,'qcDual')
             if length(output.qcDual) == length(ForiginalQuadratics)               

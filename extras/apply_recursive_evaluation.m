@@ -79,13 +79,11 @@ if isfield(p.evalMap{1},'prearg')
         if isequal(arguments{1},'log') & (arguments{1+p.evalMap{i}.argumentIndex}<=0) %#ok<AND2>
             x(p.evalVariables(i)) = -1e4;
         else
-            x(p.evalMap{i}.computes(:)) = feval(arguments{:});
+            x(p.evalMap{i}.computes(:)) = real(feval(arguments{:}));
         end
     end
 else
-    for i = indicies
-        %arguments = {p.evalMap{i}.fcn,x(p.evalMap{i}.variableIndex)};
-        %arguments = {arguments{:},p.evalMap{i}.arg{2:end-1}};
+    for i = indicies        
         % Append argument with function name, and remove trailing
         % artificial argument
         arguments =  {p.evalMap{i}.fcn,p.evalMap{i}.arg{1:end-1}};
@@ -97,28 +95,10 @@ else
             end
         else
             if isfield(p.evalMap{i},'computes')
-                x(p.evalMap{i}.computes) = feval(arguments{:});
+                x(p.evalMap{i}.computes) = real(feval(arguments{:}));
             else
-                x(p.evalVariables(i)) = feval(arguments{:});
+                x(p.evalVariables(i)) = real(feval(arguments{:}));
             end
         end
     end
 end
-
-% function out = prod_monomials(x,rows,cols,vals,n)
-% %Hint: compile this function to a mex-file.
-% out = ones(1, n);
-% for r = 1:length(rows)
-% 	row = rows(r);
-% 	val = vals(r);
-% 	if val == 1
-% 		out(row) = out(row) * x(cols(r));
-% 	elseif val == -1
-% 		out(row) = out(row) / x(cols(r));
-% 	elseif val == -2
-% 		xc = x(cols(r));
-% 		out(row) = out(row) / (xc*xc);
-% 	else
-% 		out(row) = out(row) * x(cols(r))^val;
-% 	end
-% end

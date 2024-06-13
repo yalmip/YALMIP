@@ -37,6 +37,15 @@ for i = 1:length(polynomials)
     end
 end
 
+Fixed_to_zero = find(model.lb == 0 & model.ub==0);
+if ~isempty(Fixed_to_zero)
+    implied_zero = find(any(model.monomtable(:,Fixed_to_zero)>0,2));
+    if ~isempty(implied_zero)
+        model.lb(implied_zero) = 0;
+        model.ub(implied_zero) = 0;
+    end
+end
+
 function  [inversebound,var] = inversepowerbound(lb,ub,monomials,polynomial);
 inversebound = [];
 var = [];

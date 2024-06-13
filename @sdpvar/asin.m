@@ -1,5 +1,4 @@
 function varargout = asin(varargin)
-%ASIN (overloaded)
 
 switch class(varargin{1})
 
@@ -8,21 +7,17 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
-        operator.convexhull = [];
-        operator.bounds = @bounds;
-        operator.derivative = @(x)((1 - x.^2).^-0.5);
-        operator.range = [-pi/2 pi/2];
+        operator = CreateBasicOperator('increasing','callback');                      
+        operator.derivative = @(x)real(((1 - x.^2).^-0.5));
+        operator.inverse = @(x)sin(x);
+        operator.range = [-pi/2 pi/2];        
         operator.domain = [-1 1];
+        operator.inflection = [-inf -1 0 1];
 
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ASIN called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
-
-function [L,U] = bounds(xL,xU)
-L = asin(xL);
-U = asin(xU);

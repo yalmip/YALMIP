@@ -71,27 +71,4 @@ y.dim(2) = summ;
 % Reset info about conic terms
 y.conicinfo = [0 0];
 
-y = unfactor(y);
-% Update the factors
-doublehere = 0;
-for i = 1:length(varargin)
-    if isa(varargin{i},'sdpvar')
-        if length(varargin{i}.leftfactors)==0
-            y = flush(y);
-            return
-        end
-        for j = 1:length(varargin{i}.leftfactors)
-            y.rightfactors{end+1} = [zeros(size(varargin{i}.rightfactors{j},1),sum(m(1:1:i-1))) varargin{i}.rightfactors{j} zeros(size(varargin{i}.rightfactors{j},1),sum(m(i+1:1:end)))];
-            y.leftfactors{end+1} = [zeros(sum(n(1:1:i-1)),size(varargin{i}.leftfactors{j},2)); varargin{i}.leftfactors{j}; zeros(sum(n(i+1:1:end)),size(varargin{i}.leftfactors{j},2))];
-            y.midfactors{end+1} = varargin{i}.midfactors{j};
-        end
-    elseif isnumeric(varargin{i})
-        here = length(y.midfactors)+1;
-        y.rightfactors{here} = [zeros(m(i),sum(m(1:1:i-1))) eye(m(i)) zeros(m(i),sum(m(i+1:1:end)))];
-        y.leftfactors{here} = [zeros(sum(n(1:1:i-1)),size(varargin{i},1)); eye(size(varargin{i},1)); zeros(sum(n(i+1:1:end)),size(varargin{i},1))];
-        y.midfactors{here}  = varargin{i};
-    end
-end
-y = cleandoublefactors(y);
-
 

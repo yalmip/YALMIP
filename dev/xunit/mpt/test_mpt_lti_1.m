@@ -1,4 +1,7 @@
-function test_mpt_lti_1 
+function tests = test_mpt_lti_1
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Data
 A = [2 -1;1 0];nx = 2;
@@ -76,4 +79,4 @@ new = ctrl.fromYALMIP(Y).toExplicit();
 
 fun1 = mpt_mpsol2pu(mpsol{1});
 result = fun1.compare(new.optimizer, 'obj');
-assertTrue(result == 0);
+assert(result == 0);

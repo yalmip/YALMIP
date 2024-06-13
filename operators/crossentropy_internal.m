@@ -26,21 +26,18 @@ switch class(varargin{1})
         varargout{1} = -sum(ce);
         
     case 'char'
-
-        X = varargin{3};
-        F = [X >= 0];
-
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
+               
+        operator = CreateBasicOperator('callback');
         operator.range = [-inf inf];
         operator.domain = [0 inf];       
         operator.derivative = @derivative;
 
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/CROSSENTROPY called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function df = derivative(x)

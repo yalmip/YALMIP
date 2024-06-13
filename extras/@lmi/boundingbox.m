@@ -1,4 +1,4 @@
-function varargout = boundingbox(F,ops,x)
+function varargout = boundingbox(F,ops,x,fun_eval)
 %BOUNDINGBOX Computes bounding box of a constraint
 %
 % If only one output is requested, only the symbolic model is returned
@@ -18,7 +18,7 @@ function varargout = boundingbox(F,ops,x)
 %  [B,L,U] = boundingbox(F,[],x)
 % B will now be the box [L <= x <= U] (infinite bounds not included)
 
-if nargin < 3
+if nargin < 3 | isempty(x)
     x = recover(depends(F));
 else
     x = x(:);
@@ -39,18 +39,26 @@ end
 
 sol = solvesdp(F,[x;-x],ops);
 n = length(x);
+sols = {};
+vals = {};
 for i = 1:n
     xi = x(i);
     if isa(xi,'sdpvar')
-        if sol.problem(i)==0
-           % selectsolution(i);
+        if sol.problem(i)==0          
             L(i,1) = double(xi,i);
+            if nargin > 3
+              sols{end+1} = double(x,i);
+              vals{end+1} = double(fun_eval,i);
+            end
         else
-            L(i,1) = -inf;
+            L(i,1) = -inf;            
         end
-        if sol.problem(n+i)==0
-           % selectsolution(n+i);
+        if sol.problem(n+i)==0           
             U(i,1) = double(xi,n+i);
+            if nargin > 3
+              sols{end+1} = double(x,n+i);
+              vals{end+1} = double(fun_eval,n+i);
+            end
         else
             U(i,1) = inf;
         end
@@ -79,3 +87,5 @@ end
 varargout{1} = B;
 varargout{2} = L;
 varargout{3} = U;
+varargout{4} = sols;
+varargout{5} = vals;

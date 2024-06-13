@@ -1,4 +1,7 @@
-function test_mpt_lti_3 
+function tests = test_mpt_lti_3
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Data
 A = [2 -1;1 0];nx = 2;
@@ -44,4 +47,4 @@ for k = N-1:-1:1
     [mpsol{k},sol{k},Uz{k},J{k}] = solvemp(F,obj + J{k+1},[],x{k},u{k});    
 end
 
-mbg_asserttrue(sol{1}.problem == 0);
+assert(sol{1}.problem == 0);

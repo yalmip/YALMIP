@@ -96,12 +96,10 @@ switch info.exitflag
     case -7
         problem = 9;
     case {10,11}
-        problem = 3;
+        problem = 4;
     otherwise
         problem = 9;
 end
-
-infostr = yalmiperror(problem,yalmipmodel.solver.tag);
 
 % Save ALL data sent to solver
 if options.savesolverinput
@@ -122,4 +120,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,yalmipmodel.solver.tag,solverinput,solveroutput,solvertime);

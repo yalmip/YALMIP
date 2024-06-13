@@ -16,8 +16,9 @@ for i = 1:length(Q)
 end
 
 go_on = (sol.problem == 0 | sol.problem == 4);
-while go_on
-
+iterations = 0;
+while go_on && iterations < options.sos.numblkiterlimit
+    iterations = iterations + 1;
     for sosfun = 1:length(Q)
         Qtemp = Q{sosfun};
         keep = diag(Qtemp)>tol;

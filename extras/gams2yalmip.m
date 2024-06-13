@@ -41,6 +41,8 @@ noOfEquations = 0;
 pp = 1;
 posVarNames = [];
 negVarNames = [];
+intVarNames = [];
+binVarNames = [];
 lastline = '';
 while statusSW == 1
     [statusSW,oneLine] = getOneLine(fileIDX);
@@ -69,6 +71,26 @@ while statusSW == 1
                     [posVarNames,p,moreSW] = getListOfNames(oneLine,posVarNames,p);
                 end
             end
+        elseif strcmp('Integer',keyword)           
+            [keyword,oneLine] = strtok(oneLine);
+            if strcmp('Variables',keyword)
+                p = 0;
+                [intVarNames,p,moreSW] = getListOfNames(oneLine,intVarNames,p);
+                while moreSW == 1
+                    [statusSW,oneLine] = getOneLine(fileIDX);
+                    [intVarNames,p,moreSW] = getListOfNames(oneLine,intVarNames,p);
+                end
+            end            
+        elseif strcmp('Binary',keyword)           
+            [keyword,oneLine] = strtok(oneLine);
+            if strcmp('Variables',keyword)
+                p = 0;
+                [binVarNames,p,moreSW] = getListOfNames(oneLine,binVarNames,p);
+                while moreSW == 1
+                    [statusSW,oneLine] = getOneLine(fileIDX);
+                    [binVarNames,p,moreSW] = getListOfNames(oneLine,binVarNames,p);
+                end
+            end              
         elseif strcmp('Negative',keyword)
             [keyword,oneLine] = strtok(oneLine);
             if strcmp('Variables',keyword)
@@ -201,7 +223,15 @@ if minimize
             if strfind(listOfEquations{i},obj)
                 %objeq = strrep(listOfEquations{i},'=E=','==');
                 objeqL = listOfEquations{i}(1:strfind( listOfEquations{i},'=E=')-1);
-                objeqR = listOfEquations{i}(strfind( listOfEquations{i},'=E=')+3:end);
+                objeqL2 = listOfEquations{i}(1:strfind( listOfEquations{i},'=L=')-1);
+                if isempty(objeqL) & ~isempty(objeqL2)
+                    % Arki003
+                    objeqL=objeqL2;
+                    objeqR = listOfEquations{i}(strfind( listOfEquations{i},'=L=')+3:end);
+                else
+                    objeqR = listOfEquations{i}(strfind( listOfEquations{i},'=E=')+3:end);
+                end
+                
                 objeqR = strrep(objeqR,';','');
 
                 % put objective on left side
@@ -257,6 +287,18 @@ if minimize
     end
 end
 
+if length(intVarNames)>0
+    for i = 1:length(intVarNames)
+        listOfEquations{end+1} = ['integer(' intVarNames{i} ')'];
+    end
+end
+
+if length(binVarNames)>0
+    for i = 1:length(binVarNames)
+        listOfEquations{end+1} = ['binary(' binVarNames{i} ')'];
+    end
+end
+
 % Convert to YALMIP syntax
 for i = 1:length(listOfEquations)
     listOfEquations{i} = strrep(listOfEquations{i},'=E=','==');
@@ -289,6 +331,7 @@ for i = 1:length(varNames)
         end
     end
 end
+
 
 if length(listOfEquations)>0
     if writetofile
@@ -360,7 +403,7 @@ while (feof(dataFID)==0) & (flowCTRL== 0)
     inputLine = fgetl(dataFID);
     %	inputLine
     len = length(inputLine);
-    if (len > 0) & (inputLine(1)~='*')
+    if (len > 0) & (inputLine(1)~='*') & ~isequal(inputLine,'$offlisting')
         p=1;
         while (p<=len) & (inputLine(p)==' ')
             p = p+1;
@@ -376,7 +419,7 @@ while (feof(dataFID)==0) & (flowCTRL== 0)
             end
             % Kojima 11/06/04; to meet MATLAB 5.2
             %            temp = strfind(inputLine,';');
-            temp = findstr(inputLine,';');
+            temp = strfind(inputLine,';');
             if isempty(temp) == 0
                 flowCTRL=1;
             end

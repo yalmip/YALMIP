@@ -3,26 +3,27 @@ function varargout = cos(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/COS CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar'
         varargout{1} = InstantiateElementWiseUnitary(mfilename,varargin{:});
         
     case 'char'
         
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');
+        operator = CreateBasicOperator('callback');
+        operator.convexity = @convexity;
         operator.bounds     = @bounds;
+        operator.monotonicity  = @monotonicity;
+        operator.stationary = @stationary; 
+        operator.inflection = @inflection;
+        operator.periodic = 2*pi;         
         operator.derivative = @(x)(-sin(x));
-        operator.range = [-1 1];
-        operator.convexhull = @convexhull;
+        operator.range = [-1 1];        
  
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/COS called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function [L,U] = bounds(xL,xU)
@@ -47,24 +48,73 @@ else
     end
 end
 
-function [Ax, Ay, b] = convexhull(xL,xU)
+function vexity = convexity(xL,xU)
 % Convert to sin
 xL = xL + pi/2;
 xU = xU + pi/2;
-if sin(xL)>=0 & sin(xU)>=0 & xU-xL<pi
-    fL = sin(xL);
-    fU = sin(xU);
-    dfL = cos(xL);
-    dfU = cos(xU);
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
-elseif sin(xL)<=0 & sin(xU)<=0 & xU-xL<pi
-    fL = sin(xL);
-    fU = sin(xU);
-    dfL = cos(xL);
-    dfU = cos(xU);
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
+if xU-xL > pi
+    vexity = 'none';
 else
-    [Ax,Ay,b] = convexhullGeneral(xL,xU,@sin);
+    n = floor(xU/(2*pi));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if (xL >= 0 && xU <=pi) || (xL >= -2*pi && xU <=-pi)
+        vexity = 'concave';
+    elseif (xL >= -pi && xU <= 0) || (xL >= pi && xU <= 2*pi)
+        vexity = 'convex';
+    else
+        vexity = 'none';
+    end
 end
-% Back to cos
-b=b-Ax*pi/2;  
+
+function mono = monotonicity(xL,xU)
+% Convert to sin
+xL = xL + pi/2;
+xU = xU + pi/2;
+if xU-xL > pi
+    mono = 'none';
+else
+    n = floor(xU/(2*pi));
+    xL = xL - n*2*pi;
+    xU = xU - n*2*pi;
+	if (xL >= -pi/2 && xU <=pi/2) || (xL >= 1.5*pi && xU <=2*pi)
+        mono = 'increasing';
+    elseif (xL >= -1.5*pi && xU <= -pi/2) || (xL >= pi/2 && xU <= 1.5*pi)
+        mono = 'decreasing';
+    else
+        mono = 'none';
+    end
+end
+
+function inflections = inflection(xL,xU)
+if isinf(xL) || isinf(xU)
+    inflections = [];
+    return
+end
+r = floor(xU/(pi/2));
+t = ceil(xL/(pi/2));
+spots = [t:r];
+spots = spots(rem(spots,2)~=0);
+dir = -double(abs(rem((spots-1)/2,2))==1);
+dir(dir==0)=1;
+xS = spots*pi/2;
+if isempty(xS)
+    inflections = [];
+else
+    xS = [-inf xS];
+    dir = [-dir(1) dir];
+    inflections = reshape([xS;dir],1,[]);
+end
+
+function [xS,fS] = stationary(xL,xU)
+if isinf(xL) || isinf(xU)
+    xS = [];
+    fS = [];
+    return
+end
+r = floor(xU/(pi/2));
+t = ceil(xL/(pi/2));
+spots = [t:r];
+spots = spots(rem(spots,2)==0);
+xS = spots*pi/2;
+fS = sign(cos(xS));

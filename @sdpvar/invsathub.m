@@ -8,7 +8,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','none','monotonicity','none','definiteness','positive','model','callback');
+        operator = CreateBasicOperator('positive','callback');
         operator.bounds     = @bounds;
         operator.convexhull = @convexhull;      
 
@@ -17,7 +17,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/INVSATHUB called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
 
 function [L,U] = bounds(xL,xU,lambda)

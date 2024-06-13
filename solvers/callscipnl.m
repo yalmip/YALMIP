@@ -90,7 +90,7 @@ solvertime = toc(solvertime);
 % Check, currently not exhaustive...
 switch exitflag
     case 0
-        if ~isempty(strfind(info.Status,'Exceed')) || ~isempty(strfind(info.Status,'Node Limit Reached'))
+        if ~isempty(strfind(info.Status,'Exceed')) || ~isempty(strfind(info.Status,'Node Limit Reached')) || ~isempty(strfind(info.Status,'Time Limit Reached'))
             problem = 3;
         else
             problem = 9;
@@ -139,7 +139,7 @@ if ~isempty(x)
 end
 
 % Standard interface
-output = createoutput(x,[],[],problem,'SCIP-NL',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,[],[],problem,'SCIP-NL',solverinput,solveroutput,solvertime);
 
 
 

@@ -1,4 +1,4 @@
-function dfdx = jacobian(f,x)
+function dfdx = jacobian(f,x,d)
 % JACOBIAN Jacobian of scalar, vector, or matrix
 %
 % J = JACOBIAN(p)    Jacobian w.r.t all variables in p
@@ -23,6 +23,12 @@ switch nargin
             dfdx = map_to_original(dfdx,x,x_indep);
         else
             dfdx = shadowjacobian(f,x(:));
+        end
+    case 3
+        if d == 1
+            dfdx = shadowjacobian(f,x(:));
+        else
+            dfdx = jacobian(jacobian(f,x(:)),x(:),d-1);
         end
     otherwise
         error('Too many input arguments.');

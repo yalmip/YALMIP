@@ -30,7 +30,7 @@ function [sol,m,Q,residuals,everything] = solvesos(F,obj,options,params,candidat
 %    sol       : Solution diagnostic from SDP problem
 %    v         : Cell with monomials used in decompositions
 %    Q         : Cell with Gram matrices, p = v{i}'*Q{i}*v{i}, where p is the ith SOS polynomial in your model.
-%    residuals : Mismatch between p and decompositions. Same values (modulo numerical issue) as checkset(find(is(F,'sos')))
+%    residuals : Mismatch between p and decompositions. Same values (modulo numerical issue) as check(find(is(F,'sos')))
 %                Warning, these residuals are not computed on matrix sos-of-squares
 %
 %   EXAMPLE
@@ -109,7 +109,18 @@ if ~isempty(options)
     end
 end
 
-[F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomials);
+[F,obj,m,everything,modeltype] = compilesos(F,obj,options,params,candidateMonomials);
+
+if isempty(everything) || ~isfield(everything,'p')
+    % compilesos has detected trivially infeasible
+    sol.yalmipversion = yalmip('version');
+    sol.matlabversion = version;
+    sol.yalmiptime = etime(clock,yalmip_time);
+    sol.solvertime = 0;         
+    sol.info = yalmiperror(1,'solvesos compilation');
+    sol.problem = 1;  
+    return
+end
 
 p = everything.p;
 normp = everything.normp;
@@ -181,21 +192,25 @@ end
 % **********************************************
 if options.verbose > 0
     if sol.problem == 1
-        if options.sos.model == 1
+        if modeltype == 1
             disp(' ')
             disp('-> Solver reported infeasible dual problem.')
-            disp('-> Your SOS problem is probably unbounded.')
-        elseif options.sos.model == 2
+            disp('-> Your SOS problem is probably unbounded (SOS is dualized).')
+            sol.problem = 2;
+            sol.info = strrep(sol.info,'Infeasible problem','Unbounded objective function');
+        elseif modeltype == 2
             disp(' ')
             disp('-> Solver reported infeasible primal problem.')
             disp('-> Your SOS problem is probably infeasible.')
         end
     elseif sol.problem == 2
-        if options.sos.model == 1
+        if modeltype == 1
             disp(' ')
             disp('-> Solver reported unboundness of the dual problem.')
-            disp('-> Your SOS problem is probably infeasible.')
-        elseif options.sos.model == 2
+            disp('-> Your SOS problem is probably infeasible (SOS is dualized).')
+            sol.problem = 1;
+            sol.info = strrep(sol.info,'Unbounded objective function','Infeasible problem');
+        elseif modeltype == 2
             disp(' ')
             disp('-> Solver reported unboundness of the primal problem.')
             disp('-> Your SOS problem is probably unbounded.')            
@@ -203,7 +218,8 @@ if options.verbose > 0
     elseif sol.problem == 12
             disp(' ')
             disp('-> Solver reported unboundness or infeasibility of the primal problem.')
-            disp('-> Your SOS problem is probably unbounded.')            
+            disp('-> Your SOS problem is probably unbounded but to clarify you should')   
+            disp('-> solve the problem again without an objective')            
     end
 end
 
@@ -318,7 +334,9 @@ switch sol.problem
 
                         if isa(h0,'sdpvar')
                             h{constraint} = clean(R*monoms{constraint},options.sos.clean);
-                            h{constraint} = h{constraint}(findelements(sum(h{constraint},2)),:);
+                            if isa(h{constraint},'sdpvar')
+                               h{constraint} = h{constraint}(findelements(sum(h{constraint},2)),:);                                
+                            end
                         else
                             h{constraint} = h0;
                         end

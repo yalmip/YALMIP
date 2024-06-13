@@ -9,12 +9,12 @@ switch class(varargin{1})
     
     case 'char' % YALMIP send 'model' when it wants the epigraph or hypograph
       
-        operator = struct('convexity','none','monotonicity','none','definiteness','none','model','callback');        
-        operator.range = [-inf inf];
-
+        operator = CreateBasicOperator('callback');        
+        
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
+        error([upper(mfilename) ' called with weird argument']);
 end

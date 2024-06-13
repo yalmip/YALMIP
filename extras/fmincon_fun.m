@@ -45,27 +45,35 @@ elseif model.SimpleNonlinearObjective
     mtNonlinear = model.monomtable(model.nonlinearindicies,:);
     xevaled = zeros(1,n);
     xevaled(linearindicies) = x;
-    X = repmat(xevaled,size(mtNonlinear,1),1);
-    r = find(mtNonlinear);
-    used = find(any(mtNonlinear,1));
-    mtCompressed = mtNonlinear(:,used);
-    rCompressed = find(mtCompressed);
-    X = X(r);
-    Xones = ones(size(mtNonlinear,1),size(mtCompressed,2));
+    [the_linearindex,the_nonlinearindex,the_powers] = find(mtNonlinear');
+    if isequal(the_nonlinearindex(:)',1:size(mtNonlinear,1))
+        trivialUnivariateCase = 1;
+    else
+        trivialUnivariateCase = 0;
+    end
+    xpower_all = x(the_linearindex).^the_powers;
+    can_nan_occur = any(model.variabletype > 3);
     for i = 1:length(linearindicies)
-        if requested(i)
-            mt = mtNonlinear;
+        if requested(i)            
             oldpower = mtNonlinear(:,linearindicies(i));
-            mt(:,linearindicies(i)) = mt(:,linearindicies(i))-1;
-            Z = X.^mt(r);
-            XX = Xones;          
-            XX(rCompressed) = Z;
-            xevaledNonLinear = prod(XX,2);
-            xevaledNonLinear = xevaledNonLinear(:)'.*oldpower';xevaledNonLinear(isnan(xevaledNonLinear))=0;
+                        
+            xpower = xpower_all;
+            currentdifferentiation = find((the_linearindex == i));
+            xpower(currentdifferentiation) = x(the_linearindex(currentdifferentiation)).^(the_powers(currentdifferentiation)-1);
+            if trivialUnivariateCase
+                product = xpower.*(oldpower);
+            else
+                product = accumarray(the_nonlinearindex,xpower,[],@prod).*(oldpower);
+            end
+            xevaledNonLinear = product(:)';                    
+            if can_nan_occur
+                xevaledNonLinear(isnan(xevaledNonLinear)) = 0;
+            end                      
             dx = zeros(1,n);
             dx(linearindicies(i)) = 1;
             dx(model.nonlinearindicies) = xevaledNonLinear;
-            df = [df;model.c'*dx'];
+            c_x = model.c'*dx';            
+            df = [df;c_x];
         else
             df = [df;zeros(1,length(n))];
         end

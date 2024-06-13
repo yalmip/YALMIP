@@ -16,5 +16,4 @@ end
 X.basis = newBase;
 X.dim = size(tempBase);
 X.conicinfo = [0 0];
-X = flush(X);
 X = clean(X);

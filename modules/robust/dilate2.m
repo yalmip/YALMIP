@@ -1,4 +1,4 @@
-function varargout = dilate(F,w)
+function varargout = dilate2(F,w)
 % DILATE  Derives a matrix dilation
 %
 % [G,H,M] = DILATE(X,w) where X is a symmetric variable derives the

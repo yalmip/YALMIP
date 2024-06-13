@@ -169,18 +169,24 @@ for i = 1:size(W,1)
             end
             
         else
-            % Case 4
-            vars = getvariables(thevars);
-            indicies = find(ismember(vars,global_LinearVariables));
-            
-            for i = indicies
-                index_in_p = find(ismember(global_LinearVariables,vars(i)));
-                if ~isempty(index_in_p) & isempty(global_names{index_in_p})
-                    global_names{index_in_p}=['internal(' num2str(vars(i)) ')'];
-                end
-            end
+%             % Case 4
+%             vars = getvariables(thevars);
+%             indicies = find(ismember(vars,global_LinearVariables));
+%             
+%             for i = indicies
+%                 index_in_p = find(ismember(global_LinearVariables,vars(i)));
+%                 if ~isempty(index_in_p) & isempty(global_names{index_in_p})
+%                     global_names{index_in_p}=['internal(' num2str(vars(i)) ')'];
+%                 end
+%             end
             
         end
+    end
+end
+
+for i = 1:length(global_names)
+    if length(global_names{i}) == 0
+        global_names{i} = ['internal(' num2str(global_LinearVariables(i)) ')'];
     end
 end
 
@@ -207,7 +213,24 @@ x = recover(LinearVariables);
 [exponent_p,ordered_list] = exponents(p,x);
 exponent_p = full(exponent_p);
 [~,map] = ismember(LinearVariables,global_LinearVariables);
+for j = 1:length(map)
+    if map(j) == 0 
+        map(j) = length(global_names)+1;
+        global_names{end+1} = ['internal(' num2str(LinearVariables(j)) ')'];
+    end
+end
 names = {global_names{map}};
+for i = 1:length(x)
+    if is(x(i),'compound')
+        E = yalmip('extstruct',LinearVariables(i));
+        if length(E.arg)==2
+           arg = E.arg{1};
+           symb_arg = createSymbolicExpression(arg,global_LinearVariables,global_names,precision);
+           names{i} = [E.fcn '(' symb_arg ')'];
+        end
+    end
+end
+
 
 % Remove 0 constant
 symb_p = '';
@@ -301,9 +324,17 @@ end
 
 function s = num2str2(x,precision)
 if isinf(precision) 
-    s = sprintf('%.12g',x);
+    if isreal(x)
+        s = sprintf('%.12g',x);
+    else
+        s = sprintf('%.12g+%.12gi',real(x),imag(x));
+    end
 else  
-    s = sprintf('%.12g',round(x*10^precision)/10^precision);
+    if isreal(x)
+        s = sprintf('%.12g',round(x*10^precision)/10^precision);
+    else
+        s = sprintf('%.12g+%.12gi',round(real(x)*10^precision)/10^precision,round(imag(x)*10^precision)/10^precision);
+    end
 end
 s(s==10)=[];
 s(s==32)=[];

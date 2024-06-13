@@ -1,8 +1,5 @@
-function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds);
+function [lb,ub,redundant,psstruct,infeasible] = tightenbounds(A,b,lb,ub,integer_variables,binary_variables,changed_bounds)
 %TIGHTENBOUNDS Internal function to perform bound tightening
-
-% Author Johan Löfberg
-% $Id: tightenbounds.m,v 1.1 2006-03-30 13:56:54 joloef Exp $
 
 % Simple bound pre-processing (paper by Savelsbergh)
 % No code optimization at all
@@ -28,7 +25,7 @@ At = A';
 use_indicies=ones(length(b),1);
 used = full(any(A(:,find(changed_bounds)),2));
 isbinary  = ismembcYALMIP(1:length(lb),binary_variables);
-isinteger = ismembcYALMIP(1:length(lb),binary_variables);
+isinteger = ismembcYALMIP(1:length(lb),integer_variables);
 
 goon = all(lb<=ub);
 infeasible = ~goon;
@@ -62,14 +59,14 @@ if ~infeasible & (iter1 < 10)
             if ~isempty(Cp)
                 r = At(Cp,i);              
                 new1=lbnew(Cp)+bminusbdn(i)./r;
-                ubnew(Cp) = min(ubnew(Cp),new1);
+                ubnew(Cp) = min(ubnew(Cp),new1+1e-12);
             end
             
             Cm = Cmm{i};
             if ~isempty(Cm)
                 r = At(Cm,i);
                 new2=ubnew(Cm)+bminusbdn(i)./r;
-                lbnew(Cm) = max(lbnew(Cm),new2);
+                lbnew(Cm) = max(lbnew(Cm),new2-1e-12);
             end
 
             if any(lbnew>ubnew)
@@ -101,7 +98,7 @@ if ~infeasible & (iter1 < 10)
         iter2 = iter2 + 1;
     end
     iter1 = iter1 + 1;
-    redundant = find(bi_up<=b-0.001);
+    redundant = find(bi_up<=b);
 else
     redundant=[];
 end

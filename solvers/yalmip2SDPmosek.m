@@ -84,9 +84,9 @@ for j = 1:length(model.K.s)
     top = top + n^2;
 end
 
-if K.q(1)>0    
+if any(K.q)    
     prob.cones.type   = [repmat(0,1,length(K.q))];
-    top = 1 + K.f + K.l;
+    top = startofSOCPCone(K);
     prob.cones.sub = [];
     prob.cones.subptr = [];
     for i = 1:length(K.q)

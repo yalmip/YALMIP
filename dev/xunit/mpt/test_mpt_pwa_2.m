@@ -1,4 +1,7 @@
-function test_mpt_pwa_2
+function tests = test_mpt_pwa_2
+tests = functiontests(localfunctions);
+
+function test1(dummy)
 
 % Data
 A = [2 -1;1 0];nx = 2;
@@ -85,5 +88,5 @@ end
 mpsol{k} = solvemp(F,obj,sdpsettings('debug',1),x{k},u{k});
 fun1 = mpt_mpsol2pu(mpsol{1});
 result =  fun1.join().compare(new.optimizer.join(), 'obj')
-assertTrue(result == 0);
+assert(result == 0)
 

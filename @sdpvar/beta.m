@@ -1,26 +1,10 @@
 function varargout=beta(varargin)
-%BETA (overloaded)
 
-switch class(varargin{1})
-
-    case 'sdpvar'
-        if ~isa(varargin{2},'double')
-            error('W is not allowed to be an SDPVAR object')
-        end
-        varargout{1} = InstantiateElementWise(mfilename,varargin{:});
-
-    case 'char'
-
-        X = varargin{3};
-        F = (X >= eps);
-        operator = struct('convexity','convex',...
-                          'monotonicity','decreasing',...
-                          'definiteness','positive',...
-                          'model','callback');
-        varargout{1} = F;
-        varargout{2} = operator;
-        varargout{3} = varargin{3};
-
-    otherwise
-        error('Strange type on first argument in SDPVAR/BETA');
+if isa(varargin{1},'sdpvar') && isa(varargin{2},'sdpvar')
+    error('W and Z can not both be an SDPVAR objects')
+end
+if isa(varargin{1},'sdpvar')
+    varargout{1} = InstantiateElementWise('beta_z',varargin{:});
+else
+    varargout{1} = InstantiateElementWise('beta_w',varargin{2},varargin{1});
 end

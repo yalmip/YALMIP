@@ -205,7 +205,7 @@ end
 new_x = reshape(new_x(:),length(new_x),1);
 if dmin > 0
     for i = 1:length(new_x)
-        if degree(new_x(i)) < dmin
+        if sum(powers(i,:)) < dmin
             keep(i) = 0;
         else
             keep(i) = 1;

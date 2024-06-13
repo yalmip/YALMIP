@@ -1,4 +1,4 @@
-function [Ax,Ay,b,K] = convexhullConcave(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5)
+function [Ax,Ay,b,K] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5)
 % x1-x4 corner points, 5 point in center
 
 % Lower bounds from tangents
@@ -51,8 +51,10 @@ if all(n4'*Z - d4 >= 0)
     Ax = [Ax;-n4(1:2)'];
     Ay = [Ay;-n4(3)];
 end
+K.f = 0;
+K.l = length(b);
 
-function [n,d] = ceiling(p1,p2,p3);
+function [n,d] = ceiling(p1,p2,p3)
 n = cross(p1 - p2, p1 - p3);
 n = n/sign(n(3));
 d = p1'*n;

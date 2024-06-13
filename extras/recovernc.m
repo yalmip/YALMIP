@@ -1,11 +1,11 @@
-function varargout = recover(lmi_variables)
+function varargout = recovernc(lmi_variables)
 %RECOVER Create NCVAR object using variable indicies
 
 if isempty(lmi_variables)
     varargout{1} = [];
 else
     if isa(lmi_variables,'ncvar') | isa(lmi_variables,'lmi') | isa(lmi_variables,'constraint')
-        varargout{1} = flush(recover(depends(lmi_variables)));
+        varargout{1} = recover(depends(lmi_variables));
     else
         n = length(lmi_variables);
         i=1:n;
@@ -33,7 +33,7 @@ else
         else
             x = ncvar(n,1,[],lmi_variables(:)',sparse(i,i+1,ones(n,1),n,n+1),0);
             for i = 1:length(lmi_variables)
-                varargout{i} = flush(x(i));
+                varargout{i} = x(i);
             end
         end
     end

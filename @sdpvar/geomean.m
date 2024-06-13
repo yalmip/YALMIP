@@ -127,4 +127,5 @@ switch class(varargin{1})
 
         end
     otherwise
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

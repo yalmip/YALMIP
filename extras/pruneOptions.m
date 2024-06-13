@@ -1,9 +1,22 @@
 function options = pruneOptions(options)
 
-% Mosek is easy to check since there are no inf parameters...
-if isempty(options.mosek)
-    return
-elseif isequal(options.mosek,options.default.mosek)
+if isequal(options.copt,options.default.copt)
+    options.copt = [];
+else
+    [same,opsDiff] = isequalInf(options.copt,options.default.copt);
+    if ~same
+        options.copt = opsDiff;
+    end
+end
+if isequal(options.xpress,options.default.xpress)
+    options.xpress = [];
+else
+    [same,opsDiff] = isequalInf(options.xpress,options.default.xpress);
+    if ~same
+        options.xpress = opsDiff;
+    end
+end
+if isequal(options.mosek,options.default.mosek)
     options.mosek = [];
 else
     [same,opsDiff] = isequalInf(options.mosek,options.default.mosek);
@@ -11,9 +24,7 @@ else
         options.mosek = opsDiff;
     end
 end
-if isempty(options.cplex)
-    return
-elseif isequal(options.cplex,options.default.cplex)
+if isequal(options.cplex,options.default.cplex)
     options.cplex = [];
 else
     [same,opsDiff] = isequalInf(options.cplex,options.default.cplex);
@@ -21,9 +32,7 @@ else
         options.cplex = opsDiff;
     end
 end
-if isempty(options.gurobi)
-    return
-elseif isequal(options.gurobi,options.default.gurobi)
+if isequal(options.gurobi,options.default.gurobi)
     options.gurobi = [];
 else
     [same,opsDiff] = isequalInf(options.gurobi,options.default.gurobi);
@@ -42,8 +51,16 @@ end
 
 function [same,d] = isequalInf(a,b)
 same = 1;
-anames = fieldnames(a);
-bnames = fieldnames(b);
+if ~isempty(a)
+    anames = fieldnames(a);
+else
+    anames = [];
+end
+if ~isempty(b)
+    bnames = fieldnames(b);
+else
+    bnames = [];
+end
 d = [];
 for i = 1:length(anames)
     e = getfield(a,anames{i});

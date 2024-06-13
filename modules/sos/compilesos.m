@@ -1,4 +1,4 @@
-function [F,obj,m,everything] = compilesos(F,obj,options,params,candidateMonomials)
+function [F,obj,m,everything,modeltype] = compilesos(F,obj,options,params,candidateMonomials)
 %COMPILESOS Derive sum-of-squares model without solving
 %
 %    [F,obj,m] = compilesos(F,h,options,params,monomials) compiles the SOS
@@ -124,7 +124,9 @@ end
 if ~isempty(yalmip('extvariables'))
     [F_parametric,failure] = expandmodel(F_parametric,obj,options);
     F_parametric = expanded(F_parametric,1);
-    obj = expanded(obj,1);    
+    if ~isa(obj,'logdet')
+        obj = expanded(obj,1);    
+    end
     if failure
         error('Could not expand the model');
     end
@@ -211,10 +213,10 @@ if options.verbose>0 & ~isempty(F_parametric)
     nEQ = 0;
     nLMI = sum(full(is(F_parametric,'lmi')) &  full(~is(F_parametric,'element-wise'))); %FULL due to bug in ML 7.0.1
     for i = 1:length(F_parametric)
-        if is(F_parametric,'element-wise')
+        if is(F_parametric(i),'element-wise')
             nLP = nLP + prod(size(F_parametric(i)));
         end
-        if is(F_parametric,'equality')
+        if is(F_parametric(i),'equality')
             nEQ = nEQ + prod(size(F_parametric(i)));
         end
     end
@@ -225,7 +227,7 @@ end
 %% IMAGE OR KERNEL REPRESENTATION?
 % ************************************************
 noRANK = all(isinf(ranks));
-options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData);
+options = selectSOSmodel(F,options,NonLinearParameterization,noRANK,IntegerData,UncertainData,obj);
 
 switch options.sos.model
     case 'auto'
@@ -236,7 +238,10 @@ switch options.sos.model
         options.sos.model = 2;
     otherwise
 end
-             
+  
+% Save this and return to calling function so we know if we have dualized
+modeltype = options.sos.model;
+
 if ~isempty(yalmip('extvariables')) & options.sos.model == 2 & nargin<4
     disp(' ')
     disp('**Using nonlinear operators in SOS problems can cause problems.')
@@ -303,7 +308,7 @@ if options.sos.newton
     tempops.solver = 'cdd,glpk,*';  % CDD is generally robust on these problems
     tempops.verbose = 0;
     tempops.saveduals = 0;
-    tempops.usex0 = 0;
+    tempops.warmstart = 0;
     [aux1,aux2,aux3,LPmodel] = export((temp>=0),temp,tempops);   
 else
     LPmodel = [];

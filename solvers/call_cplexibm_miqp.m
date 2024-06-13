@@ -1,15 +1,20 @@
 function output = call_cplexibm_miqp(interfacedata)
 
-% Author Johan Löfberg
-
 %Turn on support for nonconvex QP if required and user hasn't touched this
 if interfacedata.ProblemClass.objective.quadratic.nonconvex
     if isfield(interfacedata.options.cplex,'solutiontarget')
+        % User is using old version of cplex
         if ~interfacedata.options.cplex.solutiontarget          
+            % User has not set it to 1 or 2 manually
             interfacedata.options.cplex.solutiontarget = 3;
         end
+    elseif isfield(interfacedata.options.cplex,'optimalitytarget')
+        if ~interfacedata.options.cplex.optimalitytarget          
+            % User has not set it to 1 or 2 manually
+            interfacedata.options.cplex.optimalitytarget = 3;
+        end
     else
-        interfacedata.options.cplex.solutiontarget = 3;
+        interfacedata.options.cplex.optimalitytarget = 3;
     end
 end
 
@@ -44,18 +49,8 @@ if output.cplexstatus == 4 | output.cplexstatus == 119
     end
 end
 
-% Inconstency in early version of CPLEX
-dots = find(interfacedata.solver.subversion == '.');
-if length(dots)>1
-    interfacedata.solver.subversion(dots(2:end))=[];
-end
-if str2num(interfacedata.solver.subversion)>=12.3
-    the_sign = 1;
-else
-    the_sign = -1;
-end
 if ~isempty(lambda)
-    D_struc = [the_sign*lambda.eqlin;the_sign*lambda.ineqlin];
+    D_struc = [lambda.eqlin;lambda.ineqlin];
 else
     D_struc = [];    
 end
@@ -89,8 +84,6 @@ switch output.cplexstatus
         problem = -1;
 end
 
-infostr = yalmiperror(problem,'CPLEX-IBM');
-
 % Save all data sent to solver?
 if options.savesolverinput
     solverinput.model = model;
@@ -114,7 +107,7 @@ if isempty(x)
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 
 function [x,fval,exitflag,output,lambda] = localSolverCall(model)
 

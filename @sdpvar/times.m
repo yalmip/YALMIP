@@ -20,11 +20,13 @@ end
 
 if isnumeric(X)
     if any(isnan(X))
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
 if isnumeric(Y)
     if any(isnan(Y))
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
         error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
@@ -40,8 +42,6 @@ elseif isempty(Y)
 end
 
 if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
-    X = flush(X);
-    Y = flush(Y);
     if (X.typeflag==5) && (Y.typeflag==5)
         error('Product of norms not allowed');
     end
@@ -123,8 +123,7 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
                                     
                                     Z.conicinfo = [0 0];
                                     Z.extra.opname='';
-                                    Z = Z + X0.*Y0 + X0.*Y + X.*Y0;
-                                    Z = flush(Z);
+                                    Z = Z + X0.*Y0 + X0.*Y + X.*Y0;                                    
                                     y = clean(Z);
                                     return
                                 end
@@ -282,8 +281,7 @@ if (isa(X,'sdpvar') && isa(Y,'sdpvar'))
     end
     % Reset info about conic terms
     Z.conicinfo = [0 0];
-    Z.extra.opname='';
-    Z = flush(Z);
+    Z.extra.opname='';    
     y = clean(Z);
     return
 end
@@ -307,7 +305,6 @@ end
 % Reset info about conic terms
 y.conicinfo = [0 0];
 y.extra.opname='';
-y = flush(y);
 y = clean(y);
 if numel(y)==numel(X)
     y = reshape(y,size(X));

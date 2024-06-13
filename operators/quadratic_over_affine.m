@@ -32,7 +32,17 @@ switch class(varargin{1})
                 varargout{1} = temp;
             else
                 [Q,c,f,x,info] = quaddecomp(p);
-                q = chol(Q)*x;
+                if any(f) || any(c)
+                    error('quadratic_over_affine does not support linear of constant terms');
+                end
+                [R,info] = chol(Q);
+                if info
+                    [U,S,V] = svd(full(Q));
+                    used = find(diag(S)>1e-12);
+                    q = S(used,used)^0.5*V(:,used)'*x;
+                else
+                    q = R*x,
+                end
                 varargin{1} = q;
                 varargout{1} = yalmip('define','quadratic_over_affine_expanded',varargin{:});
             end
@@ -42,5 +52,5 @@ switch class(varargin{1})
         
         
     otherwise
-        error('SDPVAR/ABS called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end

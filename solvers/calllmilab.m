@@ -35,7 +35,7 @@ if K.l>0
 end
 
 % The LMIs
-if K.s(1)>0        
+if any(K.s)        
     for i = 1:length(K.s)
         n = K.s(i);
         lmiterm([-lmicount 1 1 0],full(reshape(F_struc(top:top+n^2-1,1),n,n)));
@@ -91,7 +91,6 @@ if isempty(x)
 else
     problem = 0;
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 % No duals...
 D_struc = [];
@@ -112,4 +111,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

@@ -6,8 +6,7 @@ function varargout = kullbackleibler(varargin)
 % Computes/declares the convex Kullback-Leibler divergence sum(x.*log(x./y))
 % Alternatively -sum(x.*log(y/x)), i.e., negated perspectives of log(y)
 %
-% See also ENTROPY, CROSSENTROPY
-
+% See also ENTROPY, CROSSENTROPY, LOGSUMEXP, PLOG, PEXP, EXPCONE
 
 switch class(varargin{1})
 
@@ -21,7 +20,7 @@ switch class(varargin{1})
             x = varargin{1}(:);
             y = varargin{2}(:);
         end
-        l = log(x./y);
+        l = -log(y./x);
         l(x<=0) = 0;
         l = real(l);
         varargout{1} = sum(x.*l);       
@@ -45,20 +44,17 @@ switch class(varargin{1})
         
     case 'char'
 
-        X = varargin{3};
-        F = [X >= 0];
-
-        operator = struct('convexity','convex','monotonicity','none','definiteness','none','model','callback');
+        operator = CreateBasicOperator('convex','callback');
         operator.range = [-inf inf];
         operator.domain = [0 inf];       
         operator.derivative = @derivative;
 
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/KULLBACKLEIBLER called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function df = derivative(x)
@@ -67,5 +63,3 @@ x = z(:,1);
 y = z(:,2);
 % Use KL = -Entropy + Cross Entropy
 df = [1+log(x);0*y] + [-log(y);-x./y];
-
-

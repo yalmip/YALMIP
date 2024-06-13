@@ -1,5 +1,4 @@
 function Z = mtimes(X,Y)
-%MTIMES (overloaded)
 
 % Cannot use isa here since blkvar is marked as sdpvar
 X_class = class(X);
@@ -46,12 +45,14 @@ end
 
 if ~X_is_spdvar
     if any(isnan(X))
-       error('Multiplying NaN with an SDPVAR makes no sense.');
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('Multiplying NaN with an SDPVAR makes no sense.');
     end
 end
 if ~Y_is_spdvar
     if any(isnan(Y))
-       error('Multiplying NaN with an SDPVAR makes no sense.');
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('Multiplying NaN with an SDPVAR makes no sense.');       
     end
 end
 
@@ -60,23 +61,18 @@ end
 % 2 : DOUBLE * SDPVAR
 % 3 : SDPVAR * SDPVAR
 switch 2*X_is_spdvar+Y_is_spdvar
-    case 3
-        if ~isempty(X.midfactors)
-            X = flush(X);
-        end
-        if ~isempty(Y.midfactors)
-            Y = flush(Y);
-        end
+    case 3        
         try
-            % HACK: Return entropy when user types x*log(x), plog for
-            % x*log(y/x) and -plog for x*log(x/y)
-            if isequal(Y.extra.opname,'log')
+            % Check for some standard stuff we want to intervene
+            % a*log(a) converts to -entropy(a)
+            % a*log(b/a) converts to plog(b,a)
+            % a*exp(b/a) converts to pexp(b,a)
+            if islogorexp(Y)
                 Z = check_for_special_case(Y,X);
                 if ~isempty(Z)
                     return
                 end
-
-            elseif isequal(X.extra.opname,'log')
+            elseif islogorexp(X)
                 Z = check_for_special_case(X,Y);
                 if ~isempty(Z)
                     return
@@ -97,11 +93,11 @@ switch 2*X_is_spdvar+Y_is_spdvar
             % Requires that the involved variables never have been used
             % before in a nonlinear expression. By exploiting this fact, we
             % can avoid using findhash, which typically is the bottle-neck.
-            if (nx == 1) && (my == 1) && isequal(X.lmi_variables,Y.lmi_variables)
+            if (mx == ny) && (nx == 1) && (my == 1) && isequal(X.lmi_variables,Y.lmi_variables)
                 % Looks like w'Qw or similiar
                 % Check that no nonlinear have been defined before, and that
                 % the arguments are linear.
-                if all(oldvariabletype(X.lmi_variables)==0) && nnz(mt(find(oldvariabletype),X.lmi_variables)) == 0
+                if all(oldvariabletype(X.lmi_variables)==0) && nnz(mt(find(oldvariabletype),X.lmi_variables)) == 0                    
                     Z = super_fast_quadratic_multiplication(X,Y,mt,oldvariabletype,mt_hash,hash);
                     return
                 end
@@ -555,12 +551,17 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 if Y==0
                     Z = 0;
                     return
+                elseif Y==1
+                    return
                 else
                     Z.basis = Z.basis*Y;
                     % Reset info about conic terms
                     Z.conicinfo = [0 0];
-                    Z.extra.opname='';
-                    Z = addrightfactor(Z,Y);
+                    if ~isempty(Z.extra.opname)
+                        if isempty(strfind(Z.extra.opname,'scaled'))
+                            Z.extra.opname = ['scaled ' Z.extra.opname];
+                        end
+                    end                    
                     return
                 end
             else
@@ -571,9 +572,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 Z.dim(2) = m_Y;
                 Z.basis = kron(Z.basis,Y(:));
                 Z.conicinfo = [0 0];
-                Z.extra.opname='';
-                Z = addrightfactor(Z,Y);
-                Z = addleftfactor(Z,speye(size(Y,1)));
+                Z.extra.opname='';                                
                 Z = clean(Z);
                 if length(size(Y))>2
                     Z = reshape(reshape(Z,[],1),size(Y));
@@ -589,9 +588,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.basis = Z.basis*Y;
             Z.conicinfo = [0 0];
             Z.extra.opname='';
-            Z.extra.createTime = definecreationtime;
-            Z = addrightfactor(Z,Y);
-            Z = addleftfactor(Z,speye(size(Y,1)));
+            Z.extra.createTime = definecreationtime;                        
             Z = clean(Z);          
             return
         end
@@ -610,8 +607,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         end
         Z.conicinfo = [0 0];
         Z.extra.opname='';
-        Z.extra.createTime = definecreationtime;
-        Z = addrightfactor(Z,Y);
+        Z.extra.createTime = definecreationtime;        
         Z = clean(Z);
 
     case 1
@@ -639,11 +635,16 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 if X==0
                     Z = 0;
                     return
+                elseif X==1
+                    return
                 else
                     Z.basis = Z.basis*X;
                     Z.conicinfo = [0 0];
-                    Z.extra.opname='';
-                    Z = addleftfactor(Z,X);
+                    if ~isempty(Z.extra.opname)
+                        if isempty(strfind(Z.extra.opname,'scaled'))
+                            Z.extra.opname = ['scaled ' Z.extra.opname];
+                        end
+                    end
                     return
                 end
             else               
@@ -656,8 +657,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
                 end
                 Z.conicinfo = [0 0];
                 Z.extra.opname='';
-                Z.extra.createTime = definecreationtime;
-                Z = addleftfactor(Z,X);
+                Z.extra.createTime = definecreationtime;                
                 if X==0
                     Z = clean(Z);
                 end
@@ -667,9 +667,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
             Z.dim(1) = n_X;
             Z.dim(2) = m_X;
             Z.basis = X(:)*Y.basis;
-            Z.extra.createTime = definecreationtime;
-            Z = addleftfactor(Z,X);
-            Z = addrightfactor(Z,speye(size(X,2)));
+            Z.extra.createTime = definecreationtime;                        
             Z = clean(Z);
             if length(size(X))>2
                 Z = reshape(reshape(Z,[],1),size(X));
@@ -716,8 +714,7 @@ switch 2*X_is_spdvar+Y_is_spdvar
         Z.dim(2) = m;
         Z.conicinfo = [0 0];
         Z.extra.opname='';
-        Z.extra.createTime = definecreationtime;
-        Z = addleftfactor(Z,X);
+        Z.extra.createTime = definecreationtime;        
         Z = clean(Z);
 
     otherwise
@@ -814,36 +811,69 @@ Z.extra.opname='';
 
 
 function Z = check_for_special_case(Y,X)
-% X*Y = X*log(?)
+% Detecting variants of
+% k*LOG(?)*X or k*EXP(?)*X 
 args = yalmip('getarguments',Y);
 args = args.arg{1};
-if isequal(X,args)
-    B = getbase(Y);
-    Z = X*B(1)-B(2)*entropy(X);
-    return
+% Temporarily recast slog as log (slog is log(1+x))
+if isequal(Y.extra.opname,'slog')
+    args = args + 1;
+    Y.extra.opname = 'log';
 end
-if 0%isequal(getvariables(args),getvariables(X)) 
-    % Possible f(x)*log(f(x))
-    [i,j,k] = find(getbase(args));
-    [ii,jj,kk] = find(getbase(X));
-    if isequal(i,ii) && isequal(j,jj)
-        scale = kk(1)./k(1)
-        if all(abs(kk./k - kk(1)./k(1)) <= 1e-12)
-           Z = -scale*entropy(args); 
-           return
+% Detect the case log(f)*(k*f), and rescale to k*log(f)*f
+% to simplify comparison of function argument and outer argument
+if isequal(X.dim,args.dim) && isequal(size(X.basis),size(args.basis))
+    [~,~,a] = find(X.basis);
+    [~,~,b] = find(args.basis);
+    if ~isequal(a,b)
+        c = a./b;
+        if all(abs(c-c(1))<=1e-13)           
+            k = c(1);            
+            Y.basis = Y.basis*k;
+            X.basis = X.basis/k;
+            args.basis = X.basis;            
         end
     end
 end
+% Entropy/xexp?
+if issamevariable(X,args)
+    % Extract k in k*log or k*exp
+    B = getbase(Y);k = B(2);
+    switch Y.extra.opname
+        case {'log','scaled log'}
+            Z = (-k)*entropy(X);      
+        case {'exp','scaled exp'}
+            Z = k*xexp(X);            
+        otherwise
+    end
+    return
+end
+% Check for simple perspective stuff
 if isequal(getbase(args),[0 1]) &&  isequal(getbase(X),[0 1])
     mt = yalmip('monomtable');
     v = mt(getvariables(args),:);
     vb = v(find(v));
     if v(getvariables(X))==1 && min(vb)==-1 && max(vb)==1
-        % X * log(X / Y) = -plog(X,Y)
-        Z = -plog([X;recover(find(v==-1))]);
+        % X * k * log(X / Y) = -k*plog(X,Y) (i.e. kullback-leibler)
+        B = getbase(Y);k = B(2);
+        switch Y.extra.opname
+            case {'log','scaled log'}
+                Z = (-k)*plog([X;recover(find(v==-1))]);
+            case {'exp','scaled exp'}
+                Z = [];
+            otherwise
+        end            
     elseif v(getvariables(X))==-1 && min(vb)==-1 && max(vb)==1
-        % X * log(Y / X) = plot(X,Y)
-        Z = plog([X;recover(find(v==1))]);
+        % X * k * log(Y / X) = k*plog(X,Y)
+        % X * k * exp(Y / X) = k*pexp(X,Y)
+        B = getbase(Y);k = B(2);
+        switch Y.extra.opname
+            case {'log','scaled log'}                                                
+                Z = k*plog([X;recover(find(v==1))]);                
+            case {'exp','scaled exp'}
+                Z = k*pexp([X;recover(find(v==1))]);
+            otherwise
+        end
     else
         Z = [];
     end
@@ -853,7 +883,6 @@ end
 
 
 function yes = isdiagonal(X)
-
 yes = 0;
 if size(X,1) == size(X,2)
     [i,j] = find(X);
@@ -863,10 +892,17 @@ if size(X,1) == size(X,2)
 end
 
 function x = expandAllocation(x,n)
-
 if length(x) < n
     x = [x zeros(1,2*n-length(x))];
 end
         
+function yes = issamevariable(X,Y)
+yes = isequal(X.dim,Y.dim) && isequal(X.basis,Y.basis) && isequal(X.lmi_variables,Y.lmi_variables);
 
-
+function yes = islogorexp(X)
+name = X.extra.opname;
+if isempty(name)
+    yes = 0;
+else
+    yes = isequal(name,'log') || isequal(name,'slog') || isequal(name,'scaled log') || isequal(name,'exp') || isequal(name,'scaled exp');
+end

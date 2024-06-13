@@ -1,4 +1,4 @@
-function output = mpcvx(p)
+function output = callmpcvx(p)
 %BMIBNB          Branch-and-bound scheme for bilinear programs
 %
 % BMIBNB is never called by the user directly, but is called by 
@@ -25,9 +25,6 @@ function output = mpcvx(p)
 % bmibnb.eqtol          - A number is declared zero if abs(x) smaller than...[ double (1e-6)]
 % bmibnb.maxiter        - Maximum number of solved nodes [int (100)]
 % bmibnb.maxtime        - Maximum CPU time (sec.) [int (3600)]
-
-% Author Johan Löfberg 
-% $Id: callmpcvx.m,v 1.2 2005-05-07 13:53:20 joloef Exp $
 
 % ********************************
 % INITIALIZE DIAGNOSTICS IN YALMIP
@@ -93,7 +90,7 @@ if isempty(p.lb)
     p.lb = repmat(-inf,length(p.c),1);
 end
 if ~isempty(p.F_struc)
-    [lb,ub,used_rows] = findulb(p.F_struc,p.K);
+    [lb,ub,used_rows] = find_lp_bounds(p.F_struc,p.K);
     if ~isempty(used_rows)
         lower_defined = find(~isinf(lb));
         if ~isempty(lower_defined)
@@ -122,7 +119,7 @@ feasible = all(p.lb<=p.ub);
 % ********************************
 % Remove empty linear rows
 % ********************************
-if p.K.l > 0
+if any(p.K.l)
     empty_rows = find(~any(p.F_struc(p.K.f+1:p.K.f+p.K.l,2:end),2));
     if ~isempty(empty_rows)
         if all(p.F_struc(p.K.f+empty_rows,1)>=0)            
@@ -310,7 +307,7 @@ end
 x0 = evaluate_nonlinear(p,p.x0);
 upper_residual = resids(p,x0);
 x0_feasible = all(upper_residual(1:p.K.f)>=-options.bmibnb.eqtol) & all(upper_residual(1+p.K.f:end)>=options.bmibnb.pdtol);
-if p.options.usex0 & x0_feasible
+if p.options.warmstart & x0_feasible
     x_min = x0;
     upper = p.f+p.c'*x0+x0'*Q*x0;
 end
@@ -533,7 +530,7 @@ while go_on
         res = [res;p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]];
     end
     if (length(p.K.s)>1) | p.K.s>0
-        top = 1+p.K.f+p.K.l;
+        top = startofSOCPCone(p.K)
         for i = 1:length(p.K.s)
             n = p.K.s(i);
             X = p.F_struc(top:top+n^2-1,:)*[1;x];top = top+n^2;
@@ -785,8 +782,8 @@ while go_on
     % THESE ARE ONLY USED IN BOXREDUCE
     % *************************************
     function p = addsdpcut(p,x)
-    if p.K.s > 0
-        top = p.K.f+p.K.l+1;
+    if any(p.K.s)
+        top = startofSOCPCone(p.K);
         newcuts = 1;
         newF = [];
         for i = 1:length(p.K.s)
@@ -1004,7 +1001,7 @@ while go_on
     p_upper.options.saveduals = 0;
     
     % Solve upper bounding problem
-    p_upper.options.usex0 = 1;
+    p_upper.options.warmstart = 1;
     output = feval(uppersolver,p_upper);
     % Project into the box (numerical issue)
     output.Primal(output.Primal<p_upper.lb) = p_upper.lb(output.Primal<p_upper.lb);

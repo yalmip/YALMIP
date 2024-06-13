@@ -54,7 +54,9 @@ lmiinfo{9} = 'KYP constraint';
 lmiinfo{10} = 'Eigenvalue constraint';
 lmiinfo{11} = 'SOS constraint';
 lmiinfo{15} = 'Uncertainty declaration';
+lmiinfo{20} = 'Power cone constraint';
 lmiinfo{54} = 'Vectorized second order cone constraints';
+lmiinfo{58} = 'Vectorized power cone constraints';
 lmiinfo{55} = 'Complementarity constraint';
 lmiinfo{56} = 'Logic constraint';
 header = {'ID','Constraint','Primal residual','Dual residual','Tag'};
@@ -67,6 +69,7 @@ end
 % The reason is that REPLACE has to be called
 % for every SOS. Instead, precalc on one vector
 p=[];
+p_dim = [];
 ParVar=[];
 soscount=1;
 for j = 1:nlmi
@@ -75,15 +78,23 @@ for j = 1:nlmi
         [v,ParVari] = sosd(pi);
         if isempty(v)
             p=[p;0];
+            p_dim = [p_dim size(pi,1)];
         else
-            p=[p;pi];
+            p=[p;reshape(pi,[],1)];
+            p_dim = [p_dim size(pi,1)];
             ParVar=unique([ParVar(:);ParVari(:)]);
         end
     end
 end
 if ~isempty(ParVar)
     ParVar = recover(ParVar);
-    p = replace(p,ParVar,double(ParVar));
+    pp = replace(p,ParVar,double(ParVar));
+    top = 1;
+    clear p
+    for j = 1:length(p_dim)
+        p{j} = reshape(pp(top:top+p_dim(j)^2-1),p_dim(j),p_dim(j));
+        top = top + p_dim(j)^2;
+    end
 end 
 
 for j = 1:nlmi
@@ -118,38 +129,38 @@ for j = 1:nlmi
         case 8
             res(j,1) = -full(max(max(abs(F0-round(F0)))));
             res(j,1) = min(res(j,1),-(any(F0>1) | any(F0<0)));
+        case 20
+            res(j,1) = F0(1)^F0(end)*F0(2)^(1-F0(end)) - norm(F0(3:end-1));
         case 21
-            res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
+            if F0(2)==0
+                if F0(1)>0
+                    res(j,1) = -inf;
+                else
+                    res(j,1) = F0(3);
+                end
+            else
+                res(j,1) = F0(3) - F0(2)*exp(F0(1)/F0(2));
+            end
         case 54
             res(j,1) = inf;
             for k = 1:size(F0,2)
                 res(j,1) = min(res(j,1),full(F0(1,k)-norm(F0(2:end,k))));
-            end                
+            end 
+        case 58
+            res(j,1) = inf;
+            for k = 1:size(F0,2)
+                res(j,1) = min(res(j,1),F0(1,k)^F0(end,k)*F0(2,k)^(1-F0(end,k)) - norm(F0(3:end-1,k)));
+            end 
         case 11
-            if 0
-                p = F.clauses{j}.data;          
-                [v,ParVar] = sosd(p);
-                if ~isempty(ParVar)
-                    ParVar = recover(ParVar);
-                    p = replace(p,ParVar,double(ParVar));
-                end
-                if isempty(v)
-                    res(j,1)=nan;
-                else
-                    h = p-v'*v;
-                    res(j,1) = full(max(max(abs(getbase(h)))));
-                end
+                 
+            [v,ParVar] = sosd(F.clauses{j}.data);
+            if isempty(v)
+                res(j,1)=nan;
             else
-                %p = F.clauses{j}.data;          
-                [v,ParVar] = sosd(F.clauses{j}.data);
-                if isempty(v)
-                    res(j,1)=nan;
-                else
-                    h = p(soscount)-v'*v;
-                    res(j,1) = full(max(max(abs(getbase(h)))));
-                end
-                soscount=soscount+1;
+                h = p{soscount}-v'*v;
+                res(j,1) = full(max(max(abs(getbase(h)))));
             end
+            soscount=soscount+1;
             
             case 56
                  res(j,1) = logicSatisfaction(F.clauses{j}.data);
@@ -171,7 +182,7 @@ for j = 1:nlmi
             case 2
                 resdual(j,1) = min(min(dual));
             case 3
-                resdual(j,1) = -max(max(abs(dual)));
+                resdual(j,1) = 0;
             case 4
                 resdual(j,1) = dual(1)-norm(dual(2:end));
             case 5
@@ -238,6 +249,12 @@ end
 
 function res = logicSatisfaction(clause);
 
+if isequal(clause{1},'ismember')
+    if isa(clause{2},'sdpvar') &  isa(clause{3},'double')
+        res = -min(sum(abs(value(clause{2}) - clause{3}),1))
+        return
+    end
+end
 a = clause{2};
 b = clause{3};
 if isa(a,'sdpvar')

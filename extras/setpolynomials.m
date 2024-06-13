@@ -1,9 +1,6 @@
 function setpolynomials
 %SETPOLYNOMIALS Internal function
 
-% Author Johan Löfberg
-% $Id: setpolynomials.m,v 1.3 2005-04-29 08:05:01 joloef Exp $
-
 solution = sdpvar('getSolution');
 lmi_variables = solution.variables;
 opt_variables = solution.optvar;

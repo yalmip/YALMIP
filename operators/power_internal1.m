@@ -31,13 +31,13 @@ switch class(varargin{1})
         Y = varargin{4};
         F=[];
         if Y>=1
-            operator = struct('convexity','none','monotonicity','increasing','definiteness','positve','model','callback');
+            operator = CreateBasicOperator('increasing','positive','callback','range',[0 inf]);
         elseif Y>=0
-            operator = struct('convexity','none','monotonicity','decreasing','definiteness','positive','model','callback');
+            operator = CreateBasicOperator('decreasing','positive','callback','range',[0 inf]);
         else
             % Base is negative, so the power has to be an integer
             F = (integer(X));
-            operator = struct('convexity','none','monotonicity','decreasing','definiteness','none','model','callback');
+            operator = CreateBasicOperator('decreasing','callback');
         end
 
         operator.bounds = @bounds_power;
@@ -51,7 +51,7 @@ switch class(varargin{1})
         varargout{2} = operator;
         varargout{3} = [X(:);Y(:)];
     otherwise
-        error('SDPVAR/power_internal1 called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 % This should not be hidden here....
@@ -81,9 +81,9 @@ end
 f = base.^x;
 df = log(base)*f;
 
-function [Ax, Ay, b] = convexhull_power(xL,xU,base)
+function [Ax, Ay, b, K] = convexhull_power(xL,xU,base)
 fL = base^xL;
 fU = base^xU;
 dfL = log(base)*fL;
 dfU = log(base)*fU;
-[Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
+[Ax,Ay,b,K] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);

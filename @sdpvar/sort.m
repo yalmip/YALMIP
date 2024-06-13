@@ -10,10 +10,35 @@ function varargout=sort(varargin)
 
 switch class(varargin{1})
 
-    case 'double'
-        error('Overloaded SDPVAR/SORT CALLED WITH DOUBLE. Report error')
-
     case 'sdpvar' % Overloaded operator for SDPVAR objects. Pass on args and save them.
+        
+        if nargin >= 2 && isa(varargin{2},'char')
+            switch varargin{2} 
+                case 'descend'
+                    % Sort and then reverse answer
+                    if nargout > 1
+                        [y,loc] = sort(varargin{1});
+                        varargout{1} = flipud(fliplr(y));
+                        varargout{2} = flipud(fliplr(loc));
+                    else                    
+                        s = sort(varargin{1});
+                        varargout{1} = flipud(fliplr(s));
+                    end
+                    return
+                case 'ascend'
+                    if nargout > 1
+                        [y,loc] = sort(varargin{1});
+                        varargout{1} = y;
+                        varargout{2} = loc;
+                    else                        
+                        s = sort(varargin{1});
+                        varargout{1} = s;
+                    end
+                    return                
+                otherwise
+                    error('Sort direction should be ''ascend'' or ''descend''');
+            end
+        end
         
         if min(size(varargin{1})) > 1
             [y,loc] = matrix_sdpvar_sort(varargin{:});
@@ -21,7 +46,7 @@ switch class(varargin{1})
             varargout{2} = loc;
             return
         end
-
+        
         x = varargin{1};
         if nargin > 1 
             % trivial case
@@ -73,5 +98,5 @@ switch class(varargin{1})
         % one call
         varargout{2}.models = vars;
     otherwise
-        error('Strange type on first argument in SDPVAR/SORT');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

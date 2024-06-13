@@ -1,4 +1,4 @@
-function [data,cones,output] = adExponentialCone(data,cones,model)
+function [data,cones,output] = addExponentialCone(data,cones,model)
 
 output.problem = 0;
 if ~isempty(model.evalMap)
@@ -31,30 +31,30 @@ if ~isempty(model.evalMap)
                 % Standard interface, return solver not applicable
                 % This should not be able to happen as we check this
                 % earlier
-                output = createoutput([],[],[],-4,model.solver.tag,[],[],0);
+                output = createOutputStructure([],[],[],-4,model.solver.tag,[],[],0);
                 return
         end
     end
     % Check that all exp/log enter in a convex fashion
-    if model.K.f > 0
+    if any(model.K.f)
        if nnz(data.A(1:model.K.f,convexFunctions))>0 || nnz(data.A(1:model.K.f,concaveFunctions))>0
-          output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+          output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
              return
         end 
     end
     if any(data.c(convexFunctions) < 0) || any(data.c(concaveFunctions) > 0)
-        output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+        output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
         return
     end
-    if model.K.l > 0
+    if any(model.K.l)
         if nnz(data.A(1+model.K.f:model.K.f+model.K.l,convexFunctions)<0) || nnz(data.A(1+model.K.f:model.K.f+model.K.l,concaveFunctions)>0)
-             output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+             output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
              return
         end
     end
     if sum(model.K.q) + sum(model.K.s) > 0
          if nnz(data.A(1+model.K.f+model.K.l:end,convexFunctions))>0 || nnz(data.A(1+model.K.f+model.K.l:end,concaveFunctions))>0
-             output = createoutput([],[],[],19,model.solver.tag,[],[],0);
+             output = createOutputStructure([],[],[],19,model.solver.tag,[],[],0);
              return
         end
     end

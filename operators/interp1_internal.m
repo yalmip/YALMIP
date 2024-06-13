@@ -19,6 +19,14 @@ switch class(varargin{1})
         method = varargin{6};
         dyi = varargin{7};
         
+        % Adaptive gridding. i is really just the number of wanted
+        % gridpoints and yi is a function handle.
+        if isa(yi,'function_handle')
+            [M,m] = derivebounds(x);
+            xi = linspace(m,M,xi);
+            yi = yi(xi);
+        end
+        
         if strcmpi(varargin{1},'graph')
             % Convexity propagation wants epi-graph models, so is that what
             % we have used for modelling?

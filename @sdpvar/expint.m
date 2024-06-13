@@ -1,7 +1,5 @@
 function varargout = expint(varargin)
-%EXPINT (overloaded)
 
-% Author Johan Löfberg
 switch class(varargin{1})
 
     case 'sdpvar'
@@ -9,23 +7,13 @@ switch class(varargin{1})
 
     case 'char'
         
+        operator = CreateBasicOperator('convex','decreasing','positive','callback');        
+        operator.derivative = @(x)(-exp(-x)./x);
+        operator.domain = [0 inf];
         varargout{1} = [];
-        varargout{2} = createOperator;
+        varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/EXPINT called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end
-
-function operator = createOperator
-
-operator = struct('convexity','convex','monotonicity','decreasing','definiteness','positive','model','callback');
-operator.bounds     = @bounds;
-operator.derivative = @(x)(-exp(-x)./x);
-operator.range = [0 inf];
-operator.domain = [1e-8 inf];
-
-% Bounding functions for the branch&bound solver
-function [L,U] = bounds(xL,xU)
-L = expint(xU);
-U = expint(xL);

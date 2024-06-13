@@ -95,7 +95,7 @@ if any(model.variabletype > 3)
         end
     end
     
-    model = update_eval_bounds(model);
+    model = propagate_bounds_from_evaluations(model);
     for i = 1:length(model.evalMap)
         if isequal(model.evalMap{i}.fcn,'power_internal2')
             if isequal(model.evalMap{i}.arg{2},-1)
@@ -166,16 +166,16 @@ else
         % Nasty crossing around zero
         U = inf;
         L = -inf;
-    elseif xU < 0
-        L = xU^-1;
-        U = xL^-1;
+    elseif xU == 0
+        L = -inf;
+        U = xL^-1;  
     else
-        disp('Not implemented yet')
-        error
+        L = xU^-1;
+        U = xL^-1;    
     end
 end
 
-function [Ax, Ay, b] = power_convexhull(xL,xU,power)
+function [Ax, Ay, b, K] = power_convexhull(xL,xU,power)
 fL = xL^power;
 fU = xU^power;
 dfL = power*xL^(power-1);
@@ -184,7 +184,15 @@ if xL<0 & xU>0
     % Nasty crossing
     Ax = [];
     Ay = [];
+    b = [];  
+    K = []; 
+    return
+elseif fU-fL < 1e-4
+    % We're basically empty
+    Ax = [];
+    Ay = [];
     b = [];
+    K = []; 
     return
 end
 
@@ -197,9 +205,9 @@ fM = xM^power;
 dfM = power*xM^(power-1);
 
 if ((power > 1 | power < 0) & (xL >=0)) | ((power < 1 & power > 0) & (xU <=0))
-    [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 end
 if ~isempty(Ax)
     if isinf(Ax(1))
@@ -208,58 +216,28 @@ if ~isempty(Ax)
         B(1)  = 0;
     end
 end
-function [Ax, Ay, b] = inverse_convexhull(xL,xU)
-fL = xL^-1;
-fU = xU^-1;
-dfL = -1*xL^(-2);
-dfU = -1*xU^(-2);
+
+function [Ax, Ay, b, K] = inverse_convexhull(xL,xU)
 if xL<0 & xU>0
     % Nasty crossing
     Ax = [1;-1];
     Ay = [0;0];
     b = [xU;-xL];
+    K.f = 0;
+    K.l = 2;
     return
 end
-average_derivative = (fU-fL)/(xU-xL);
-xM = (average_derivative/(-1)).^(1/(-1-1));
-if xU < 0
-    xM = -xM;
-end
-if ~(xM > xL)
-    xM = (xL + xU)/2;
-end
+fL = xL^-1;
+fU = xU^-1;
+dfL = -1*xL^(-2);
+dfU = -1*xU^(-2);
+xM = (xL + xU)/2;
 fM = xM^(-1);
-dfM = (-1)*xM^(-2);
-
+dfM = -1*xM^(-2);
 if xL >= 0
-    [Ax,Ay,b] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
+    [Ax,Ay,b,K] = convexhullConvex(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 else
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-end
-
-function df = power_derivative(x,power)
-fL = xL^power;
-fU = xU^power;
-dfL = power*xL^(power-1);
-dfU = power*xU^(power-1);
-if xL<0 & xU>0
-    % Nasty crossing
-    Ax = [];
-    Ay = [];
-    b = [];
-    return
-end
-if power > 1 | power < 0
-    [Ax,Ay,b] = convexhullConvex(xL,xU,fL,fU,dfL,dfU);
-else
-    [Ax,Ay,b] = convexhullConcave(xL,xU,fL,fU,dfL,dfU);
-end
-if ~isempty(Ax)
-    if isinf(Ax(1))
-        Ay(1) = 0;
-        Ax(1) = -1;
-        B(1)  = 0;
-    end
+    [Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
 end
 
 function  f = inverse_internal2_operator(model,variable,in);
@@ -269,8 +247,6 @@ f.arg{2} = [];
 f.properties.bounds = @inverse_bound;
 f.properties.convexhull = @inverse_convexhull;
 f.properties.derivative = @(x) -1./(x.^2);
-f.properties.range = [-inf  inf];
-f.properties.domain = [-inf  inf];
 flb = 1/model.lb(variable);
 fub = 1/model.ub(variable);
 if model.lb(variable)>0 | model.ub(variable) < 0
@@ -285,7 +261,7 @@ elseif model.ub(variable) <= 0
     f.properties.convexity = 'concave';
     f.properties.range = [fub  flb];    
 end
-f.properties.inverse = [];
+f.properties = assertOperatorProperties(f.properties);
 
 function f = power_internal2_operator(model,variable,power);
 f.fcn = 'power_internal2';
@@ -295,10 +271,11 @@ f.arg{3} = [];
 f.properties.bounds = @power_bound;
 f.properties.convexhull = @power_convexhull;
 f.properties.derivative = eval(['@(x) ' num2str(power) '*x.^(' num2str(power) '-1);']);
-f.properties.inverse = [];
 if even(power)
     f.properties.range = [0 inf];
-else
-    f.properties.range = [-inf inf];
 end
-f.properties.domain = [-inf inf];
+if power ~= round(power)
+    f.properties.domain = [0 inf];
+    f.properties.range  = [0 inf];
+end  
+f.properties = assertOperatorProperties(f.properties);

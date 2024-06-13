@@ -1,14 +1,23 @@
 function varargout = acos(varargin)
-%ACOS (overloaded)
 
 switch class(varargin{1})
-
+    
     case 'sdpvar'
-        % We will compute value in an internal file in order to extend
-        % the function beyond -1 and 1 (since fmincon makes calls outside
-        % bounds...)
-        varargout{1} = InstantiateElementWise('acos_internal',varargin{:});
-
+        varargout{1} = InstantiateElementWise(mfilename,varargin{:});
+        
+    case 'char'
+        
+        operator = CreateBasicOperator('decreasing','callback');                    
+        operator.derivative = @(x)real(-((1 - x.^2).^-0.5));
+        operator.inverse = @(x)cos(x);
+        operator.inflection = [-inf 1 0 -1];
+        operator.range = [0 pi];
+        operator.domain = [-1 1];
+        
+        varargout{1} = [];
+        varargout{2} = operator;
+        varargout{3} = varargin{3};
+        
     otherwise
-        error('SDPVAR/ACOS called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

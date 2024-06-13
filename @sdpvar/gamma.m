@@ -1,5 +1,4 @@
 function varargout = gamma(varargin)
-%GAMMA (overloaded)
 
 switch class(varargin{1})
 
@@ -8,15 +7,16 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','convex','monotonicity','none','definiteness','none','model','callback');
-       
-        operator.domain = [0 inf];    
-        operator.derivative =@(x)psi(0,x).*gamma(x);              
+        operator = CreateBasicOperator('convex','positive','callback');                                  
+        operator.derivative =@(x)psi(0,x).*gamma(x);  
+        operator.stationary = [1.46163214496836234126 8.856031944108888e-01];
+        operator.range = [gamma(1.46163214496836234126) inf];
+        operator.domain = [0 inf];
         
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/GAMMA called with CHAR argument?');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

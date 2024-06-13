@@ -59,7 +59,7 @@ infostr     = yalmiperror(problem,interfacedata.solver.tag);
 if ~options.savesolverinput
     solverinput = [];
 else
-    solverinput = model;
+    solverinput = struct('P',P,'q',q,'A',A,'l',l,'u',u);
 end
 if ~options.savesolveroutput
     solveroutput = [];

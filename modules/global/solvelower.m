@@ -1,6 +1,7 @@
 function [output,cost,psave,timing] = solvelower(p,options,lowersolver,xmin,upper,timing)
 
 psave = p;
+p.solver.version = p.solver.lowersolver.version;
 removeThese = find(p.InequalityConstraintState==inf);
 p.F_struc(p.K.f + removeThese,:) = [];
 p.K.l = p.K.l - length(removeThese);
@@ -9,25 +10,78 @@ removeThese = find(p.EqualityConstraintState==inf);
 p.F_struc(removeThese,:) = [];
 p.K.f = p.K.f - length(removeThese);
 
+p_cut = p;
+
+% Add cuts for x^2==x and variants for box QP
+p_cut.F_struc = [p_cut.concavityEqualities;p_cut.F_struc];
+p_cut.K.f = p_cut.K.f + size(p_cut.concavityEqualities,1);
+
+for i = 1:size(p.possibleSol,1)
+    % If we know x is either -s or +s, we know x^2=s^2
+    x = p.possibleSol(i,1);
+    L = p.possibleSol(i,2)^2;
+    U = p.possibleSol(i,3)^2;
+    j = find(p.bilinears(:,1)==x);
+    if L==U        
+        f = p.bilinears(j,2);
+        p.lb(f)=L;
+        p.ub(f)=U;
+    end         
+end
+
+
 if p.options.bmibnb.cut.bilinear
-    p_cut = addBilinearVariableCuts(p);
+    p_cut = addBilinearVariableCuts(p_cut);
+end
+
+if p.options.bmibnb.cut.normbound
+	p_cut = addNormBoundCut(p_cut);
 end
 if p.options.bmibnb.cut.evalvariable
     p_cut = addEvalVariableCuts(p_cut);
     psave.evalMap = p_cut.evalMap;
 end
 if p.options.bmibnb.cut.monomial
-    p_cut = addMonomialCuts(p_cut);
-end
-if p.options.bmibnb.cut.multipliedequality
-    p_cut = addMultipliedEqualityCuts(p_cut);
-end
-if p.options.bmibnb.cut.convexity
-    p_cut = addConvexityCuts(p_cut);
+	p_cut = addMonomialCuts(p_cut);
 end
 if p.options.bmibnb.cut.complementarity
-    p_cut = addComplementarityCuts(p_cut);
+  	p_cut = addComplementarityCuts(p_cut);
 end
+if p.solver.lowersolver.constraint.inequalities.secondordercone.linear && p.options.bmibnb.cut.quadratic
+    p_cut = addQuadraticCuts(p_cut);
+end
+if p.options.bmibnb.cut.exponential
+    p_cut = addExponentialCuts(p_cut);
+end
+if p.options.bmibnb.cut.sincos
+    p_cut = addSinCosCuts(p_cut);
+end
+if p.options.bmibnb.cut.monomialtower
+    p_cut = addMonomialTowerCuts(p_cut);
+end
+if ~isempty(p_cut.binary_variables) || ~isempty(p_cut.integer_variables)
+    if any(p_cut.K.s)
+        if isequal(p_cut.solver.lowercall,'callmosek')
+            % Mosek SDP module does not support binary
+            p_cut.binary_variables = [];
+            p_cut.integer_variables = [];        
+        end
+    end
+end
+
+if ~isempty(p.socpcuts.F_struc) && p.solver.lowersolver.constraint.inequalities.secondordercone.linear
+ 	p_cut = mergeNumericalModels(p_cut,p.socpcuts);
+end
+
+if ~isempty(p.delayedconvex)
+ 	p_cut = mergeNumericalModels(p_cut,p.delayedconvex);
+end
+
+if p.options.bmibnb.plotregions
+    plotNodeModel(p_cut,'g') 
+    drawnow
+end
+
 % **************************************
 % SOLVE NODE PROBLEM
 % **************************************
@@ -38,14 +92,16 @@ else
     % We are solving relaxed problem (penbmi might be local solver)
     p_cut.monomtable = eye(length(p_cut.c));
     
-    if p.solver.lowersolver.objective.quadratic.convex
-        % Setup quadratic
-        [p_cut.Q,p_cut.c] = compileQuadratic(p.c,p);
-        
-        if nonconvexQuadratic(p_cut.Q);
-            p_cut.Q = p.Q;
-            p_cut.c = p.c;
-        end
+    % If lower solver can handle convex quadratic, we should exploit
+    if p.solver.lowersolver.objective.quadratic.convex && ~isempty(p.shiftedQP)
+        % Use pre-computed SDP-shifted model
+        p_cut.Q = p.shiftedQP.Q;
+        p_cut.c = p.shiftedQP.c;       
+        p_cut.f = p.shiftedQP.f;          
+    elseif p.solver.lowersolver.objective.quadratic.convex 
+        % If we have a QP solver, we can at least try to strengthen the
+        % relaxation by using the positive diagonal terms      
+        [p_cut.Q, p_cut.c] =  compileQuadratic(p_cut.c,p,3);        
     end
     
     fixed = p_cut.lb >= p_cut.ub;
@@ -54,7 +110,7 @@ else
         output.Primal = p.lb;
         res = constraint_residuals(p,output.Primal);
         eq_ok = all(res(1:p.K.f)>=-p.options.bmibnb.eqtol);
-        iq_ok = all(res(1+p.K.f:end)>=p.options.bmibnb.pdtol);
+        iq_ok = all(res(1+p.K.f:end)>=-p.options.bmibnb.pdtol);
         feasible = eq_ok & iq_ok;
         if feasible
             output.problem = 0;
@@ -66,9 +122,9 @@ else
         
         if nnz(fixed)==0
             
-            if ~isempty(p_cut.bilinears) & 0
+            if ~isempty(p_cut.bilinears) && 0
                 top = size(p_cut.F_struc,1);
-                if length(p_cut.K.s)==1 & p_cut.K.s(1)==0
+                if length(p_cut.K.s)==1 && p_cut.K.s(1)==0
                     p_cut.K.s = [];
                 end
                 usedterms = zeros(size(p_cut.bilinears,1),1);
@@ -144,6 +200,7 @@ else
             p_cut.linearindicies = 1:length(p.c);
             p_cut.nonlinearindicies = [];
             p_cut.variabletype = zeros(1,length(p.c));
+            p_cut.monomtable = speye(length(p.c));
             p_cut.deppattern = eye(length(p.c));
             p_cut.linears = 1:length(p.c);
             p_cut.bilinears = [];
@@ -151,16 +208,31 @@ else
             p_cut.monomials = [];
             p_cut.evaluation_scheme = [];
             
-            tstart = tic;                                             
-            output = feval(lowersolver,removenonlinearity(p_cut));
+            tstart = tic;     
+            p_cut = pruneUnsupportedCuts(p_cut);
+            % FIXME - SDP in mosek does not support QP-term
+            % so we add a layer in-between to fake this via socp
+            % maybe clean up 
+            if strcmpi(p_cut.solver.lowersolver.tag,'mosek') && any(p_cut.K.s) && nnz(p_cut.Q)>0
+                output = moseksdpqpshim(removenonlinearity(p_cut));
+            else
+                p_temp = removenonlinearity(p_cut);p_temp.solver.version = p_temp.solver.lowersolver.version;
+                output = feval(lowersolver,p_temp);
+            end
             psave.counter.lowersolved = psave.counter.lowersolved + 1;
             timing.lowersolve = timing.lowersolve + toc(tstart);
-            cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p.f;
-            % Minor clean-up
-            pp=p;
-            output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
-            output.Primal(output.Primal>p.ub) = p.ub(output.Primal>p.ub);
-            x=output.Primal;
+            if length(output.Primal) == length(p_cut.c)
+                cost = output.Primal'*p_cut.Q*output.Primal + p_cut.c'*output.Primal + p_cut.f;
+                % Minor clean-up
+                pp=p;
+                output.Primal(output.Primal<p.lb) = p.lb(output.Primal<p.lb);
+                output.Primal(output.Primal>p.ub) = p.ub(output.Primal>p.ub);
+                x=output.Primal;
+            else
+                cost = nan;
+                x = nan(length(p_cut.c),1);
+                output.Primal = x;
+            end
             return
         else
             pp = p_cut;
@@ -174,6 +246,8 @@ else
                 p_cut.F_struc(rf,:) = [];
                 p_cut.K.l = p_cut.K.l - nnz(rf>p_cut.K.f);
                 p_cut.K.f = p_cut.K.f - nnz(rf<=p_cut.K.f);
+            elseif size(p_cut.F_struc,2)>0
+                p_cut.F_struc(:,1+find(fixed))=[]; % can be 0x(n+1)
             end
             p_cut.c(removethese)=[];
             if nnz(p_cut.Q)>0
@@ -205,9 +279,17 @@ else
             
             p_cut.lb(removethese)=[];
             p_cut.ub(removethese)=[];
-            p_cut.x0(removethese)=[];
+            if ~isempty(p_cut.x0)
+                p_cut.x0(removethese)=[];
+            end
             p_cut.monomtable(:,find(removethese))=[];
             p_cut.monomtable(find(removethese),:)=[];
+            p_cut.variabletype(removethese) = [];
+            
+            if p_cut.solver.lowersolver.constraint.integer == 0 && ~(isempty(p_cut.binary_variables) && isempty(p_cut.integer_variables))
+                p_cut.integer_variables = [];
+                p_cut.binary_variables = [];
+            end
             
             % The model can become absolutely trivial in some case
             % For instance in ex9_2_2 everything is presolved
@@ -223,8 +305,15 @@ else
                 end
             else
                 try
-                    tstart = tic;
-                    output = feval(lowersolver,removenonlinearity(p_cut));
+                    tstart = tic;   
+                    
+                     if strcmpi(p_cut.solver.lowersolver.tag,'mosek') && any(p_cut.K.s) && nnz(p_cut.Q)>0
+                        output = moseksdpqpshim(removenonlinearity(p_cut));
+                     else
+                        output = feval(lowersolver,removenonlinearity(p_cut));
+                     end
+            
+                   % output = feval(lowersolver,removenonlinearity(p_cut));
                     psave.counter.lowersolved = psave.counter.lowersolved + 1;
                     timing.lowersolve = timing.lowersolve + toc(tstart);
                 catch
@@ -239,3 +328,54 @@ else
         end
     end
 end
+
+function p = pruneUnsupportedCuts(p)
+
+if any(p.K.s) & ~p.solver.lowersolver.constraint.inequalities.semidefinite.linear
+    % Remove SDP cuts
+    error('FIXME')
+end
+
+if any(p.K.e) & ~p.solver.lowersolver.exponentialcone
+    % Remove EXPCONE cuts
+    p.F_struc(end-p.K.e*3+1:1:end,:) = [];    
+    p.K.e = 0;
+end
+
+function output = moseksdpqpshim(p)
+used = find(any(p.Q,2));
+Q = p.Q(used,used);
+[U,S,V] = svd(full(Q));
+r = find(diag(S)>=1e-12);
+R=(S(r,r)).^0.5*V(:,r)';
+
+% x(used)*R'*R*x(used) <= t-c'*tx-f
+% 1 + (t-c'*tx-f)
+% 1 - (t-c'*tx-f)
+% 2*R*x(used)
+p.F_struc(1,end+1) = 0;
+p.lb(end+1) = -inf;
+p.ub(end+1) = inf;
+p.c(end+1) = 0;
+p.Q = [];
+q = emptyNumericalModel;
+q.F_struc = spalloc(2+size(R,1),size(p.F_struc,2),0);
+q.F_struc(1,1) = 1-p.f;
+q.F_struc(1,2:end) = -p.c(:)';
+q.F_struc(1,end) = 1;
+q.F_struc(2,1) = 1+p.f;
+q.F_struc(2,2:end) = p.c(:)';
+q.F_struc(2,end) = -1;
+q.F_struc(3:end,1 + used) = 2*R;
+q.K.q = 2 + size(R,1);
+% Now change objective
+p.c = p.c*0;
+p.c(end) = 1;
+p = mergeNumericalModels(p,q);
+output = callmosek(p);
+if ~isempty(output.Primal)
+    output.Primal = output.Primal(1:end-1);
+end
+
+
+

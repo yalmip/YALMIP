@@ -36,7 +36,6 @@ end
 
 solvertime=0;
 problem = 0;
-infostr = yalmiperror(problem,'POP');
 
 % Save all data sent to solver?
 if interfacedata.options.savesolverinput
@@ -57,4 +56,4 @@ end
 % Standard interface
 Primal      = nan*ones(length(interfacedata.c),1);
 Dual        = [];
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

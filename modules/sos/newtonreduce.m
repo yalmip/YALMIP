@@ -90,6 +90,7 @@ for j = 1:length(exponent_m)
                     q = exponent_m{j}(i,:)'*2;
                     interfacedata.c = ([-q' 1])';
                     interfacedata.Q = spalloc(length(interfacedata.c),length(interfacedata.c),0);
+                    interfacedata.variabletype = zeros(1,length(interfacedata.c));
                     interfacedata.F_struc = ([bfixed -[exponent_p -ones(size(exponent_p,1),1);q' -1]]);
                     solution = feval(interfacedata.solver.call,interfacedata);
                     no_lp_solved = no_lp_solved  + 1;

@@ -15,7 +15,7 @@ if (nlmi == 0)
 end
 
 if nlmi>1
-    if ~all(is(X,'elementwise'))
+    if ~(all(is(X,'elementwise')) || all(is(X,'equality')))
         error('Dual not applicable on list of constraints. Use dual(F(index)) or dual(F(''tag''))')
     end
 end

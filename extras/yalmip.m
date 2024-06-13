@@ -173,7 +173,7 @@ switch varargin{1}
                                                                          
             for i = correct_operator                
                 if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
-                    if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                    if isequaln(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
                         if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
                             varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
                         else
@@ -254,6 +254,9 @@ switch varargin{1}
             end
             
             if ~found
+                if vec_isdoubles(i)                    
+                    y(i) = feval(varargin{2},X(i));
+                else
                 yi = y(i);
                 if isempty(Xi)
                      Xi = X(i);
@@ -277,7 +280,7 @@ switch varargin{1}
                 allNewExtendedIndex = [allNewExtendedIndex i];
                 availableHashes = [availableHashes new_hash];
                 correct_operator = [correct_operator length( internal_sdpvarstate.ExtendedMap)];
-                
+                 end
             end
         end
     
@@ -318,6 +321,7 @@ switch varargin{1}
         for i = 1:length(varargin)
             if isa(varargin{i},'sdpvar')
                 varargin{i} = clearcreationtime(varargin{i});
+                varargin{i} = clearconicinfo(varargin{i});
             end
         end
         
@@ -336,18 +340,16 @@ switch varargin{1}
                 correct_operator = correct_operator(strcmp(OperatorName,{internal_sdpvarstate.ExtendedMap(correct_operator).fcn}));
             end
                                                                          
-            for i = correct_operator                
-             %   if this_hash == internal_sdpvarstate.ExtendedMap(i).Hash
-                    if isequalwithequalnans(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
-                        if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
-                            varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
-                        else
-                            varargout{1} =  internal_sdpvarstate.ExtendedMap(i).var;
-                        end
-                        varargout{1} = setoperatorname(varargout{1},varargin{2});
-                        return
+            for i = correct_operator
+                if isequaln(Arguments, {internal_sdpvarstate.ExtendedMap(i).arg{1:end-1}});
+                    if length(internal_sdpvarstate.ExtendedMap(i).computes)>1
+                        varargout{1} =  recover(internal_sdpvarstate.ExtendedMap(i).computes);
+                    else
+                        varargout{1} =  internal_sdpvarstate.ExtendedMap(i).var;
                     end
-             %   end
+                    varargout{1} = setoperatorname(varargout{1},varargin{2});
+                    return
+                end
             end
         else
             this_hash = create_trivial_hash(firstSDPVAR({varargin{3:end}}));
@@ -445,15 +447,13 @@ switch varargin{1}
                         else
                             if ~isempty(correct_operator)
                                 this_hash = vec_hashes(i);                                
-                                for j = correct_operator
-                                    if this_hash == internal_sdpvarstate.ExtendedMap(j).Hash
-                                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)                                           
-                                            allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
-                                            allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
-                                            found = 1;
-                                            break
-                                        end
-                                    end
+                                j = correct_operator(find(this_hash == internal_sdpvarstate.ExtendedMapHashes(correct_operator)));
+                                if ~isempty(j)
+                                    if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
+                                        allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
+                                        allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
+                                        found = 1;                                        
+                                    end    
                                 end
                             end
                         end
@@ -509,9 +509,9 @@ switch varargin{1}
                 else
                     z = [];
                 end
-                for i = 1:nout
+                for i = 1:prod(nout)
                     % Avoid subsref to save time
-                    if nout == 1
+                    if prod(nout) == 1
                         yi = y;
                     else
                         yi = y(i);
@@ -532,7 +532,7 @@ switch varargin{1}
                 yalmip('setdependence',getvariables(y),getvariables(varargin{i}));
             end
         end        
-        varargout{1} = flush(clearconic(y));
+        varargout{1} = clearconic(y);
         return
         
     case 'setdependence'
@@ -741,6 +741,8 @@ switch varargin{1}
         internal_sdpvarstate.nonCommutingTable = [];
 		
 		internal_sdpvarstate.containsSemivar = false;
+        
+        gemInPath('clear');
         
     case 'cleardual'
         if nargin==1
@@ -1031,7 +1033,7 @@ switch varargin{1}
         
         
     case {'version','ver'}
-        varargout{1} = '20190425';
+        varargout{1} = '20230622';
         
     case 'setintvariables'
         internal_sdpvarstate.intVariables = varargin{2};
@@ -1253,6 +1255,10 @@ switch varargin{1}
 		
 	case 'containsSemivar'
 		varargout = {internal_sdpvarstate.containsSemivar};
+    
+    case 'gemInPath'
+        varargout{1} = gemInPath;
+    
     otherwise
         if isa(varargin{1},'char')
             disp(['The command ''' varargin{1} ''' is not valid in YALMIP.m']);
@@ -1261,30 +1267,55 @@ switch varargin{1}
         end
 end
 
+end
+
 function h = create_vecisdouble(x)
-B = getbase(x);
-h = ~any(B(:,2:end),2);
+    B = getbase(x);
+    h = ~any(B(:,2:end),2);
+end
 
 function h = create_trivial_hash(x)
-try
-    h = sum(getvariables(x)) + sum(sum(getbase(x)));
-catch
-    h = 0;
+    try
+        h = sum(getvariables(x)) + sum(sum(getbase(x)));
+    catch
+        h = 0;
+    end
 end
 
 function h = create_trivial_vechash(x)
-try
-    B = getbase(x);
-    h = sum(B')'+(B | B)*[0;getvariables(x)'];    
-catch
-    h = 0;
+    try
+        B = getbase(x);
+        h = sum(B')'+(B | B)*[0;getvariables(x)'];    
+    catch
+        h = 0;
+    end
 end
 
 function X = firstSDPVAR(List)
-X = [];
-for i = 1:length(List)
-    if isa(List{i},'sdpvar')
-        X = List{i};
-        break
+    X = [];
+    for i = 1:length(List)
+        if isa(List{i},'sdpvar')
+            X = List{i};
+            break
+        end
     end
+end
+
+function result = gemInPath(varargin)
+    persistent gemFound
+    
+    if nargin >= 1
+        switch varargin{1}
+            case 'clear'
+                gemFound = [];
+            otherwise
+                disp(['Invalid command for gemInPath in YALMIP.m']);
+        end
+        return;
+    end
+    
+    if isempty(gemFound)
+        gemFound = (exist('gem', 'class') == 8);
+    end
+    result = gemFound;
 end

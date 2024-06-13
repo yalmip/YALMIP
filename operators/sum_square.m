@@ -11,7 +11,7 @@ switch class(varargin{1})
 
     case 'char'
 
-        operator = struct('convexity','convex','monotonicity','none','definiteness','positive','model','callback');
+        operator = CreateBasicOperator('convex','positive','callback');
         operator.range = [0 inf];
         operator.domain = [-inf inf];                
         operator.derivative = @(x)(2*x);
@@ -21,7 +21,7 @@ switch class(varargin{1})
         varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/SUM_SQUARE called with strange argument.');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function [L,U] = bounds(xL,xU);

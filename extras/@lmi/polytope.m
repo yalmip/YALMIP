@@ -7,6 +7,8 @@ function [P,x] = polytope(X,options)
 % P : polytope object (Requires the Multi-parametric Toolbox)
 % x : sdpvar object defining the variables in the polytope P.H*x<=P.K
 % F : Constraint object with linear inequalities
+%
+% See also sdpvar/polytope
 
 if nargin < 2
     options = sdpsettings;
@@ -16,11 +18,11 @@ end
     
 [p,recoverdata,solver,diagnostic,F] = compileinterfacedata(X,[],[],[],options,0);
 
-if p.K.q(1) > 0 | p.K.s(1) > 0 | any(p.variabletype)
+if any(p.K.q) || any(p.K.s) || any(p.variabletype)
   error('Polytope can only be applied to MILP-representable constraints.')
 end
 
-if p.K.f > 0
+if any(p.K.f)
     try
         [P,x] = polyhedron(X,options);
         return
@@ -31,11 +33,10 @@ if p.K.f > 0
     end
 end
 
-if isempty(p.binary_variables) & isempty(p.integer_variables)
+if isempty(p.binary_variables) && isempty(p.integer_variables)
     P = polytope(-p.F_struc(:,2:end),p.F_struc(:,1));
     x = recover(p.used_variables);
-else
-    
+else    
     nBin = length(p.binary_variables);
     [pBinary,removeEQ,removeLP] = extractOnly(p,p.binary_variables);
     p.F_struc = [p.F_struc(removeEQ,:);p.F_struc(p.K.f+removeLP,:)];
@@ -45,7 +46,7 @@ else
     x = recover(p.used_variables);
     
     P = [];
-    for i = 0:2^nBin-1;
+    for i = 0:2^nBin-1
         comb = dec2decbin(i,nBin);
         if checkfeasiblefast(pBinary,comb(:),1e-6)
             pi = p;
@@ -58,13 +59,13 @@ else
     end
 end
 
-function pLP = extractLP(p);
+function pLP = extractLP(p)
 pLP = p;
 pLP.F_struc = pLP.F_struc(1:p.K.f+p.K.l,:);
 pLP.K.q = 0;
 pLP.K.s = 0;
 
-function [pRed,removeEQ,removeLP] = extractOnly(p,these);
+function [pRed,removeEQ,removeLP] = extractOnly(p,these)
 pRed = p;
 p.F_struc(:,1+these) = 0;
 

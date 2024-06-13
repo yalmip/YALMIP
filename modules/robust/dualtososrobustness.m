@@ -1,4 +1,4 @@
-function SOSModel = dualtososrobustness(UncertainConstraint,UncertaintySet,UncertainVariables,DecisionVariables,p_tau_degree,localizer_tau_degree,Z_degree)
+function SOSModel = dualtososrobustness(UncertainConstraint,UncertaintySet,UncertainVariables,DecisionVariables,p_tau_degree,localizer_tau_degree,Z_degree,verbosity)
   
 [E,F] = getEFfromSET(UncertaintySet);
 [F0,Fz,Fx,Fxz] = getFzxfromSET(UncertainConstraint,UncertainVariables,DecisionVariables);
@@ -114,7 +114,7 @@ end
 [tau,coefftau] = polynomial(v,p_tau_degree);
 p = -(trace(Zblock'*E) + b'*DecisionVariables + d) - tau*gv;
 coeffs = [coeffs;coefftau];
-SOSModel = compilesos([D, sos(p)],[],sdpsettings('sos.model',2,'sos.scale',0),coeffs);
+SOSModel = compilesos([D, sos(p)],[],sdpsettings('sos.model',2,'sos.scale',0,'verbose',verbosity),coeffs);
 
 function [z,val] = fixedvariables(D)
 

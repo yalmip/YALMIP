@@ -18,8 +18,14 @@ else
         end
     else
         index = varargin{2};
+        if isequal(index, 'all')
+            index = 1:length(X.dim);
+        end
         if length(index) > 1
-            error('Dimension argument must be a positive integer scalar within indexing range.');
+            for i = 1:length(index)
+                X = sum(X, index(i));
+            end
+            return;
         end
     end
     if index > length(X.dim)

@@ -5,11 +5,12 @@ function varargout = entropy(varargin)
 %
 % Computes/declares concave entropy -sum(x.*log(x))
 %
-% Implemented as evalutation based nonlinear operator. Hence, the concavity
-% of this function is exploited to perform convexity analysis and rigorous
-% modelling.
+% Implemented as either evalutation based-nonlinear operator, or
+% represented using exponential cones depending on solver. Hence, the
+% concavity of this function is exploited to perform convexity analysis and
+% rigorous modelling. 
 %
-% See also CROSSENTROPY, KULLBACKLEIBLER.
+% See also CROSSENTROPY, LOGSUMEXP, KULLBACKLEIBLER, PEXP, EXPCONE
 
 switch class(varargin{1})
 
@@ -34,21 +35,19 @@ switch class(varargin{1})
 
     case 'char'
 
-        X = varargin{3};
-        F = (X >= 0);
-
-        operator = struct('convexity','concave','monotonicity','none','definiteness','none','model','callback');
-        operator.range = [-inf exp(-1)*length(X)];
+        operator = CreateBasicOperator('concave','callback');
+        operator.range = [-inf exp(-1)*length(varargin{3})];
         operator.domain = [0 inf];
         operator.bounds = @bounds;
         operator.convexhull = @convexhull;
         operator.derivative = @derivative;
-        varargout{1} = F;
+        
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ENTROPY called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 function df = derivative(x)
@@ -70,7 +69,7 @@ L = sum(L);
 U = sum(U);
 
 
-function [Ax, Ay, b] = convexhull(xL,xU)
+function [Ax, Ay, b, K] = convexhull(xL,xU)
 
 if length(xL)==1
     xM = (xU+xL)/2;
@@ -80,7 +79,7 @@ if length(xL)==1
     df1 = derivative(xL);
     df2 = derivative(xM);
     df3 = derivative(xU);
-    [Ax,Ay,b] = convexhullConcave(xL,xM,xU,f1,f2,f3,df1,df2,df3);
+    [Ax,Ay,b,K] = convexhullConcave(xL,xM,xU,f1,f2,f3,df1,df2,df3);
 
 elseif length(xL)==2
     x1 = [xL(1);xL(2)];
@@ -101,9 +100,10 @@ elseif length(xL)==2
     df4 = derivative(x4);
     df5 = derivative(x5);
     
-    [Ax,Ay,b] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
+    [Ax,Ay,b,K] = convexhullConcave2D(x1,f1,df1,x2,f2,df2,x3,f3,df3,x4,f4,df4,x5,f5,df5);
 else
     Ax = [];
     Ay = [];
     b = [];
+    K = [];
 end

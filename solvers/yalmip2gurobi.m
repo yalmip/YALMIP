@@ -13,6 +13,60 @@ lb      = interfacedata.lb;
 x0      = interfacedata.x0;
 n = length(c);
 
+% Recent support for nonconvex case is treated a bit hackish now
+% All convex quadratic stuff has been converted to SOCP cones, and then all
+% the rest are just kept, with nonlinear monomials remaining in the model
+% representation. Save away nonconve info for later, and clean away
+nonconvexdata = [];
+if any(interfacedata.variabletype) & all(interfacedata.variabletype < 3)
+    nonlinearMonoms = find(interfacedata.variabletype);
+    s1 = interfacedata.F_struc(1:interfacedata.K.f,1+nonlinearMonoms);
+    s2 = interfacedata.F_struc(interfacedata.K.f+1:interfacedata.K.f+interfacedata.K.l,1+nonlinearMonoms);
+    k_eq = find(any(s1,2));
+    k_ineq = find(any(s2,2));
+    if ~isempty(k_eq)
+        nonconvexdata.eq = interfacedata.F_struc(k_eq,:);
+        interfacedata.F_struc(k_eq,:) = [];
+        interfacedata.K.f = interfacedata.K.f - length(k_eq);
+    else
+        nonconvexdata.eq = [];
+    end
+    if ~isempty(k_ineq)
+        nonconvexdata.ineq = interfacedata.F_struc(interfacedata.K.f + k_ineq,:);
+        interfacedata.F_struc(interfacedata.K.f + k_ineq,:) = [];
+        interfacedata.K.l = interfacedata.K.l - length(k_ineq);
+    else
+        nonconvexdata.ineq = [];
+    end    
+    interfacedata.F_struc(:,1 + nonlinearMonoms) = [];
+    interfacedata.c(nonlinearMonoms) = [];
+    interfacedata.Q(:,nonlinearMonoms) = [];
+    interfacedata.Q(nonlinearMonoms,:) = [];
+    interfacedata.lb(nonlinearMonoms) = [];
+    interfacedata.ub(nonlinearMonoms) = [];
+    % remap indicies for integer indicies
+    oldvars = 1:n;
+    oldvars(nonlinearMonoms) = [];
+    if ~isempty(binary_variables)
+        [~,binary_variables] = ismember(binary_variables,oldvars);
+    end
+    if ~isempty(integer_variables)
+        [~,integer_variables] = ismember(integer_variables,oldvars);
+    end
+    if ~isempty(semicont_variables)
+        [~,semicont_variables] = ismember(semicont_variables,oldvars);
+    end       
+    if ~isempty(x0)
+        x0(nonlinearMonoms) = [];
+    end
+    F_struc = interfacedata.F_struc;
+    c = interfacedata.c;
+    Q = interfacedata.Q;    
+    lb = interfacedata.lb;
+    ub = interfacedata.ub;
+    K = interfacedata.K;
+end
+
 if ~isempty(ub)
     LB = lb;
     UB = ub;
@@ -33,7 +87,7 @@ end
 
 if ~isempty(semicont_variables)
     % Bounds must be placed in LB/UB
-    [LB,UB,cand_rows_eq,cand_rows_lp] = findulb(F_struc,K,LB,UB);
+    [LB,UB,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,LB,UB);
     F_struc(K.f+cand_rows_lp,:)=[];
     F_struc(cand_rows_eq,:)=[];
     K.l = K.l-length(cand_rows_lp);
@@ -43,8 +97,12 @@ if ~isempty(semicont_variables)
 end
 
 n_original = length(c);
+variabletype_original = interfacedata.variabletype;
 if any(K.q)
     [F_struc,K,c,Q,UB,LB,x0] = append_normalized_socp(F_struc,K,c,Q,UB,LB,x0);
+    if length(c) > interfacedata.variabletype
+         interfacedata.variabletype(length(c)) = 0;
+    end
 end
 
 if size(F_struc,1)>0
@@ -83,7 +141,7 @@ if ~isempty(semicont_variables)
         A(:,semicont_variables(NegativeSemiVar)) = -A(:,semicont_variables(NegativeSemiVar));
         c(semicont_variables(NegativeSemiVar)) = -c(semicont_variables(NegativeSemiVar));
         if ~isempty(x0)
-            x0(NegativeSemiVar) = -NegativeSemiVar;
+            x0(semicont_variables(NegativeSemiVar)) = -x0(semicont_variables(NegativeSemiVar));
         end
     end
 end
@@ -113,6 +171,7 @@ model.ub = UB;
 model.objcon = full(interfacedata.f);
 model.vtype = VARTYPE;
 model.Q = sparse(Q);
+model.params = interfacedata.options.gurobi;
 
 if ~isequal(K.q,0)
     top = n_original + 1;
@@ -120,20 +179,134 @@ if ~isequal(K.q,0)
         n = K.q(i);      
         Qi = sparse(top:top+n-1,top:top+n-1,[-1 repmat(1,1,n-1)],length(c),length(c));
         model.quadcon(i).Qc=Qi;       
-        model.quadcon(i).q=zeros(length(c),1);
+        model.quadcon(i).q=sparse(length(c),1);
         model.quadcon(i).rhs=0;
         top = top + n;
     end
 end
 
-model.params = interfacedata.options.gurobi;
+if ~isempty(nonconvexdata)
+    model.params.nonconvex = 2;
+    if ~isfield(model,'quadcon')
+        model.quadcon = [];
+    end
+    m = length(model.lb);
+    monomials = find(interfacedata.variabletype > 0);
+    
+    %Create the function which receives the old variabletype index
+    %of a linear variable and returns the appropriate new index for
+    %gurobi's purposes.
+    
+    old_indices = [1:length(interfacedata.variabletype)];
+    retained_indices = old_indices( interfacedata.variabletype == 0 );
+    old2retained = sparse(size(old_indices,1),size(old_indices,2),0);
+    for ri_index = 1:length(retained_indices)
+        old2retained( retained_indices(ri_index) ) = ri_index;
+    end
+    
+    if ~isempty(K.sos)
+        for i = 1:length(K.sos.variables)
+            model.sos(i).index = full(old2retained(model.sos(i).index));
+        end
+    end
+    
+    map = [];
+    for j = 1:length(monomials)
+        s = find(interfacedata.monomtable(monomials(j),:));
+        if length(s) == 1
+            map(monomials(j),:) = old2retained([s s]);
+        else
+            map(monomials(j),:) = old2retained(s);
+        end
+    end
+    for i = 1:size(nonconvexdata.eq,1)
+        bi = nonconvexdata.eq(i,1);
+        row = nonconvexdata.eq(i,2:end);
+        qi = row(find(variabletype_original == 0))';
+        if length(qi)<m
+            % The number of variables has been extended above when SOCPs
+            % have been normalized and cast as convex quadratics
+            qi(m)=0;
+        end
+        di = row(monomials);
+        Qi = spalloc(m,m,0);
+        for k = find(di)            
+            Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
+            Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;            
+        end
+        model.quadcon(end+1).Qc = -Qi;
+        model.quadcon(end).q = -qi;
+        model.quadcon(end).rhs = bi;
+        model.quadcon(end).sense = '=';        
+    end
+    for i = 1:size(nonconvexdata.ineq,1)
+        bi = nonconvexdata.ineq(i,1);
+        row = nonconvexdata.ineq(i,2:end);
+        qi = row(find(variabletype_original == 0))';
+        if length(qi)<m
+            % The number of variables has been extended above when SOCPs
+            % have been normalized and cast as convex quadratics
+            qi(m)=0;
+        end
+        di = row(monomials);
+        Qi = spalloc(m,m,0);
+        for k = 1:length(monomials)
+            if di(k)
+                Qi(map(monomials(k),1),map(monomials(k),2)) = Qi(map(monomials(k),1),map(monomials(k),2)) + di(k)/2;
+                Qi(map(monomials(k),2),map(monomials(k),1)) = Qi(map(monomials(k),2),map(monomials(k),1)) + di(k)/2;
+            end
+        end       
+        model.quadcon(end+1).Qc = -Qi;
+        model.quadcon(end).q = -qi;
+        model.quadcon(end).rhs = bi;
+        model.quadcon(end).sense = '<';       
+    end   
+end
+
 if interfacedata.options.verbose == 0
      model.params.outputflag = 0;
 else
      model.params.outputflag = 1;
 end
 
-if ~isempty(x0)
+if isequal(interfacedata.solver.version,'NONCONVEX')
+    model.params.nonconvex = 2;
+end
+
+if ~isempty(x0)  
     model.start = x0;
+    if length(model.start)~=length(model.obj)
+        model.start=[];
+    end
 end
 model.NegativeSemiVar=NegativeSemiVar;
+
+if isfield(model,'quadcon') && isempty(model.quadcon)
+	model = rmfield(model,'quadcon');
+end
+
+if length(interfacedata.evalMap) > 0  
+
+    if any(cellfun(@(x) strcmp(x.fcn, 'sin'), interfacedata.evalMap))
+         model.genconsin=[]; 
+    end
+    if any(cellfun(@(x) strcmp(x.fcn, 'cos'), interfacedata.evalMap))
+         model.genconcos = [];         
+    end
+    if any(cellfun(@(x) strcmp(x.fcn, 'exp'), interfacedata.evalMap))
+         model.genconexp = [];         
+    end    
+
+    for i = 1:length(interfacedata.evalMap)
+        f = interfacedata.evalMap{i};
+        switch f.fcn
+            case 'exp'                
+                model.genconexp = [model.genconexp struct('xvar',f.variableIndex,'yvar', f.computes)];                
+            case 'sin'
+                model.genconsin = [model.genconsin struct('xvar',f.variableIndex,'yvar', f.computes)];                
+            case 'cos'
+                model.genconcos = [model.genconcos struct('xvar',f.variableIndex,'yvar', f.computes)];                
+            otherwise
+        end
+    end
+end

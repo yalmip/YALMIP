@@ -1,6 +1,34 @@
 function X = subsasgn(X,I,Y)
 % SUBSASGN (overloaded)
 
+if isempty(X)
+    y = Y;
+    sizeY = size(Y);
+    y_lmi_variables = y.lmi_variables;    
+    X0 = subsasgn([],I,full(reshape(full(Y.basis(:,1)),sizeY)));
+    dim = size(X0);
+    y.basis = reshape(X0,prod(dim),1);    
+    for i = 1:length(y_lmi_variables)
+        X0 = subsasgn([],I,full(reshape(full(Y.basis(:,i+1)),sizeY)));
+        y.basis(:,i+1) = reshape(X0,prod(dim),1);
+    end
+    y.dim = dim;
+    % Reset info about conic terms
+    y.conicinfo = [0 0];
+    y.basis = sparse(y.basis);
+    if length(dim)>2 && ~isa(y,'ndsdpvar')
+        y = ndsdpvar(y);
+    end    
+    X = y;
+    return
+end
+
+if length(X.dim) < length(I.subs)
+   for k = length(X.dim)+1:length(I.subs)
+       X.basis = [X.basis;0*repmat(X.basis,max(I.subs{k})-1,1)];
+       X.dim = [X.dim max(I.subs{k})];
+   end          
+end
 base = reshape(1:size(X.basis,1),X.dim);
 base = subsref(base,I);
 

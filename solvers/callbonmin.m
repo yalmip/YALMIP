@@ -2,11 +2,7 @@ function output = callbonmin(model)
 
 model = yalmip2nonlinearsolver(model);
 options = [];
-try
-    options.bonmin = optiRemoveDefaults(model.options.bonmin,bonminset());
-catch
-    options.bonmin = model.options.bonmin;
-end
+options.bonmin = model.options.bonmin;
 options.ipopt = model.options.ipopt;
 options.display = model.options.verbose;  
 
@@ -41,9 +37,15 @@ if ~isempty(model.lb)
         problem = 1;   
         solverinput = [];
         solveroutput = [];  
-        output = createoutput(model.lb*0,[],[],problem,'BONMIN',solverinput,solveroutput,0);
+        output = createOutputStructure(model.lb*0,[],[],problem,'BONMIN',solverinput,solveroutput,0);
         return
     end
+end
+
+if ~isempty(model.binary_variables) | ~isempty(model.integer_variables)
+    options.var_type = zeros(length(model.linearindicies),1);
+    options.var_type(model.binary_variables) = -1;
+    options.var_type(model.integer_variables) = 1;
 end
 
 % These are needed to avoid recomputation due to ipopts double call to get
@@ -78,47 +80,25 @@ if ~isempty(Fupp)
 end
 
 if ~isempty(Fupp)
-    m = length(model.lb);    
-    allA=[model.Anonlinineq];
-    if size(model.F_struc,1) > 0
-        % These are SOCP cones
-        top = 1;
-        for i = 1:length(model.K.q)
-            rows = model.F_struc(top:top + model.K.q(i)-1,2:end)
-            allA = [allA;any(rows,1)];
-        end
-    end
-    allA = [allA;model.Anonlineq];
-    jacobianstructure = spalloc(size(allA,1),m,0);    
-    depends = allA | allA;   
-    for i = 1:size(depends,1)
-        vars = find(depends(i,:));
-        [ii,vars] = find(model.deppattern(vars,:));
-        vars = unique(vars);
-        s = size(jacobianstructure,1);
-        for j = 1:length(vars)            
-            jacobianstructure(i,find(vars(j) == model.linearindicies)) = 1; 
-        end      
-    end
-    allA=[model.A; model.Aeq];
-    depends = allA | allA;
-    jacobianstructure = [jacobianstructure;depends];
-    
-    Z = sparse(jacobianstructure);
+    Z = jacobiansparsityfromnonlinear(model);
     funcs.jacobianstructure = @() Z;
 end
 
-if ~model.options.usex0
-    model.x0 = (options.lb+options.ub)/2;
-    model.x0(isinf(options.ub)) = options.lb(isinf(options.ub))+1;
-    model.x0(isinf(options.lb)) = options.ub(isinf(options.lb))-1;
-    model.x0(isinf(model.x0)) = 0;
+if ~model.options.warmstart
+    x0 = create_trivial_initial(model);
 end
 
-if ~isempty(model.binary_variables) | ~isempty(model.integer_variables)
-    options.var_type = zeros(length(model.linearindicies),1);
-    options.var_type(model.binary_variables) = -1;
-    options.var_type(model.integer_variables) = 1;
+% If quadratic objective and no nonlinear constraints, we can supply an
+% Hessian of the Lagrangian
+usedinObjective = find(model.c | any(model.Q,2));
+if ~any(model.variabletype(usedinObjective)) && any(any(model.Q))
+    if  ~anyCones(model.K) && length(model.bnonlinineq)==0 && length(model.bnonlineq)==0
+        H = model.Q(:,model.linearindicies);
+        H = H(model.linearindicies,:);
+        funcs.hessian = @(x,s,l) tril(2*H);
+        funcs.hessianstructure = @()tril(sparse(double(H | H)));      
+        options.bonmin.hessian_approximation = 'exact';
+    end
 end
 
 showprogress('Calling BONMIN',model.options.showprogress);
@@ -162,7 +142,7 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'BONMIN',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'BONMIN',solverinput,solveroutput,solvertime);
 
 
 % Code supplied by Jonatan Currie

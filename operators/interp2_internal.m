@@ -79,6 +79,7 @@ switch class(varargin{1})
                 F = [sum(sum(Lambda))==1, Lambda >= 0];
                 F = [F, colsos == sum(Lambda,1)'];
                 F = [F, rowsos == sum(Lambda,2)];
+                F = [F, 0 <= colsos <= 1, 0 <= rowsos <= 1];
                 F = [F, sos2(colsos), sos2(rowsos)];
                 F = [F, z == sum(sum(Lambda.*zi)),
                     x == sum(sum(Lambda.*xi)),

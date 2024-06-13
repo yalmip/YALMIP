@@ -13,7 +13,7 @@ monomtable = model.monomtable;
 nobounds = isempty(lb) | (~isempty(lb) & all(isinf(lb)));
 nobounds = nobounds & (isempty(ub) | (~isempty(ub) & all(isinf(ub))));
 if any(K.l) | any(K.q) | any(K.s) | ~nobounds
-    output = createoutput(zeros(length(c),1),[],[],-4,'FMINSEARCH',[],[],0);
+    output = createOutputStructure(zeros(length(c),1),[],[],-4,'FMINSEARCH',[],[],0);
     return
 end
 
@@ -119,4 +119,4 @@ else
 end
 
 % Standard interface
-output = createoutput(x,D_struc,[],problem,'FMINSEARCH',solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,'FMINSEARCH',solverinput,solveroutput,solvertime);

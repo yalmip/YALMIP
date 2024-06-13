@@ -29,6 +29,12 @@ switch class(varargin{1})
                 d2 = binvar(1,1);
                 [M,m] = derivebounds(X);
                 F = [X>=m*(1-d1), X<=M*(1-d2),X-d1+0.00001 <=  t <= X+d2-0.0001,integer(t), d1+d2 == 1];
+                if ~isinf(m)
+                    F = [F, fix(m) <= t];
+                end
+                if ~isinf(M)
+                    F = [F, t <= fix(M)];
+                end
                 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');

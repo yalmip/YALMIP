@@ -20,8 +20,8 @@ else
                 vertices = [];
                 lb = separatedZmodel{1}.lb(:)';
                 ub = separatedZmodel{1}.ub(:)';
-                E = dec2bin(0:2^n-1,n)';                
-                E = double(E(:))-48;                
+                E = dec2bin(0:2^n-1,n)';
+                E = double(E(:))-48;
                 E = reshape(E,n,2^n);
                 vertices = (repmat(lb(:),1,2^n) + E.*(repmat(ub(:),1,2^n)-repmat(lb(:),1,2^n)))';
                 %for i = 0:2^n-1
@@ -60,76 +60,81 @@ else
             K = Zmodel.K;
             A = -Zmodel.F_struc((1+K.f):(K.f + K.l),2:end);
             b =  Zmodel.F_struc((1+K.f):(K.f + K.l),1);
-            try
-                % Some preprocessing to extract bounds from equality
-                % constraints in order to make the uncertainty polytope
-                % bounded (required since we are going to run vertex
-                % enumeration)
-                % We might have x>=0, sum(x)=1, and this code simply extracts
-                % the implied bounds x<=1
-                [lo,up] = findulb(Zmodel.F_struc(1:K.f + K.l,:),K);
-                Zmodel.lb = lo;Zmodel.ub = up;
-                Zmodel = propagate_bounds_from_equalities(Zmodel);
-                up = Zmodel.ub;
-                lo = Zmodel.lb;
-                upfi = find(~isinf(up));
-                lofi = find(~isinf(lo));
-                aux = Zmodel;
-                aux.F_struc = [aux.F_struc;-lo(lofi) sparse(1:length(lofi),lofi,1,length(lofi),size(A,2))];
-                aux.F_struc = [aux.F_struc;up(upfi) -sparse(1:length(upfi),upfi,1,length(upfi),size(A,2))] ;
-                aux.K.l = aux.K.l + length(lofi) + length(upfi);
-                K = aux.K;
-                A = -aux.F_struc((1+K.f):(K.f + K.l),2:end);
-                b =  aux.F_struc((1+K.f):(K.f + K.l),1);
-                
-                % Extract equalities Ex == f and project
-                if K.f > 0
-                    f = aux.F_struc(1:K.f,1);
-                    E = -full(aux.F_struc(1:K.f,2:end));
-                    En = null(E);
-                    x0 = (E\f);
-                    % x = null(E)*z + x0, A*(null(E)*z + x0) <= b
-                    P = polytope(full(A*En),full(b-A*x0));
-                else
-                    x0 = zeros(size(A,2),1);
-                    En = eye(size(A,2));
-                    P = polytope(full(A),full(b));
-                end
+            
+            % Some preprocessing to extract bounds from equality
+            % constraints in order to make the uncertainty polytope
+            % bounded (required since we are going to run vertex
+            % enumeration)
+            % We might have x>=0, sum(x)=1, and this code simply extracts
+            % the implied bounds x<=1
+            [lo,up] = find_lp_bounds(Zmodel.F_struc(1:K.f + K.l,:),K);
+            Zmodel.lb = lo;Zmodel.ub = up;
+            Zmodel = propagate_bounds_from_equalities(Zmodel);
+            up = Zmodel.ub;
+            lo = Zmodel.lb;
+            upfi = find(~isinf(up));
+            lofi = find(~isinf(lo));
+            aux = Zmodel;
+            aux.F_struc = [aux.F_struc;-lo(lofi) sparse(1:length(lofi),lofi,1,length(lofi),size(A,2))];
+            aux.F_struc = [aux.F_struc;up(upfi) -sparse(1:length(upfi),upfi,1,length(upfi),size(A,2))] ;
+            aux.K.l = aux.K.l + length(lofi) + length(upfi);
+            K = aux.K;
+            A = -aux.F_struc((1+K.f):(K.f + K.l),2:end);
+            b =  aux.F_struc((1+K.f):(K.f + K.l),1);
+            
+            % Extract equalities Ex == f and project
+            % Bunch of try-catch definsive as this assumes MPT
+            % If fails we try internal crappy enumerator
+            P = [];
+            if any(K.f)
+                f = aux.F_struc(1:K.f,1);
+                E = -full(aux.F_struc(1:K.f,2:end));
+                En = null(E);
+                x0 = (E\f);
+                % x = null(E)*z + x0, A*(null(E)*z + x0) <= b
+                b = full(b-A*x0);
+                A = full(A*En);                
                 try
-                    vertices = extreme(P)';
-                    % Map back to original variables
-                    vertices = repmat(x0,1,size(vertices,2)) + En*vertices;
+                    P = polytope(A,b);
+                catch
+                end
+            else
+                x0 = zeros(size(A,2),1);
+                En = eye(size(A,2));
+                try
+                    P = polytope(full(A),full(b));
+                catch
+                end
+            end
+            if ~isempty(P)
+                try
+                    vertices = extreme(P)';                   
                 catch
                     error('The uncertainty space is unbounded (could be an artefact of YALMIPs modelling of nonolinear oeprators).')
                 end
-                %if ~isbounded(P)
-                %    error('The uncertainty space is unbounded (could be an artefact of YALMIPs modelling of nonolinear oeprators).')
-                %else
-                %    vertices = extreme(polytope(A,b))';
-                %end
-            catch
-                mptmissing = 1;
-                if ops.verbose>0
-                    %lasterr
-                    disp(' - Enumeration of uncertainty polytope failed. Missing Multiparametric Toolbox?')
-                    disp(' - Switching to duality based approach')
-                    %disp('You probably need to install MPT (needed for vertex enumeration)')
-                    %disp('http://control.ee.ethz.ch/~joloef/wiki/pmwiki.php?n=Solvers.MPT')
-                    %disp('Alternatively, you need to add bounds on your uncertainty.')
-                    %disp('Trying to switch to dualization approach')
-                    %error('MPT missing');
+            else
+                if ~all(b>0)
+                    % Crappy enumeration requires feasible point
+                    [x_c,R] = chebyball(A*sdpvar(size(A,2),1) <= b);                   
+                else
+                    x_c = zeros(size(A,2),1);
                 end
-                F = [];
-                return
+                vertices = vertexenumerate(A,b,x_c);
+                % This simply gives "nicer" models sometimes
+                % First step in cleaning below too
+                really_integer = abs(vertices(:)-round(vertices(:)))<eps;
+                vertices(really_integer) = round(vertices(really_integer));                
             end
-          
+            % Map back to original variables
+            vertices = repmat(x0,1,size(vertices,2)) + En*vertices;
+            
             % The vertex enumeration was done without any equality constraints.
             % We know check all vertices so see if they satisfy equalities.
             vertices = pruneequalities(vertices,Zmodel);
             if ops.verbose
                 disp([' - Enumerated ' num2str(size(vertices,2)) ' vertices'])
-            end           
-            F = replaceVertices(F_xw,w,vertices,VariableType,ops);            
+            end
+            F = replaceVertices(F_xw,w,vertices,VariableType,ops);
         end
     end
 end
@@ -148,17 +153,15 @@ uncAux = recover(intersect(x_Flp,VariableType.aux_with_w_dependence));
 if isequal(ops.robust.auxreduce,'none')
     uncAux = [];
 end
-    
-w = flush(w);
 
 if length(F_xw_lp)>0
     rLP = [];
-    if ~isempty(uncAux)     
+    if ~isempty(uncAux)
         z = sdpvar(repmat(length(uncAux),1,size(vertices,2)),repmat(1,1,size(vertices,2)),'full');
     end
     for i = 1:size(vertices,2)
         temp = replace(sdpvar(F_xw_lp),w,vertices(:,i),0);
-        if ~isempty(uncAux)            
+        if ~isempty(uncAux)
             temp = replace(temp,uncAux,z{i});
         end
         rLP = [rLP;temp];
@@ -185,7 +188,18 @@ for j = 1:length(F_xw_socp_sdp)
         if ~isempty(uncAux)
             temp = replace(temp,uncAux,z{i});
         end
-        F = F + lmi(temp);
+        if is(F_xw_socp_sdp(j),'socp')
+            B = getbase(temp);
+            % Has this been simplified to norm(constant)<=
+            if ~any(B(2:end,2:end))
+                temp = sdpvar(temp);
+                F = F + [temp(1)>=norm(B(2:end,1))];
+            else
+                F = F + lmi(temp);
+            end
+        else
+            F = F + lmi(temp);
+        end
     end
 end
 
@@ -193,7 +207,7 @@ function vertices = pruneequalities(vertices,Zmodel)
 K = Zmodel.K;
 % The vertex enumeration was done without any equality constraints.
 % We know check all vertices so see if they satisfy equalities.
-if K.f > 0
+if any(K.f)
     Aeq = -Zmodel.F_struc(1:K.f,2:end);
     beq =  Zmodel.F_struc(1:K.f,1);
     feasible = sum(abs(Aeq*vertices - repmat(beq,1,size(vertices,2))),1) < 1e-6;

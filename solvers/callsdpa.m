@@ -69,7 +69,6 @@ switch (INFO.phasevalue)
     otherwise
         problem = -1;
 end
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolveroutput
     solveroutput.objVal = objVal;
@@ -92,4 +91,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

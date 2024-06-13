@@ -22,7 +22,7 @@ else
         UB = ones(n,1)*inf;;
     else
         %LP_SOLVE FAILS IF BOUNDS NOT EXPLICIT
-        [LB,UB,used_rows] = findulb(F_struc,K);
+        [LB,UB,used_rows] = find_lp_bounds(F_struc,K);
         LB(isinf(LB)) = -1e12;
         UB(isinf(UB)) = 1e12;
         F_struc(K.f+used_rows,:)=[];
@@ -146,8 +146,6 @@ switch result
         problem = -1;
 end
         
-infostr = yalmiperror(problem,interfacedata.solver.tag);
-
 % Save all data sent to solver?
 if options.savesolverinput
 	solverinput.A = A;
@@ -171,4 +169,4 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

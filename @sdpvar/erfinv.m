@@ -1,38 +1,22 @@
 function varargout = erfinv(varargin)
-%ERFINV (overloaded)
 
 switch class(varargin{1})
-
-    case 'double'
-        error('Overloaded SDPVAR/ERFINV CALLED WITH DOUBLE. Report error')
 
     case 'sdpvar'
         varargout{1} = InstantiateElementWise(mfilename,varargin{:});
 
     case 'char'
-       
-        X = varargin{3};
-        F = (-1+1e-9 <= X <= 1-1e-9);
-
-        operator = struct('convexity','none','monotonicity','increasing','definiteness','none','model','callback');
-        operator.bounds = @bounds;
-
-        varargout{1} = F;
+                            
+        operator = CreateBasicOperator('increasing','callback');                        
+        operator.inverse = @(x)(erf(x));
+        operator.derivative = @(x)(1./(exp(-((erfinv(x))).^2)*2/sqrt(pi)));
+        operator.inflection = [-inf -1 0 1];
+        operator.domain = [-1 1];
+        
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/ERF called with CHAR argument?');
-end
-
-function [L,U] = bounds(xL,xU)
-if xL<=-1
-    L = -inf
-else
-    L = erfinv(xL);
-end
-if xU>=1
-    U = inf;
-else
-    U = erfinv(xU);
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

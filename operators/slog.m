@@ -22,23 +22,18 @@ switch class(varargin{1})
         end
 
     case 'char'
-
-        X = varargin{3};
-        F = (X >= -1+eps);
-
-        operator = struct('convexity','concave','monotonicity','increasing','definiteness','none','model','callback');
-        operator.convexhull = @convexhull;
-        operator.range = [-inf inf];
-        operator.domain = [-1 inf];
+             
+        operator = CreateBasicOperator('concave','increasing','callback');                
         operator.derivative = @(x) (1./(abs(1+x)+sqrt(eps)));
         operator.inverse = @(x)(exp(x)-1);
+        operator.domain = [-1 inf];
         
-        varargout{1} = F;
+        varargout{1} = [];
         varargout{2} = operator;
-        varargout{3} = X;
+        varargout{3} = varargin{3};
 
     otherwise
-        error('SDPVAR/SLOG called with CHAR argument?');
+        error([upper(mfilename) ' called with weird argument']);
 end
 
 
@@ -77,28 +72,4 @@ if all(variabletype(vars)==4)
     end    
 else
     return
-end
-
-
-function [Ax, Ay, b, K] = convexhull(xL,xU)
-K = [];
-if 1+xL <= 0
-    fL = inf;
-else
-    fL = log(1+xL);
-end
-fU = log(1+xU);
-dfL = 1/(1+xL);
-dfU = 1/(1+xU);
-xM = (xU + xL)/2;
-fM = log(1+xM);
-dfM = 1/(1+xM);
-
-[Ax,Ay,b] = convexhullConcave(xL,xM,xU,fL,fM,fU,dfL,dfM,dfU);
-remove = isinf(b) | isinf(Ax) | isnan(b);
-if any(remove)
-    remove = find(remove);
-    Ax(remove)=[];
-    b(remove)=[];
-    Ay(remove)=[];
 end

@@ -22,8 +22,15 @@ switch class(varargin{1})
                 t = varargin{2};
                 X = varargin{3};
                 
-                F = ([X-0.5 <= t <= X+0.5]) + (integer(t));
-                
+                F = [X-0.5 <= t <= X+0.5, integer(t)];
+                [M,m] = derivebounds(X);
+                if ~isinf(m)
+                    F = [F, round(m) <= t];
+                end
+                if ~isinf(M)
+                    F = [F, t <= round(M)];
+                end
+                                 
                 varargout{1} = F;
                 varargout{2} = struct('convexity','none','monotonicity','none','definiteness','none','model','integer');
                 varargout{3} = X;
@@ -32,5 +39,5 @@ switch class(varargin{1})
                 error('SDPVAR/ROUND called with CHAR argument?');
         end
     otherwise
-        error('Strange type on first argument in SDPVAR/ROUND');
+        error(['SDPVAR/' upper(mfilename) ' called with weird argument']);
 end

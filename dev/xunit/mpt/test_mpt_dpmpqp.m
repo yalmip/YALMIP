@@ -1,5 +1,7 @@
-function test_mpt_dpmpqp
+function tests = test_mpt_dpmpqp
+tests = functiontests(localfunctions);
 
+function test1(dummy)
 yalmip('clear')
 
 % Model data
@@ -36,17 +38,16 @@ for k = N-1:-1:1
 end
 
 assign(x{k},[1;0.5])
-mbg_asserttrue(diagnost{1}.problem == 0);
-mbg_asserttolequal(double(J{k}),3.82456140350877,1e-5);
-%mbg_asserttolequal(double(Optimizer{k}),-1,1e-5);
+assert(diagnost{1}.problem == 0);
+assert(abs(value(J{k}) - 3.82456140350877) <= 1e-5);
 
 assign(x{k},[0.5;1])
-mbg_asserttolequal(double(J{k}), 1.6140350,1e-5);
+assert(abs(value(J{k}) - 1.6140350) <= 1e-5);
 
 assign(x{k},[0;1.9])
-mbg_asserttolequal(double(J{k}), 8.755,1e-5);
+assert(abs(value(J{k}) - 8.755) <= 1e-5);
 
 assign(x{k},[-0.1;-1.85])
-mbg_asserttolequal(double(J{k}),  6.61825,1e-5);
+assert(abs(value(J{k}) - 6.61825) <= 1e-5);
 
 

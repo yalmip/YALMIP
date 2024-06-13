@@ -1,5 +1,5 @@
-function p = reduce_bilinear_branching_variables(p);
-if p.solver.lowersolver.objective.quadratic.convex & p.problemclass.objective.quadratic.nonconvex==0 & isempty(p.evalMap)
+function p = reduce_bilinear_branching_variables(p)
+if ~p.originallyNonlinearConstraints && p.solver.lowersolver.objective.quadratic.convex & p.problemclass.objective.quadratic.nonconvex==0 && isempty(p.evalMap)
     % Setup quadratic
     Q_ = p.Q;
     for i = 1:size(p.bilinears,1)
@@ -30,7 +30,7 @@ end
 % Do not branch in auxilliary variables introduced to simply normalize the
 % nonlinear operators, such as cos(2x + y) replaced with cos(z), z==2x+y
 % if ~isempty(p.evalMap)
-%     if p.K.f > 0
+%     if any(p.K.f)
 %         allInArg = [];
 %         for i = 1:length(p.evalMap)
 %             allInArg = [allInArg p.evalMap{i}.variableIndex];

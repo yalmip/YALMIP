@@ -1,6 +1,6 @@
 function p = completeInitial(p)
 
-if p.options.usex0 && any(isnan(p.x0))
+if p.options.warmstart && any(isnan(p.x0))
   
     p_reduced = p;
     
@@ -10,7 +10,7 @@ if p.options.usex0 && any(isnan(p.x0))
     
     % Propagate these values a bit
     p_reduced = propagate_bounds_from_equalities(p_reduced); 
-    p_reduced = update_eval_bounds(p_reduced);
+    p_reduced = propagate_bounds_from_evaluations(p_reduced);
     p_reduced = propagate_bounds_from_equalities(p_reduced); 
     
     % Keep only equalities and elementwise inerqualities (more?)

@@ -28,8 +28,8 @@ equ_con = find(type_of_constraint == 3);
 qdr_con = find(type_of_constraint == 4);
 mqdr_con = find(type_of_constraint == 54);
 rlo_con = find(type_of_constraint == 5);
-pow_con = find(type_of_constraint == 20);
-exp_con = find(type_of_constraint == 21);
+pow_con = find(type_of_constraint == 20 | type_of_constraint == 58);
+exp_con = find(type_of_constraint == 21 | type_of_constraint == 22);
 sos2_con = find(type_of_constraint == 50);
 sos1_con = find(type_of_constraint == 51);
 cmp_con = find(type_of_constraint == 55);
@@ -85,19 +85,19 @@ for i = 1:length(equ_con)
         data = [real(data);imag(data)];
     end
     mapX = [1 1+lmi_variables];
-    [ix,jx,sx] = find(data);    
-   
-    %F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);    
+    [ix,jx,sx] = find(data);
+
+    %F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);
     %F_struc = [F_struc F_structemp];
-    
+
     alljx = [alljx mapX(jx)];
     allix = [allix ix(:)'+block];block = block + ntimesm;
     allsx = [allsx sx(:)'];
-    
+
     if F.clauses{constraints}.cut
         KCut.f = [KCut.f localtop:localtop+ntimesm-1];
     end
-    
+
     localtop = localtop+ntimesm;
     top = top+ntimesm;
     K.f = K.f+ntimesm;
@@ -114,10 +114,10 @@ if any_cuts
         constraints = lin_con(i);
         data = getbase(F.clauses{constraints}.data);
         [n,m] = size(F.clauses{constraints}.data);
-        
+
         % Which variables are needed in this constraint
         lmi_variables = getvariables(F.clauses{constraints}.data);
-        
+
         % Convert to real problem
         if isreal(data)
             ntimesm = n*m; %Just as well pre-calc
@@ -126,17 +126,17 @@ if any_cuts
             ntimesm = 2*n*m; %Just as well pre-calc
             data = [real(data);imag(data)];
         end
-        
+
         % Add numerical data to complete problem setup
         mapX = [1 1+lmi_variables];
         [ix,jx,sx] = find(data);
         F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);
         F_struc = [F_struc F_structemp];
-        
+
         if F.clauses{constraints}.cut
             KCut.l = [KCut.l localtop:localtop+ntimesm-1];
         end
-        
+
         localtop = localtop+ntimesm;
         top = top+ntimesm;
         K.l = K.l+ntimesm;
@@ -149,21 +149,21 @@ end
 
 for i = 1:length(cmp_con)
     constraints = cmp_con(i);
-    
+
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
-    
+
     % We allocate the structure blockwise...
     F_structemp  = spalloc(1+nvars,ntimesm,0);
     % Add these rows only
     F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
-    
+
     % ...and add them together (efficient for large structures)
     F_struc = [F_struc F_structemp];
-    
+
     top = top+ntimesm;
     K.c(i) = n;
 end
@@ -176,21 +176,21 @@ end
 % Rotated Lorentz cone constraints
 for i = 1:length(rlo_con)
     constraints = rlo_con(i);
-    
+
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
-    
+
     % We allocate the structure blockwise...
     F_structemp  = spalloc(1+nvars,ntimesm,0);
     % Add these rows only
     F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
-    
+
     % ...and add them together (efficient for large structures)
     F_struc = [F_struc F_structemp];
-    
+
     top = top+ntimesm;
     K.r(i) = n;
 end
@@ -198,59 +198,58 @@ end
 % Exponejntial cone constraints
 for i = 1:length(exp_con)
     constraints = exp_con(i);
-    
+
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
+
     % Should always have size 4
     if n~=3
         error('Exponential cone constraint has strange dimension')
     end
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
-    
+
     % We allocate the structure blockwise...
     F_structemp  = spalloc(1+nvars,ntimesm,0);
     % Add these rows only
-    F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
-    
+    E = F.clauses{constraints}.data;
+    E = reshape(E,[],1);
+    F_structemp([1 1+lmi_variables(:)'],:)= getbase(E).';
+
     %alpha = F_structemp(1,end);
     %F_structemp(:,end)=[];
     % ...and add them together (efficient for large structures)
     F_struc = [F_struc F_structemp];
-    
+
     top = top+ntimesm;
-    K.e = K.e + 1;
+    K.e = K.e + m;
 end
 
 % Power cone constraints
 for i = 1:length(pow_con)
     constraints = pow_con(i);
-    
+
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
-    % Should always have size 4
-    if n~=4
-        error('Power cone constraint has strange dimension')
-    end
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
-    
+
     % We allocate the structure blockwise...
     F_structemp  = spalloc(1+nvars,ntimesm,0);
-    % Add these rows only
-    F_structemp([1 1+lmi_variables(:)'],:)= getbase(F.clauses{constraints}.data).';
-    
-    alpha = F_structemp(1,end);
-    F_structemp(:,end)=[];
+
+    % Get complete base
+    E = F.clauses{constraints}.data;
+    E = reshape(E,[],1);
+    F_structemp([1 1+lmi_variables(:)'],:)= getbase(E).';
     % ...and add them together (efficient for large structures)
     F_struc = [F_struc F_structemp];
-    
     top = top+ntimesm;
-    K.p(i) = alpha;
+    K.p = [K.p repmat(n,1,m)];
+end
+if K.p(1)==0 && length(K.p)>1
+    K.p = K.p(2:end);
 end
 
 
@@ -305,7 +304,7 @@ if ~isempty(rank_variables)
                 end
             end
             % Remove the nonlinear operator constraints
-            
+
             F_struc(used_in,:) = [];
             K.l = K.l - length(used_in);
         else
@@ -402,7 +401,7 @@ for i = 1:length(lp_con)
     Fi = F.clauses{constraints}.data;
     Fibase = getbase(Fi);
   %  [n,m] = size(Fi);
-    
+
     % Convert to real problem
     if isreal(Fibase)
         ntimesm = size(Fibase,1);
@@ -413,15 +412,15 @@ for i = 1:length(lp_con)
         %ntimesm = 2*n*m; %Just as well pre-calc
         Fibase = [real(Fibase);imag(Fibase)];
     end
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(Fi);
     mapX = [1 1+lmi_variables];
-    
+
   %  simpleMap = all(mapX==1:length(mapX));
     simpleMap =  0;%all(diff(lmi_variables)==1);
     % highly optimized concatenation...
-    if size(Fibase) == [ntimesm 1+nvars] & simpleMap     
+    if isequal(size(Fibase),[ntimesm 1+nvars]) && simpleMap
         F_struc = [F_struc Fibase'];
     elseif simpleMap
         vStart = lmi_variables(1);
@@ -436,11 +435,11 @@ for i = 1:length(lp_con)
         F_structemp = sparse(mapX(jx),ix,sx,1+nvars,ntimesm);
         F_struc = [F_struc F_structemp];
     end
-    
+
     if F.clauses{constraints}.cut
         KCut.l = [KCut.l i+startindex-1:i+startindex-1+n];
     end
-    
+
     K.l(i+startindex-1) = ntimesm;
 end
 K.l = sum(K.l);
@@ -473,17 +472,17 @@ oldF_struc = F_struc;
 F_struc = [];
 for i = 1:length(sdp_con)
     constraints = sdp_con(i);
-    
+
     % Simple data
     Fi = F.clauses{constraints};
     X = Fi.data;
     lmi_variables = getvariables(X);
     [n,m] = size(X);
     ntimesm = n*m; %Just as well pre-calc
-    
+
     if is(X,'gkyp')
         ss = struct(X);
-        
+
         nn = size(F.clauses{1}.data,1);
         bb = getbase(ss.extra.M);
         Mbase = [];
@@ -496,33 +495,33 @@ for i = 1:length(sdp_con)
         schur_data{i,1} = {ss.extra.K, ss.extra.Phi,Mbase, ss.extra.negated, getvariables(ss.extra.M),Pvars};
         schur_funs{i,1} = 'HKM_schur_GKYP';
         schur_variables{i,1} = lmi_variables;
-        
+
     elseif ~isempty(Fi.schurfun)
         schur_data{i,1} = Fi.schurdata;
         schur_funs{i,1} = Fi.schurfun;
         schur_variables{i,1} = lmi_variables;
     end
-    
+
     % get numerics
     Fibase = getbase(X);
     % now delete old data to save memory
     % F.clauses{constraints}.data=[];
-    
+
     % Which variables are needed in this constraint
     %lmi_variables = getvariables(Fi);
     if length(lmi_variables) == nvars
         % No remap needed
-        F_structemp =  Fibase';
+        F_structemp =  conj(Fibase');
     else
         mapX = [1 1+lmi_variables];
         [ix,jx,sx] = find(Fibase);
         clear Fibase;
         % Seems to be faster to transpose generation
-        F_structemp = sparse(ix,mapX(jx),sx,ntimesm,1+nvars)';
+        F_structemp = conj(sparse(ix,mapX(jx),sx,ntimesm,1+nvars)');
         clear jx ix sx
     end
     F_struc = [F_struc F_structemp];
-    
+
     if Fi.cut
         KCut.s = [KCut.s i+startindex-1];
     end
@@ -534,7 +533,7 @@ for i = 1:length(sdp_con)
         K.scomplex = [K.scomplex i+startindex-1];
     end
     clear F_structemp
-    
+
 end
 F_struc = [oldF_struc F_struc];
 
@@ -569,13 +568,13 @@ end
 % second order cone constraints
 for i = 1:length(qdr_con)
     constraints = qdr_con(i);
-    
+
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
-    
+
     data = getbase(F.clauses{constraints}.data);
     if isreal(data)
         mapX = [1 1+lmi_variables];
@@ -604,13 +603,13 @@ end
 % second order cone constraints
 for i = 1:length(qdr_con)
     constraints = qdr_con(i);
-    
+
     [n,m] = size(F.clauses{constraints}.data);
     ntimesm = n*m; %Just as well pre-calc
-    
+
     % Which variables are needed in this constraint
     lmi_variables = getvariables(F.clauses{constraints}.data);
-    
+
     data = getbase(F.clauses{constraints}.data);
     if isreal(data)
         mapX = [1 1+lmi_variables];

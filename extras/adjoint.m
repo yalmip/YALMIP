@@ -12,7 +12,7 @@ end
 
 A = [];
 if n == 1
-    A = X;
+    A = 1;
     return
 end
 

@@ -13,10 +13,6 @@ if ~isequal(size(d),size(x))
     error('Dimension mismatch in power');
 end
 
-if isa(x,'sdpvar')
-    x = flush(x);
-end
-
 % Reuse code
 if numel(x)==1 && numel(d)==1
     y = mpower(x,d);
@@ -50,6 +46,10 @@ if isnumeric(d)
     if all(all(d==1))
         y = x;
         return
+    end
+    if isnan(d)
+        disp('You have NaNs in model (<a href="yalmip.github.io/naninmodel">learn to debug</a>)')
+        error('NaN power makes no sense.');
     end
 end
 

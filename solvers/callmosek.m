@@ -45,7 +45,7 @@ if any(model.K.q) && any(model.K.q == 0)
     model.K.q(model.K.q==0)=[];
 end
 
-if ~isempty(model.sigmonial_variables) | isequal(model.solver.version,'GEOMETRIC')
+if ~isempty(model.sigmonial_variables) || isequal(model.solver.version,'GEOMETRIC')
     [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_geometric(model);          
 else
     [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);        
@@ -56,7 +56,6 @@ if length(x) > 0 && length(x) ~= length(model.c)
     x = x(1:length(model.c));
 end
 
-infostr = yalmiperror(problem,'MOSEK');	
 
 % Save all data sent to solver?
 if options.savesolverinput
@@ -76,13 +75,27 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 
 
 function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);
 
 [model,output] = normalizeExponentialCone(model);
-if output.problem
+if output.problem == 23
+    % Cases such as 1-exp(t) >= x'*x
+    [model,problem] = splitCones(model);
+    if problem
+        problem = 19;
+        x = [];
+        D_struc = [];
+        r = [];
+        res = [];
+        solvertime = 0;
+        prob = [];
+    else
+        [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);
+    end
+elseif output.problem
     problem = output.problem;
     x = [];
     D_struc = [];
@@ -91,6 +104,12 @@ if output.problem
     solvertime = 0;
     prob = [];
 else
+    if isempty(model.integer_variables)
+        % Mosek cannot exploit this for continuous models (and if we keep
+        % it from e.g. bnb, then the prmal version will be called, which
+        % will run much slower for large SDPs)
+        model.x0 = [];
+    end
     if nnz(model.Q)==0 && isempty(model.integer_variables) && isempty(model.x0)
         % Standard cone problem which we can model by sending our standard dual
         % and then recover solution via Moseks dual

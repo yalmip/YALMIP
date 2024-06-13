@@ -66,50 +66,43 @@ catch
     error(['Failed when trying to create a model for the "' extstruct.fcn '" operator']);
 end
 
-% Make sure all operators have these properties
+% Make sure all operators have these properties, and that they are
+% consistently set (positive has non-negative domain etc)
 if ~isempty(properties)
     if ~iscell(properties)
         properties = {properties};
     end
     for i = 1:length(properties)
         properties{i}.name = fcn;
-        properties{i} = assertProperty(properties{i},'definiteness','none');
-        properties{i} = assertProperty(properties{i},'convexity','none');
-        properties{i} = assertProperty(properties{i},'monotonicity','none');
-        properties{i} = assertProperty(properties{i},'derivative',[]);
-        properties{i} = assertProperty(properties{i},'inverse',[]);
+        properties{i} = assertOperatorProperties(properties{i});    
         properties{i} = assertProperty(properties{i},'models',getvariables(extstruct.var));
-        properties{i} = assertProperty(properties{i},'convexhull',[]);
-        properties{i} = assertProperty(properties{i},'bounds',[]);
-        properties{i} = assertProperty(properties{i},'domain',[-inf inf]);
-        properties{i} = assertProperty(properties{i},'replace',[]);
-        switch properties{i}.definiteness
-            case 'positive'
-                properties{i} = assertProperty(properties{i},'range',[0 inf]);
-            case 'negative'
-                properties{i} = assertProperty(properties{i},'range',[-inf 0]);
-            otherwise
-                properties{i} = assertProperty(properties{i},'range',[-inf inf]);
-        end
-        properties{i} = assertProperty(properties{i},'model','unspecified');              
     end
 end
 
-% Normalize the callback expression and check for some obsoleted stuff
+% Normalize the callback expression if necessary, add domain constraints, 
+% and check for some obsoleted stuff
 if ~isempty(properties)
     if isequal(properties{1}.model,'callback')
-        F_normalizing = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.usex0);       
-        if ~isempty(F_normalizing)
-            F = F + F_normalizing;
-            % If there are hard bounds on the argument, and a new variable
-            % has been introduced to normalize the model argument, add
-            % these hard bounds on the new variable
-            Xnormal = extstruct.arg{end};
-            if ~isinf( properties{1}.domain(1))
-                F = [F, Xnormal >= properties{1}.domain(1)];
+        [F_normalizing,normalizer,argument] = NormalizeCallback(method,extstruct.var,extstruct.arg{:},options.warmstart);
+        F = F + F_normalizing;
+        if ~isempty(normalizer)
+            if ~isempty(properties{1}.domain)
+                if ~isinf(properties{1}.domain(1))
+                    F = [F, normalizer >= properties{1}.domain(1)];
+                end  
+                if ~isinf(properties{1}.domain(2))
+                    F = [F, normalizer <= properties{1}.domain(2)];
+                end
             end
-            if ~isinf( properties{1}.domain(2))
-                F = [F, Xnormal <= properties{1}.domain(2)];
+        end
+        if ~isempty(argument)
+            if ~isempty(properties{1}.domain)
+                if ~isinf(properties{1}.domain(1))
+                    F = [F, argument >= properties{1}.domain(1)];
+                end  
+                if ~isinf(properties{1}.domain(2))
+                    F = [F, argument <= properties{1}.domain(2)];
+                end
             end
         end
     end
@@ -119,9 +112,11 @@ if ~isempty(properties)
         end
     end
     for i = 1:length(properties)
-        if ~any(strcmpi(properties{i}.convexity,{'convex','concave','none'}))
-            disp('More cleaning, strange convextiy returned...Report bug in model.m')
-            error('More cleaning, strange convextiy returned...Report bug in model.m')
+        if ~isa(properties{i}.convexity,'function_handle')
+            if ~any(strcmpi(properties{i}.convexity,{'convex','concave','none'}))
+                disp('More cleaning, strange convextiy returned...Report bug in model.m')
+                error('More cleaning, strange convextiy returned...Report bug in model.m')
+            end
         end
     end
 end
@@ -129,13 +124,4 @@ end
 % This is useful in MPT
 if ~isempty(F)
     F = tag(F,['Expansion of ' extstruct.fcn]);
-end
-
-if ~isempty(properties)
-%    properties = properties{1};
-end
-
-function properties = assertProperty(properties,checkfor,default);
-if ~isfield(properties,checkfor)
-    properties = setfield(properties,checkfor,default);
 end

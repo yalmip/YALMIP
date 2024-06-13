@@ -73,8 +73,6 @@ if problem~=9
     end
 end
 
-infostr = yalmiperror(problem,model.solver.tag);
-
 % Save ALL data sent to solver
 if options.savesolverinput
     solverinput.Atveriny = -F_struc(:,2:end);
@@ -97,7 +95,7 @@ else
 end
 
 % Standard interface 
-output = createOutputStructure(Primal,Dual,[],problem,infostr,solverinput,solveroutput,solvertime);
+output = createOutputStructure(Primal,Dual,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
 
  
 function [new_F_struc,K] = fix1Dqcone(F_struc,K); 

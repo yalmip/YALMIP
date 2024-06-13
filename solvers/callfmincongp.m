@@ -14,9 +14,7 @@ mt      = interfacedata.monomtable;
 
 switch options.verbose
     case 0
-        options.fmincon.Display = 'off';
-    case 1
-        options.fmincon.Display = 'final';
+        options.fmincon.Display = 'off';   
     otherwise
         options.fmincon.Display = 'iter';
 end
@@ -40,38 +38,12 @@ lbtemp(linear_variables(fixed)) = -inf;
 fixed_in_bound = [];
 fixed_bound=[];
 if ~isempty(fixed)
-    if 0
-        % Remove variables
-        fixfactors = prod(repmat(ub(linear_variables(fixed(:)))',size(prob.A,1),1).^prob.A(:,fixed),2);
-        prob.A(:,fixed) = [];
-        prob.b = (prob.b) .* fixfactors;
-        for j = 1:max(prob.map)
-            in_this = find(prob.map == j);
-            if ~isempty(in_this)
-                constants = find(~any(prob.A(in_this,:),2));
-                if ~isempty(constants)
-                    prob.b(in_this) = prob.b(in_this)./(1 - sum(prob.b(in_this(constants))));
-                end
-            end
-        end
-        fixed_in_bound = linear_variables(fixed);
-        fixed_bound = ub(linear_variables(fixed));
-        linear_variables(fixed) = [];
-        em = find(~any(prob.A,2));
-        prob.A(em,:) = [];
-        prob.b(em,:) = [];
-        nn = max(prob.map);
-        prob.map(em,:) = [];
-        length(unique(prob.map)) - (nn + 1)
-        1;
-    else
-        prob.G = [prob.G;-sparse(1:length(fixed),fixed,1,length(fixed),length(linear_variables))];
-        prob.h = [prob.h;lb(linear_variables(fixed))];
-    end
+    prob.G = [prob.G;-sparse(1:length(fixed),fixed,1,length(fixed),length(linear_variables))];
+    prob.h = [prob.h;lb(linear_variables(fixed))];
 end
 
 %something failed
-if problem 
+if problem
     % Go to standard fmincon
     if options.verbose
         disp('Conversion to geometric program failed. Trying general non-convex model in fmincon');
@@ -82,89 +54,79 @@ if problem
     return
 end
 
-if problem == 0
-        
-    if isempty(x0)
-        x0 = zeros(length(linear_variables),1);
+if isempty(x0)
+    x0 = zeros(length(linear_variables),1);
+else
+    x0 = x0(linear_variables);
+end
+
+% Fake logarithm (extend linearly for small values)
+ind = find(x0<1e-2);
+x0(ind) = exp(log(1e-2)+(x0(ind)-1e-2)/1e-2);
+x0 = log(x0);
+
+% Clean up the bounds (from branch and bound)
+% Note, these bounds are in the
+% logarithmic variables.
+if ~isempty(lb)
+    lb = lb(linear_variables);
+    ind = find(lb<1e-2);
+    lb(ind) = exp(log(1e-2)+(lb(ind)-1e-2)/1e-2);
+    lb = log(lb+sqrt(eps));
+end
+if ~isempty(ub)
+    ub = ub(linear_variables);
+    ind = find(ub<1e-2);
+    ub(ind) = exp(log(1e-2)+(ub(ind)-1e-2)/1e-2);
+    ub = log(ub+sqrt(eps));
+end
+
+if options.savedebug
+    ops = options.fmincon;
+    save fmincongpdebug prob x0 ops lb ub
+end
+
+prob = precalcgpstruct(prob);
+
+options.fmincon.GradObj    = 'on';
+options.fmincon.GradConstr = 'on';
+solvertime = tic;
+if ~exist('OCTAVE_VERSION','builtin')
+    [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
+else
+    [xout,fmin,flag,output] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
+    lambda = [];
+end
+solvertime = toc(solvertime);
+
+x = zeros(length(c),1);
+x(linear_variables) = exp(xout);
+x(fixed_in_bound) = fixed_bound;
+problem = 0;
+% Check, currently not exhaustive...
+if flag==0
+    problem = 3;
+else
+    if flag>0
+        problem = 0;
     else
-        x0 = x0(linear_variables);
-    end
-
-    % Fake logarithm (extend linearly for small values)
-    ind = find(x0<1e-2);
-    x0(ind) = exp(log(1e-2)+(x0(ind)-1e-2)/1e-2);
-    x0 = log(x0);
-
-    % Clean up the bounds (from branch and bound)
-    % Note, these bounds are in the
-    % logarithmic variables.
-    if ~isempty(lb)
-        lb = lb(linear_variables);
-        ind = find(lb<1e-2);
-        lb(ind) = exp(log(1e-2)+(lb(ind)-1e-2)/1e-2);
-        lb = log(lb+sqrt(eps));
-    end
-    if ~isempty(ub)
-        ub = ub(linear_variables);
-        ind = find(ub<1e-2);
-        ub(ind) = exp(log(1e-2)+(ub(ind)-1e-2)/1e-2);
-        ub = log(ub+sqrt(eps));
-    end
-
-    if options.savedebug
-        ops = options.fmincon;
-        save fmincongpdebug prob x0 ops lb ub
-    end
-
-    prob = precalcgpstruct(prob);
-        
-    options.fmincon.GradObj    = 'on';
-    options.fmincon.GradConstr = 'on';
-    warning('off','optim:fmincon:NLPAlgLargeScaleConflict')
-    solvertime = tic;
-    if isfield(options.fmincon,'tlprob')
-        [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,options.fmincon.tlprob,prob);
-    else
-        [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
-    end
-    solvertime = toc(solvertime);
-    warning('on','optim:fmincon:NLPAlgLargeScaleConflict')
-
-    
-    x = zeros(length(c),1);
-    x(linear_variables) = exp(xout);
-    x(fixed_in_bound) = fixed_bound;
-    problem = 0;
-    % Check, currently not exhaustive...
-    if flag==0
-        problem = 3;
-    else
-        if flag>0
-            problem = 0;
+        if isempty(x)
+            x = repmat(nan,length(c),1);
+        end
+        if 0%any((A*x-b)>sqrt(eps)) | any( abs(Aeq*x-beq)>sqrt(eps))
+            problem = 1; % Likely to be infeasible
         else
-            if isempty(x)
-                x = repmat(nan,length(c),1);
-            end
-            if 0%any((A*x-b)>sqrt(eps)) | any( abs(Aeq*x-beq)>sqrt(eps))
-                problem = 1; % Likely to be infeasible
-            else
-                if c'*x<-1e10 % Likely unbounded
-                    problem = 2;
-                else          % Probably convergence issues
-                    problem = 5;
-                end
+            if c'*x<-1e10 % Likely unbounded
+                problem = 2;
+            else          % Probably convergence issues
+                problem = 5;
             end
         end
     end
-else
-    x = [];
-    solvertime = 0;
 end
 
 % Internal format for duals (currently not supported in GP)
 D_struc = [];
-
-infostr = yalmiperror(problem,interfacedata.solver.tag);
 
 if options.savesolverinput
     solverinput.A = [];
@@ -187,5 +149,5 @@ else
     solveroutput = [];
 end
 
-% Standard interface 
-output = createOutputStructure(x,D_struc,[],problem,infostr,solverinput,solveroutput,solvertime);
+% Standard interface
+output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);

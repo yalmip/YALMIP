@@ -23,22 +23,31 @@ p0.F_struc = sparse(p0.F_struc);
 % It is assumed p0 is the master model, i.e. p1 only contains constraints
 p = p0;
 
-if p1.K.f > 0
+if any(p1.K.f)
     p.F_struc = [p1.F_struc(1:p1.K.f,:);p.F_struc];
     p.K.f = p.K.f + p1.K.f;
 end
 
-if p1.K.l > 0
+if any(p1.K.l)
     p.F_struc = [p.F_struc(1:p.K.f,:);
         p1.F_struc(1+p1.K.f:p1.K.f+p1.K.l,:)
         p.F_struc(1+p.K.f:end,:)];
     p.K.l = p.K.l + p1.K.l;
 end
 
-if isfield(p1.K,'q')
-    if p1.K.q > 0
-        error('FIXME')
-    end
+if isfield(p1.K,'q') & nnz(p1.K.q)>0
+      p.F_struc = [p.F_struc(1:p.K.f+p.K.l,:);
+                   p1.F_struc(1+p1.K.f+p1.K.l:p1.K.f+p1.K.l+sum(p1.K.q),:)
+                   p.F_struc(1+p.K.f+p.K.l:end,:)];
+    p.K.q = [p1.K.q p.K.q];
+    p.K.q = p.K.q(find(p.K.q));
+end
+
+if isfield(p1.K,'e') & nnz(p1.K.e)>0
+      p.F_struc = [p.F_struc(1:p.K.f+p.K.l+sum(p.K.q),:);
+                   p1.F_struc(1+p1.K.f+p1.K.l+sum(p1.K.q):p1.K.f+p1.K.l+sum(p1.K.q)+3*p1.K.e,:)
+                   p.F_struc(1+p.K.f+p.K.l+sum(p.K.q):end,:)];
+   p.K.e = p.K.e + p1.K.e;
 end
 
 if isfield(p1.K,'s')

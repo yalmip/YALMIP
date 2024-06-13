@@ -10,8 +10,8 @@ function [p,d] = check(X)
 %
 % Primal constraint residuals are calculated as:
 %
-%  Semidefinite constraint F(x)>0 : min(eig(F))
-%  Element-wise constraint F(x)>0 : min(min(F))
+%  Semidefinite constraint F(x)>=0: min(eig(F))
+%  Element-wise constraint F(x)>=0: min(min(F))
 %  Equality constraint F==0       : -max(max(abs(F)))
 %  Second order cone t>||x||      : t-||x||
 %  Integrality constraint on x    : max(abs(x-round(x)))
