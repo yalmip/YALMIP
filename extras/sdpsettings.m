@@ -497,6 +497,7 @@ chance.method = 'markov';
 chance.N = 100;
 chance.bootstrap = 'yes';
 chance.scenario.delta = .01;
+chance.expcone = 'no';
 
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';

@@ -1,7 +1,16 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options)
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
-Phi_Inverse = icdf('normal',1-gamma,0,1);
+if isa(gamma,'sdpvar') && strcmpi(options.chance.expcone,'yes') 
+    a = 4.274819565452955e-01;
+    b = 5.101801418186901e+06;
+    k = 6.064075380897068e+00;
+    c = -1.655121254255513e+00;
+    Phi_Inverse = -a*lambertw(b*gamma)+k+c*gamma;
+else
+    % Just go for a general nonlinear model and hope for the best
+    Phi_Inverse = icdf('normal',1-gamma,0,1);
+end
 if min(size(covariance))==1
     covariance = diag(covariance);
 end
