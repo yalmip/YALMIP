@@ -154,7 +154,7 @@ p = addSDPextendable(p);
 %% START CUTTING
 % *************************************************************************
 cutsdpsolvertime = clock;
-[x_min,solved_nodes,lower,feasible,D_struc,interrupted] = cutting(p);
+[x_min,solved_nodes,lower,feasible,D_struc,interrupted,stalling] = cutting(p);
 
 % Map back in weird models with negated binary
 if ~isempty(x_min) && ~isempty(negated_binary)
@@ -166,6 +166,8 @@ end
 % *************************************************************************
 if interrupted
     output.problem = 16;
+elseif stalling
+    output.problem = 4;
 else
     output.problem = 0;
     if ~feasible
@@ -190,7 +192,7 @@ end
 output.solvertime   = etime(clock,bnbsolvertime);
 %% --
 
-function [x,solved_nodes,lower,feasible,D_struc,interrupted] = cutting(p)
+function [x,solved_nodes,lower,feasible,D_struc,interrupted,stalling] = cutting(p)
 
 interrupted = 0;
 % *************************************************************************
@@ -321,7 +323,7 @@ if nnz(p.Q) == 0
         end
     end
 end
-if isinf(lower) | nnz(p.Q)~=0
+if isinf(lower) || nnz(p.Q)~=0
     lower = -1e6;
 end
 
@@ -362,7 +364,8 @@ p_lp_unused.F_struc = [];
 p_lp_unused.K.f = 0;
 p_lp_unused.K.l = 0;
 starting_cuts = p_lp.K.l;
-
+stalling = 0;
+last_solution = [];
 while goon
 
     % Keep history of what we have been doing. Used for some diagnostics
@@ -390,6 +393,21 @@ while goon
     ptemp = adjustMaxTime(ptemp,ptemp.options.cutsdp.maxtime,etime(clock,cutsdpsolvertime));
     if integerPhase
         output = feval(cutsolver,ptemp);
+        % Check for stalling
+        % This can happen in numerically horrible models where the
+        % eigenvalue computations basically fails, so it adds a cut based
+        % on a negative eigenvalue, but that cut is already satisfied, so
+        % next iteration returns same solution
+        if output.problem == 0       
+            if ~isempty(last_solution)
+                if norm(output.Primal-last_solution)<=1e-16
+                    stalling = stalling + 1;
+                else
+                    stalling = 0;
+                end
+            end
+            last_solution = output.Primal;            
+        end
         if output.problem == 12            
             output = feval(cutsolver,remove_objective(ptemp));
             if output.problem == 0
@@ -446,18 +464,7 @@ while goon
         
         was_lp_really_feasible = checkfeasiblefast(ptemp,x,-p.options.cutsdp.feastol);               
         
-       if p.sdpextendable&&integerPhase%p.options.cutsdp.sdppump & integerPhase   
-%           [xtemp,fail] = sdpextend(p_original,x);
-%           if ~fail
-%               if checkfeasiblefast(p,xtemp,1e-6)
-%                 upptemp = computecost(p.f,p.c,p.Q,x,p);
-%                 successful = 1;
-%             else
-%                 upptemp = inf;
-%                 successful = 0;
-%             end
-%             %  upptemp = computecost(p.f,p.c,p.Q,x,p);
-%           end
+        if p.sdpextendable && integerPhase
           [xtemp,upptemp,pumpPossible,p_original,pumpSuccess] = sdpPump(p_original,x,-p.options.cutsdp.feastol);                                               
         else
             upptemp = inf;
@@ -523,6 +530,7 @@ while goon
         goon = goon & (solved_nodes < p.options.cutsdp.maxiter-1);
         goon = goon & ~(upper <=lower);      
         goon = goon && lower < upper;                       
+        goon = goon && stalling < 1;
         if ~isinf(upper) && ~isinf(lower)
             gap = abs((upper-lower)/(1e-3+abs(upper)+abs(lower)));
         else
@@ -540,9 +548,14 @@ while goon
     
     phaseString = {'Continuous','Integer   '};
     integerInfeasibility = sum(abs(x(p.integer_variables)-round(x(p.integer_variables)))) + sum(abs(x(p.binary_variables)-round(x(p.binary_variables))));
+    if stalling
+        message = 'Stall (must be very bad numerics in model)';
+    else
+        message = '';
+    end
     if p.options.cutsdp.verbose
         if mod(solved_nodes-1,p.options.print_interval)==0 || goon == 0
-            fprintf(' %4.0f :  %s  %11.3E %12.3E      %14.3E   %11.3E     %3.0f     %5.1f\n',solved_nodes,phaseString{currentPhase+1},sdpInfeasibility,integerInfeasibility,lower,upper,p_lp.K.l-starting_cuts,etime(clock,cutsdpsolvertime));
+            fprintf(' %4.0f :  %s  %11.3E %12.3E      %14.3E   %11.3E     %3.0f     %5.1f   %s\n',solved_nodes,phaseString{currentPhase+1},sdpInfeasibility,integerInfeasibility,lower,upper,p_lp.K.l-starting_cuts,etime(clock,cutsdpsolvertime),message);
         end
     end
 end
@@ -558,7 +571,6 @@ D_struc = [];
 if output.problem == 16
     interrupted = 1;
 end
-
 
 function [p_lp,worstinfeasibility,infeasible_sdp_cones,eig_computation_failure] = add_sdp_cut(p,p_lp,x,infeasibility_in,p_original);
 
