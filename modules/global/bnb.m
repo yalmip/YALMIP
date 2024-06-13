@@ -143,6 +143,8 @@ p = presolve_empty_rows(p);
 p = presolve_implied_binaryproduct(p);
 p = presolve_downforce(p);
 p = presolve_upforce(p);
+p = presolve_strengthen_coefficients(p);
+p = presolve_empty_rows(p);
 % These are reused from BMIBNB and involves nonlinear models
 p = propagate_bounds_from_monomials(p);
 p = propagate_bounds_from_equalities(p);
