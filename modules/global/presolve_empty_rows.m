@@ -10,7 +10,8 @@ if p.feasible
     end
     
     if p.K.l > 0
-        j = find(abs(p.F_struc(startofLPCone(p.K):endOfLPCone(p.K),1)<eps) & ~any(p.F_struc(startofLPCone(p.K):endOfLPCone(p.K),2:end),2));
+        % Remove also trivial k>=0
+        j = find(abs(p.F_struc(startofLPCone(p.K):endOfLPCone(p.K),1)>=0) & ~any(p.F_struc(startofLPCone(p.K):endOfLPCone(p.K),2:end),2));
         p.F_struc(p.K.f + j,:)=[];
         p.K.l = p.K.l - length(j);
         n = n + length(j);
