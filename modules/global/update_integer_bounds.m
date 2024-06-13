@@ -1,6 +1,6 @@
-function model = update_integer_bounds(model);
+function model = update_integer_bounds(model)
 
-if ~isempty(model.implied_integers)
+if isfield(model,'implied_integers') && ~isempty(model.implied_integers)
     I = model.implied_integers;
     % Clean up things like 0.00001 <= x <= 0.999999 to 0 <= x <= 1
     % however, don't kill equalities 1 <= x <= 1
