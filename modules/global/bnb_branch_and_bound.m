@@ -46,6 +46,7 @@ p = addSDPextendable(p);
 
 % p = detectMonotoneSDPObjective(p);
 p = detect_knapsack(p);
+p = presolve_cliques(p);
 p = presolve_cliquestrengthen(p);
 
 [p,x_min,upper] = initializesolution(p,[],inf);
@@ -148,9 +149,8 @@ end
 % be copied to every node, and to keep global information
 poriginal = p;
 
-
-while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
-    
+while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
+         
     % ********************************************
     % ASSUME THAT WE WON'T FATHOME
     % ********************************************
@@ -463,13 +463,28 @@ while unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < 
                 [p,poriginal] = propagate_binary_product_on_cut(p,poriginal,p_binarycut);
             end
         end
+        
+        new_cuts = unique(new_cuts,'rows');
         if ~isempty(globalcuts) && ~isempty(new_cuts)
-            new_hash = new_cuts*[1;p.hash];
-            old_hash = globalcuts*[1;p.hash];
-            s = find(~ismember(new_hash,old_hash));
-            new_cuts = new_cuts(s,:);
+            % Don't add copies of old
+            new_hash = round(1e4*new_cuts*[1;p.hash]);
+            old_hash = round(1e4*globalcuts*[1;p.hash]);
+            index = find(~ismember(new_hash,old_hash));
+            new_cuts = new_cuts(index,:);
+        end        
+        keep = true(size(new_cuts,1),1);
+        for i = 1:size(new_cuts,1)
+            % Remove very dense sum x_i >= 1
+            % commonly generated in some models
+            if new_cuts(i,1)==-1
+                if all(nonzeros(new_cuts(i,2:end))==1)
+                    if nnz(new_cuts(i,2:end)) > .1*length(new_cuts(i,2:end))
+                        keep(i) = 0;
+                    end
+                end
+            end
         end
-        globalcuts = [globalcuts;new_cuts];
+        globalcuts = [globalcuts;new_cuts(keep,:)];      
     end
     
     % **************************************
