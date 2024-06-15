@@ -6,10 +6,10 @@ if isa(gamma,'sdpvar') && strcmpi(options.chance.expcone,'yes')
         error('Cannot have decision variables multplying uncertainty when using expcone approximation of inverse cdf')
     end
     % One upper bound...
-    aa = 4.274819565452955e-01;
-    bb = 5.101801418186901e+06;
-    kk = 6.064075380897068e+00;
-    cc = -1.655121254255513e+00;
+    aa = 0.499492956059166;
+    bb = 8.082867432374761e+03;
+    cc = -1.475743096725997;
+    kk =  3.965651977413067;   
     Phi_Inverse = -aa*lambertw(bb*gamma)+kk+cc*gamma;
 else
     % Just go for a general nonlinear model and hope for the best
