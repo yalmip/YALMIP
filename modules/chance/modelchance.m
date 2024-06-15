@@ -132,7 +132,8 @@ for uncertaintyGroup = 1:length(randomVariables)
                     confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
                     gamma = 1-confidencelevel;
                     if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.name),'random')
-                        switch randomVariables{uncertaintyGroup}.distribution.parameters{1}
+                        distName = randomVariables{uncertaintyGroup}.distribution.parameters{1};
+                        switch distName
                             case 'dro'
                                 newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution);
@@ -152,11 +153,19 @@ for uncertaintyGroup = 1:length(randomVariables)
                             case {'normal','normalm'}
                                 newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
-                                eliminatedConstraints(ic)=1;
+                                eliminatedConstraints(ic)=1;                                                                                                                
                             case 'normalf'
                                 newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,'exact normalf',randomVariables{uncertaintyGroup}.distribution);
                                 eliminatedConstraints(ic)=1;
+                            case {'uniform'}
+                                newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
+                                eliminatedConstraints(ic)=1;   
+                            case {'exponential','weibull','gamma','uniform'}
+                                newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
+                                eliminatedConstraints(ic)=1;                                     
                             otherwise
                                 switch options.chance.method
                                     case 'dro'
