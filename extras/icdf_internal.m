@@ -11,6 +11,7 @@ switch class(varargin{1})
         operator.bounds = @bounds;
         operator.domain = [1e-16 1-1e-16];
         operator.derivative = @(x)derivative(x,varargin{4:end});
+        operator.inverse = @(x)cdf(varargin{4},x,varargin{5:end});
         
         varargout{1} = [1-1e-8 >= varargin{3} >= 1e-8];
         varargout{2} = operator;
