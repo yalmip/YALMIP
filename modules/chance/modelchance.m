@@ -158,11 +158,11 @@ for uncertaintyGroup = 1:length(randomVariables)
                                 newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,'exact normalf',randomVariables{uncertaintyGroup}.distribution);
                                 eliminatedConstraints(ic)=1;
-                            case {'uniform'}
+                            case {'logistic', 'laplace','uniform'}
                                 newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                 eliminatedConstraints(ic)=1;   
-                            case {'exponential','weibull','gamma','uniform'}
+                            case {'gamma','exponential','weibull','gamma','uniform'}
                                 newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                 printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                 eliminatedConstraints(ic)=1;                                     
