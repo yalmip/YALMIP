@@ -15,7 +15,10 @@ if isa(c,'constraint') | isa(c,'lmi')
     if ~is(c,'elementwise')
         error('Probability constraints only applicable to single elementwise constraints');
     else
-        sys.Constraint = c;
+        sys.Weight{1} = 1;
+        sys.Risk{1} = sdpvar(1);
+        sys.Offset{1} = 0;
+        sys.Constraint{1} = c;        
         sys = class(sys,'probability');
     end
 else
