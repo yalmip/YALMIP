@@ -1,2 +1,2 @@
-function sys = display(c)
-display('Probability expression')
+function sys = display(P)
+display(['Probability expression (' num2str(length(P.Constraint)) ' term)'])
