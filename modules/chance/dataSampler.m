@@ -9,17 +9,17 @@ if strcmp(func2str(temp{1}),'random')
     % 3. sdpvar objects in arguments
     if strcmp(temp{2},'normal')
         sampledData = feval(temp{1:2},0,1,temp{5});
-        sampledData = sqrtm(temp{4})*sampledData;
+        sampledData = sqrtm(matrixify(temp{4}))*sampledData;
         sampledData = sampledData + temp{3};
     elseif strcmp(temp{2},'normalf')
         temp{2} = 'normal';
         sampledData = feval(temp{1:2},0,1,temp{5});
-        sampledData = temp{4}*sampledData;
+        sampledData = matrixify(temp{4})*sampledData;
         sampledData = sampledData + temp{3};
     elseif strcmp(temp{2},'normalm')
         temp{2} = 'normal';
         sampledData = feval(temp{1:2},0,1,temp{5});
-        sampledData = chol(temp{4})*sampledData;
+        sampledData = chol(matrixify(temp{4}))*sampledData;
         sampledData = sampledData + temp{3};
     elseif strcmp(temp{2},'data')
         i = randi(size(temp{3},2));
@@ -31,5 +31,10 @@ if strcmp(func2str(temp{1}),'random')
         error('Cannot sample from this description')
     end
 else
-sampledData = feval(temp{:});
+    sampledData = feval(temp{:});
+end
+
+function M= matrixify(M)
+if min(size(M))==1
+    M=diag(M);
 end

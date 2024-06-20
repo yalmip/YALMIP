@@ -74,6 +74,13 @@ else
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mixture','');
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mix','');
             x.extra.distribution.parameters{1} = lower(strtrim(x.extra.distribution.parameters{1}));
+            
+            if isa(varargin{1},'function_handle')
+                % Hmm, do we support generic mixtures of this type
+                error
+            else
+                temp = {@random,x.extra.distribution.parameters{1},x.dim};
+            end
         end
     end
     try
