@@ -10,7 +10,7 @@ if p.feasible
     % Search for y >= x1 + x2 +...
     candidates = find(ff(:,1)==0);
     for i = 1:length(candidates)
-        row = p.F_struc(candidates(i),2:end);
+        row = ff(candidates(i),2:end);
         xx = find(row==-1);
         yy = find(row==1);
         if length(yy)==1 && length(xx)+1==nnz(row)
