@@ -817,15 +817,21 @@ args = yalmip('getarguments',Y);
 args = args.arg{1};
 % Temporarily recast slog as log (slog is log(1+x))
 if isequal(Y.extra.opname,'slog')
-    args = args + 1;
-    Y.extra.opname = 'log';
+    if nnz(getbasematrix(X,0))==0
+        % Not entropy but fits cross entropy
+        Z = -crossentropy(X,args + 1);
+    else
+        % Still hope for entropy
+        args = args + 1;
+        Y.extra.opname = 'log';
+    end     
 end
 % Detect the case log(f)*(k*f), and rescale to k*log(f)*f
 % to simplify comparison of function argument and outer argument
 if isequal(X.dim,args.dim) && isequal(size(X.basis),size(args.basis))
     [~,~,a] = find(X.basis);
     [~,~,b] = find(args.basis);
-    if ~isequal(a,b)
+    if ~isequal(a,b) && all(size(a) == size(b))
         c = a./b;
         if all(abs(c-c(1))<=1e-13)           
             k = c(1);            
