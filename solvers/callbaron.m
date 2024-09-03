@@ -149,6 +149,12 @@ if pos
             end 
         end
         z = [z(1:end-1) ')'];
+    elseif strcmp(model.evalMap{pos}.fcn,'pexp')                        
+        j1 = find(model.linearindicies == map.variableIndex(1));
+        j2 = find(model.linearindicies == map.variableIndex(2));        
+        xs = ['x(' num2str(j1) ')'];
+        ys = ['x(' num2str(j2) ')'];
+        z =  ['(' xs '*exp(' ys '/' xs '))']
     elseif strcmp(model.evalMap{pos}.fcn,'slogfrac')                        
         j1 = find(model.linearindicies == map.variableIndex(1));
         j2 = find(model.linearindicies == map.variableIndex(2));        
