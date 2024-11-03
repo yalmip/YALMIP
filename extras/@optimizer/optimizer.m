@@ -211,17 +211,23 @@ if isempty(u) || (is(u,'linear') & all(sum(base | base,2) == 1) & all(sum(base,2
     Uvar = getvariables(uvec);
     U = U(:,2:end);
     [ii,jj,ss] = find(U');
-    for i = 1:length(uvec)
-        %var = getvariables(uvec(i)); Slow
-        %var = Uvar(find(U(i,:)));
-        var = Uvar(ii(i));
-        mapIndex = find(var == model.used_variables);
-        if ~isempty(mapIndex)
-            map = [map;mapIndex];
-        else
-            map = [map;0];
+    if 0
+        for i = 1:length(uvec)
+            var = Uvar(ii(i));
+            mapIndex = find(var == model.used_variables);
+            if ~isempty(mapIndex)
+                map = [map;mapIndex];
+            else
+                map = [map;0];
+            end
         end
+    else
+        vars = Uvar(ii);
+        [isMember, mapIndex] = ismember(vars, model.used_variables);
+        map = zeros(length(vars), 1);
+        map(isMember) = mapIndex(isMember);
     end
+
 else
     % Some expression which we will use assign and double to evaluate
     vars = depends(u);
