@@ -46,20 +46,21 @@ function x = uncertain(x,varargin)
 %   See also OPTIMIZE, ROBUSTMODEL, OPTIMIZER, SAMPLE
 
 if nargin == 1 || ((nargin == 2) && strcmpi(varargin{1},'deterministic'))
-    x.typeflag = 15;
-    x.extra.distribution.name = 'deterministic';
-    x = lmi(x);
+  %  x.typeflag = 15;
+    x.extra.distribution.type = 'deterministic';
+  %  x = lmi(x);
 else
-    x.typeflag = 16;    
+  %  x.typeflag = 16;    
     if isa(varargin{1},'function_handle')
          temp = {varargin{:},x.dim};
     else
         temp = {@random,varargin{:},x.dim};
     end
-    x.extra.distribution.name = temp{1};
+    x.extra.distribution.type = 'stochastic';
+    x.extra.distribution.generator = temp{1};
     x.extra.distribution.parameters = {temp{2:end-1}};    
     x.extra.distribution.mixture = [];
-    if isequal(x.extra.distribution.name ,@random)
+    if isequal(x.extra.distribution.generator ,@random)
         % Check for a mixture definition
         if findstr('mix',x.extra.distribution.parameters{1})
             % Yes, mixture defined
@@ -105,6 +106,6 @@ else
         disp(lasterr);
         error('Trial evaluation of attached sample generator failed. Did you really specify correct parameters?')
     end
-            
-    x = lmi(x);                 
+    yalmip('addDistribution',  x, x.extra.distribution);    
+  %  x = lmi(x);                 
 end

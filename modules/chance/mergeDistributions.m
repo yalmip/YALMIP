@@ -1,4 +1,4 @@
-function [merged,map] = mergeDistributions(randomVariables);
+function [merged,map] = mergeDistributions(randomVariables)
 
 merged = {};
 map = [];
@@ -11,7 +11,7 @@ for i = 1:length(randomVariables)
         for j = i+1:length(randomVariables)
             if ~used(j)
                 that = randomVariables{j};
-                if strcmp(func2str(this.distribution.name),'random') && strcmp(func2str(that.distribution.name),'random')
+                if strcmp(func2str(this.distribution.generator),'random') && strcmp(func2str(that.distribution.generator),'random')
                     if mergable(this.distribution.parameters{1},that.distribution.parameters{1})
                         % Same distribution
                         this = merge2distributions(this,that);

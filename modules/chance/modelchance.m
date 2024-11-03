@@ -154,7 +154,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                     if ~fail
                     %    confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
                     %    gamma = 1-confidencelevel;
-                        if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.name),'random')
+                        if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.generator),'random')
                             distName = randomVariables{uncertaintyGroup}.distribution.parameters{1};
                             switch distName
                                 case 'dro'
@@ -295,7 +295,7 @@ end
 function printout(verbose,method,distribution)
 
 if verbose
-    if strcmpi(func2str(distribution.name),'random')
+    if strcmpi(func2str(distribution.generator),'random')
         disp([' - Using ''' method '''-filter on constraint with ''' distribution.parameters{1} ''' distribution']);
     else
         disp([' - Using ''' method '''-filter on constraint with data created by @' distribution.name']);

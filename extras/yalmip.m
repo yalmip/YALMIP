@@ -59,6 +59,7 @@ if isempty(internal_sdpvarstate)
     internal_sdpvarstate.optSolution{1}.optvar  =[];
     internal_sdpvarstate.optSolution{1}.values  =[];
     internal_sdpvarstate.activeSolution = 1;
+    internal_sdpvarstate.distributions = [];
     
     internal_sdpvarstate.nonCommutingTable = [];
     internal_sdpvarstate.nonHermitiannonCommutingTable = [];
@@ -737,7 +738,7 @@ switch varargin{1}
         internal_sdpvarstate.optSolution{1}.optvar = [];
         internal_sdpvarstate.optSolution{1}.values = [];
         internal_sdpvarstate.activeSolution = 1;
-        
+        internal_sdpvarstate.distributions = [];
         internal_sdpvarstate.nonCommutingTable = [];
 		
 		internal_sdpvarstate.containsSemivar = false;
@@ -1029,8 +1030,23 @@ switch varargin{1}
             need_new = size(internal_sdpvarstate.monomtable,1) - size(internal_sdpvarstate.hashedmonomtable,1);
             internal_sdpvarstate.hashedmonomtable = [internal_sdpvarstate.hashedmonomtable;internal_sdpvarstate.monomtable(end-need_new+1:end,:)*internal_sdpvarstate.hash];
         end
+    
+    case 'getDistribution'        
+        varargout{1} = internal_sdpvarstate.distributions;
+            
+    case 'addDistribution'        
+        variables = varargin{2};
+        parameters = varargin{3};
+        data.variables = variables;
+        data.distribution.type = parameters.type;
+        data.distribution.generator = parameters.generator;
+        data.distribution.parameters = parameters.parameters;
+        data.distribution.mixture = parameters.mixture;
+        %distribution.parameters = parameters;
+        internal_sdpvarstate.distributions{end+1} = data;
         
-        
+    case 'getDistribution'                
+        varargout{1} = internal_sdpvarstate.distributions;        
         
     case {'version','ver'}
         varargout{1} = '20230622';
