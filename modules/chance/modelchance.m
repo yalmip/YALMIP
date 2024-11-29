@@ -278,6 +278,7 @@ for weirdconstraints = find(eliminatedConstraints == 0)
             implies(satisfied, [confidencelevel >= 1e-4, Xvec >=0])
             implies(1-satisfied, [confidencelevel <= 0])];
     end    
+    eliminatedConstraints(weirdconstraints) = 1;
 end
 
 function [AAA,ccc,b,c_wTbase,fail] = quadraticDecomposition(X,x,w)
