@@ -253,6 +253,33 @@ for uncertaintyGroup = 1:length(randomVariables)
         end
     end
 end
+for weirdconstraints = find(eliminatedConstraints == 0)
+    % This was listed as a probabilistic chance constraint, but there
+    % appears to have been no random variables in the definition
+    if options.verbose
+        disp(' - Chance constraint with no random variables detected...')
+    end
+    confidencelevel = struct(groupedChanceConstraints{weirdconstraints}).clauses{1}.confidencelevel;
+    gamma = 1-confidencelevel;                                             
+    Xvec = sdpvar(groupedChanceConstraints{weirdconstraints});
+    % So basically X>=0, but if confidencelevel is <= 0 it can be removed
+    if isa(confidencelevel,'double')
+        % Simple case, something like X >= 0.5 hence it
+        % must be satisfied, otherwise removed
+        if confidencelevel > 0
+            Fchance = [Fchance, Xvec >= 0];        
+        end        
+    elseif isa(confidencelevel,'sdpvar')
+        % This is nasty. Probability is a decision variable, so this is
+        % basically a combinatorial case. If probability > 0, then it must
+        % be true
+        binvar satisfied
+        Fchance = [Fchance,  0 <= confidencelevel <= 1,
+            implies(satisfied, [confidencelevel >= 1e-4, Xvec >=0])
+            implies(1-satisfied, [confidencelevel <= 0])];
+    end    
+    eliminatedConstraints(weirdconstraints) = 1;
+end
 
 function [AAA,ccc,b,c_wTbase,fail] = quadraticDecomposition(X,x,w)
 b = [];
