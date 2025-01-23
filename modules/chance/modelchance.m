@@ -317,7 +317,11 @@ for i = 1:length(X)
     % A = [A -c_x-2*Q_xw*w];
     AAA = [AAA;sparse(2*Q_xw)];
     ccc = [ccc;sparse(c_x)];
-    b = [b;f+x'*Q_xx*x];
+    if isempty(x)
+        b = [b;f];
+    else    
+        b = [b;f+x'*Q_xx*x];
+    end
     c_wTbase = [c_wTbase;c_w'];
 end
 
