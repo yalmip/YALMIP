@@ -1,5 +1,5 @@
 function varargout = cdf_from_characteristic(varargin)
-
+% OLD naive special case test with charactersitic function
 switch class(varargin{1})
     
     case 'double'
@@ -15,7 +15,7 @@ switch class(varargin{1})
         operator = struct('convexity','none','monotonicity','increasing','definiteness','positive','model','callback');
         operator.bounds = @bounds;
         operator.range = [0 1];
-        operator.derivative = @(x)compute_pdf(x,varargin{4:end});      
+        %operator.derivative = @(x)compute_pdf(x,varargin{4:end});      
         
         varargout{1} = [];
         varargout{2} = operator;

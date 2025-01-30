@@ -60,6 +60,11 @@ else
     x.extra.distribution.generator = temp{1};
     x.extra.distribution.parameters = {temp{2:end-1}};    
     x.extra.distribution.mixture = [];
+    x.extra.distribution.characteristicfunction = [];
+    x.extra.distribution.cdf = [];
+    x.extra.distribution.icdf = [];
+    x.extra.distribution.pcdf = [];
+    
     if isequal(x.extra.distribution.generator ,@random)
         % Check for a mixture definition
         if findstr('mix',x.extra.distribution.parameters{1})
@@ -82,6 +87,13 @@ else
             else
                 temp = {@random,x.extra.distribution.parameters{1},x.dim};
             end
+        end
+        switch x.extra.distribution.parameters{1}
+            case 'normal'
+                x.extra.distribution.characteristicfunction = @(t)exp(-t.^2/2);    
+            case 'laplace'
+                x.extra.distribution.characteristicfunction = @(t)1./(1+t.^2);    
+            otherwise
         end
     end
     try

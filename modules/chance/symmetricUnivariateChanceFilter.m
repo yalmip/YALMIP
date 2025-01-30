@@ -1,4 +1,4 @@
-function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options)
+function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options,funcs,x)
 
 switch lower(distribution.parameters{1})
     
@@ -51,12 +51,22 @@ switch lower(distribution.parameters{1})
             % Possible to exploit on region of interest?
             % newConstraint = b   >= abs(c)*(mu+s*(log((1-gamma))-log(gamma)));
         else
-            mu = distribution.parameters{2};
-            s = distribution.parameters{3};
-            phi = @(t)(pi.*s(:).*t)./sinh(pi*s(:).*t);
-            b = (b+c'*mu);
-            phi = @(t) prod(phi(c(:)*t),1);
-            newConstraint = [cdf_from_characteristic(b,phi) >= 1-gamma];
+            
+            phi = distribution.characteristicfunction;            
+            
+            % Testing
+            newConstraint = [characteristic_cdf(x,funcs,phi) >= 1-gamma];
+            
+            %            mu = distribution.parameters{2};
+            %           s = distribution.parameters{3};
+            %          phi = @(t,mu,s)(pi.*s(:).*t)./sinh(pi*s(:).*t);
+            %         phi = @(t)phi(t,mu,s);
+            %            phi = @(t)(pi.*s(:).*t)./sinh(pi*s(:).*t);
+            %            b = (b+c'*mu);
+            
+            % Working
+            %   phi = @(t) prod(phi(c(:)*t),1);
+            %   newConstraint = [cdf_from_characteristic(b,phi) >= 1-gamma];
         end
         
     otherwise

@@ -41,6 +41,8 @@ if options.verbose
 end
 
 [randomVariables,map] = mergeDistributions(randomVariables);
+randomVariables = setupCharacterstics(randomVariables);
+
 if options.verbose && length(map)>max(map)
     disp([' - Merged to ' num2str(length(randomVariables)) ' distribution models.'])
 end
@@ -138,10 +140,18 @@ for uncertaintyGroup = 1:length(randomVariables)
                     %  A = A*Base;
                     
                     % b(x) + c(x)'*w >= 0
+                    
+                    
+                    % Used in characteristics stuff but there notation is h(x)+g(x)^Tw <= 0
+                    funcs.h = @(x)(-b-cx(:)'*x);                    
+                    funcs.dh =@(x)(-cx(:));                    
+                    funcs.g = @(x)(-cw(:)-A'*x);
+                    funcs.dg =@(x)(-A');
+                                        
                     if isempty(b)
                         b = 0;
                     end
-                    b = b + fX;
+                    b = b + fX;                                                                            
                     if ~isempty(cx)
                         b = b + cx'*x;
                     end
@@ -149,7 +159,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                     if ~isempty(A)
                         c = c + A'*x;
                     end
-                    
+                                                                                                    
                     newConstraint = [];
                     if ~fail
                     %    confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
@@ -182,11 +192,11 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     printout(options.verbose,'exact normalf',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 case {'logistic', 'laplace','uniform'}
-                                    newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                    newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 case {'gamma','exponential','weibull','gamma','uniform'}
-                                    newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                    newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs);
                                     printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 otherwise
@@ -334,3 +344,26 @@ if verbose
         disp([' - Using ''' method '''-filter on constraint with data created by @' distribution.name']);
     end
 end
+
+
+function randomVariables = setupCharacterstics(randomVariables)
+
+for k = 1:length(randomVariables)
+    if strcmpi(randomVariables{k}.distribution.type,'stochastic')
+        if isequal(randomVariables{k}.distribution.generator,@random)
+            switch randomVariables{k}.distribution.parameters{1}
+                case 'logistic'
+                   % phi = @(t,mu,s)(exp(i*mu(:).*t)).*(pi*s(:).*t)./sinh(pi*s(:).*t);        
+                    phi = @(t,mu,s)(exp(i*mu(:).*t)).*guarded_sinh(pi*s(:).*t);                                    
+                    mu = randomVariables{k}.distribution.parameters{2};
+                    s = randomVariables{k}.distribution.parameters{3};
+                    randomVariables{k}.distribution.characteristicfunction = @(t)phi(t,mu(:),s(:));
+                otherwise
+            end
+        end
+    end
+end
+
+function y = guarded_sinh(x)
+
+y = x./sinh(x);y(x==0)=1;
