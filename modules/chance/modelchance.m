@@ -195,8 +195,8 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case {'gamma','exponential','weibull','gamma','uniform'}
-                                    newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs);
+                                case {'gamma','exponential','weibull'}
+                                    newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 otherwise
@@ -352,18 +352,37 @@ for k = 1:length(randomVariables)
     if strcmpi(randomVariables{k}.distribution.type,'stochastic')
         if isequal(randomVariables{k}.distribution.generator,@random)
             switch randomVariables{k}.distribution.parameters{1}
-                case 'logistic'
-                   % phi = @(t,mu,s)(exp(i*mu(:).*t)).*(pi*s(:).*t)./sinh(pi*s(:).*t);        
-                    phi = @(t,mu,s)(exp(i*mu(:).*t)).*guarded_sinh(pi*s(:).*t);                                    
+                case 'logistic'                
                     mu = randomVariables{k}.distribution.parameters{2};
                     s = randomVariables{k}.distribution.parameters{3};
-                    randomVariables{k}.distribution.characteristicfunction = @(t)phi(t,mu(:),s(:));
+                    phi_general = @(t,mu,s)(exp(1i*mu(:).*t)).*guarded_sinhc(pi*s(:).*t);                                                                                                                        
+                    phi = @(t)phi_general(t,mu(:),s(:));
+                    
+                    % This one should be rewritten/guarded too
+                    dphi_general = @(t,mu,s)(1i*mu(:).*phi(t) + exp(1i*mu(:)*t).*(pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2)
+                    dphi = @(t) dphi_general(t,mu(:),s(:));
+                                                                                                      
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                 
+                case 'uniform'
+                    a = randomVariables{k}.distribution.parameters{2};
+                    b = randomVariables{k}.distribution.parameters{3};
+                    phi_general = @(t,a,b)(exp(1i*b(:).*t)-exp(1i*a(:).*t))./(1i*t.*(b-a));
+                    phi = @(t)phi_general(t,a(:),b(:));
+                    
+                    % This one should be rewritten/guarded too
+                    %dphi_general = @(t,a,b)(1i*mu(:).*phi(t) + exp(1i*mu(:)*t).*(pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2)
+                    %dphi = @(t) dphi_general(t,a(:),b(:));
+                                                                                                      
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = []%dphi;
                 otherwise
             end
         end
     end
 end
 
-function y = guarded_sinh(x)
+function y = guarded_sinhc(x)
 
 y = x./sinh(x);y(x==0)=1;

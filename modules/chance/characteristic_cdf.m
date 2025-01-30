@@ -29,8 +29,9 @@ switch class(varargin{1})
         operator.range = [0 1];
         funcs = varargin{4};
         phi = varargin{5};
+        dphi = varargin{6};
         % Create a function which computes gradient at x
-        %operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi);
+       % operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -50,18 +51,24 @@ function cdf = compute_cdf_using_phi(y,phi)
 integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
 cdf =  .5-integral(integrand,0, 100)/pi;
 
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg, phi,dphi)
+h0 = h(x);
+dh0 = dh(x);
+g0 = g(x);
+dg0 = dg(x);
 
-
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg, phi)
-h = h(x);
-dh = dh(x);
-g = g(x);
-dg = dg(x);
-
-% This is wrong of course. fmincon will not converge, and if 
-% 'fmincon.derivativecheck','on' is turned on in sdpsettings, it should
-% terminate
-dcdf = g;
-
+% Silly numerical differentiation (which is what a solver does anyway)
+phi0 = @(t) prod(phi(g0(:)*t),1);  
+cdf0 = compute_cdf_using_phi(-h0,phi0);
+eps = 1e-8;
+dcdf = [];
+for k = 1:length(x)
+    x_ = x;x_(k) = x_(k)+eps;
+    g_ = g(x_);
+    h_ = h(x_);    
+    phi_ = @(t) prod(phi(g_(:)*t),1);  
+    cdf_ = compute_cdf_using_phi(-h_,phi_);
+    dcdf = [dcdf;(cdf_-cdf0)/eps];
+end
 
 

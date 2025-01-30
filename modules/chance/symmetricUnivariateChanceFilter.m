@@ -3,23 +3,21 @@ function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,
 switch lower(distribution.parameters{1})
     
     % We have some special-case code for some distributions
-    case 'uniform'
-        % Convert to symmetric around origin for simplicity
-        L = distribution.parameters{2};
-        U = distribution.parameters{3};
-        %  distribution.phi = @(t) sin(t)./(t);
-        theMean = (L+U)/2;
-        theRange = (U-L)/2;
-        b = b+c'*theMean;
-        c = c.*theRange;
-        
+    case 'uniform'              
         if length(c)==1
             % icdf is trivial
+            % Convert to symmetric around origin for simplicity
+            L = distribution.parameters{2};
+            U = distribution.parameters{3};            
+            theMean = (L+U)/2;
+            theRange = (U-L)/2;
+            b = b+c'*theMean;
+            c = c.*theRange;
             newConstraint = [b >= (1-2*(1-gamma))*abs(c)];
         else
-            % Resort to characteristic
-            phi = @(t) prod(distribution.phi(c(:)*t),1);
-            newConstraint = [cdf_from_characteristic(b,phi) >= 1-gamma];
+            phi = distribution.characteristicfunction;            
+            dphi = distribution.characteristicfunction_derivative;                                    
+            newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];           
         end
         
     case 'laplace'
@@ -50,23 +48,12 @@ switch lower(distribution.parameters{1})
             newConstraint = b >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
             % Possible to exploit on region of interest?
             % newConstraint = b   >= abs(c)*(mu+s*(log((1-gamma))-log(gamma)));
-        else
-            
+        else            
             phi = distribution.characteristicfunction;            
+            dphi = distribution.characteristicfunction_derivative;            
             
             % Testing
-            newConstraint = [characteristic_cdf(x,funcs,phi) >= 1-gamma];
-            
-            %            mu = distribution.parameters{2};
-            %           s = distribution.parameters{3};
-            %          phi = @(t,mu,s)(pi.*s(:).*t)./sinh(pi*s(:).*t);
-            %         phi = @(t)phi(t,mu,s);
-            %            phi = @(t)(pi.*s(:).*t)./sinh(pi*s(:).*t);
-            %            b = (b+c'*mu);
-            
-            % Working
-            %   phi = @(t) prod(phi(c(:)*t),1);
-            %   newConstraint = [cdf_from_characteristic(b,phi) >= 1-gamma];
+            newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];                        
         end
         
     otherwise
