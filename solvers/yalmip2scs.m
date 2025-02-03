@@ -41,7 +41,7 @@ if ~isempty(cones.s) && any(cones.s)
 end
 
 % Remove cones.s if ==0 to avoid SCS fatal error if BLAS/LAPACK is not installed
-if isfield(cones, 's') && cones.s == 0
+if isfield(cones, 's') && all(cones.s == 0)
     cones = rmfield(cones, 's');
 end
 
