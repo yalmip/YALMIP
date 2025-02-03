@@ -1,8 +1,25 @@
 function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options,funcs,x)
 
 switch lower(distribution.parameters{1})
-    
-    % We have some special-case code for some distributions
+           
+
+      case 'exponential'            
+        phi = distribution.characteristicfunction;            
+        dphi = distribution.characteristicfunction_derivative;                                    
+        newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];                        
+                
+    case 'logistic'
+       
+        if length(c) == 1            
+            mu = distribution.parameters{2};
+            s = distribution.parameters{3};
+            newConstraint = b >= abs(c)*(mu+s*(log((1-gamma))-log(gamma)));
+        else            
+            phi = distribution.characteristicfunction;            
+            dphi = distribution.characteristicfunction_derivative;                                    
+            newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];                        
+        end
+        
     case 'uniform'              
         if length(c)==1
             % icdf is trivial
@@ -19,7 +36,7 @@ switch lower(distribution.parameters{1})
             dphi = distribution.characteristicfunction_derivative;                                    
             newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];           
         end
-        
+
     case 'laplace'
         mu = distribution.parameters{2};
         sigma = distribution.parameters{3};
@@ -39,22 +56,7 @@ switch lower(distribution.parameters{1})
             b = (b+c'*mu);
             phi = @(t) prod(phi(c(:)*t),1);
             newConstraint = [cdf_from_characteristic(b,phi) >= 1-gamma];
-        end
-        
-    case 'logistic'
-        mu = distribution.parameters{2};
-        s = distribution.parameters{3};
-        if length(c) == 1
-            newConstraint = b >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
-            % Possible to exploit on region of interest?
-            % newConstraint = b   >= abs(c)*(mu+s*(log((1-gamma))-log(gamma)));
-        else            
-            phi = distribution.characteristicfunction;            
-            dphi = distribution.characteristicfunction_derivative;            
-            
-            % Testing
-            newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];                        
-        end
+        end     
         
     otherwise
         newConstraint = b >= icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end})*abs(c);
