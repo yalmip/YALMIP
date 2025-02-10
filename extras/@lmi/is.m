@@ -13,6 +13,12 @@ else
       
     YESNO=zeros(length(F.LMIid),1);
     switch property
+        case 'disjoint'
+            for i = 1:length(F.clauses)
+                Fi = F.clauses{i};
+                YESNO(i,1) = isfield(Fi,'extra.definesdisjoint');
+            end
+            
         case 'dualized'
             YESNO = F.dualized == 1;
             
