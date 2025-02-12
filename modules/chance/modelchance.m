@@ -264,7 +264,7 @@ for uncertaintyGroup = 1:length(randomVariables)
     end
 end
 if any(eliminatedConstraints == 0)
-    for weirdconstraints = find(eliminatedConstraints == 0)
+    for weirdconstraints = find(eliminatedConstraints(:)' == 0)
         % This was listed as a probabilistic chance constraint, but there
         % appears to have been no random variables in the definition
         if options.verbose
@@ -327,7 +327,7 @@ for i = 1:length(X)
     % A = [A -c_x-2*Q_xw*w];
     AAA = [AAA;sparse(2*Q_xw)];
     ccc = [ccc;sparse(c_x)];
-    if isempty(x)
+    if isempty(x) || (nnz(Q_xx)==0)
         b = [b;f];
     else    
         b = [b;f+x'*Q_xx*x];
