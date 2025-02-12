@@ -10,13 +10,17 @@ switch class(varargin{1})
         % i.e.  Probability( z <= -h(x)) where z = g'(x)*w
         x = varargin{1}(:);
         funcs = varargin{2};
-        phi = varargin{3};  
+        distribution = varargin{3};
+        
+        phi = distribution.characteristicfunction;
         
         % Evaluate terms at x
         g = funcs.g(x);
         h = funcs.h(x);
+        
         % Define char. func for linear combination
         phi = @(t) prod(phi(g(:)*t),1);        
+        
         % Compute the cdf
         varargout{1} = compute_cdf_using_phi(-h, phi);
         
@@ -27,11 +31,14 @@ switch class(varargin{1})
         
         operator = struct('convexity','none','monotonicity','increasing','definiteness','positive','model','callback');        
         operator.range = [0 1];
+        
+        % Create a derivative callback 
         funcs = varargin{4};
-        phi = varargin{5};
-        dphi = varargin{6};
+        distribution = varargin{5};
+        phi = distribution.characteristicfunction;
+        dphi = distribution.characteristicfunction_derivative;
         % Create a function which computes gradient at x
-       % operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
+        % operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
         
         varargout{1} = [];
         varargout{2} = operator;

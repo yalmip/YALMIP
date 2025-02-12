@@ -2,27 +2,23 @@ function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,
 
 switch lower(distribution.parameters{1})
            
-
       case 'exponential'            
-        phi = distribution.characteristicfunction;            
-        dphi = distribution.characteristicfunction_derivative;                                    
-        newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];                        
+        newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];                        
                 
     case 'logistic'
        
         if length(c) == 1            
+            % Simple case
             mu = distribution.parameters{2};
             s = distribution.parameters{3};
             newConstraint = b >= abs(c)*(mu+s*(log((1-gamma))-log(gamma)));
         else            
-            phi = distribution.characteristicfunction;            
-            dphi = distribution.characteristicfunction_derivative;                                    
-            newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];                        
+            newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];                        
         end
         
     case 'uniform'              
         if length(c)==1
-            % icdf is trivial
+            % Simple case
             % Convert to symmetric around origin for simplicity
             L = distribution.parameters{2};
             U = distribution.parameters{3};            
@@ -32,11 +28,10 @@ switch lower(distribution.parameters{1})
             c = c.*theRange;
             newConstraint = [b >= (1-2*(1-gamma))*abs(c)];
         else
-            phi = distribution.characteristicfunction;            
-            dphi = distribution.characteristicfunction_derivative;                                    
-            newConstraint = [characteristic_cdf(x,funcs,phi,dphi) >= 1-gamma];           
+            newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];           
         end
 
+    % Garbage remainder from early experiments
     case 'laplace'
         mu = distribution.parameters{2};
         sigma = distribution.parameters{3};
@@ -59,5 +54,6 @@ switch lower(distribution.parameters{1})
         end     
         
     otherwise
+        error('Not supported')
         newConstraint = b >= icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end})*abs(c);
 end
