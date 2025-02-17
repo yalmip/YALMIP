@@ -98,8 +98,10 @@ else
                 x.extra.distribution.characteristicfunction = @(t,mu,b)exp(1i*mu(:)*t)./(1+b(:).^2.*t.^2);
                 x.extra.distribution.characteristicfunction_derivative = [];
             case 'logistic'
-                x.extra.distribution.characteristicfunction = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
-                x.extra.distribution.characteristicfunction_derivative = @(t,mu,s)(1i*mu(:).*phi(t) + exp(1i*mu(:)*t).*(pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);
+                phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                x.extra.distribution.characteristicfunction = phi;                
+                x.extra.distribution.characteristicfunction_derivative = @(t,mu,s) exp(1i*mu(:)*t).*(1i*mu(:).*(pi.*s(:)*t./(sinh(pi*s(:)*t))) + (pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2*t.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);                
+                
             case 'uniform'
                 x.extra.distribution.characteristicfunction = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
                 x.extra.distribution.characteristicfunction_derivative = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) * t) - exp(1i * a(:) * t)));
