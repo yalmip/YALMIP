@@ -38,7 +38,7 @@ switch class(varargin{1})
         phi = distribution.characteristicfunction;
         dphi = distribution.characteristicfunction_derivative;
         % Create a function which computes gradient at x
-        % operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -58,24 +58,58 @@ function cdf = compute_cdf_using_phi(y,phi)
 integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
 cdf =  .5-integral(integrand,0, 100)/pi;
 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg, phi,dphi)
+
+% function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg, phi,dphi)
+% h0 = h(x);
+% dh0 = dh(x);
+% g0 = g(x);
+% dg0 = dg(x);
+% 
+% 
+% % Silly numerical differentiation (which is what a solver does anyway)
+% phi0 = @(t) prod(phi(g0(:)*t),1);  
+% cdf0 = compute_cdf_using_phi(-h0,phi0);
+% eps = 1e-8;
+% dcdf = [];
+% for k = 1:length(x)
+%     x_ = x;x_(k) = x_(k)+eps;
+%     g_ = g(x_);
+%     h_ = h(x_);    
+%     phi_ = @(t) prod(phi(g_(:)*t),1);  
+%     cdf_ = compute_cdf_using_phi(-h_,phi_);
+%     dcdf = [dcdf;(cdf_-cdf0)/eps];
+% end
+
+
+%%-------------------------------------------------------------------------------------- 
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi)
+
 h0 = h(x);
 dh0 = dh(x);
 g0 = g(x);
-dg0 = dg(x);
+dg0 = dg(x); 
 
-% Silly numerical differentiation (which is what a solver does anyway)
-phi0 = @(t) prod(phi(g0(:)*t),1);  
-cdf0 = compute_cdf_using_phi(-h0,phi0);
-eps = 1e-8;
-dcdf = [];
-for k = 1:length(x)
-    x_ = x;x_(k) = x_(k)+eps;
-    g_ = g(x_);
-    h_ = h(x_);    
-    phi_ = @(t) prod(phi(g_(:)*t),1);  
-    cdf_ = compute_cdf_using_phi(-h_,phi_);
-    dcdf = [dcdf;(cdf_-cdf0)/eps];
+% compute Φ_z(t)
+phi_z = @(t) prod(phi(g0(:)*t),1);
+
+% compute f_z(-h0)
+integrand1 = @(t) real(exp(1i*t*h0) .* phi_z(t));
+pdf_val = (1/pi)*integral(integrand1,0,100);
+
+% compute each term of ∂g_j/∂x
+num_j = length(g0);
+terms = zeros(num_j,1);
+for j = 1:num_j
+    other_indices = [1:j-1,j+1:length(g0)];
+    other_g = g0(other_indices);
+    gj = g0(j);
+    pick = zeros(1,num_j);
+    pick(j) = 1;
+    % integrand2 = @(t) imag(exp(1i*t*h0) .* (pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
+    % terms(j) = (-1/pi)*integral(integrand2,0,100);
+    integrand2_ = @(t) ((pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
+    terms(j) = (-1/pi)*filon_imagexp(integrand2_,0,100,h0);
 end
 
-
+% commpute the whole derivative
+dcdf = (-pdf_val.*dh0') + terms'*dg0;
