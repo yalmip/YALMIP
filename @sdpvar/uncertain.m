@@ -99,14 +99,9 @@ else
                 x.extra.distribution.characteristicfunction_derivative = [];
             case 'logistic'
                 phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
-                x.extra.distribution.characteristicfunction = phi;              
-                
-                x.extra.distribution.characteristicfunction_derivative = @(t,mu,s) exp(1i*mu(:)*t).*(1i*mu(:).*(pi.*s(:)*t./(sinh(pi*s(:)*t))) + (pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2*t.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);                
-                
+                x.extra.distribution.characteristicfunction = phi;                                                              
                 x.extra.distribution.characteristicfunction_derivative = @(t,mu,s) guarded_logistic_derivative(t,mu,s)
-                                
-              % x.extra.distribution.characteristicfunction_derivative = @(t,mu,s) exp(1i*mu(:)*t).*(1i*mu(:).*(1./guarded_sinhc(pi*s(:)*t)) + (pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2*t.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);                
-                
+                                                              
             case 'uniform'
                 x.extra.distribution.characteristicfunction = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
                 x.extra.distribution.characteristicfunction_derivative = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) * t) - exp(1i * a(:) * t)));
@@ -151,11 +146,19 @@ y(z3==0) = 1;
 
 function y = guarded_logistic_derivative(t,mu,s)
 
-if t == 0
-    % For t = 0, avoid division, and use known limit
+y = exp(1i*mu(:).*t).*(1i*mu(:).*(pi.*s(:).*t./(sinh(pi*s(:).*t))) + (pi*s(:).*(1./sinh(pi*s(:).*t))-pi^2*s(:).^2.*t./((tanh(pi*s(:).*t).*sinh(pi*s(:).*t)))));
+if numel(t)==1 && t == 0
+    % Simple case phi(t) for scalar t, so all elements to limit
     y = 1i*mu(:);
 else
-    % For very large t, cosh/sinh is bad is it becomes inf/inf^2
-    % y = exp(1i*mu(:)*t).*(1i*mu(:).*(pi.*s(:)*t./(sinh(pi*s(:)*t))) + (pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2*t.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);                
-    y = exp(1i*mu(:)*t).*(1i*mu(:).*(pi.*s(:)*t./(sinh(pi*s(:)*t))) + (pi*s(:).*(1./sinh(pi*s(:)*t))-pi^2*s(:).^2*t./((tanh(pi*s(:)*t).*sinh(pi*s(:)*t)))));
+    % t is a matrix (i.e. a vectorized call computing several points at
+    % once)
+    % Two cases, a row vector t meaning vector phi(t)
+    if size(t,1) == 1
+        i = find(t == 0);  
+        y(:,i) = repmat(1i*mu,1,length(i));
+    else
+        [i,j] = find(t == 0);  
+        y(sub2ind(size(t),i,j)) = 1i*mu(i);
+    end
 end
