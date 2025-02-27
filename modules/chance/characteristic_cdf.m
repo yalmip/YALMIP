@@ -105,10 +105,10 @@ for j = 1:num_j
     gj = g0(j);
     pick = zeros(1,num_j);
     pick(j) = 1;
-    % integrand2 = @(t) imag(exp(1i*t*h0) .* (pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
-    % terms(j) = (-1/pi)*integral(integrand2,0,100);
-    integrand2_ = @(t) ((pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
-    terms(j) = (-1/pi)*filon_imagexp(integrand2_,0,100,h0);
+    integrand2 = @(t) imag(exp(1i*t*h0) .* (pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
+    terms(j) = (-1/pi)*integral(integrand2,0,100);
+    % integrand2_ = @(t) ((pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
+    % terms(j) = (-1/pi)*filon_imagexp(integrand2_,0,100,h0);
 end
 
 % commpute the whole derivative
