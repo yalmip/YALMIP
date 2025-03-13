@@ -81,37 +81,54 @@ for k = 1:length(x)
 end
 
 
-%%-------------------------------------------------------------------------------------- 
+%% -------------------------------------------------------------------------------------- 
 function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi)
+
 h0 = h(x);
 dh0 = dh(x);
 g0 = g(x);
 dg0 = dg(x);
-% compute ?_z(t)
+
+% compute phi_z(t)
 phi_z = @(t) prod(phi(g0(:)*t),1);
+
+% compute exponential part
+exp_ith = @(t) exp(1i*t*h0);
+
 % compute f_z(-h0)
-integrand1 = @(t) real(exp(1i*t*h0) .* phi_z(t));
-pdf_val = (1/pi)*integral(integrand1,0,100);
-% compute each term of ?g_j/?x
-num_j = length(g0);
-terms = zeros(num_j,1);
-for j = 1:num_j
-    other_indices = [1:j-1,j+1:length(g0)];
-    other_g = g0(other_indices);
-    gj = g0(j);
-    pick = zeros(1,num_j);
-    pick(j) = 1;
-    integrand2 = @(t) imag(exp(1i*t*h0) .* (pick*dphi(gj*t)) .* prod(phi(other_g(:).*t),1));
-    terms(j) = (-1/pi)*integral(integrand2,0,100);   
+integrand1 = @(t) real(exp_ith(t) .* phi_z(t));
+
+% compute upper limit of t
+epsilon = 1e-6;
+t_low = 0;
+t_high = 10;  
+max_trial = 20; 
+for k = 1:max_trial
+    if abs(phi_z(t_high)) < epsilon
+        break;
+    else
+        t_high = t_high*2; 
+    end
 end
-% commpute the whole derivative
-dcdf = (-pdf_val.*dh0') + terms'*dg0;
+if abs(phi_z(t_high)) >= epsilon
+    error('cannot find suitable t_high for phi_z(t) < epsilon，please increase max_trial or adjust initial value');
+end
+options = optimset('TolX', 1e-3, 'Display', 'off');
+t_max = fzero(@(t) abs(phi_z(t)) - epsilon, [t_low,t_high], options);
+pdf_val = (1/pi)*integral(integrand1,0,t_max,'RelTol',1e-4,'AbsTol',epsilon);
+
+% compute dphi_z/dg
+num_j = length(g0);
+dphi_p1 = @(t) [];
+for j = 1:num_j
+    dphi_p1 = @(t) [dphi_p1(t),dphi(g0(j)*t)];
+end
+integrand2 = @(t) imag(exp_ith(t) .* phi_z(t) .* diag(dphi_p1(t)) ./ phi(g0(:)*t));
+terms = (-1/pi)*integral(integrand2,0,t_max,'RelTol',1e-4,'AbsTol',epsilon,'ArrayValued',true);
 
 % commpute the whole derivative
 dcdf = (-pdf_val.*dh0') + terms'*dg0;
 
 dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
 [dcdf(:) dcdf_check(:)]
-
-
 
