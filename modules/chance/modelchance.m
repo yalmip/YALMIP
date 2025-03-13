@@ -357,8 +357,11 @@ for k = 1:length(randomVariables)
                     beta = randomVariables{k}.distribution.parameters{2};                                     
                     phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,beta);
                     dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,beta);                                                                                                       
+                    % FIX uncertain.m
+                    reldphi = [];
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'logistic'                
                     mu = randomVariables{k}.distribution.parameters{2};
@@ -367,7 +370,8 @@ for k = 1:length(randomVariables)
                     %  phi = @(t)phi_general(t,mu(:),s(:));
                     phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:),s(:));
                     dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:),s(:));
-                    
+                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:),s(:));
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     % This one should be rewritten/guarded too
                     %dphi_general = @(t,mu,s)(1i*mu(:).*phi(t) + exp(1i*mu(:)*t).*(pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);
                     %dphi = @(t) dphi_general(t,mu(:),s(:));
@@ -383,6 +387,8 @@ for k = 1:length(randomVariables)
                     
                     phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,a(:),b(:));
                     dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,a(:),b(:));
+                    % FIX uncertain.m
+                    reldphi = [];
                     
                     %phi_general = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
                     %phi = @(t)phi_general(t,a(:),b(:));
@@ -395,6 +401,7 @@ for k = 1:length(randomVariables)
                                                                                                                                       
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                 otherwise
             end
         end

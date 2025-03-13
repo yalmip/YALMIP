@@ -99,8 +99,10 @@ else
                 x.extra.distribution.characteristicfunction_derivative = [];
             case 'logistic'
                 phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
                 x.extra.distribution.characteristicfunction = phi;                                                              
-                x.extra.distribution.characteristicfunction_derivative = @(t,mu,s) guarded_logistic_derivative(t,mu,s)
+                x.extra.distribution.characteristicfunction_derivative = dphi;
+                x.extra.distribution.characteristicfunction_relativederivative = @(t,mu,s) dphi(t,mu,s)./phi(t,mu,s);
                                                               
             case 'uniform'
                 x.extra.distribution.characteristicfunction = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
