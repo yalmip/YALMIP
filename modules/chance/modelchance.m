@@ -51,7 +51,17 @@ if options.verbose
     disp([' - Detected ' num2str(length(groupedChanceConstraints)) ' chance constraints.'])
 end
 
-[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
+% Some strategies exploit simplex structure
+Simplicies = F(find(is(F,'simplex')));
+SimplexInfo = [];
+if ~isempty(Simplicies)    
+    SimplexInfo = sparse([]);
+    for i = 1:length(Simplicies)
+        SimplexInfo(end+1,getvariables(Simplicies(i))) = 1;
+    end
+end
+    
+[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo);
 Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
     Fchance = modelchance(Fchance,options,1);
@@ -61,7 +71,7 @@ if ~rec && options.verbose
 end
 
 
-function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
+function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo)
 
 recursive = 0;
 Fchance = [];
@@ -150,6 +160,19 @@ for uncertaintyGroup = 1:length(randomVariables)
                         c = c + A'*x;
                     end
                     
+                    % Are all variables in c constrained to a simple (this
+                    % is exploited in the normalChancefilter
+                    DisjointWeight = 0;
+                    if ~isempty(SimplexInfo) && isa(c,'sdpvar')
+                        x_in_c = getvariables(c);
+                        for i = 1:size(SimplexInfo,1)
+                            if isequal(find(SimplexInfo(i,:)),x_in_c)
+                                DisjointWeight = 1;
+                            end
+                        end                    
+                    end
+                        
+                    
                     newConstraint = [];
                     if ~fail
                     %    confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
@@ -174,7 +197,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 case {'normal','normalm'}
-                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,DisjointWeight);
                                     printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 case 'normalf'
@@ -254,7 +277,7 @@ for uncertaintyGroup = 1:length(randomVariables)
     end
 end
 if any(eliminatedConstraints == 0)
-    for weirdconstraints = find(eliminatedConstraints == 0)
+    for weirdconstraints = find(eliminatedConstraints(:)' == 0)
         % This was listed as a probabilistic chance constraint, but there
         % appears to have been no random variables in the definition
         if options.verbose
@@ -317,7 +340,7 @@ for i = 1:length(X)
     % A = [A -c_x-2*Q_xw*w];
     AAA = [AAA;sparse(2*Q_xw)];
     ccc = [ccc;sparse(c_x)];
-    if isempty(x)
+    if isempty(x) || (nnz(Q_xx)==0)
         b = [b;f];
     else    
         b = [b;f+x'*Q_xx*x];
