@@ -15,7 +15,7 @@ else
     switch property
         case 'dualized'
             YESNO = F.dualized == 1;
-            
+                        
         case 'chance'
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
@@ -198,6 +198,11 @@ else
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
                 YESNO(i,1) = isa(Fi.data,'sdpvar') && is(Fi.data,'real');
+            end
+        case 'simplex'
+            for i = 1:length(F.clauses)
+                Fi = F.clauses{i};
+                YESNO(i,1) = Fi.type == 70;
             end
         otherwise
             YESNO = error('Huh?');
