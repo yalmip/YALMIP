@@ -10,10 +10,7 @@ if isequal(subs(1).type,'.')
             end
             varargout{1} = self;
         else
-            s = ['self.model.' subs(1).subs '.'];
-            for i = 2:length(subs)
-                s = [s subs(i).subs];
-            end
+            s = ['self.model.' strjoin({subs.subs}, '.')];            
             try
                 eval([s '=data;']);
             catch
