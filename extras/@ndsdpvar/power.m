@@ -10,7 +10,7 @@ if numel(d)==1 & (numel(X)>1)
     d = d.*ones(size(X));
 end
 s = size(X);
-if isa(X,'sdpvar')
+if isa(X,'ndsdpvar')
     X = sdpvar(X);
 else
     X = X(:);
