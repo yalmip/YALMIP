@@ -578,6 +578,7 @@ solver(i).version = 'COPTMEX';
 solver(i).checkfor= {'copt_solve'};
 solver(i).call    = 'callcopt';
 solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).exponentialcone = 1;
 solver(i).constraint.integer = 1;
 solver(i).constraint.binary = 1;
 solver(i).constraint.semivar = 1;
@@ -591,6 +592,7 @@ solver(i).tag = 'COPT';
 solver(i).version = 'COPTMEX';
 solver(i).checkfor = {'copt_solve'};
 solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).exponentialcone = 1;
 solver(i).call = 'callcopt';
 i = i + 1;
 
