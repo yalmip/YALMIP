@@ -20,7 +20,7 @@ if length(model.evalParameters > 0)
             if isequal(model.evalMap{i}.variableIndex,removedparameters(j))
                 p = value(j);
                 index = find(model.evalMap{i}.computes == alls);
-                value(index) = feval(model.evalMap{i}.fcn,p);
+                value(index) = feval(model.evalMap{i}.fcn,p,model.evalMap{i}.arg{2:end-1});
                 removedP = [removedP model.evalMap{i}.computes];
                 removedE = [removedE i];            
             end

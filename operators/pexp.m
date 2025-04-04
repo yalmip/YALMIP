@@ -36,14 +36,18 @@ switch class(varargin{1})
         if nargin == 2
             varargin{1} = [varargin{1};varargin{2}];
         end               
-        if ~isequal(prod(size(varargin{1})),2)
+        if ~(isequal(prod(size(varargin{1})),2) || size(varargin{1},1)==2)
             error('PEXP only defined for 2x1 arguments');
         else
-            varargout{1} = yalmip('define',mfilename,varargin{1});
+            varargin{1} = reshape(varargin{1},2,[]);
+            y = [];
+            for i = 1:size(varargin{1},2)
+                y = [y yalmip('define',mfilename,varargin{1}(:,i))];
+            end
+            varargout{1} = y;                    
         end
 
     case 'char'
-        
         operator = CreateBasicOperator('convex','positive','callback');
         operator.range = [0 inf];   
         operator.derivative = @derivative;

@@ -132,7 +132,7 @@ switch class(X)
         end
 
     case 'sdpvar'
-        Fi = {X};
+        Fi = {constraintifyUncertaintyDeclared(X)};
         strict = 0;
         X='Numeric value';
 

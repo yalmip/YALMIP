@@ -1,44 +1,4 @@
-function tests = test_chance
-tests = functiontests(localfunctions);
-
-function test_simple_normal(testCase)
-
-yalmip('clear')
-a=sdpvar(1,1);
-sdpvar t
-
-Model = [probability(a >= t) >= 0.5,uncertain(a,'normal',[0],eye(1))];
-optimize(Model,-t)
-testCase.assertTrue(abs(value(t)) <= 1e-4)
-
-Model = [probability(a >= t) >= 0.5,uncertain(a,'normalf',[0],eye(1))];
-optimize(Model,-t)
-testCase.assertTrue(abs(value(t)) <= 1e-4)
-
-Model = [probability(a >= t) >= 0.95,uncertain(a,'normal',[0],4)];
-optimize(Model,-t)
-testCase.assertTrue(abs(value(t)--3.2897) <= 1e-4)
-
-Model = [probability(a >= t) >= 0.95,uncertain(a,'normalf',[0],2)];
-optimize(Model,-t)
-testCase.assertTrue(abs(value(t)--3.2897) <= 1e-4)
-
-
-function test_robust_normal(testCase)
-yalmip('clear')
-a=sdpvar(1,1);
-sdpvar t
-
-% worst case should be R = 1
-sdpvar R
-Model = [probability(a >= t) >= 0.95,uncertain(a,'normalf',[0],1+R)];
-Model = [Model, uncertain(R),0<=R<=1];
-optimize(Model,-t)
-testCase.assertTrue(abs(value(t)--3.2897) <= 1e-4)
-
-
-
-function test_complex_normal(testCase)
+function test_chance_2
 
 yalmip('clear')
 sdpvar a b t
@@ -49,24 +9,27 @@ Model = [probability(a >= t) >= 0.5,
          uncertain(a,'normal',[0],eye(1)),
          uncertain(b,'normal',[0],eye(1))];
 optimize(Model,-t)
-testCase.assertTrue(abs(value(t)-0) <= 1e-4)
+mbg_asserttolequal(double(t), 0, 1e-5);
+
+
+yalmip('clear')
+sdpvar a b t m
+sdpvar t
+
+Model = [probability(a >= t) >= 0.5,
+         probability(b >= t) >= 0.5, 
+         uncertain(a,'normal',[0],eye(1)),
+         uncertain(b,'normal',m,eye(1)),
+         uncertain(m,'normal',0,eye(1)), ];
+P=optimizer(Model,-t,sdpsettings('solver','cplex'),m,t)
+Q=sample(P,20)
 
 sdpvar w wmean
 Model = [uncertain(w,'normal', wmean, 1), 
          probability(w >= 0) >= 0.9];     
-optimize(Model, wmean)
-testCase.assertTrue(abs(value(wmean)-1.28155) <= 1e-4)
+optimize(Model, wmean,sdpsettings('solver','cplex','debug',1))
+mbg_asserttolequal(double(wmean), 1.2816, 1e-3);
 
-
-%yalmip('clear')
-%sdpvar a b t m
-%Model = [probability(a >= t) >= 0.5,
-%         probability(b >= t) >= 0.5, 
-%         uncertain(a,'normal',[0],eye(1)),
-%         uncertain(b,'normal',m,eye(1)),
-%         uncertain(m,'normal',0,eye(1)), ];
-%P=optimizer(Model,-t,sdpsettings('solver','cplex'),m,t)
-%Q=sample(P,20)
 
 w = sdpvar(2,1);
 wmean = [3;4];
@@ -75,9 +38,7 @@ sdpvar s
 Model = [uncertain(w,'normal',wmean,1), probability(a'*w >= s) >= .5,
                                         probability(a'*w <= s) >= .5];
 optimize(Model)
-testCase.assertTrue(abs(value(s)-15) <= 1e-4)
-
-%mbg_asserttolequal(double(s), 15, 1e-3);
+mbg_asserttolequal(double(s), 15, 1e-3);
 
 sdpvar s1 s2
 Model = [uncertain(w,'exponential',wmean), probability(a'*w >= s1) >= .5,

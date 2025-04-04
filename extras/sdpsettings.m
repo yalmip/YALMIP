@@ -97,6 +97,9 @@ else
     options.bnb = setup_bnb_options;
     Names = appendOptionNames(Names,options.bnb,'bnb');
 
+    options.chance = setup_chance_options;
+    Names = appendOptionNames(Names,options.chance,'chance');
+    
     options.cutsdp = setup_cutsdp_options;
     Names = appendOptionNames(Names,options.cutsdp,'cutsdp');
 
@@ -530,6 +533,7 @@ bmibnb.rebalancefreq = 20;
 bmibnb.plotregions = 0;
 bmibnb.plot = 0;
 bmibnb.strengthscheme = [8 1 2 1 3 1 4 1 6 1 5 1 4 1 6 1 4 1 8];
+
 function bnb = setup_bnb_options
 bnb.solver = '';
 bnb.maxiter = inf;
@@ -554,6 +558,14 @@ bnb.cut.knapsack.cover = 1;
 bnb.cut.sdpknapsack.cover = 1;
 bnb.round = 1;
 bnb.profile = 0;
+
+function chance = setup_chance_options
+chance.method = 'markov';
+chance.N = 100;
+chance.bootstrap = 'yes';
+chance.scenario.delta = .01;
+chance.expcone = 'no';
+
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
 cutsdp.maxiter = inf;
@@ -603,6 +615,7 @@ mp.simplify  = 0;
 mp.presolve  = 0;
 mp.unbounded = 0;
 function plot = setup_plot_options
+plot.assume = 'convex';
 plot.edgecolor = 'k';
 plot.wirestyle = '-';
 plot.wirecolor = 'k';

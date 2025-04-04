@@ -76,6 +76,8 @@ if isa(options.radius,'sdpvar') | ~isinf(options.radius)
     F = flatten(F);
 end
 
+F = modelchance(F,options);
+
 % *************************************************************************
 %% CONVERT LOGIC CONSTRAINTS
 % *************************************************************************
