@@ -29,6 +29,8 @@ else
     % We add a redundant constraint to make sure the risk-variable
     % associated here is available also is trivial cases, for the value
     % operator to be able to return something
-    ChanceConstraint = [1-P.Risk{1} >= level/P.Weight{1}, chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
+    % FIXME: Appears to trigger numerical issues sometimes in fmincon
+    %ChanceConstraint = [1-P.Risk{1} >= level/P.Weight{1}, chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
+    ChanceConstraint = [chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
 end
 
