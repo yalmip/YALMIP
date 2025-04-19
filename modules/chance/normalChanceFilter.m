@@ -12,46 +12,13 @@ if strcmpi(options.chance.expcone,'yes')
     if isa(c,'sdpvar')
         error('Cannot have decision variables multplying uncertainty when using expcone approximation of inverse cdf')
     end
-    % One upper bound...
-    if isa(gamma,'sdpvar')
-        aa = 0.499492956059166;
-        bb = 8.082867432374761e+03;
-        cc = -1.475743096725997;
-        kk =  3.965651977413067;
-        Phi_Inverse = -aa*lambertw(bb*gamma)+kk+cc*gamma;
-    else
-        Phi_Inverse = icdf('normal',1-gamma,0,1);
-    end
+    Phi_Inverse = normalChanceFilterConicApproximation(gamma);
 elseif strcmpi(options.chance.expcone,'root') && isDisjointProblem
-    if isa(gamma,'sdpvar')
-        aa = -0.163460523135549;
-        bb = 1.996987289085205e+03;
-        cc = -1.232492830923356;
-        kk = 1.898392103622973;
-        rootPhi_Inverse = aa*lambertw(bb*gamma)+kk+cc*gamma;
-    else
-        rootPhi_Inverse = sqrt(icdf('normal',1-gamma,0,1));
-    end
+    rootPhi_Inverse = normalChanceFilterConicApproximationRoot(gamma);
 elseif strcmpi(options.chance.expcone,'log') && isDisjointProblem
-    if isa(gamma,'sdpvar')
-        aa = -0.196671288384826;
-        bb = 1.674000760107396e+03;
-        cc = -2.899789120102472;
-        kk = 1.283146603876050;
-        logPhi_Inverse = aa*lambertw(bb*gamma)+kk+cc*gamma;
-    else
-        logPhi_Inverse = log(icdf('normal',1-gamma,0,1));
-    end
+    logPhi_Inverse = normalChanceFilterConicApproximationLog(gamma);
 elseif strcmpi(options.chance.expcone,'inv') && isDisjointProblem
-    if isa(gamma,'sdpvar')
-        aa = 0.050229622348771;
-        bb = 7.573772400040184e+04;
-        cc = 2.732774841525416;
-        kk = 0.150527341988232;
-        invPhi_Inverse = aa*lambertw(bb*gamma)+kk+cc*gamma;
-    else
-        invPhi_Inverse = inv(icdf('normal',1-gamma,0,1));
-    end
+    invPhi_Inverse = normalChanceFilterConicApproximationInv(gamma);
 else
     % Just go for a general nonlinear model and hope for the best
     Phi_Inverse = icdf('normal',1-gamma,0,1);
