@@ -9,7 +9,7 @@ end
          
 options = interfacedata.options;
 % Keep track if we add variables to normalize SOCPs
-nOriginal = nnz(interfacedata.variabletype == 0);
+xOriginal = interfacedata.variabletype == 0;
 model = yalmip2gurobinonlinear(interfacedata);
 
 if interfacedata.options.savedebug
@@ -30,9 +30,9 @@ if isfield(result,'x')
             x(model.NegativeSemiVar) = -x(model.NegativeSemiVar);
         end
     end
-    x = x(1:nOriginal);
+    x = x(xOriginal);
 else
-    x = zeros(nOriginal,1);
+    x = zeros(nnz(xOriginal),1);
 end
 
 % On nonconvex models, monomials are included in the list of variables
