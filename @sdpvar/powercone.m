@@ -1,16 +1,14 @@
 function y = powercone(z,x,y,alpha)
-%POWERCONE Defines a power cone x^alpha y ^(1-alpha) > |z|
+%POWERCONE Defines a power cone x^alpha y ^(1-alpha) > ||z||
 %
 % Input
-%    z,y,x   : sclar SDPVAR objects.
-%    alpha   : scalar double 0<=alpha<=1
+%    z       : vector SDPVAR objects.
+%    y,x     : scalar SDPVAR objects.
+%    alpha   : scalar double 0<alpha<1
 %
 % Example
 %    F = powercone(z,x,y,alpha)
 
-if numel(z)>1
-    error('x must be a scalar')
-end
 if numel(x)>1
     error('x must be a scalar')
 end
