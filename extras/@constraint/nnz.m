@@ -87,7 +87,7 @@ switch class(varargin{1})
                     error('Constraint type not supported in cardinality. Make a feature request');
                 end
                 varargout{1} = F;
-                varargout{2} = struct('convexity','milp','monotonicity','milp','definiteness','milp');
+                varargout{2} = struct('convexity','concave','monotonicity','none','definiteness','none','model','integer');
                 varargout{3} = x;
         end
     otherwise
