@@ -194,7 +194,7 @@ if model.options.verbose == 0
     solvertime = toc(solvertime);
 else
     solvertime = tic;
-    [r,res] = mosekopt('minimize info',prob);
+    [r,res] = mosekopt('minimize info',prob,param);
     solvertime = toc(solvertime);
 end
 
