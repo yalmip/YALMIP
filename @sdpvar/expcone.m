@@ -1,13 +1,16 @@
-function y = expcone(x)
-%EXPCONE Defines a low-level exponential cone constraint x(2)*exp(x(1)/x(2)) <= x(3)
+function y = expcone(varargin)
+%EXPCONE Defines a low-level exponential cone constraint
 %
 % Input
-%    x       : Linear 3x1 SDPVAR object
-%
+%    x       : Linear 3x1 or 3xn SDPVAR object
+% alternatively
+%    x,y,z   : Linear scalar SDPVAR objects
 % Example
 %
 % Standard  exponential cone constraint x(2)*exp(x(1)/x(2)) <= x(3)
 %    F = expcone(x)
+% Alternative  y*exp(x/y)<=z
+%    F = expcone(x,y,z)
 %
 % To quickly define several cones, the argument can be a matrix, and the
 % command is then short-hand for 
@@ -15,6 +18,14 @@ function y = expcone(x)
 %
 % See also  @SDPVAR/CONE, @SDPVAR/PCONE
 
+if nargin > 1 && numel(varargin{1}) >  1
+    error('Vectorized format not allowed with multiple arguments')
+end
+if nargin == 1 || nargin == 3
+    x = [varargin{:}];       
+else
+    error('EXPCONE expects either 1 or 3 arguments');
+end
 
 [n,m] = size(x);
 if min([n m])==1
