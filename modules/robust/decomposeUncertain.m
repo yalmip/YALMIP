@@ -57,7 +57,11 @@ ops.removeequalities = 0;
 
 if ~isempty(Zmodel)
     if length(Zmodel.c) ~= length(VariableType.w_variables)
-        error('Some uncertain variables are unconstrained.')
+        if length(depends(F_w)) == length(VariableType.w_variables)
+            error('Some uncertain variables are constrained to a non-supported set.')
+        else
+            error('Some uncertain variables are unconstrained.')
+        end
     end
 else
     error('Failed when exporting a model of the uncertainty.')
