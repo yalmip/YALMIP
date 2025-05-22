@@ -2,7 +2,7 @@ function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options,isD
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 
-if isa(c,'double') && (~strcmpi(options.chance.expcone,''))
+if isa(c,'double') && (~strcmpi(options.chance.expcone,'no'))
     % c is constant, so no reason really to use log tricks etc?
     % for now, just revert to standard expcone approximation
     options.chance.expcone = 'yes';
