@@ -565,6 +565,7 @@ chance.N = 100;
 chance.bootstrap = 'yes';
 chance.scenario.delta = .01;
 chance.expcone = 'no';
+chance.characteristic = 'auto';
 
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';

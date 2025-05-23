@@ -210,19 +210,15 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                     printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case {'normal','normalm'}
+                                case {'normal'}
                                     newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,DisjointWeight);
                                     printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case 'normalf'
-                                    newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    printout(options.verbose,'exact normalf',randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case {'logistic', 'laplace','uniform','exponential'}
+                                case {'logistic', 'laplace','uniform'}
                                     newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case {'gamma','weibull'}
+                                case {'gamma','weibull','exponential'}
                                     newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;

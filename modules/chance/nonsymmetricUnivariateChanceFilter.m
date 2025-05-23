@@ -1,4 +1,10 @@
-function newConstraint = nonsymmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options)
+function newConstraint = nonsymmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options,funcs,x)
+
+% General case must be handled via characteristic framework
+if length(c) > 1 || strcmpi(options.chance.characteristic,'yes')
+    newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
+    return
+end
 
 if isa(c,'sdpvar')
     error('Decision variables in c not yet supported')
