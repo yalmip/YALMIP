@@ -37,8 +37,9 @@ switch class(varargin{1})
         distribution = varargin{5};
         phi = distribution.characteristicfunction;
         dphi = distribution.characteristicfunction_derivative;
+        reldphi = distribution.characteristicfunction_relativederivative;
         % Create a function which computes gradient at x
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,reldphi);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -82,7 +83,7 @@ end
 
 
 %% -------------------------------------------------------------------------------------- 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi)
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,reldphi)
 
 h0 = h(x);
 dh0 = dh(x);
@@ -98,37 +99,20 @@ exp_ith = @(t) exp(1i*t*h0);
 % compute f_z(-h0)
 integrand1 = @(t) real(exp_ith(t) .* phi_z(t));
 
-% compute upper limit of t
-epsilon = 1e-6;
-t_low = 0;
-t_high = 10;  
-max_trial = 20; 
-for k = 1:max_trial
-    if abs(phi_z(t_high)) < epsilon
-        break;
-    else
-        t_high = t_high*2; 
-    end
-end
-if abs(phi_z(t_high)) >= epsilon
-    error('cannot find suitable t_high for phi_z(t) < epsilon，please increase max_trial or adjust initial value');
-end
-options = optimset('TolX', 1e-3, 'Display', 'off');
-t_max = fzero(@(t) abs(phi_z(t)) - epsilon, [t_low,t_high], options);
-pdf_val = (1/pi)*integral(integrand1,0,t_max,'RelTol',1e-4,'AbsTol',epsilon);
+pdf_val = (1/pi)*integral(integrand1,0,inf);
 
 % compute dphi_z/dg
-num_j = length(g0);
-dphi_p1 = @(t) [];
-for j = 1:num_j
-    dphi_p1 = @(t) [dphi_p1(t),dphi(g0(j)*t)];
-end
-integrand2 = @(t) imag(exp_ith(t) .* phi_z(t) .* diag(dphi_p1(t)) ./ phi(g0(:)*t));
-terms = (-1/pi)*integral(integrand2,0,t_max,'RelTol',1e-4,'AbsTol',epsilon,'ArrayValued',true);
+%num_j = length(g0);
+%dphi_p1 = @(t) [];
+%for j = 1:num_j
+%    dphi_p1 = @(t) [dphi_p1(t),dphi(g0(j)*t)];
+%end
+integrand2 = @(t) imag(exp_ith(t) .* phi_z(t) .* reldphi(g0(:)*t));
+terms = (-1/pi)*integral(integrand2,0,inf,'ArrayValued',true);
 
 % commpute the whole derivative
 dcdf = (-pdf_val.*dh0') + terms'*dg0;
 
-dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
-[dcdf(:) dcdf_check(:)]
+%dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
+%[dcdf(:) dcdf_check(:)]
 
