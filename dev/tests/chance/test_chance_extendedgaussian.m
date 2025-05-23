@@ -1,4 +1,4 @@
-function tests = test_chance_1
+function tests = test_chance_extendedgaussian
 tests = functiontests(localfunctions);
 
 function test_gaussian_free_mean(testCase)

@@ -1,22 +1,47 @@
-function tests = test_chance_basicgaussian
+function tests = test_chance_basicnongaussian
 tests = functiontests(localfunctions);
 
-function test_scalar_unit_gaussian(testCase)
+function test_scalar_unit_exponential(testCase)
 yalmip('clear')
 w=sdpvar(1,1);
 sdpvar t
+truth = 2.3078;
 
-Model = [probability(w >= t) >= 0.5,uncertain(w,'normal',0,1)];
+Model = [probability(2+3*w >= t) >= 0.95,uncertain(w,'exponential',2)];
 optimize(Model,-t)
-testCase.assertTrue(abs(value(t)) <= 1e-3)
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+% nnz(2+3*random('exponential',2,1,1e6)>=value(t))/1e6
 
-Model = [probability(w >= t) >= 0.5,uncertain(w,'mvnrnd',0,1)];
+truth = -15.9744;
+Model = [probability(2-3*w >= t) >= 0.95,uncertain(w,'exponential',2)];
 optimize(Model,-t)
-testCase.assertTrue(abs(value(t)) <= 1e-3)
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+% nnz(2-3*random('exponential',2,1,1e6)>=value(t))/1e6
 
-Model = [probability(w >= t) >= 0.5,uncertain(w,'mvnrndfactor',0,1)];
+function test_scalar_unit_logistic(testCase)
+yalmip('clear')
+w=sdpvar(1,1);
+sdpvar t
+truth = 2.3078;
+
+
+Model = [probability(w >= t) >= 0.95,uncertain(w,'logistic',1,1)];
 optimize(Model,-t)
-testCase.assertTrue(abs(value(t)) <= 1e-3)
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+% nnz(random('logistic',1,1,1,1e6)>=value(t))/1e6
+
+Model = [probability(2+3*w >= t) >= 0.95,uncertain(w,'logistic',2,3)];
+optimize(Model,-t)
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+% nnz(2+3*random('logistic',2,3,1,1e6)>=value(t))/1e6
+
+truth = -15.9744;
+Model = [probability(2-3*w >= t) >= 0.95,uncertain(w,'exponential',2,3)];
+optimize(Model,-t)
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+% nnz(2-3*random('exponential',2,3,1,1e6)>=value(t))/1e6
+
+
 
 function test_different_scalar_gaussian(testCase)
 yalmip('clear')
