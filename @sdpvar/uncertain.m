@@ -85,7 +85,7 @@ else
         end
     end
     try
-        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'dro','data','moment','momentf','normalm','normalf','laplace'}))))
+        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf','laplace'}))))
             % Don't try to evaluate special case distributions, such as
             % distributions with decision variables, or aditional cases
             % 'normalm' (multivariate normal) or 'normalf' (factor covar)
@@ -103,8 +103,12 @@ else
             end
         end
     catch
-        disp(lasterr);
-        error('Trial evaluation of attached sample generator failed. Did you really specify correct parameters?')
+        if isequal(temp{2},'normalm') || isequal(temp{2},'normalf')
+            error('normalm and normalf have been replaced by mvnrnd and mvrndnfactor')
+        else
+            disp(lasterr);
+            error('Trial evaluation of attached sample generator failed. Did you really specify correct parameters?')
+        end
     end
     yalmip('addDistribution',  x, x.extra.distribution);    
   %  x = lmi(x);                 

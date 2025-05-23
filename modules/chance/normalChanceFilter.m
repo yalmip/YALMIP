@@ -1,23 +1,20 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options,isDisjointProblem)
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
+factorcovariance = distribution.parameters{4};
 
-if isa(c,'double') && (~strcmpi(options.chance.expcone,'no'))
+constant_gain = isa(c,'double') && isa(factorcovariance,'double');
+
+if constant_gain && (~strcmpi(options.chance.expcone,'no'))
     % c is constant, so no reason really to use log tricks etc?
     % for now, just revert to standard expcone approximation
     options.chance.expcone = 'yes';
 end
 
-if min(size(covariance))==1
-    covariance = diag(covariance);
-end
-if isa(covariance,'sdpvar')
-    error('Covariance cannot be an SDPVAR in normal distribution. Maybe you meant to use factorized covariance in ''normalf''');
-end
-e = chol(covariance)*c;
+e = factorcovariance*c;
 
 if strcmpi(options.chance.expcone,'yes')
-    if isa(c,'sdpvar')
+    if ~constant_gain
         error('Cannot have decision variables multplying uncertainty when using expcone approximation of inverse cdf')
     end
     Phi_Inverse = normalChanceFilterConicApproximation(gamma);

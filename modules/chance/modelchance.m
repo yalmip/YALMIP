@@ -39,7 +39,11 @@ if options.verbose
     end
     disp([' - Detected ' num2str(length(randomVariables)) ' distribution models.'])
 end
-
+% Merging distribution 
+% 1. Multiple with same distribution are placed as one vector-valued
+% 2. The different versions of Gaussian are combined and normalized, and
+% will have three properties, mean, covariance, and factorized covariance,
+% and all always called 'normal' from now on
 [randomVariables,map] = mergeDistributions(randomVariables);
 if options.verbose && length(map)>max(map)
     disp([' - Merged to ' num2str(length(randomVariables)) ' distribution models.'])
