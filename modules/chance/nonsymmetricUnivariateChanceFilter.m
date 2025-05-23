@@ -1,31 +1,15 @@
 function newConstraint = nonsymmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options,funcs,x)
 
 % General case must be handled via characteristic framework
-if length(c) > 1 || strcmpi(options.chance.characteristic,'yes')
+if (length(c) > 1) || isa(c,'sdpvar') || strcmpi(options.chance.characteristic,'yes')
     newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
     return
 end
 
-if isa(c,'sdpvar')
-    error('Decision variables in c not yet supported')
+if c>=0
+    % Such as b+c*w >= 0 i.e. -b/c <= w
+    newConstraint = -b <= c*icdf(distribution.parameters{1},gamma,distribution.parameters{2:end});
 else
-    if length(c)==1
-        if c>=0
-            % Such as -t+w >= 0 i.e. t <= w
-            newConstraint = -b <= c*icdf(distribution.parameters{1},gamma,distribution.parameters{2:end});
-        else
-            newConstraint = b >= -c*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
-        end
-    else
-        switch distribution.parameters{1}
-            case 'gamma'
-                k = distribution.parameters{2};               
-                theta = distribution.parameters{3};               
-                phi = @(t)(1-i*theta(:).*t).^-k;                               
-                phi = @(t) prod(phi(-c(:)*t),1);
-                newConstraint = [cdf_from_characteristic(b,phi) >= 1-gamma];
-            otherwise
-                error
-        end
-    end
+    newConstraint = b >= -c*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
 end
+   

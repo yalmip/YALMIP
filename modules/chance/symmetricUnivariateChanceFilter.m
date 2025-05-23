@@ -9,6 +9,9 @@ end
 % Scalar case, so we can derive an analytical condition
 switch lower(distribution.parameters{1})
     
+    case 't'                
+        newConstraint = b >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
+        
     case 'logistic'
         mu = distribution.parameters{2};
         distribution.parameters{2} = mu*0;
@@ -34,5 +37,10 @@ switch lower(distribution.parameters{1})
         newConstraint = [b+c'*mu + abs(c)*scale*log(2*gamma) >= 0, 1 >= 1-gamma >= 1/2];
         
     otherwise
-        error('Not supported')
+        % Assume first parameter is mean (it was sent here, so it is
+        % symmetric and thus first arument should be mean, right?...)
+        mu = distribution.parameters{2};
+        distribution.parameters{2} = mu*0;
+        newConstraint = b + mu'*c >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
+        
 end
