@@ -92,14 +92,14 @@ Model = [probability(c'*w >= t) >= 0.95,uncertain(w,'mvnrndfactor',mu,Rv), R == 
 optimize(Model,-t)
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 
-function test_gaussian_robust_stddev(testCase)
+function test_concatenate_scalar_gaussian(testCase)
 yalmip('clear')
-w=sdpvar(1,1);
+sdpvar w1 w2 t
 sdpvar t
 
-sdpvar R
-Model = [probability(w >= t) >= 0.95,uncertain(w,'normal',0,1+R)];
-Model = [Model, uncertain(R),0<=R<=1];
+Model = [probability(w1 >= t) >= 0.5,
+         probability(w2 >= t) >= 0.5, 
+         uncertain(w1,'normal',0,eye(1)),
+         uncertain(w2,'normal',0,eye(1))];
 optimize(Model,-t)
-testCase.assertTrue(abs(value(t)--3.2897) <= 1e-3)
-
+testCase.assertTrue(abs(value(t)) <= 1e-3)
