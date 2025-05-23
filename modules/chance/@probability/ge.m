@@ -4,7 +4,7 @@ if isa(P,'double') & isa(level,'probability')
     error('Currently only supports [probability(f) >= level')
 end
 
-if isa(level,'double') && (level < 0 || level > 1)
+if isa(level,'double') && (any(level < 0) || any(level > 1))
     error('The confidence level must be between 0 and 1');
 end
 
@@ -31,6 +31,21 @@ else
     % operator to be able to return something
     % FIXME: Appears to trigger numerical issues sometimes in fmincon
     %ChanceConstraint = [1-P.Risk{1} >= level/P.Weight{1}, chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
-    ChanceConstraint = [chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
+    c = sdpvar(P.Constraint{1});
+    if length(c)>1 && length(level)>1 &&  length(c) ~=  length(level)
+        error('Dimension mismatch in probabilistic constraint')
+    elseif length(c)>1 && length(level)==1
+        level = repmat(level,length(c),1);
+    elseif length(c)==1 && length(level)>1
+        c = repmat(c,length(level),1);
+    end
+    if length(c) == 1
+        ChanceConstraint = [chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
+    else
+        ChanceConstraint = [];
+        for i = 1:length(c)
+            ChanceConstraint = [ChanceConstraint, chanceconstraint(lmi(c(i)),level(i)/P.Weight{1})];
+        end
+    end            
 end
 
