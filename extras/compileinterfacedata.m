@@ -88,6 +88,11 @@ if changed
 end
 
 % *************************************************************************
+%% Expand simplex constraints (i.e. add sum(x)==1, x>=0 constraints)
+% *************************************************************************
+F = expandunitsimplex(F);
+
+% *************************************************************************
 %% Take care of the nonlinear operators by converting expressions such as
 % t = max(x,y) to standard conic models and mixed integer models
 % This part also adds parts from logical expressions and mpower terms
@@ -1320,6 +1325,19 @@ if length(socps) > 0
     for i = 1:length(Fsocp)
         z = sdpvar(Fsocp(i));
         Fnew = [Fnew, z(1)>=0, z(1)^2 >= z(2:end)'*z(2:end)];
+    end
+end
+
+function F = expandunitsimplex(F)
+
+p = is(F,'simplex');
+if any(p)
+    p = find(p);
+    Fus = F(p);
+    F(p) = [];
+    for i = 1:length(Fus)
+        x = sdpvar(Fus(i));
+        F = [F, sum(x)==1,x>=0];
     end
 end
 

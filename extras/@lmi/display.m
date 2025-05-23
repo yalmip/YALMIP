@@ -38,6 +38,7 @@ lmiinfo{55} = 'Complementarity constraint';
 lmiinfo{56} = 'Meta constraint';
 lmiinfo{57} = 'Stacked SDP constraints';
 lmiinfo{58} = 'Vectorized power cone constraints';
+lmiinfo{70} = 'Standard simplex';
 
 headers = {'ID','Constraint','Coefficient range','Tag'};
 rankVariables = yalmip('rankvariables');
