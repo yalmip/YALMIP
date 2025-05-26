@@ -18,7 +18,7 @@ for i = 1:length(model.evaluation_scheme)
             if any(requested(model.evalMap{j}.computes))
                 k = model.evalMap{j}.variableIndex;
                 derivative = model.evalMap{j}.properties.derivative(x(k));
-                z{i,j} = derivative;
+                z{i,j} = derivative(:);
                 if i == 1
                     dxj = [dxj model.evalMap{j}.variableIndex];
                     if length(derivative)>1 && length(model.evalMap{j}.computes)==1
