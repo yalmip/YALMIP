@@ -381,11 +381,11 @@ for k = 1:length(randomVariables)
             switch randomVariables{k}.distribution.parameters{1}
                 
                 case 'exponential'
-                    beta = randomVariables{k}.distribution.parameters{2};                                     
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,beta);
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,beta);                                                                                                       
-                    % FIX uncertain.m
-                    reldphi = [];
+                    mu = randomVariables{k}.distribution.parameters{2};                                     
+                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:));
+                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:));  
+                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:));
+                                        
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;

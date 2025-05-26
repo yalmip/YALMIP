@@ -5,7 +5,7 @@ function test_scalar_unit_exponential(testCase)
 yalmip('clear')
 w = sdpvar(1,1);
 sdpvar t s
-lambda = 2;
+mu = 2;
 truth = 2.3078;
 
 Model = [probability(2+3*w >= t) >= 0.95,uncertain(w,'exponential',lambda)];

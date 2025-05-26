@@ -90,10 +90,13 @@ else
         end
         switch x.extra.distribution.parameters{1}
             case 'exponential'
-                % N.B parameterized in scale parameter beta = 1/lambda in
-                % Statistics toolbox so we use that here
-                x.extra.distribution.characteristicfunction = @(t,beta)1./(1-t*1i.*beta(:));
-                x.extra.distribution.characteristicfunction_derivative = @(t,beta)1i*(1./beta(:))./(1./beta(:)-1i*t).^2;
+                % N.B parameterized in scale parameter mu = 1/lambda in
+                % Statistics toolbox and thus our parameter
+                phi = @(t,mu)1./(1-t*1i.*mu(:));
+                dphi = @(t,mu)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
+                x.extra.distribution.characteristicfunction = phi;
+                x.extra.distribution.characteristicfunction_derivative = dphi;
+                x.extra.distribution.characteristicfunction_relativederivative = @(t,mu) dphi(t,mu)./phi(t,mu);
             case 'laplace'
                 x.extra.distribution.characteristicfunction = @(t,mu,b)exp(1i*mu(:)*t)./(1+b(:).^2.*t.^2);
                 x.extra.distribution.characteristicfunction_derivative = [];
