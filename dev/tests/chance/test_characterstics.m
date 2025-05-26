@@ -47,8 +47,8 @@ gamma = sdpvar(1)
 Model = [probability(2*w <= t) >= 1-gamma, 0 <= gamma <= 0.05
          uncertain(w,'logistic',0.1,2)];
      
-% This sohlud simply use the built-in cdf function     
-optimize(Model,t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','sqp'))
+% Force use of characteristic functions
+optimize(Model,t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','sqp','chance.characteristic','yes'))
 
 % Confirm numerically
 N = 1e6;

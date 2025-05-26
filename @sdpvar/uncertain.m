@@ -1,19 +1,16 @@
 function x = uncertain(x,varargin)
 %UNCERTAIN Declares a variable as uncertain
 %
-%   F = UNCERTAIN(W) is used to describe the set of uncertain variables
-%   in an uncertain program, both deterministic and stochastic
+%   F = UNCERTAIN(W) declares W to be (deterministic) uncertainty
+%
+%   F = UNCERTAIN(W,name, param1, param2,...) declares W to be
+%   stochastic uncertainty with distribution properties
 %
 %   INPUT
 %    W : SDPVAR object
-%    S : Optional distribution information for random uncertainty
 %
 %   OUTPUT
 %    F : Constraint object
-%
-%   Uncertain is used to declare uncertain variables in robust
-%   deterministic worst-case optimization. It can also be used to specify
-%   uncertain random variables, and their associated distribution.
 %
 %   EXAMPLE
 %
@@ -23,18 +20,17 @@ function x = uncertain(x,varargin)
 %    F = [x + w <= 1], W = [-0.5 <= w <= 0.5];
 %    optimize([F,W,uncertain(w)],-x)
 %
-%   To specify random uncertainties, you specify the distribution, and all
-%   distribution parameters following the syntax n the RANDOM command in
-%   the Statistics Toolbox
+%    To specify random uncertainties, you specify the distribution, and all
+%    distribution parameters following the syntax in the RANDOM command in
+%    the Statistics Toolbox
 %
 %    sdpvar x w
-%    F = [x + w <= 1, uncertain(w, 'uniform',0,1)];
-%    P = optimizer([F,W,uncertain(w)],-x,[],w,x)
-%    S = sample(P,10); % Sample ten instances and concatenate models
-%    S([])             % Solve and return optimal x
+%    F = [probability(x + w <= 1) >= 0.95, uncertain(w, 'uniform',0,1)];
+%    optimize(F,-x);	
 %
-%    Alternatively, you can specify a function handle which generates
-%    samples. YALMIP will always send a trailing argument with dimensions
+%    You can specify a function handle which generates samples to be used
+%    with the SAMPLE command. YALMIP will always send a trailing argument
+%    with dimensions.  
 %
 %    F = [x + w <= 1, uncertain(w,@mysampler,myarguments1,...)];
 %
@@ -42,15 +38,11 @@ function x = uncertain(x,varargin)
 %
 %    F = [x + w <= 1, uncertain(w,@random,'uniform',0,1)];
 %
-%
-%   See also OPTIMIZE, ROBUSTMODEL, OPTIMIZER, SAMPLE
+%   See also PROBABILITY, SAMPLE
 
-if nargin == 1 || ((nargin == 2) && strcmpi(varargin{1},'deterministic'))
-    %  x.typeflag = 15;
-    x.extra.distribution.type = 'deterministic';
-    %  x = lmi(x);
-else
-    %  x.typeflag = 16;
+if nargin == 1 || ((nargin == 2) && strcmpi(varargin{1},'deterministic'))   
+    x.extra.distribution.type = 'deterministic';    
+else    
     if isa(varargin{1},'function_handle')
         temp = {varargin{:},x.dim};
     else
@@ -65,7 +57,7 @@ else
     x.extra.distribution.icdf = [];
     x.extra.distribution.pcdf = [];
     
-    if isequal(x.extra.distribution.generator ,@random)
+    if isequal(x.extra.distribution.generator, @random)
         % Check for a mixture definition
         if findstr('mix',x.extra.distribution.parameters{1})
             % Yes, mixture defined
@@ -83,38 +75,12 @@ else
             
             if isa(varargin{1},'function_handle')
                 % Hmm, do we support generic mixtures of this type
-                error
+                error('Mixture of sample generators not supported');
             else
                 temp = {@random,x.extra.distribution.parameters{1},x.dim};
             end
         end
-        switch x.extra.distribution.parameters{1}
-            case 'exponential'
-                % N.B parameterized in scale parameter mu = 1/lambda in
-                % Statistics toolbox and thus our parameter
-                phi = @(t,mu)1./(1-t*1i.*mu(:));
-                dphi = @(t,mu)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
-                x.extra.distribution.characteristicfunction = phi;
-                x.extra.distribution.characteristicfunction_derivative = dphi;
-                x.extra.distribution.characteristicfunction_relativederivative = @(t,mu) dphi(t,mu)./phi(t,mu);
-            case 'laplace'
-                x.extra.distribution.characteristicfunction = @(t,mu,b)exp(1i*mu(:)*t)./(1+b(:).^2.*t.^2);
-                x.extra.distribution.characteristicfunction_derivative = [];
-            case 'logistic'
-                phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
-                dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
-                x.extra.distribution.characteristicfunction = phi;                                                              
-                x.extra.distribution.characteristicfunction_derivative = dphi;
-                x.extra.distribution.characteristicfunction_relativederivative = @(t,mu,s) dphi(t,mu,s)./phi(t,mu,s);
-                                                              
-            case 'uniform'
-                x.extra.distribution.characteristicfunction = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
-                x.extra.distribution.characteristicfunction_derivative = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) * t) - exp(1i * a(:) * t)));
-                
-            otherwise
-                x.extra.distribution.characteristicfunction = [];
-                x.extra.distribution.characteristicfunction_derivative = [];
-        end
+        x.extra.distribution = setupCharacteristics(x.extra.distribution.parameters{1},x.extra.distribution);       
     end
     try
         if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf','laplace'}))))
@@ -144,30 +110,4 @@ else
     end
     yalmip('addDistribution',  x, x.extra.distribution);
     %  x = lmi(x);
-end
-
-function y = guarded_sinhc(x)
-y = sinh(x)./x;y(x==0)=1;
-
-function y = guarded_expdiv(z1,z2,z3)
-y = (exp(1i*z1)-exp(1i*z2))./(1i*z3);
-y(z3==0) = 1;
-
-function y = guarded_logistic_derivative(t,mu,s)
-
-y = exp(1i*mu(:).*t).*(1i*mu(:).*(pi.*s(:).*t./(sinh(pi*s(:).*t))) + (pi*s(:).*(1./sinh(pi*s(:).*t))-pi^2*s(:).^2.*t./((tanh(pi*s(:).*t).*sinh(pi*s(:).*t)))));
-if numel(t)==1 && t == 0
-    % Simple case phi(t) for scalar t, so all elements to limit
-    y = 1i*mu(:);
-else
-    % t is a matrix (i.e. a vectorized call computing several points at
-    % once)
-    % Two cases, a row vector t meaning vector phi(t)
-    if size(t,1) == 1
-        i = find(t == 0);  
-        y(:,i) = repmat(1i*mu,1,length(i));
-    else
-        [i,j] = find(t == 0);  
-        y(sub2ind(size(t),i,j)) = 1i*mu(i);
-    end
 end

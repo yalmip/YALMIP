@@ -57,7 +57,7 @@ function cdf = compute_cdf_using_phi(y,phi)
 % limit of phi(t)/t as t->0, and integral approximation is without any
 % thought
 integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
-cdf =  .5-integral(integrand,0, 100)/pi;
+cdf =  .5-integral(integrand,0, inf)/pi;
 
 
 function dcdf = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi)
@@ -101,17 +101,15 @@ integrand1 = @(t) real(exp_ith(t) .* phi_z(t));
 
 pdf_val = (1/pi)*integral(integrand1,0,inf);
 
-% compute dphi_z/dg
-%num_j = length(g0);
-%dphi_p1 = @(t) [];
-%for j = 1:num_j
-%    dphi_p1 = @(t) [dphi_p1(t),dphi(g0(j)*t)];
-%end
-integrand2 = @(t) imag(exp_ith(t) .* phi_z(t) .* reldphi(g0(:)*t));
-terms = (-1/pi)*integral(integrand2,0,inf,'ArrayValued',true);
-
-% commpute the whole derivative
-dcdf = (-pdf_val.*dh0') + terms'*dg0;
+rr = @(t)(reldphi(g0(:)*t));
+integrand2 = @(t) imag(exp_ith(t) .* phi_z(t) .* rr(t));
+if nnz(dg0)==0
+    dcdf = (-pdf_val.*dh0');
+else
+    terms = (-1/pi)*integral(integrand2,0,inf,'ArrayValued',true);
+    % commpute the whole derivative
+    dcdf = (-pdf_val.*dh0') + terms'*dg0;
+end
 
 %dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
 %[dcdf(:) dcdf_check(:)]

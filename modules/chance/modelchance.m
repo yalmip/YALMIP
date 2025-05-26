@@ -211,7 +211,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 case {'normal'}
-                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,DisjointWeight);
+                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x,DisjointWeight);
                                     printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
                                 case {'logistic', 'laplace','uniform','t','tlocationScale'}
@@ -379,6 +379,17 @@ for k = 1:length(randomVariables)
     if strcmpi(randomVariables{k}.distribution.type,'stochastic')
         if isequal(randomVariables{k}.distribution.generator,@random)
             switch randomVariables{k}.distribution.parameters{1}
+                                     
+                case 'normal'
+                    mu = randomVariables{k}.distribution.parameters{2};                                     
+                    sigma = randomVariables{k}.distribution.parameters{3};                                     
+                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:),sigma(:));
+                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:),sigma(:));  
+                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:),sigma(:));
+                                        
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                 
                 case 'exponential'
                     mu = randomVariables{k}.distribution.parameters{2};                                     
@@ -413,9 +424,8 @@ for k = 1:length(randomVariables)
                     b = randomVariables{k}.distribution.parameters{3};                    
                     
                     phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,a(:),b(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,a(:),b(:));
-                    % FIX uncertain.m
-                    reldphi = [];
+                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,a(:),b(:));                  
+                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,a(:),b(:));
                     
                     %phi_general = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
                     %phi = @(t)phi_general(t,a(:),b(:));

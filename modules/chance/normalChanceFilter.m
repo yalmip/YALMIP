@@ -1,7 +1,13 @@
-function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options,isDisjointProblem)
+function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options,funcs,x,isDisjointProblem)
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 factorcovariance = distribution.parameters{4};
+
+% You never know, someone might want to do this...
+if strcmpi(options.chance.characteristic,'yes') && isdiag(covariance)
+    newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
+    return
+end
 
 constant_gain = isa(c,'double') && isa(factorcovariance,'double');
 
