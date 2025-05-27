@@ -79,8 +79,7 @@ else
             else
                 temp = {@random,x.extra.distribution.parameters{1},x.dim};
             end
-        end
-        x.extra.distribution = setupCharacteristics(x.extra.distribution.parameters{1},x.extra.distribution);       
+        end        
     end
     try
         if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf','laplace'}))))

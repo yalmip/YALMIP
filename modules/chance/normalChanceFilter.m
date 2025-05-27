@@ -5,8 +5,12 @@ factorcovariance = distribution.parameters{4};
 
 % You never know, someone might want to do this...
 if strcmpi(options.chance.characteristic,'yes') && isdiag(covariance)
-    newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
-    return
+    if isa(theMean,'double') && isa(covariance,'double')
+        newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
+        return
+    else
+        error('Characterstics can only be used for fixed distribution parameters');
+    end
 end
 
 constant_gain = isa(c,'double') && isa(factorcovariance,'double');

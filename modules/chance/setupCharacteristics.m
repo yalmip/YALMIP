@@ -10,11 +10,13 @@ switch name
         distribution.characteristicfunction = phi;
         distribution.characteristicfunction_derivative = dphi;
         distribution.characteristicfunction_relativederivative = @(t,mu) dphi(t,mu)./phi(t,mu);
+        
     case 'laplace'
         distribution.characteristicfunction = @(t,mu,b)exp(1i*mu(:)*t)./(1+b(:).^2.*t.^2);
         % FIXME!
         distribution.characteristicfunction_derivative = [];
         distribution.characteristicfunction_relativederivative = [];
+        
     case 'logistic'
         phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
         dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
@@ -29,16 +31,16 @@ switch name
         distribution.characteristicfunction_derivative = dphi;        
         distribution.characteristicfunction_relativederivative = @(t,a,b) dphi(t,a,b)./phi(t,a,b);
 
-	case 'normal'
+	case {'normal','mvnrnd'}
+        % Here parameterized as random, i.e., in std. dev. sigma
         phi = @(t,mu,sigma) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
-        dphi = @(t,mu,sigma) exp(1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t);
+        dphi = @(t,mu,sigma) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
         distribution.characteristicfunction = phi;
         distribution.characteristicfunction_derivative = dphi;        
         distribution.characteristicfunction_relativederivative = @(t,a,b) dphi(t,a,b)./phi(t,a,b);
         
     otherwise
-        distribution.characteristicfunction = [];
-        distribution.characteristicfunction_derivative
+        distribution.characteristicfunction = [];        
         distribution.characteristicfunction_derivative = [];
 end
 

@@ -381,61 +381,52 @@ for k = 1:length(randomVariables)
             switch randomVariables{k}.distribution.parameters{1}
                                      
                 case 'normal'
-                    mu = randomVariables{k}.distribution.parameters{2};                                     
-                    sigma = randomVariables{k}.distribution.parameters{3};                                     
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:),sigma(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:),sigma(:));  
-                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:),sigma(:));
-                                        
+                    % Warning. When we normalize all Gaussian versions, we
+                    % finally use covariance matrix as second parameter
+                    % (defining  'normal' uses vector std. dev. while
+                    % 'mvnrnd' uses covariance. 
+                    mu = randomVariables{k}.distribution.parameters{2};                      
+                    sigma = diag(randomVariables{k}.distribution.parameters{3}).^.5;  
+                    
+                    phi = @(t) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                    dphi = @(t) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                    reldphi = @(t) dphi(t)./phi(t);
+                                                            
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                 
                 case 'exponential'
-                    mu = randomVariables{k}.distribution.parameters{2};                                     
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:));  
-                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:));
-                                        
+                    mu = randomVariables{k}.distribution.parameters{2};  
+                    
+                    phi = @(t)1./(1-t*1i.*mu(:));
+                    dphi = @(t)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
+                    reldphi = @(t) dphi(t)./phi(t);
+                                                                                
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'logistic'                
                     mu = randomVariables{k}.distribution.parameters{2};
-                    s = randomVariables{k}.distribution.parameters{3};
-                    %  phi_general = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);                          
-                    %  phi = @(t)phi_general(t,mu(:),s(:));
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:),s(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:),s(:));
-                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:),s(:));
-                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
-                    % This one should be rewritten/guarded too
-                    %dphi_general = @(t,mu,s)(1i*mu(:).*phi(t) + exp(1i*mu(:)*t).*(pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);
-                    %dphi = @(t) dphi_general(t,mu(:),s(:));
-                    % (phi(.5)-phi(0.5-.00001))/0.00001
-                    % dphi(0.5)
-                                                                                                      
+                    s = randomVariables{k}.distribution.parameters{3};  
+                    
+                    phi = @(t)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                    dphi = @(t) guarded_logistic_derivative(t,mu,s);
+                    reldphi = @(t) dphi(t)./phi(t);
+                                                                                                                                              
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
-                 
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
+                    
                 case 'uniform'
                     a = randomVariables{k}.distribution.parameters{2};
                     b = randomVariables{k}.distribution.parameters{3};                    
                     
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,a(:),b(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,a(:),b(:));                  
-                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,a(:),b(:));
-                    
-                    %phi_general = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
-                    %phi = @(t)phi_general(t,a(:),b(:));
-                    
-                    % This one should be rewritten/guarded too                                       
-                    %dphi_general = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) * t) - exp(1i * a(:) * t)));
-                    %dphi = @(t) dphi_general(t,a(:),b(:));
-                    % (phi(.5)-phi(0.5-.00001))/0.00001
-                    % dphi(0.5)
-                                                                                                                                      
+                    phi = @(t)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b(:)-a(:))));
+                    dphi = @(t) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t.*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) .* t) - exp(1i * a(:) .* t)));
+                    reldphi = @(t) dphi(t)./phi(t);
+
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
@@ -451,3 +442,22 @@ y = sinh(x)./x;y(x==0)=1;
 function y = guarded_expdiv(z1,z2,z3)
 y = (exp(1i*z1)-exp(1i*z2))./(1i*z3);
 y(z3==0) = 1;
+
+function y = guarded_logistic_derivative(t,mu,s)
+
+y = exp(1i*mu(:).*t).*(1i*mu(:).*(pi.*s(:).*t./(sinh(pi*s(:).*t))) + (pi*s(:).*(1./sinh(pi*s(:).*t))-pi^2*s(:).^2.*t./((tanh(pi*s(:).*t).*sinh(pi*s(:).*t)))));
+if numel(t)==1 && t == 0
+    % Simple case phi(t) for scalar t, so all elements to limit
+    y = 1i*mu(:);
+else
+    % t is a matrix (i.e. a vectorized call computing several points at
+    % once)
+    % Two cases, a row vector t meaning vector phi(t)
+    if size(t,1) == 1
+        i = find(t == 0);
+        y(:,i) = repmat(1i*mu,1,length(i));
+    else
+        [i,j] = find(t == 0);
+        y(sub2ind(size(t),i,j)) = 1i*mu(i);
+    end
+end

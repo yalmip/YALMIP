@@ -6,9 +6,7 @@ w = sdpvar(1);
 sdpvar t x
 gamma = sdpvar(1)
 
-Model = [probability(3*w <= t) >= 1-gamma, 0 <= gamma <= 0.05
-         uncertain(w,'exponential',3)];
-     
+Model = [probability(3*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'exponential',3)];
 optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp'))
 
 % Confirm numerically
@@ -24,10 +22,8 @@ w = sdpvar(2,1);
 sdpvar t x
 gamma = sdpvar(1)
 
-Model = [probability([3 2]*w <= t) >= 1-gamma, 0 <= gamma <= 0.05
-         uncertain(w,'exponential',[3;0.3])];
-     
-optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp'))
+Model = [probability([3 2]*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'exponential',[3;0.3])];
+     optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp'))
 
 % Confirm numerically
 N = 1e6;
@@ -44,9 +40,7 @@ w = sdpvar(1);
 sdpvar t x
 gamma = sdpvar(1)
 
-Model = [probability(2*w <= t) >= 1-gamma, 0 <= gamma <= 0.05
-         uncertain(w,'logistic',0.1,2)];
-     
+Model = [probability(2*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'logistic',0.1,2)];
 % Force use of characteristic functions
 optimize(Model,t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','sqp','chance.characteristic','yes'))
 
@@ -65,8 +59,7 @@ w = sdpvar(2,1);
 sdpvar t x
 gamma = sdpvar(1)
 
-Model = [probability([2+x 3-x]*w <= t) >= 1-gamma, 0 <= gamma <= 0.05,
-         uncertain(w,'logistic',[0.1;-.3],[.05;3])];
+Model = [probability([2+x 3-x]*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'logistic',[0.1;-.3],[.05;3])];
      
 % This should call the characterstic framework     
 optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp'))
