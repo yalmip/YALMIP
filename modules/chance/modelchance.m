@@ -39,7 +39,11 @@ if options.verbose
     end
     disp([' - Detected ' num2str(length(randomVariables)) ' distribution models.'])
 end
-
+% Merging distribution 
+% 1. Multiple with same distribution are placed as one vector-valued
+% 2. The different versions of Gaussian are combined and normalized, and
+% will have three properties, mean, covariance, and factorized covariance,
+% and all always called 'normal' from now on
 [randomVariables,map] = mergeDistributions(randomVariables);
 randomVariables = setupCharacterstics(randomVariables);
 
@@ -53,7 +57,17 @@ if options.verbose
     disp([' - Detected ' num2str(length(groupedChanceConstraints)) ' chance constraints.'])
 end
 
-[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
+% Some strategies exploit simplex structure
+Simplicies = F(find(is(F,'simplex')));
+SimplexInfo = [];
+if ~isempty(Simplicies)    
+    SimplexInfo = sparse([]);
+    for i = 1:length(Simplicies)
+        SimplexInfo(end+1,getvariables(Simplicies(i))) = 1;
+    end
+end
+    
+[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo);
 Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
     Fchance = modelchance(Fchance,options,1);
@@ -63,7 +77,7 @@ if ~rec && options.verbose
 end
 
 
-function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options);
+function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo)
 
 recursive = 0;
 Fchance = [];
@@ -160,6 +174,19 @@ for uncertaintyGroup = 1:length(randomVariables)
                         c = c + A'*x;
                     end
                                                                                                     
+                    % Are all variables in c constrained to a simple (this
+                    % is exploited in the normalChancefilter
+                    DisjointWeight = 0;
+                    if ~isempty(SimplexInfo) && isa(c,'sdpvar')
+                        x_in_c = getvariables(c);
+                        for i = 1:size(SimplexInfo,1)
+                            if isequal(find(SimplexInfo(i,:)),x_in_c)
+                                DisjointWeight = 1;
+                            end
+                        end                    
+                    end
+                        
+                    
                     newConstraint = [];
                     if ~fail
                     %    confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
@@ -183,19 +210,19 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
                                     printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case {'normal','normalm'}
-                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                case {'normal'}
+                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x,DisjointWeight);
                                     printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case 'normalf'
-                                    newConstraint = normalfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    printout(options.verbose,'exact normalf',randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case {'logistic', 'laplace','uniform','exponential'}
+                                case {'logistic', 'laplace','uniform','t','tlocationScale'}
                                     newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
-                                case {'gamma','weibull'}
+                                case {'stable'}
+                                    newConstraint = conditionallysymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
+                                    printout(options.verbose,['exact conditionally symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
+                                    eliminatedConstraints(ic)=1;                                    
+                                case {'gamma','weibull','exponential'}
                                     newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
                                     printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
                                     eliminatedConstraints(ic)=1;
@@ -352,53 +379,54 @@ for k = 1:length(randomVariables)
     if strcmpi(randomVariables{k}.distribution.type,'stochastic')
         if isequal(randomVariables{k}.distribution.generator,@random)
             switch randomVariables{k}.distribution.parameters{1}
+                                     
+                case 'normal'
+                    % Warning. When we normalize all Gaussian versions, we
+                    % finally use covariance matrix as second parameter
+                    % (defining  'normal' uses vector std. dev. while
+                    % 'mvnrnd' uses covariance. 
+                    mu = randomVariables{k}.distribution.parameters{2};                      
+                    sigma = diag(randomVariables{k}.distribution.parameters{3}).^.5;  
+                    
+                    phi = @(t) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                    dphi = @(t) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                    reldphi = @(t) dphi(t)./phi(t);
+                                                            
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                 
                 case 'exponential'
-                    beta = randomVariables{k}.distribution.parameters{2};                                     
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,beta);
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,beta);                                                                                                       
-                    % FIX uncertain.m
-                    reldphi = [];
+                    mu = randomVariables{k}.distribution.parameters{2};  
+                    
+                    phi = @(t)1./(1-t*1i.*mu(:));
+                    dphi = @(t)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
+                    reldphi = @(t) dphi(t)./phi(t);
+                                                                                
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'logistic'                
                     mu = randomVariables{k}.distribution.parameters{2};
-                    s = randomVariables{k}.distribution.parameters{3};
-                    %  phi_general = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);                          
-                    %  phi = @(t)phi_general(t,mu(:),s(:));
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,mu(:),s(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,mu(:),s(:));
-                    reldphi = @(t)randomVariables{k}.distribution.characteristicfunction_relativederivative(t,mu(:),s(:));
-                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
-                    % This one should be rewritten/guarded too
-                    %dphi_general = @(t,mu,s)(1i*mu(:).*phi(t) + exp(1i*mu(:)*t).*(pi*s(:).*sinh(pi*s(:)*t)-pi^2*s(:).^2.*cosh(pi*s(:)*t))./sinh(pi*s(:)*t).^2);
-                    %dphi = @(t) dphi_general(t,mu(:),s(:));
-                    % (phi(.5)-phi(0.5-.00001))/0.00001
-                    % dphi(0.5)
-                                                                                                      
+                    s = randomVariables{k}.distribution.parameters{3};  
+                    
+                    phi = @(t)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                    dphi = @(t) guarded_logistic_derivative(t,mu,s);
+                    reldphi = @(t) dphi(t)./phi(t);
+                                                                                                                                              
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
-                 
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
+                    
                 case 'uniform'
                     a = randomVariables{k}.distribution.parameters{2};
                     b = randomVariables{k}.distribution.parameters{3};                    
                     
-                    phi = @(t)randomVariables{k}.distribution.characteristicfunction(t,a(:),b(:));
-                    dphi = @(t)randomVariables{k}.distribution.characteristicfunction_derivative(t,a(:),b(:));
-                    % FIX uncertain.m
-                    reldphi = [];
-                    
-                    %phi_general = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b-a)));
-                    %phi = @(t)phi_general(t,a(:),b(:));
-                    
-                    % This one should be rewritten/guarded too                                       
-                    %dphi_general = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) * t) - exp(1i * a(:) * t)));
-                    %dphi = @(t) dphi_general(t,a(:),b(:));
-                    % (phi(.5)-phi(0.5-.00001))/0.00001
-                    % dphi(0.5)
-                                                                                                                                      
+                    phi = @(t)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b(:)-a(:))));
+                    dphi = @(t) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t.*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) .* t) - exp(1i * a(:) .* t)));
+                    reldphi = @(t) dphi(t)./phi(t);
+
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
@@ -414,3 +442,22 @@ y = sinh(x)./x;y(x==0)=1;
 function y = guarded_expdiv(z1,z2,z3)
 y = (exp(1i*z1)-exp(1i*z2))./(1i*z3);
 y(z3==0) = 1;
+
+function y = guarded_logistic_derivative(t,mu,s)
+
+y = exp(1i*mu(:).*t).*(1i*mu(:).*(pi.*s(:).*t./(sinh(pi*s(:).*t))) + (pi*s(:).*(1./sinh(pi*s(:).*t))-pi^2*s(:).^2.*t./((tanh(pi*s(:).*t).*sinh(pi*s(:).*t)))));
+if numel(t)==1 && t == 0
+    % Simple case phi(t) for scalar t, so all elements to limit
+    y = 1i*mu(:);
+else
+    % t is a matrix (i.e. a vectorized call computing several points at
+    % once)
+    % Two cases, a row vector t meaning vector phi(t)
+    if size(t,1) == 1
+        i = find(t == 0);
+        y(:,i) = repmat(1i*mu,1,length(i));
+    else
+        [i,j] = find(t == 0);
+        y(sub2ind(size(t),i,j)) = 1i*mu(i);
+    end
+end

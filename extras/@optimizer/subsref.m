@@ -164,7 +164,7 @@ elseif isequal(subs.type,'{}')
         for i = 1:length(subs.subs)
             dimBlocks(i) = numel(subs.subs{i}) / prod(self.diminOrig{i});
         end
-        if any(dimBlocks)>1 && any(dimBlocks==0)
+        if any(dimBlocks>1) && any(dimBlocks==0)
             error('Blocked data in partial instantiation is not possible');
         end
         if all(dimBlocks)

@@ -37,8 +37,9 @@ switch class(varargin{1})
         distribution = varargin{5};
         phi = distribution.characteristicfunction;
         dphi = distribution.characteristicfunction_derivative;
+        reldphi = distribution.characteristicfunction_relativederivative;
         % Create a function which computes gradient at x
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,reldphi);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -51,12 +52,8 @@ function cdf = compute_cdf_using_phi(y,phi)
 % Perform the inverse Fourier transform to obtain the CDF
 % for Probability(z <= y) where z has characterstic function phi(t)
 
-% Here, brutally naive implementation. This is really ripe for issues due
-% to singularities, so it should be guarded somehow with known value of the
-% limit of phi(t)/t as t->0, and integral approximation is without any
-% thought
 integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
-cdf =  .5-integral(integrand,0, 100)/pi;
+cdf =  .5-integral(integrand,0, inf)/pi;
 
 
 function dcdf = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi)
@@ -64,7 +61,6 @@ h0 = h(x);
 dh0 = dh(x);
 g0 = g(x);
 dg0 = dg(x);
-
 
 % Silly numerical differentiation (which is what a solver does anyway)
 phi0 = @(t) prod(phi(g0(:)*t),1);  
@@ -80,10 +76,9 @@ for k = 1:length(x)
     dcdf = [dcdf;(cdf_-cdf0)/eps];
 end
 
-
 %% -------------------------------------------------------------------------------------- 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi)
-
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,reldphi)
+% Compute derivative of Probability(h(x)+g(x)'*w <= 0)
 h0 = h(x);
 dh0 = dh(x);
 g0 = g(x);
@@ -130,6 +125,7 @@ phi_z = @(t) prod(phi(g0(:)*t),1);
 exp_ith = @(t) exp(1i*t*h0);
 
 % compute f_z(-h0)
+<<<<<<< HEAD
 integrand1 = @(t) real(exp_ith(t) .* phi_z(t));
 pdf_val = (1/pi)*integral(integrand1,0,inf);
 
@@ -160,6 +156,24 @@ dcdf = (-pdf_val.*dh0') + terms'*dg0;
     PHI,DPHI,E,W,INTERVAL,pathlen,WT,EWT,NODES,...
     DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct);
 dcdf_value = (-pdf_value.*dh0') + predcdf'*dg0;
+=======
+integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
+
+pdf_val = (1/pi)*integral(integrand_pdf,0,inf);
+
+rr = @(t)(reldphi(g0(:)*t));
+integrand_dcdf = @(t) imag(exp_ith(t) .* phi_z(t) .* rr(t));
+if nnz(dg0)==0
+	dcdf = (-pdf_val.*dh0');
+else
+    terms = (-1/pi)*integral(integrand_dcdf,0,inf,'ArrayValued',true);
+    % commpute the whole derivative
+    dcdf = (-pdf_val.*dh0') + terms'*dg0;
+end
+
+% dcdf = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
+%[dcdf(:) dcdf_check(:)]
+>>>>>>> 5b21828615520a09f772523ac1f843c1bb384fb1
 
 % 
 dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
