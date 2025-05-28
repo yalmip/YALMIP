@@ -15,15 +15,15 @@ switch lower(distribution.parameters{1})
     case 'logistic'
         mu = distribution.parameters{2};
         distribution.parameters{2} = mu*0;
-        newConstraint = b + mu'*c >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
+        newConstraint = b + c*mu >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
         
     case 'uniform'
         L = distribution.parameters{2};
         U = distribution.parameters{3};
         theMean = (L+U)/2;
         theRange = (U-L)/2;
-        b = b+c'*theMean;
-        c = c.*theRange;
+        b = b+c*theMean;
+        c = c*theRange;
         newConstraint = [b >= (1-2*gamma)*abs(c)];
         
     case 'laplace'
@@ -34,13 +34,18 @@ switch lower(distribution.parameters{1})
         % b = (b+c'*mu)/abs(c);
         % cdf = @(x)(0.5*(1 + (1 - exp(-x/scale))));
         % newConstraint = [cdf(b) >= 1-gamma, 1 >= 1-gamma >= 1/2];
-        newConstraint = [b+c'*mu + abs(c)*scale*log(2*gamma) >= 0, 1 >= 1-gamma >= 1/2];
+        newConstraint = [b+c*mu + abs(c)*scale*log(2*gamma) >= 0, 1 >= 1-gamma >= 1/2];
+        
+  case 'cauchy'
+        mu = distribution.parameters{2};
+        theta = distribution.parameters{3};        
+        newConstraint = [b + c*mu >= abs(c)*theta*tan(pi*((1-gamma)-1/2))];        
         
     otherwise
         % Assume first parameter is mean (it was sent here, so it is
         % symmetric and thus first arument should be mean, right?...)
         mu = distribution.parameters{2};
         distribution.parameters{2} = mu*0;
-        newConstraint = b + mu'*c >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
+        newConstraint = b + mu*c >= abs(c)*icdf(distribution.parameters{1},1-gamma,distribution.parameters{2:end});
         
 end

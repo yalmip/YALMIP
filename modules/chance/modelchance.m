@@ -217,7 +217,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x,DisjointWeight);
                                     printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
-                                case {'logistic', 'laplace','uniform','t','tlocationScale'}
+                                case {'logistic', 'laplace','uniform','t','tlocationScale','cauchy'}
                                     newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
                                     printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
@@ -436,6 +436,18 @@ for k = 1:length(randomVariables)
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
+                    
+                case 'cauchy'
+                    mu = randomVariables{k}.distribution.parameters{2};
+                    theta = randomVariables{k}.distribution.parameters{3};                    
+                    
+                    phi = @(t)(exp(1i*mu(:).*t - abs(t).*theta(:)));
+                    dphi = @(t) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)))
+                    reldphi = @(t) dphi(t)./phi(t);
+
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;                    
                 otherwise
             end
         end
