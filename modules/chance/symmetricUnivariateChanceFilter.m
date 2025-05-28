@@ -1,4 +1,4 @@
-function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,w,options,funcs,x)
+function newConstraint = symmetricUnivariateChanceFilter(b,c,distribution,gamma,options,funcs,x)
 
 % General case must be handled via characteristic framework
 if length(c) > 1 || strcmpi(options.chance.characteristic,'yes')

@@ -1,4 +1,4 @@
-function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options,funcs,x,isDisjointProblem)
+function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 factorcovariance = distribution.parameters{4};

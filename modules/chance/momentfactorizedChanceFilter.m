@@ -1,4 +1,4 @@
-function model = momentfactorizedChanceFilter(b,c,distribution,gamma,w,options)
+function model = momentfactorizedChanceFilter(b,c,distribution,gamma,options)
 % Chance filter for distribution only specified by mean and factorized variance
 theMean    = distribution.parameters{2};
 R          = distribution.parameters{3};
