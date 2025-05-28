@@ -33,11 +33,12 @@ keep(chanceDeclarations)=0;
 randomVariables = extractRandomDefinitions(F(randomDeclarations));
 if options.verbose
     if ~rec
-        disp('***** Starting YALMIP chance constraint module. *******************')
+        disp('***** Starting YALMIP chance constraint module. ***************************')
     else
         disp(' - (recursive application of chance constraints)')
     end
-    disp([' - Detected ' num2str(length(randomVariables)) ' distribution models.'])
+    nw = length(randomVariables);
+    disp([' - Detected ' num2str(nw) ' distribution declaration' pluralS(nw)])
 end
 % Merging distribution 
 % 1. Multiple with same distribution are placed as one vector-valued
@@ -48,13 +49,15 @@ end
 randomVariables = setupCharacterstics(randomVariables);
 
 if options.verbose && length(map)>max(map)
-    disp([' - Merged to ' num2str(length(randomVariables)) ' distribution models.'])
+    nw = length(randomVariables);
+    disp([' - Merged to ' num2str(nw) ' distribution model' pluralS(nw)])
 end
 
 groupedChanceConstraints = groupchanceconstraints(F);
 
 if options.verbose
-    disp([' - Detected ' num2str(length(groupedChanceConstraints)) ' chance constraints.'])
+    nc = length(groupedChanceConstraints);
+    disp([' - Detected ' num2str(nc) ' chance constraint' pluralS(nc)])
 end
 
 % Some strategies exploit simplex structure
@@ -73,7 +76,7 @@ if recursive
     Fchance = modelchance(Fchance,options,1);
 end
 if ~rec && options.verbose
-    disp('***** Modeling of chance constraints done. ************************')
+    disp('***** Modeling of chance constraints done. ********************************')
 end
 
 
@@ -102,7 +105,7 @@ for uncertaintyGroup = 1:length(randomVariables)
         if ~is(groupedChanceConstraints{ic},'elementwise')
             error('Only elementwise chance constraints supported')
         end
-        
+      
         confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
         gamma = 1-confidencelevel;              
         confidencelevelAllMixtures = confidencelevel;
@@ -196,7 +199,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                             switch distName
                                 case 'dro'
                                     newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
-                                    printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
                                 case 'moment'
                                     if isequal(options.chance.method,'momentchebyshev')
@@ -208,23 +211,23 @@ for uncertaintyGroup = 1:length(randomVariables)
                                     eliminatedConstraints(ic)=1;
                                 case 'momentf'
                                     newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
-                                    printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
                                 case {'normal'}
                                     newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x,DisjointWeight);
-                                    printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
                                 case {'logistic', 'laplace','uniform','t','tlocationScale'}
                                     newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
-                                    printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
                                 case {'stable'}
                                     newConstraint = conditionallysymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
-                                    printout(options.verbose,['exact conditionally symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,['exact conditionally symmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;                                    
                                 case {'gamma','weibull','exponential'}
                                     newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
-                                    printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
                                 otherwise
                                     switch options.chance.method
@@ -247,7 +250,7 @@ for uncertaintyGroup = 1:length(randomVariables)
                                         otherwise
                                             error('Chance modeling approach not recognized');
                                     end
-                                    printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution);
+                                    printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
                                     eliminatedConstraints(ic)=1;
                             end
                         else
@@ -362,15 +365,18 @@ for i = 1:length(X)
     c_wTbase = [c_wTbase;c_w'];
 end
 
-function printout(verbose,method,distribution)
+function printout(verbose,method,distribution,count,amountSame)
 
-if verbose
+if verbose && count == 1
     if strcmpi(func2str(distribution.generator),'random')
-        disp([' - Using ''' method '''-filter on constraint with ''' distribution.parameters{1} ''' distribution']);
+        disp([' - Using ''' method '''-filter on ' num2str(amountSame) ' constraint' pluralS(amountSame) ' with ''' distribution.parameters{1} ''' distribution']);
     else
-        disp([' - Using ''' method '''-filter on constraint with data created by @' distribution.name']);
+        disp([' - Using ''' method '''-filter on ' num2str(amountsame) ' constraint' pluralS(amountSame) ' with data created by @' distribution.name']);
     end
 end
+
+function s = pluralS(n)
+if n == 1;s = '';else s = 's';end
 
 
 function randomVariables = setupCharacterstics(randomVariables)
