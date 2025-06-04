@@ -1,4 +1,4 @@
-function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
+function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model)
 
 % Extract alpha in power cone and remove from basis
 if any(model.K.p)
@@ -198,7 +198,7 @@ else
     solvertime = toc(solvertime);
 end
 
-if (r == 1010) || (r == 1011) | (r==1001)
+if (r == 1010) || (r == 1011) || (r==1001)
     problem = -5;
     x = [];
     D_struc = [];
