@@ -49,30 +49,43 @@ normalvariants = {'normal','mvnrnd','mvnrndfactor'};
 normalized = D;
 if strcmp(func2str(D.distribution.generator),'random')
     if any(strcmp(D.distribution.parameters{1},normalvariants))
-                
-        dimDvar = size(D.distribution.parameters{3});
-        if dimDvar(1) ~= dimDvar(2)
-            parD = diag(D.distribution.parameters{3});
+                       
+        if isempty(D.distribution.mixture)
+            [varD,facD] = normalizeOneTerm(D.distribution.parameters{1},D.distribution.parameters{3},D.variables);
+            normalized = D;
+            normalized.distribution.parameters{1} = 'normal';
+            normalized.distribution.parameters{3} = varD;
+            normalized.distribution.parameters{4} = facD;         
         else
-            parD = D.distribution.parameters{3};
-            if numel(parD)==1 && numel(D.variables)>1
-                parD = diag(repmat(parD,numel(D.variables),1));
+            for i = 1:length(D.distribution.mixture)
+                [varD{i},facD{i}] = normalizeOneTerm(D.distribution.parameters{1},D.distribution.parameters{3}{i},D.variables);
             end
+            normalized.distribution.parameters{1} = 'normal';
+            normalized.distribution.parameters{3} = varD;
+            normalized.distribution.parameters{4} = facD;
         end
-        if strcmp(D.distribution.parameters{1},'normal') || strcmp(D.distribution.parameters{1},'mvnrndfactor')
-            varD = parD'*parD;
-            facD = parD;
-        elseif strcmp(D.distribution.parameters{1},'mvnrnd')
-            varD = parD;
-            if isa(parD,'double')
-                facD = chol(parD);
-            else                
-                facD = [];
-            end
-        end
-        normalized = D;
-        normalized.distribution.parameters{1} = 'normal';
-        normalized.distribution.parameters{3} = varD;
-        normalized.distribution.parameters{4} = facD;                        
+    end
+end
+
+function [varD,facD] = normalizeOneTerm(dName,spreadParam,variables)
+
+dimDvar = size(spreadParam);
+if dimDvar(1) ~= dimDvar(2)
+    parD = diag(spreadParam);
+else
+    parD = spreadParam;
+    if numel(parD)==1 && numel(variables)>1
+        parD = diag(repmat(parD,numel(variables),1));
+    end
+end
+if strcmp(dName,'normal') || strcmp(dName,'mvnrndfactor')
+    varD = parD'*parD;
+    facD = parD;
+elseif strcmp(dName,'mvnrnd')
+    varD = parD;
+    if isa(parD,'double')
+        facD = chol(parD);
+    else
+        facD = [];
     end
 end

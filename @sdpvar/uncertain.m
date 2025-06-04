@@ -66,6 +66,17 @@ else
                     error('Mixture parameters should be placed in cells, including trailing mixture weights.')
                 end
             end
+            % Check weights
+            alpha = varargin{end};            
+            if ~(abs(sum([alpha{:}])-1)<1e-12)
+                error('Mixture weights should sum up to 1.')
+            end
+            
+            nMix = cellfun(@length,x.extra.distribution.parameters);
+            if ~all(nMix(2) == nMix(2:end))
+                error('All parameter cells in mixture should have same length (#mixtures)')
+            end
+            
             % Remove mixture parameters and place in object instead
             x.extra.distribution.mixture = [x.extra.distribution.parameters{end}{:}];
             x.extra.distribution.parameters = {x.extra.distribution.parameters{1:end-1}};
@@ -73,6 +84,10 @@ else
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mix','');
             x.extra.distribution.parameters{1} = lower(strtrim(x.extra.distribution.parameters{1}));
             
+            if strcmp(x.extra.distribution.parameters{1},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf'})
+                error(['Mixtures of ' x.extra.distribution.parameters{1} ' distributions not supported (yet...)']);
+            end
+                                    
             if isa(varargin{1},'function_handle')
                 % Hmm, do we support generic mixtures of this type
                 error('Mixture of sample generators not supported');
