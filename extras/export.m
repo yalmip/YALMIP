@@ -183,7 +183,7 @@ switch lower(solver.tag)
     case {'gurobi','gurobi-gurobi','gurobi-nonconvex'}
         model = yalmip2gurobi(interfacedata);
 
-    case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
+    case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp','mosek-lp/qp-integer'}
         try
             if any(interfacedata.K.s)
                 model.prob = yalmip2SDPmosek(interfacedata);
