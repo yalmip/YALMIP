@@ -78,7 +78,11 @@ m = length(distribution.mixture);
 Combs = allSequences(m,n);
 newMixture = [];
 for i = 1:length(Combs)
-    aMean = zeros(n,1);
+    if any(cellfun(@(x)isa(x,'sdpvar'),theMean))
+        aMean = sdpvar(n,1);
+    else
+        aMean = zeros(n,1);
+    end
     aCov =  zeros(n,1);
     for j = 1:n
         aMean(j) = theMean{Combs(i,j)}(j);

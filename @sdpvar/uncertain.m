@@ -109,6 +109,10 @@ else
                     temp = x.extra.distribution.parameters;
                     for j = 2:length(x.extra.distribution.parameters)
                         temp{j} = temp{j}{i};
+                        if isa(temp{j},'sdpvar')
+                            temp{j} = value(temp{j});
+                            temp{j}(isnan(temp{j})) = 0;
+                        end
                     end
                     y = random(temp{:});
                 end
