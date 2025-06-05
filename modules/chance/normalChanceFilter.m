@@ -66,6 +66,17 @@ theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 factorcovariance = distribution.parameters{4};
 
+% There might be zeros in c meaning some w(i) are missing and can be pruned
+missing = ~any(getbase(c),2);
+if ~isempty(missing)
+    c(missing)=[];
+    for i = 1:length(theMean)
+        theMean{i}(missing) = [];
+        covariance{i}(:,missing) = [];
+        covariance{i}(missing,:) = [];
+        factorcovariance{i}(:,missing) = [];
+    end
+end
 % FIXME: Refactor
 % Mixtures are currently only acting on elementwise terms. This means
 % that the mixture model now has to be exploded to be the mixture of

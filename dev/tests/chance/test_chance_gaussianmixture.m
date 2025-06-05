@@ -55,7 +55,7 @@ end
 
 
 
-function test_gaussian_multiterms(testCase)
+function test_gaussian_twoterms_two_components(testCase)
 
 % Case with two elementwise gaussian mixtures each with two components,
 % meaning the linear component will be expanded to 2*2 = 4 components
@@ -72,21 +72,19 @@ optimize(Model,u)
 testCase.assertTrue(abs(value(u)-12.0844) <= 1e-3)
 
 % Numerical verification
-if 0
+if 0    
     N = 1e6;
-    W11 = -5 + 1.*randn(1,N);
-    W12 = 5 + sqrt(3).*randn(1,N);
-    W21 = -3 + 2.*randn(1,N);
-    W22 = 2 + 3.*randn(1,N);
-    W = [W11;W21];
-    i = find(rand(1,N)>a);
-    W(1,i) = W12(i);
-    i = find(rand(1,N)>a);
-    W(2,i) = W22(i);
+    W11 = -5 + 1.*randn(1,a*N);
+    W12 = 5 + sqrt(3).*randn(1,b*N);
+    W21 = -3 + 2.*randn(1,a*N);
+    W22 = 2 + 3.*randn(1,b*N);
+    W = [W11 W12;W21 W22];    
+    W(1,:) = W(1,randperm(length(W)));
+    W(2,:) = W(2,randperm(length(W)));
     Y = [1 1]*W;
     % Check
     [value(gamma) 1-nnz(Y < value(u))/length(Y)]
-    
+            
     % Mixture sum manual from scratch
     sdpvar  w11 w12 w21 w22 gamma1 gamma2 gamma3 gamma4
     P1 = probability(w11+w21<=u);
@@ -106,4 +104,125 @@ if 0
         gamma <= 0.04, gamma == a^2*gamma1+a*b*gamma2+a*b*gamma3+b^2*gamma4]         ;
     optimize(Model,u)
     
+end
+
+
+function test_gaussian_twoterms_three_components(testCase)
+
+% Case with two elementwise gaussian mixtures each with three components,
+% meaning the linear component will be expanded to 2*3 = 6 components
+yalmip('clear');
+gamma = sdpvar(1);
+u = sdpvar(1);
+w = sdpvar(2,1);
+a = 0.1;
+b = 0.2;
+c = 1-a-b;
+P1 = probability(w(1)-2*w(2)<=u);
+Model = [uncertain(w,'normal mixture',{[-5;-3],[0;0],[5;2]},{[1;2],[1;1],[sqrt(3);3]},{a, b, c}),
+    P1 >= 1-gamma, gamma <= 0.04]
+optimize(Model,u)
+testCase.assertTrue(abs(value(u)-12.787) <= 1e-3)
+
+% Numerical verification
+if 0    
+    N = 1e6;
+    W11 = -5 + 1.*randn(1,a*N);
+    W12 = 0 + 1.*randn(1,b*N);
+    W13 = 5 + sqrt(3).*randn(1,c*N);
+    W21 = -3 + 2.*randn(1,a*N);
+    W22 = 0 + 1.*randn(1,b*N);
+    W23 = 2 + 3.*randn(1,c*N);
+    W = [W11 W12 W13;W21 W22 W23];    
+    W(1,:) = W(1,randperm(length(W)));
+    W(2,:) = W(2,randperm(length(W)));
+    Y = [1 -2]*W;
+    % Check
+    [value(gamma) 1-nnz(Y < value(u))/length(Y)]                
+end
+
+
+function test_gaussian_threeterms_three_components(testCase)
+
+% Case with three elementwise gaussian mixtures each with three components,
+% meaning the linear component will be expanded to 3*3*3 = 27 components
+yalmip('clear');
+gamma = sdpvar(1);
+u = sdpvar(1);
+w = sdpvar(3,1);
+a = 0.1;
+b = 0.2;
+c = 1-a-b;
+P1 = probability(w(1)-2*w(2)+w(3)<=u);
+Model = [uncertain(w,'normal mixture',{[-5;-3;-1],[0;0;0],[5;2;1]},{[1;2;1],[1;1;1],[sqrt(3);3;1]},{a, b, c}),
+    P1 >= 1-gamma, gamma <= 0.04]
+optimize(Model,u)
+testCase.assertTrue(abs(value(u)-13.55) <= 1e-3)
+
+% Numerical verification
+if 0    
+    N = 1e6;
+    W11 = -5 + 1.*randn(1,a*N);
+    W12 = 0 + 1.*randn(1,b*N);
+    W13 = 5 + sqrt(3).*randn(1,c*N);
+        
+    W21 = -3 + 2.*randn(1,a*N);
+    W22 = 0 + 1.*randn(1,b*N);
+    W23 = 2 + 3.*randn(1,c*N);
+    
+    W31 = -1 + 1.*randn(1,a*N);
+    W32 = 0 + 1.*randn(1,b*N);
+    W33 = 1 + 1.*randn(1,c*N);
+    
+    W = [W11 W12 W13;W21 W22 W23;W31 W32 W33];    
+    W(1,:) = W(1,randperm(length(W)));
+    W(2,:) = W(2,randperm(length(W)));
+    W(3,:) = W(3,randperm(length(W)));
+    Y = [1 -2 1]*W;
+    % Check
+    [value(gamma) 1-nnz(Y < value(u))/length(Y)]                
+end
+
+
+
+function test_gaussian_threeterms_three_components_missing(testCase)
+
+% Case with three elementwise gaussian mixtures each with three components,
+% meaning the linear component will be expanded to 3^3 = 27 components, but
+% one is not used to should expand to 3^2 components
+yalmip('clear');
+gamma = sdpvar(1);
+u = sdpvar(1);
+w = sdpvar(3,1);
+a = 0.1;
+b = 0.2;
+c = 1-a-b;
+P1 = probability(w(1)+w(3)<=u);
+Model = [uncertain(w,'normal mixture',{[-5;-3;-1],[0;0;0],[5;2;1]},{[1;2;1],[1;1;1],[sqrt(3);3;1]},{a, b, c}),
+    P1 >= 1-gamma, gamma <= 0.04]
+optimize(Model,u)
+testCase.assertTrue(abs(value(u)-8.902) <= 1e-3)
+
+% Numerical verification
+if 0    
+    N = 1e6;
+    W11 = -5 + 1.*randn(1,a*N);
+    W12 = 0 + 1.*randn(1,b*N);
+    W13 = 5 + sqrt(3).*randn(1,c*N);
+        
+    W21 = -3 + 2.*randn(1,a*N);
+    W22 = 0 + 1.*randn(1,b*N);
+    W23 = 2 + 3.*randn(1,c*N);
+    
+    W31 = -1 + 1.*randn(1,a*N);
+    W32 = 0 + 1.*randn(1,b*N);
+    W33 = 1 + 1.*randn(1,c*N);
+    
+    W = [W11 W12 W13;W21 W22 W23;W31 W32 W33];    
+    W(1,:) = W(1,randperm(length(W)));
+    W(2,:) = W(2,randperm(length(W)));
+    W(3,:) = W(3,randperm(length(W)));
+    Y = [1 0 1]*W;
+    % Check
+    [value(gamma) 1-nnz(Y < value(u))/length(Y)]                
 end
