@@ -226,3 +226,23 @@ if 0
     % Check
     [value(gamma) 1-nnz(Y < value(u))/length(Y)]                
 end
+
+
+
+
+function test_gaussian_decision_in_center(testCase)
+
+yalmip('clear');
+gamma = sdpvar(1);
+u = sdpvar(1);
+sdpvar m1 m2 m3 m4
+w = sdpvar(2,1);
+a = 0.25;
+b = 0.75;
+
+P1 = probability(w(1)+w(2)<=u)
+P2 = probability(-u <= w(1)+w(2));
+Model = [uncertain(w,'normal mixture',{[m1;m2],[m3;m4]},{[1;1],[1;1]},{a, b}),
+    P1 >= 1-gamma, P2 >= 1-gamma, gamma <= 0.01]
+optimize(Model,u)
+testCase.assertTrue(norm(value([m1 m2 m3 m4])) <= 1e-3)
