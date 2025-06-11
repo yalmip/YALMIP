@@ -1,6 +1,17 @@
-function [newConstraint] = normalChanceFilterConicFormulationRoot(c,b,rootPhi_Inverse)
+function [newConstraint] = normalChanceFilterConicFormulationRoot(c,b,gamma)
 %NORMALCHANCEFILTERCONICFORMULATIONROOT Exponential cone formulation of the
 %disjoint contraints using sqrt(probit).
+
+if isa(gamma,'sdpvar')
+    aa = -0.163460523135549;
+    bb = 1.996987289085205e+03;
+    cc = -1.232492830923356;
+    kk = 1.898392103622973;
+    rootPhi_Inverse = aa*lambertw(bb*gamma)+kk+cc*gamma;
+else
+    % The approximation will be the exact value if gamma is fixed
+    rootPhi_Inverse = sqrt(icdf('normal',1-gamma,0,1));
+end
 
 % probability(b(x) + c(x)'*w >= 0)...
 

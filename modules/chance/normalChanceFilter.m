@@ -25,19 +25,15 @@ e = factorcovariance*c;
 
 if strcmpi(options.chance.expcone,'yes')
     if ~constant_gain
-        error('Cannot have decision variables multplying uncertainty when using expcone approximation of inverse cdf')
+        error('Cannot have decision variables multiplying uncertainty when using expcone approximation of inverse cdf')
     end
-    Phi_Inverse = normalChanceFilterConicApproximation(gamma);
-    newConstraint =  b + c'*theMean >= Phi_Inverse*norm(e);
-elseif strcmpi(options.chance.expcone,'root') && isDisjointProblem
-    rootPhi_Inverse = normalChanceFilterConicApproximationRoot(gamma);
-    newConstraint = normalChanceFilterConicFormulationRoot(c,b,rootPhi_Inverse);
-elseif strcmpi(options.chance.expcone,'log') && isDisjointProblem
-    logPhi_Inverse = normalChanceFilterConicApproximationLog(gamma);
-    newConstraint = normalChanceFilterConicFormulationLog(c,b,logPhi_Inverse);
+    newConstraint = normalChanceFilterConicFormulation(b,c,e,theMean,gamma);
 elseif strcmpi(options.chance.expcone,'inv') && isDisjointProblem
-    invPhi_Inverse = normalChanceFilterConicApproximationInv(gamma);
-    newConstraint = normalChanceFilterConicFormulationInv(c,b,invPhi_Inverse);
+    newConstraint = normalChanceFilterConicFormulationInv(c,b,gamma);
+elseif strcmpi(options.chance.expcone,'root') && isDisjointProblem
+    newConstraint = normalChanceFilterConicFormulationRoot(c,b,gamma);
+elseif strcmpi(options.chance.expcone,'log') && isDisjointProblem
+    newConstraint = normalChanceFilterConicFormulationLog(c,b,gamma);
 else
     % Just go for a general nonlinear model and hope for the best
     Phi_Inverse = icdf('normal',1-gamma,0,1);

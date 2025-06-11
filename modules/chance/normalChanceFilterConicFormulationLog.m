@@ -1,6 +1,17 @@
-function [newConstraint] = normalChanceFilterConicFormulationLog(c,b,logPhi_Inverse)
+function [newConstraint] = normalChanceFilterConicFormulationLog(c,b,gamma)
 %NORMALCHANCEFILTERCONICFORMULATIONLOG Exponential cone formulation of the
-%disjoint contraints using log(probit).
+%disjoint contraints using an approximation of log(probit).
+
+if isa(gamma,'sdpvar')
+    aa = -0.196671288384826;
+    bb = 1.674000760107396e+03;
+    cc = -2.899789120102472;
+    kk = 1.283146603876050;
+    logPhi_InverseApproximation = aa*lambertw(bb*gamma)+kk+cc*gamma;
+else
+    % The approximation will be the exact value if gamma is fixed
+    logPhi_InverseApproximation = log(icdf('normal',1-gamma,0,1));
+end
 
 % probability(b(x) + c(x)'*w >= 0)...
 
@@ -26,7 +37,7 @@ end
 
 sdpvar z t; % epigraph variables
 
-newConstraint = [a + logPhi_Inverse <= t,
+newConstraint = [a + logPhi_InverseApproximation <= t,
     expcone([t;1;z]),
     z == b];
 end
