@@ -4,7 +4,7 @@ options = interfacedata.options;
 model = yalmip2copt(interfacedata);
 
 if interfacedata.options.savedebug
-    save coptdebug problem
+    save coptdebug model
 end
 
 if options.showprogress; showprogress('Call COPT', options.showprogress); end
