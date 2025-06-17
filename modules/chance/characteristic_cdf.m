@@ -36,10 +36,9 @@ switch class(varargin{1})
         funcs = varargin{4};
         distribution = varargin{5};
         phi = distribution.characteristicfunction;
-        dphi = distribution.characteristicfunction_derivative;
-        reldphi = distribution.characteristicfunction_relativederivative;
+        dphi = distribution.characteristicfunction_derivative;        
         % Create a function which computes gradient at x
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,reldphi);
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -52,11 +51,13 @@ function cdf = compute_cdf_using_phi(y,phi)
 % Perform the inverse Fourier transform to obtain the CDF
 % for Probability(z <= y) where z has characterstic function phi(t)
 % Not much to exploit so for now we use built-in integrator
+% Later this will be computed together with derivatives etc but this
+% requires some global logic to sync those when solver wants stuff
 integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
 cdf =  .5-integral(integrand,0, inf)/pi;
 
 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,reldphi)
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi)
 % Compute derivative of Probability(h(x)+g(x)'*w <= 0)
 
 % Evaluate the operators
@@ -65,15 +66,16 @@ dh0 = dh(x);
 g0  = g(x);
 dg0 = dg(x);
 
-% Instantiate characteristic functions
+% Create characteristic functions etc
 phi_z   = @(t) prod(phi(g0(:)*t),1);
 phi_    = @(t) phi(g0(:)*t);
 dphi_   = @(t) dphi(g0(:)*t);
 exp_ith = @(t) exp(1i*t*h0);
 
-% Compute f_z(-h0) using Gil-P
+% Compute f_z(-h0) using Gil-Pelaez
 % this will be moved to be computed together with derivative instead but
-% for now we do the double work to keep code simple
+% for now we do the double work to keep code simple. Also, for now we use
+% built-in integral
 integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 if nnz(dh0)==0
     pdf_val = 0;
@@ -89,12 +91,13 @@ else
 end
 
 function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith)
-% Compute integral. The subdivided regions are not used yet but might be
-% used later to speed up repeated calls in some way
-[I,regions] = adaptiveGK715(phi_,dphi_,exp_ith,0,1,setupGK715);
+% Compute integral on the transformed domain 0->1
+% Could be various variants, but only one available now
+I = adaptiveGK715(phi_,dphi_,exp_ith,0,1,setupGK715);
 
-function [I,regions] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715)
-% Map nodes to [a,b]
+function I = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715)
+% We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
+% this interval and then map those to original domain 0->inf
 midpt = (a+b)/2;
 halfh = (b-a)/2;
 s = GK715.Nodes*halfh + midpt; 
@@ -107,24 +110,24 @@ PHI    = phi_(t);
 dPHI   = dphi_(t);
 PHIZ   = prod(PHI,1);
 RelPHI = dPHI./PHI;
-% Careful edge-case
+% Careful edge-case when phi is 0
 RelPHI(isnan(RelPHI))=0;
 
-% Weights, exponential and transformation can be moved into weights
-temp = (PHIZ.*exp_ith(t).*coordinateChangeJacobian);
-I_15 = imag(RelPHI*(temp.*GK715.Weights_15).');
-I_7 = imag(RelPHI(:,2:2:end)*(temp(2:2:end).*GK715.Weights_7(2:2:end)).');
+% Product characteristic, exponential and transformation can be combined
+Weight = (PHIZ.*exp_ith(t).*coordinateChangeJacobian);
+% Integral = sum of weighted columns
+I_15 = imag(RelPHI*(Weight.*GK715.Weights_15).');
+I_7 = imag(RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7(2:2:end)).');
 error = abs(I_15-I_7);
-if all(error <= 1e-12)
-    I = I_15;
-    regions = {[a b]};
+% Simple stopping criteria for now, and we sub-divide in all despite some
+% might be done already. Will be optimized later
+if all(error <= (b-a)*1e-6)
+    I = I_15;    
 else
-    [I1,regions1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715);
-    [I2,regions2] = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715);
-    I = I1+I2;
-    regions = {regions1{:},regions2{:}};
+    I1 = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715);
+    I2 = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715);
+    I = I1+I2;    
 end
-
 
 function GK715 = setupGK715
 GK715.Nodes = [ ...
@@ -145,9 +148,3 @@ GK715.Weights_7 = [ ...
     0, 0.4179591836734694, 0, ...
     0.3818300505051189, 0, 0.2797053914892767, ...
     0, 0.1294849661688697, 0];
-
-
-%GK715.Nodes = linspace(-1+1e-12,1-1e-12,15);
-%GK715.Weights_15 = ones(1,15)/15;
-%GK715.Weights_7 = GK715.Weights_15*2;
-%GK715.Weights_7(1:2:end-1) = 0;
