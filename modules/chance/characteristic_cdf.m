@@ -15,7 +15,7 @@ switch class(varargin{1})
         phi = distribution.characteristicfunction;
         % First parameter is name, so remove that
         parameters = {distribution.parameters{2:end}};
-        
+               
         % Evaluate terms at x
         g = funcs.g(x);
         h = funcs.h(x);
@@ -27,6 +27,9 @@ switch class(varargin{1})
             phi = @(t) prod(phi(g(:)*t,parameters{:}),1);        
         else
             % This is a mixture! 
+             mixtureweights = distribution.mixture;
+             % Setup mixture characteristic...
+             
         end
         
         % Compute the cdf
@@ -47,8 +50,9 @@ switch class(varargin{1})
         dphi = distribution.characteristicfunction_derivative;     
         % First parameter is name, so remove that
         parameters = {distribution.parameters{2:end}};
+        mixtureweights = distribution.mixture;
         % Create a function which computes gradient at x
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters);
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -67,7 +71,7 @@ integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
 cdf =  .5-integral(integrand,0, inf)/pi;
 
 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,parameters)
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,parameters,mixtureweights)
 % Compute derivative of Probability(h(x)+g(x)'*w <= 0)
 
 % Evaluate the operators
@@ -83,7 +87,8 @@ if ~isa(parameters{1},'cell')
     dphi_   = @(t) dphi(g0(:)*t,parameters{:});
     exp_ith = @(t) exp(1i*t*h0);
 else
-    % This is a mixture
+    % This is a mixture. The characteristic of the mixture has to be
+    % created etc, and individual component information probably kept too    
     
 end
 
