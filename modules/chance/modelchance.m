@@ -372,9 +372,9 @@ for k = 1:length(randomVariables)
                         mu = randomVariables{k}.distribution.parameters{2};
                         sigma = diag(randomVariables{k}.distribution.parameters{3}).^.5;
                         
-                        phi = @(t) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
-                        dphi = @(t) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
-                        reldphi = @(t) dphi(t)./phi(t);
+                        phi = @(t,mu,sigma) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                        dphi = @(t,mu,sigma) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                        reldphi = @(t,mu,sigma) dphi(t,mu,sigma)./phi(t,mu,sigma);
                     end
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
@@ -382,47 +382,47 @@ for k = 1:length(randomVariables)
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'exponential'
-                    mu = randomVariables{k}.distribution.parameters{2};
+                    %mu = randomVariables{k}.distribution.parameters{2};
                     
-                    phi = @(t)1./(1-t*1i.*mu(:));
-                    dphi = @(t)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
-                    reldphi = @(t) dphi(t)./phi(t);
+                    phi = @(t,mu)1./(1-t*1i.*mu(:));
+                    dphi = @(t,mu)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
+                    reldphi = @(t,mu) dphi(t,mu)./phi(t,mu);
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'logistic'
-                    mu = randomVariables{k}.distribution.parameters{2};
-                    s = randomVariables{k}.distribution.parameters{3};
+                    %mu = randomVariables{k}.distribution.parameters{2};
+                    %s = randomVariables{k}.distribution.parameters{3};
                     
-                    phi = @(t)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
-                    dphi = @(t) guarded_logistic_derivative(t,mu,s);
-                    reldphi = @(t) dphi(t)./phi(t);
+                    phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                    dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
+                    reldphi = @(t,mu,s) dphi(t,mu,s)./phi(t,mu,s);
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'uniform'
-                    a = randomVariables{k}.distribution.parameters{2};
-                    b = randomVariables{k}.distribution.parameters{3};
+                    %a = randomVariables{k}.distribution.parameters{2};
+                    %b = randomVariables{k}.distribution.parameters{3};
                     
-                    phi = @(t)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b(:)-a(:))));
-                    dphi = @(t) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t.*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) .* t) - exp(1i * a(:) .* t)));
-                    reldphi = @(t) dphi(t)./phi(t);
+                    phi = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b(:)-a(:))));
+                    dphi = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t.*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) .* t) - exp(1i * a(:) .* t)));
+                    reldphi = @(t,a,b) dphi(t,a,b)./phi(t,a,b);
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'cauchy'
-                    mu = randomVariables{k}.distribution.parameters{2};
-                    theta = randomVariables{k}.distribution.parameters{3};
+                    %mu = randomVariables{k}.distribution.parameters{2};
+                    %theta = randomVariables{k}.distribution.parameters{3};
                     
-                    phi = @(t)(exp(1i*mu(:).*t - abs(t).*theta(:)));
-                    dphi = @(t) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)))
-                    reldphi = @(t) dphi(t)./phi(t);
+                    phi = @(t,mu,theta)(exp(1i*mu(:).*t - abs(t).*theta(:)));
+                    dphi = @(t,mu,theta) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)))
+                    reldphi = @(t,mu,theta) dphi(t,mu,theta)./phi(t,mu,theta);
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;

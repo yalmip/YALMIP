@@ -13,13 +13,21 @@ switch class(varargin{1})
         distribution = varargin{3};
         
         phi = distribution.characteristicfunction;
+        % First parameter is name, so remove that
+        parameters = {distribution.parameters{2:end}};
         
         % Evaluate terms at x
         g = funcs.g(x);
         h = funcs.h(x);
         
-        % Define char. func for linear combination
-        phi = @(t) prod(phi(g(:)*t),1);        
+        % Define char. func for linear combination, and insert the
+        % numerical parameters (means, shapes etc)  into the function
+        % definition of the characteristic functions
+        if ~isa(parameters{1},'cell')
+            phi = @(t) prod(phi(g(:)*t,parameters{:}),1);        
+        else
+            % This is a mixture! 
+        end
         
         % Compute the cdf
         varargout{1} = compute_cdf_using_phi(-h, phi);
@@ -36,9 +44,11 @@ switch class(varargin{1})
         funcs = varargin{4};
         distribution = varargin{5};
         phi = distribution.characteristicfunction;
-        dphi = distribution.characteristicfunction_derivative;        
+        dphi = distribution.characteristicfunction_derivative;     
+        % First parameter is name, so remove that
+        parameters = {distribution.parameters{2:end}};
         % Create a function which computes gradient at x
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi);
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters);
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -57,7 +67,7 @@ integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
 cdf =  .5-integral(integrand,0, inf)/pi;
 
 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi)
+function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,parameters)
 % Compute derivative of Probability(h(x)+g(x)'*w <= 0)
 
 % Evaluate the operators
@@ -67,10 +77,15 @@ g0  = g(x);
 dg0 = dg(x);
 
 % Create characteristic functions etc
-phi_z   = @(t) prod(phi(g0(:)*t),1);
-phi_    = @(t) phi(g0(:)*t);
-dphi_   = @(t) dphi(g0(:)*t);
-exp_ith = @(t) exp(1i*t*h0);
+if ~isa(parameters{1},'cell')
+    phi_z   = @(t) prod(phi(g0(:)*t,parameters{:}),1);
+    phi_    = @(t) phi(g0(:)*t,parameters{:});
+    dphi_   = @(t) dphi(g0(:)*t,parameters{:});
+    exp_ith = @(t) exp(1i*t*h0);
+else
+    % This is a mixture
+    
+end
 
 % Compute f_z(-h0) using Gil-Pelaez
 % this will be moved to be computed together with derivative instead but
