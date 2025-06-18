@@ -89,10 +89,8 @@ if ~isa(parameters{1},'cell')
     exp_ith = @(t) exp(1i*t*h0);
 else
     % This is a mixture. The characteristic of the mixture has to be
-    % created etc, and individual component information probably kept too.
-    % Most likely it is best to write the non-mixture case as a mixture of
-    % 1 component, so that all code is unified
-        
+    % created etc
+      
 end
 
 % Compute f_z(-h0) using Gil-Pelaez
