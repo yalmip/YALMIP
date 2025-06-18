@@ -15,25 +15,26 @@ switch class(varargin{1})
         phi = distribution.characteristicfunction;
         % First parameter is name, so remove that
         parameters = {distribution.parameters{2:end}};
-               
+        mixtureweights = distribution.mixture;
+        
         % Evaluate terms at x
         g = funcs.g(x);
         h = funcs.h(x);
         
-        % Define char. func for linear combination, and insert the
-        % numerical parameters (means, shapes etc)  into the function
+        % Define char. func for linear combination z = g(x)^Tw, and insert
+        % the numerical parameters (means, shapes etc)  into the function
         % definition of the characteristic functions
         if ~isa(parameters{1},'cell')
-            phi = @(t) prod(phi(g(:)*t,parameters{:}),1);        
+            phi_z = @(t) prod(phi(g(:)*t,parameters{:}),1);        
         else
-            % This is a mixture! 
-             mixtureweights = distribution.mixture;
-             % Setup mixture characteristic...
-             
+            % This is a mixture!           
+             % Create mixture characteristic function...
+             phi_mixture = @(t) createMixtureSum(phi,g(:)*t,mixtureweights,parameters{:});
+             phi_z = @(t) prod(phi_mixture(t),1);
         end
         
         % Compute the cdf
-        varargout{1} = compute_cdf_using_phi(-h, phi);
+        varargout{1} = compute_cdf_using_phi(-h, phi_z);
         
     case 'sdpvar'       
         varargout{1} = yalmip('define',mfilename,varargin{:});    
@@ -88,8 +89,10 @@ if ~isa(parameters{1},'cell')
     exp_ith = @(t) exp(1i*t*h0);
 else
     % This is a mixture. The characteristic of the mixture has to be
-    % created etc, and individual component information probably kept too    
-    
+    % created etc, and individual component information probably kept too.
+    % Most likely it is best to write the non-mixture case as a mixture of
+    % 1 component, so that all code is unified
+        
 end
 
 % Compute f_z(-h0) using Gil-Pelaez
@@ -118,12 +121,12 @@ I = adaptiveGK715(phi_,dphi_,exp_ith,0,1,setupGK715);
 function I = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715)
 % We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
 % this interval and then map those to original domain 0->inf
-midpt = (a+b)/2;
-halfh = (b-a)/2;
-s = GK715.Nodes*halfh + midpt; 
+center = (a+b)/2;
+halfwidth = (b-a)/2;
+s = GK715.Nodes*halfwidth + center; 
 % and now map to original domain using nonlinear transformation
 t = (s./(1-s)).^2;
-coordinateChangeJacobian = (2*s./(1-s).^3).*halfh;
+coordinateChangeJacobian = (2*s./(1-s).^3).*halfwidth;
 
 % Evaluate all functions in all points
 PHI    = phi_(t);
@@ -137,10 +140,10 @@ RelPHI(isnan(RelPHI))=0;
 Weight = (PHIZ.*exp_ith(t).*coordinateChangeJacobian);
 % Integral = sum of weighted columns
 I_15 = imag(RelPHI*(Weight.*GK715.Weights_15).');
-I_7 = imag(RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7(2:2:end)).');
+I_7 = imag(RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7).');
 error = abs(I_15-I_7);
 % Simple stopping criteria for now, and we sub-divide in all despite some
-% might be done already. Will be optimized later
+% might be done already or regions being all 0. Will be optimized later
 if all(error <= (b-a)*1e-6)
     I = I_15;    
 else
@@ -163,8 +166,22 @@ GK715.Weights_15 = [ ...
     0.1903505780647854, 0.1690047266392679, 0.1406532597155259, ...
     0.1047900103222502, 0.06309209262997855, 0.02293532201052922];
 GK715.Weights_7 = [ ...
-    0, 0.1294849661688697, 0, ...
-    0.2797053914892767, 0, 0.3818300505051189, ...
-    0, 0.4179591836734694, 0, ...
-    0.3818300505051189, 0, 0.2797053914892767, ...
-    0, 0.1294849661688697, 0];
+    0.1294849661688697, 0.2797053914892767, 0.3818300505051189, ...
+    0.4179591836734694, 0.3818300505051189, 0.2797053914892767, ...
+    0.1294849661688697];
+
+
+function C = createMixtureSum(f, g_t,mixtureweights,varargin)
+% Characteristic functions sum_j alpha_j phi(g*t,parameters_j)
+C = [];
+% varargin are all distribution parameters, each containing a cell with
+% the indvidual component parameters
+n_mixtures = length(varargin{1});
+C = 0;
+for j = 1:n_mixtures
+    % Extract parameters for this mixture component
+    jthParameters = cellfun(@(c) c{j}, varargin, 'UniformOutput', false);
+    % Evaluate characteristic function. Note that g(x)*t can be a row
+    % vector as an integral evaluator might evaluate multiple points
+    C = C + mixtureweights(j)*f(g_t,jthParameters{:});
+end
