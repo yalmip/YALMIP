@@ -63,11 +63,18 @@ else
             % Yes, mixture defined
             for i = 2:length(x.extra.distribution.parameters)
                 if ~iscell(x.extra.distribution.parameters{i})
-                    error('Mixture parameters should be placed in cells, including trailing mixture weights.')
+                    if i == length(x.extra.distribution.parameters)
+                        % We support weights in both cell and vector, but
+                        % temporarily place them in a cell for the
+                        % dimension check below to be simple
+                        x.extra.distribution.parameters{i} = num2cell(x.extra.distribution.parameters{i});
+                    else
+                        error('Mixture parameters should be placed in cells (except weights which can be a vector)')
+                    end
                 end
             end
             % Check weights
-            alpha = varargin{end};            
+            alpha = x.extra.distribution.parameters{end};            
             if ~(abs(sum([alpha{:}])-1)<1e-12)
                 error('Mixture weights should sum up to 1.')
             end
