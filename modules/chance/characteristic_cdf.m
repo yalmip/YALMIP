@@ -53,7 +53,9 @@ switch class(varargin{1})
         parameters = {distribution.parameters{2:end}};
         mixtureweights = distribution.mixture;
         % Create a function which computes gradient at x
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
+        if isempty(mixtureweights)
+            operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
+        end
         
         varargout{1} = [];
         varargout{2} = operator;

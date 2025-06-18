@@ -1,6 +1,18 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
 
-% Mixture layer
+% Might be using characteristic framwork for mixtures
+if strcmpi(options.chance.characteristic,'yes')
+    % A bit messy with normal/gaussian. Internal framework works with mean,
+    % covariance and factorized covariance (std. dev in scalar case) and
+    % thus has 3 parameters. However, the characteristic function is
+    % defined from mean and std. dev to comply with standard notation.
+    % Hence remove second parameter
+    distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};    
+    newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
+    return    
+end
+
+% default though is to simply use analytic stuff
 if ~isempty(distribution.mixture)
     newConstraint = normalChanceFilterMixLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
     return
@@ -9,16 +21,6 @@ end
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 factorcovariance = distribution.parameters{4};
-
-% You never know, someone might want to do this...
-if strcmpi(options.chance.characteristic,'yes') && isdiag(covariance)
-    if isa(theMean,'double') && isa(covariance,'double')
-        newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
-        return
-    else
-        error('Characterstics can only be used for fixed distribution parameters');
-    end
-end
 
 constant_gain = isa(c,'double') && isa(factorcovariance,'double');
 
@@ -32,19 +34,15 @@ e = factorcovariance*c;
 
 if strcmpi(options.chance.expcone,'yes')
     if ~constant_gain
-        error('Cannot have decision variables multplying uncertainty when using expcone approximation of inverse cdf')
+        error('Cannot have decision variables multiplying uncertainty when using expcone approximation of inverse cdf')
     end
-    Phi_Inverse = normalChanceFilterConicApproximation(gamma);
-    newConstraint =  b + c'*theMean >= Phi_Inverse*norm(e);
-elseif strcmpi(options.chance.expcone,'root') && isDisjointProblem
-    rootPhi_Inverse = normalChanceFilterConicApproximationRoot(gamma);
-    newConstraint = normalChanceFilterConicFormulationRoot(c,b,rootPhi_Inverse);
-elseif strcmpi(options.chance.expcone,'log') && isDisjointProblem
-    logPhi_Inverse = normalChanceFilterConicApproximationLog(gamma);
-    newConstraint = normalChanceFilterConicFormulationLog(c,b,logPhi_Inverse);
+    newConstraint = normalChanceFilterConicFormulation(b,c,e,theMean,gamma);
 elseif strcmpi(options.chance.expcone,'inv') && isDisjointProblem
-    invPhi_Inverse = normalChanceFilterConicApproximationInv(gamma);
-    newConstraint = normalChanceFilterConicFormulationInv(c,b,invPhi_Inverse);
+    newConstraint = normalChanceFilterConicFormulationInv(c,b,gamma);
+elseif strcmpi(options.chance.expcone,'root') && isDisjointProblem
+    newConstraint = normalChanceFilterConicFormulationRoot(c,b,gamma);
+elseif strcmpi(options.chance.expcone,'log') && isDisjointProblem
+    newConstraint = normalChanceFilterConicFormulationLog(c,b,gamma);
 else
     % Just go for a general nonlinear model and hope for the best
     Phi_Inverse = icdf('normal',1-gamma,0,1);
@@ -113,8 +111,6 @@ for i = 1:length(newMixture)
     newConstraint = [newConstraint, normalChanceFilter(b,c,distribution,gamma_i(i),options,funcs,x,isDisjointProblem)];
 end
 return
-
-
 
 function C = allSequences(m,n)
 % Returns an (m^n) x n matrix whose rows are all length-n sequences from 1:m.
