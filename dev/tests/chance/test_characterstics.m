@@ -7,7 +7,7 @@ sdpvar t x
 gamma = sdpvar(1)
 
 Model = [probability(3*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'exponential',3)];
-optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp'))
+optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp','chance.characteristic','yes'))
 
 % Confirm numerically
 N = 1e6;
