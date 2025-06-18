@@ -1,6 +1,18 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
 
-% Mixture layer
+% Might be using characteristic framwork for mixtures
+if strcmpi(options.chance.characteristic,'yes')
+    % A bit messy with normal/gaussian. Internal framework works with mean,
+    % covariance and factorized covariance (std. dev in scalar case) and
+    % thus has 3 parameters. However, the characteristic function is
+    % defined from mean and std. dev to comply with standard notation.
+    % Hence remove second parameter
+    distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};    
+    newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
+    return    
+end
+
+% default though is to simply use analytic stuff
 if ~isempty(distribution.mixture)
     newConstraint = normalChanceFilterMixLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
     return
@@ -9,16 +21,6 @@ end
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 factorcovariance = distribution.parameters{4};
-
-% You never know, someone might want to do this...
-if strcmpi(options.chance.characteristic,'yes') && isdiag(covariance)
-    if isa(theMean,'double') && isa(covariance,'double')
-        newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
-        return
-    else
-        error('Characterstics can only be used for fixed distribution parameters');
-    end
-end
 
 constant_gain = isa(c,'double') && isa(factorcovariance,'double');
 
