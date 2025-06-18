@@ -21,18 +21,39 @@ if any(strcmp(A.distribution.parameters{1},normalvariants)) || any(strcmp(A.dist
     facA = A.distribution.parameters{4};
     facB = B.distribution.parameters{4};        
     if ~isempty(varA) && ~isempty(varB)
-        varC = blkdiag(varA,varB);
+        if isa(varA,'cell')
+            for j = 1:length(varA)
+                varC{j} = blkdiag(varA{j},varB{j});
+            end
+        else
+            varC = blkdiag(varA,varB);
+        end
     else
         varC = [];
     end
     if ~isempty(facA) && ~isempty(facB)
-        facC = blkdiag(facA,facB);
+        if isa(facA,'cell')
+            for j = 1:length(varA)
+                facC{j} = blkdiag(facA{j},facB{j});
+            end
+        else
+            facC = blkdiag(facA,facB);
+        end
     else
         facC = [];
     end
+    meanA = A.distribution.parameters{2};
+    meanB = B.distribution.parameters{2};
+    if isa(meanA,'cell')
+        for j = 1:length(meanA)
+                meanC{j} = [meanA{j};meanB{j}];;
+        end 
+    else
+        meanC = [meanA;meanB];
+    end
         
 	C.distribution.parameters{1} = 'normal';
-    C.distribution.parameters{2} = [A.distribution.parameters{2};B.distribution.parameters{2}];
+    C.distribution.parameters{2} = meanC;
     C.distribution.parameters{3} = varC;
     C.distribution.parameters{4} = facC;        
 else
