@@ -63,9 +63,27 @@ else
             % Yes, mixture defined
             for i = 2:length(x.extra.distribution.parameters)
                 if ~iscell(x.extra.distribution.parameters{i})
-                    error('Mixture parameters should be placed in cells, including trailing mixture weights.')
+                    if i == length(x.extra.distribution.parameters)
+                        % We support weights in both cell and vector, but
+                        % temporarily place them in a cell for the
+                        % dimension check below to be simple
+                        x.extra.distribution.parameters{i} = num2cell(x.extra.distribution.parameters{i});
+                    else
+                        error('Mixture parameters should be placed in cells (except weights which can be a vector)')
+                    end
                 end
             end
+            % Check weights
+            alpha = x.extra.distribution.parameters{end};            
+            if ~(abs(sum([alpha{:}])-1)<1e-12)
+                error('Mixture weights should sum up to 1.')
+            end
+            
+            nMix = cellfun(@length,x.extra.distribution.parameters);
+            if ~all(nMix(2) == nMix(2:end))
+                error('All parameter cells in mixture should have same length (#mixtures)')
+            end
+            
             % Remove mixture parameters and place in object instead
             x.extra.distribution.mixture = [x.extra.distribution.parameters{end}{:}];
             x.extra.distribution.parameters = {x.extra.distribution.parameters{1:end-1}};
@@ -73,6 +91,10 @@ else
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mix','');
             x.extra.distribution.parameters{1} = lower(strtrim(x.extra.distribution.parameters{1}));
             
+            if strcmp(x.extra.distribution.parameters{1},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf'})
+                error(['Mixtures of ' x.extra.distribution.parameters{1} ' distributions not supported (yet...)']);
+            end
+                                    
             if isa(varargin{1},'function_handle')
                 % Hmm, do we support generic mixtures of this type
                 error('Mixture of sample generators not supported');
@@ -82,7 +104,7 @@ else
         end        
     end
     try
-        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf','laplace'}))))
+        if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf','laplace','cauchy'}))))
             % Don't try to evaluate special case distributions, such as
             % distributions with decision variables, or aditional cases
             % 'normalm' (multivariate normal) or 'normalf' (factor covar)
@@ -94,6 +116,10 @@ else
                     temp = x.extra.distribution.parameters;
                     for j = 2:length(x.extra.distribution.parameters)
                         temp{j} = temp{j}{i};
+                        if isa(temp{j},'sdpvar')
+                            temp{j} = value(temp{j});
+                            temp{j}(isnan(temp{j})) = 0;
+                        end
                     end
                     y = random(temp{:});
                 end

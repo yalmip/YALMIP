@@ -1,4 +1,11 @@
-function newConstraint = normalChanceFilter(b,c,distribution,gamma,w,options,funcs,x,isDisjointProblem)
+function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
+
+% Mixture layer
+if ~isempty(distribution.mixture)
+    newConstraint = normalChanceFilterMixLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
+    return
+end
+
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};
 factorcovariance = distribution.parameters{4};
@@ -47,3 +54,65 @@ else
         newConstraint =  b + c'*theMean >= Phi_Inverse*norm(e);
     end
 end
+
+
+
+function newConstraint = normalChanceFilterMixLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
+theMean    = distribution.parameters{2};
+covariance = distribution.parameters{3};
+factorcovariance = distribution.parameters{4};
+
+% There might be zeros in c meaning some w(i) are missing and can be pruned
+missing = ~any(getbase(c),2);
+if ~isempty(missing)
+    c(missing)=[];
+    for i = 1:length(theMean)
+        theMean{i}(missing) = [];
+        covariance{i}(:,missing) = [];
+        covariance{i}(missing,:) = [];
+        factorcovariance{i}(:,missing) = [];
+    end
+end
+% FIXME: Refactor
+% Mixtures are currently only acting on elementwise terms. This means
+% that the mixture model now has to be exploded to be the mixture of
+% the linear combination
+newWeights = [];
+newMean = {};
+newcovariance = {};
+n = length(c);
+m = length(distribution.mixture);
+Combs = allSequences(m,n);
+newMixture = [];
+for i = 1:length(Combs)
+    if any(cellfun(@(x)isa(x,'sdpvar'),theMean))
+        aMean = sdpvar(n,1);
+    else
+        aMean = zeros(n,1);
+    end
+    aCov =  zeros(n,1);
+    for j = 1:n
+        aMean(j) = theMean{Combs(i,j)}(j);
+        aCov(j) = covariance{Combs(i,j)}(j,j);
+    end
+    allMeans{i} = aMean;
+    allCovs{i} = diag(aCov);
+    newMixture(end+1) = prod(distribution.mixture(Combs(i,:)));
+end
+distribution.mixture = [];
+gamma_i = sdpvar(1,length(newMixture));
+newConstraint = [gamma == sum(newMixture.*gamma_i)];
+for i = 1:length(newMixture)
+    distribution.parameters{2} = allMeans{i};
+    distribution.parameters{3} = allCovs{i};
+    distribution.parameters{4} = allCovs{i}.^.5;
+    newConstraint = [newConstraint, normalChanceFilter(b,c,distribution,gamma_i(i),options,funcs,x,isDisjointProblem)];
+end
+return
+
+function C = allSequences(m,n)
+% Returns an (m^n) x n matrix whose rows are all length-n sequences from 1:m.
+vectors = cell(1,n);
+[vectors{:}] = ndgrid(1:m);
+C = cell2mat( cellfun(@(V) V(:), vectors, 'UniformOutput', false) );
+

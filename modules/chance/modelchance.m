@@ -33,13 +33,14 @@ keep(chanceDeclarations)=0;
 randomVariables = extractRandomDefinitions(F(randomDeclarations));
 if options.verbose
     if ~rec
-        disp('***** Starting YALMIP chance constraint module. *******************')
+        disp('***** Starting YALMIP chance constraint module. ***************************')
     else
         disp(' - (recursive application of chance constraints)')
     end
-    disp([' - Detected ' num2str(length(randomVariables)) ' distribution models.'])
+    nw = length(randomVariables);
+    disp([' - Detected ' num2str(nw) ' distribution declaration' pluralS(nw)])
 end
-% Merging distribution 
+% Merging distribution
 % 1. Multiple with same distribution are placed as one vector-valued
 % 2. The different versions of Gaussian are combined and normalized, and
 % will have three properties, mean, covariance, and factorized covariance,
@@ -48,32 +49,34 @@ end
 randomVariables = setupCharacterstics(randomVariables);
 
 if options.verbose && length(map)>max(map)
-    disp([' - Merged to ' num2str(length(randomVariables)) ' distribution models.'])
+    nw = length(randomVariables);
+    disp([' - Merged to ' num2str(nw) ' distribution model' pluralS(nw)])
 end
 
 groupedChanceConstraints = groupchanceconstraints(F);
 
 if options.verbose
-    disp([' - Detected ' num2str(length(groupedChanceConstraints)) ' chance constraints.'])
+    nc = length(groupedChanceConstraints);
+    disp([' - Detected ' num2str(nc) ' chance constraint' pluralS(nc)])
 end
 
 % Some strategies exploit simplex structure
 Simplicies = F(find(is(F,'simplex')));
 SimplexInfo = [];
-if ~isempty(Simplicies)    
+if ~isempty(Simplicies)
     SimplexInfo = sparse([]);
     for i = 1:length(Simplicies)
         SimplexInfo(end+1,getvariables(Simplicies(i))) = 1;
     end
 end
-    
+
 [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo);
 Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
     Fchance = modelchance(Fchance,options,1);
 end
 if ~rec && options.verbose
-    disp('***** Modeling of chance constraints done. ************************')
+    disp('***** Modeling of chance constraints done. ********************************')
 end
 
 
@@ -93,8 +96,7 @@ for uncertaintyGroup = 1:length(randomVariables)
     wVars = getvariables(randomVariables{uncertaintyGroup}.variables);
     
     savedParameters = randomVariables{uncertaintyGroup}.distribution.parameters;
-    nMixtures = length(randomVariables{uncertaintyGroup}.distribution.mixture);
-       
+        
     for ic = 1:length(groupedChanceConstraints)
         if length(groupedChanceConstraints{ic})>1
             error('Joint chance constraint not supported');
@@ -104,188 +106,161 @@ for uncertaintyGroup = 1:length(randomVariables)
         end
         
         confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
-        gamma = 1-confidencelevel;              
-        confidencelevelAllMixtures = confidencelevel;
-        gammaAllMixtures = gamma;
-        confidencelevelIndividualMixtures = sdpvar(1,nMixtures);
-                                
+        gamma = 1-confidencelevel;
+        
         Xvec = sdpvar(groupedChanceConstraints{ic});
         
         for ix = 1:length(Xvec)
             X = Xvec(ix);
-            
-            if nMixtures > 1 && options.verbose
-                disp([' - Expanding a mixture ']);
-            end
                                     
-            for mixtureComponent = 1:max(1,nMixtures)
-                if nMixtures > 1
-                    % Set distribution to current component
-                    for i = 2:length(randomVariables{uncertaintyGroup}.distribution.parameters)
-                        Param = savedParameters{i};
-                        randomVariables{uncertaintyGroup}.distribution.parameters{i} = Param{mixtureComponent};
-                    end
-                    confidencelevel = confidencelevelIndividualMixtures(mixtureComponent);
-                    gamma = 1-confidencelevel;                     
-                end
-                
-                
-                % Extract quadratic part, X = fX + X, where fx is other stuff
-                [fX,X] = functionSeparation(X);
-                
-                if isa(fX,'sdpvar') && ~isempty(intersect(deepdepends(fX),wVars))
-                    error('Stochastic uncertainty in nonlinear operator not supported yet.');
-                end
-                
-                allVars = depends(X);
-                if ~isempty(intersect(wVars,allVars))
-                    xVars = setdiff(allVars,wVars);
-                    x = recover(xVars);
-                    w = recover(wVars);
-                    
-                    fail = 0;
-                    [A,cx,b,cw,fail] = quadraticDecomposition(X,x,w);
-                    
-                    % Remap to original ordering on variables in distribution
-                    % Base = full(getbase(randomVariables{uncertaintyGroup}.variables));
-                    % Base = Base(:,2:end);
-                    % [ii,jj,kk] = find(Base)
-                    %  cw = cw*Base;
-                    %  A = A*Base;
-                    
-                    % b(x) + c(x)'*w >= 0
-                    
-                    
-                    % Used in characteristics stuff but there notation is h(x)+g(x)^Tw <= 0
-                    funcs.h = @(x)(-b-cx(:)'*x);                    
-                    funcs.dh =@(x)(-cx(:));                    
-                    funcs.g = @(x)(-cw(:)-A'*x);
-                    funcs.dg =@(x)(-A');
-                                        
-                    if isempty(b)
-                        b = 0;
-                    end
-                    b = b + fX;                                                                            
-                    if ~isempty(cx)
-                        b = b + cx'*x;
-                    end
-                    c = cw';
-                    if ~isempty(A)
-                        c = c + A'*x;
-                    end
-                                                                                                    
-                    % Are all variables in c constrained to a simple (this
-                    % is exploited in the normalChancefilter
-                    DisjointWeight = 0;
-                    if ~isempty(SimplexInfo) && isa(c,'sdpvar')
-                        x_in_c = getvariables(c);
-                        for i = 1:size(SimplexInfo,1)
-                            if isequal(find(SimplexInfo(i,:)),x_in_c)
-                                DisjointWeight = 1;
-                            end
-                        end                    
-                    end
-                        
-                    
-                    newConstraint = [];
-                    if ~fail
-                    %    confidencelevel = struct(groupedChanceConstraints{ic}).clauses{1}.confidencelevel;
-                    %    gamma = 1-confidencelevel;
-                        if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.generator),'random')
-                            distName = randomVariables{uncertaintyGroup}.distribution.parameters{1};
-                            switch distName
-                                case 'dro'
-                                    newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case 'moment'
-                                    if isequal(options.chance.method,'momentchebyshev')
-                                        newConstraint = momentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    else
-                                        newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    end
-                                    printout(options.verbose,'moment',randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case 'momentf'
-                                    newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                    printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case {'normal'}
-                                    newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x,DisjointWeight);
-                                    printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case {'logistic', 'laplace','uniform','t','tlocationScale'}
-                                    newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
-                                    printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                case {'stable'}
-                                    newConstraint = conditionallysymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
-                                    printout(options.verbose,['exact conditionally symmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;                                    
-                                case {'gamma','weibull','exponential'}
-                                    newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options,funcs,x);
-                                    printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                                otherwise
-                                    switch options.chance.method
-                                        case 'dro'
-                                            newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case {'chebyshev','chebychev'}
-                                            newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case {'momentchebyshev','momentchebychev'}
-                                            newConstraint = sampledmomentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case {'moment'}
-                                            newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case 'markov'
-                                            newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case 'chernoff'
-                                            newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case 'integer'
-                                            newConstraint =  sampledMIChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        case 'scenario'
-                                            newConstraint =  sampledScenarioChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                        otherwise
-                                            error('Chance modeling approach not recognized');
-                                    end
-                                    printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution);
-                                    eliminatedConstraints(ic)=1;
-                            end
-                        else
-                            switch options.chance.method
-                                case 'chebyshev'
-                                    newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                case 'moment'
-                                    newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                case 'momentchebyshev'
-                                    newConstraint = sampledmomentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                case 'markov'
-                                    newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                case 'chernoff'
-                                    newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                case 'integer'
-                                    newConstraint =  sampledMIChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
-                                otherwise
-                                    error('Chance modeling approach not recognized');
-                            end
-                            printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution);
-                            eliminatedConstraints(ic)=1;
-                        end
-                    end
-                    if ~isempty(newConstraint)
-                        if ~isempty(intersect(depends(newConstraint),allwVars))
-                            % New uncertainties popped up,i.e. parameters in a
-                            % distribution, are distributions them selves
-                            Fchance = [Fchance, probability(newConstraint)>=confidencelevel];
-                            recursive = 1;
-                        else
-                            Fchance = [Fchance, newConstraint];
-                        end
-                    end
-                end
+            % Extract quadratic part, X = fX + X, where fx is other stuff
+            [fX,X] = functionSeparation(X);
+            
+            if isa(fX,'sdpvar') && ~isempty(intersect(deepdepends(fX),wVars))
+                error('Stochastic uncertainty in nonlinear operator not supported yet.');
             end
-            if nMixtures > 1
-                weights = randomVariables{uncertaintyGroup}.distribution.mixture;
-                Fchance = [Fchance, sum(weights(:).*confidencelevelIndividualMixtures(:)) == confidencelevelAllMixtures];
+            
+            allVars = depends(X);
+            if ~isempty(intersect(wVars,allVars))
+                xVars = setdiff(allVars,wVars);
+                x = recover(xVars);
+                w = recover(wVars);
+                
+                fail = 0;
+                [A,cx,b,cw,fail] = quadraticDecomposition(X,x,w);
+                
+                % Remap to original ordering on variables in distribution
+                % Base = full(getbase(randomVariables{uncertaintyGroup}.variables));
+                % Base = Base(:,2:end);
+                % [ii,jj,kk] = find(Base)
+                %  cw = cw*Base;
+                %  A = A*Base;
+                
+                % b(x) + c(x)'*w >= 0
+                
+                
+                % Used in characteristics stuff but there notation is h(x)+g(x)^Tw <= 0
+                funcs.h = @(x)(-b-cx(:)'*x);
+                funcs.dh =@(x)(-cx(:));
+                funcs.g = @(x)(-cw(:)-A'*x);
+                funcs.dg =@(x)(-A');
+                
+                if isempty(b)
+                    b = 0;
+                end
+                b = b + fX;
+                if ~isempty(cx)
+                    b = b + cx'*x;
+                end
+                c = cw';
+                if ~isempty(A)
+                    c = c + A'*x;
+                end
+                
+                % Are all variables in c constrained to a simple (this
+                % is exploited in the normalChancefilter
+                DisjointWeight = 0;
+                if ~isempty(SimplexInfo) && isa(c,'sdpvar')
+                    x_in_c = getvariables(c);
+                    for i = 1:size(SimplexInfo,1)
+                        if isequal(find(SimplexInfo(i,:)),x_in_c)
+                            DisjointWeight = 1;
+                        end
+                    end
+                end
+                
+                newConstraint = [];
+                if ~fail
+                    if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.generator),'random')
+                        distName = randomVariables{uncertaintyGroup}.distribution.parameters{1};
+                        switch distName
+                            case 'dro'
+                                newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                printout(options.verbose,'dro',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                            case 'moment'
+                                if isequal(options.chance.method,'momentchebyshev')
+                                    newConstraint = momentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                else
+                                    newConstraint = momentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                end
+                                printout(options.verbose,'moment',randomVariables{uncertaintyGroup}.distribution);
+                                eliminatedConstraints(ic)=1;
+                            case 'momentf'
+                                newConstraint = momentfactorizedChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                printout(options.verbose,'factorized moment',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                            case {'normal'}
+                                newConstraint = normalChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x,DisjointWeight);
+                                printout(options.verbose,'exact normal',randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                            case {'logistic', 'laplace','uniform','t','tlocationScale','cauchy'}
+                                newConstraint = symmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
+                                printout(options.verbose,['exact symmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                            case {'stable'}
+                                newConstraint = conditionallysymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
+                                printout(options.verbose,['exact conditionally symmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                            case {'gamma','weibull','exponential'}
+                                newConstraint = nonsymmetricUnivariateChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options,funcs,x);
+                                printout(options.verbose,['exact nonsymmetric univariate'],randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                            otherwise
+                                switch options.chance.method
+                                    case 'dro'
+                                        newConstraint = droChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case {'chebyshev','chebychev'}
+                                        newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case {'momentchebyshev','momentchebychev'}
+                                        newConstraint = sampledmomentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case {'moment'}
+                                        newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case 'markov'
+                                        newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case 'chernoff'
+                                        newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case 'integer'
+                                        newConstraint =  sampledMIChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                                    case 'scenario'
+                                        newConstraint =  sampledScenarioChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,w,options);
+                                    otherwise
+                                        error('Chance modeling approach not recognized');
+                                end
+                                printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution,ic,length(groupedChanceConstraints));
+                                eliminatedConstraints(ic)=1;
+                        end
+                    else
+                        switch options.chance.method
+                            case 'chebyshev'
+                                newConstraint = sampledchebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                            case 'moment'
+                                newConstraint = sampledmomentChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                            case 'momentchebyshev'
+                                newConstraint = sampledmomentChebyshevChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                            case 'markov'
+                                newConstraint =  sampledmarkovChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                            case 'chernoff'
+                                newConstraint =  sampledchernoffChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                            case 'integer'
+                                newConstraint =  sampledMIChanceFilter(b,c,randomVariables{uncertaintyGroup}.distribution,gamma,options);
+                            otherwise
+                                error('Chance modeling approach not recognized');
+                        end
+                        printout(options.verbose,options.chance.method,randomVariables{uncertaintyGroup}.distribution);
+                        eliminatedConstraints(ic)=1;
+                    end
+                end
+                if ~isempty(newConstraint)
+                    if ~isempty(intersect(depends(newConstraint),allwVars))
+                        % New uncertainties popped up,i.e. parameters in a
+                        % distribution, are distributions them selves
+                        Fchance = [Fchance, probability(newConstraint)>=confidencelevel];
+                        recursive = 1;
+                    else
+                        Fchance = [Fchance, newConstraint];
+                    end
+                end
             end
         end
     end
@@ -356,21 +331,24 @@ for i = 1:length(X)
     ccc = [ccc;sparse(c_x)];
     if isempty(x) || (nnz(Q_xx)==0)
         b = [b;f];
-    else    
+    else
         b = [b;f+x'*Q_xx*x];
     end
     c_wTbase = [c_wTbase;c_w'];
 end
 
-function printout(verbose,method,distribution)
+function printout(verbose,method,distribution,count,amountSame)
 
-if verbose
+if verbose && count == 1
     if strcmpi(func2str(distribution.generator),'random')
-        disp([' - Using ''' method '''-filter on constraint with ''' distribution.parameters{1} ''' distribution']);
+        disp([' - Using ''' method '''-filter on ' num2str(amountSame) ' constraint' pluralS(amountSame) ' with ''' distribution.parameters{1} ''' distribution']);
     else
-        disp([' - Using ''' method '''-filter on constraint with data created by @' distribution.name']);
+        disp([' - Using ''' method '''-filter on ' num2str(amountsame) ' constraint' pluralS(amountSame) ' with data created by @' distribution.name']);
     end
 end
+
+function s = pluralS(n)
+if n == 1;s = '';else s = 's';end
 
 
 function randomVariables = setupCharacterstics(randomVariables)
@@ -379,54 +357,73 @@ for k = 1:length(randomVariables)
     if strcmpi(randomVariables{k}.distribution.type,'stochastic')
         if isequal(randomVariables{k}.distribution.generator,@random)
             switch randomVariables{k}.distribution.parameters{1}
-                                     
+                
                 case 'normal'
                     % Warning. When we normalize all Gaussian versions, we
                     % finally use covariance matrix as second parameter
                     % (defining  'normal' uses vector std. dev. while
-                    % 'mvnrnd' uses covariance. 
-                    mu = randomVariables{k}.distribution.parameters{2};                      
-                    sigma = diag(randomVariables{k}.distribution.parameters{3}).^.5;  
+                    % 'mvnrnd' uses covariance.
+                    % FIXME: Currently no mixture in characteristics
+                    if ~isempty(randomVariables{k}.distribution.mixture)
+                        phi = [];
+                        dphi = [];
+                        reldphi = [];
+                    else
+                        mu = randomVariables{k}.distribution.parameters{2};
+                        sigma = diag(randomVariables{k}.distribution.parameters{3}).^.5;
+                        
+                        phi = @(t,mu,sigma) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                        dphi = @(t,mu,sigma) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
+                        reldphi = @(t,mu,sigma) dphi(t,mu,sigma)./phi(t,mu,sigma);
+                    end
                     
-                    phi = @(t) exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
-                    dphi = @(t) (1i*mu(:) - sigma(:).^2.*t).*exp(1i*t.*mu(:) - 0.5*sigma(:).^2.*t.^2);
-                    reldphi = @(t) dphi(t)./phi(t);
-                                                            
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
-                
+                    
                 case 'exponential'
-                    mu = randomVariables{k}.distribution.parameters{2};  
+                    %mu = randomVariables{k}.distribution.parameters{2};
                     
-                    phi = @(t)1./(1-t*1i.*mu(:));
-                    dphi = @(t)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
-                    reldphi = @(t) dphi(t)./phi(t);
-                                                                                
+                    phi = @(t,mu)1./(1-t*1i.*mu(:));
+                    dphi = @(t,mu)1i*(mu(:))./(1-1i*t.*mu(:)).^2;
+                    reldphi = @(t,mu) dphi(t,mu)./phi(t,mu);
+                    
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
-                case 'logistic'                
-                    mu = randomVariables{k}.distribution.parameters{2};
-                    s = randomVariables{k}.distribution.parameters{3};  
+                case 'logistic'
+                    %mu = randomVariables{k}.distribution.parameters{2};
+                    %s = randomVariables{k}.distribution.parameters{3};
                     
-                    phi = @(t)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
-                    dphi = @(t) guarded_logistic_derivative(t,mu,s);
-                    reldphi = @(t) dphi(t)./phi(t);
-                                                                                                                                              
+                    phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                    dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
+                    reldphi = @(t,mu,s) dphi(t,mu,s)./phi(t,mu,s);
+                    
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'uniform'
-                    a = randomVariables{k}.distribution.parameters{2};
-                    b = randomVariables{k}.distribution.parameters{3};                    
+                    %a = randomVariables{k}.distribution.parameters{2};
+                    %b = randomVariables{k}.distribution.parameters{3};
                     
-                    phi = @(t)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b(:)-a(:))));
-                    dphi = @(t) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t.*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) .* t) - exp(1i * a(:) .* t)));
-                    reldphi = @(t) dphi(t)./phi(t);
-
+                    phi = @(t,a,b)(guarded_expdiv(b(:).*t,a(:).*t,t.*(b(:)-a(:))));
+                    dphi = @(t,a,b) (1 ./ (1i*(b(:)-a(:)) .* t.^2)) .* (t.*(1i*b(:).*exp(1i * b(:) .* t) - 1i*a(:) .* exp(1i * a(:) .* t)) - (exp(1i * b(:) .* t) - exp(1i * a(:) .* t)));
+                    reldphi = @(t,a,b) dphi(t,a,b)./phi(t,a,b);
+                    
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
+                    
+                case 'cauchy'
+                    %mu = randomVariables{k}.distribution.parameters{2};
+                    %theta = randomVariables{k}.distribution.parameters{3};
+                    
+                    phi = @(t,mu,theta)(exp(1i*mu(:).*t - abs(t).*theta(:)));
+                    dphi = @(t,mu,theta) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)))
+                    reldphi = @(t,mu,theta) dphi(t,mu,theta)./phi(t,mu,theta);
+                    
                     randomVariables{k}.distribution.characteristicfunction = phi;
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;

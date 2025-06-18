@@ -1,4 +1,4 @@
-function newConstraint =  sampledMIChanceFilter(b,c,distribution,gamma,w,options);
+function newConstraint =  sampledMIChanceFilter(b,c,distribution,gamma,options)
 N = options.chance.N;
 W = [];for i = 1:N;W = [W dataSampler(distribution,size(w))];end
 d = binvar(N,1);

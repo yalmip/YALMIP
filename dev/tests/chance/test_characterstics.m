@@ -52,6 +52,43 @@ estimated_probability = (nnz(2*wsample <= value(t)))/N;
 
 testCase.assertTrue(abs(value(t)-11.9777)<=0.01 && abs(estimated_probability - 0.95) <= 0.01)
 
+function test_cauchy_single(testCase)
+yalmip('clear')
+w=sdpvar(1,1);
+sdpvar t g
+truth = -16.9413;
+Model = [probability(w >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'cauchy',2,3)];
+optimize(Model,-t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','sqp','chance.characteristic','yes'))
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+%d = makedist('tLocationScale','mu',2,'sigma',3,'nu',1)
+%r = random(d,10000,1);
+%nnz(r >= value(t))/length(r)
+
+function test_cauchy_multi(testCase)
+yalmip('clear')
+w=sdpvar(2,1);
+sdpvar t g
+truth = -84.7063;
+Model = [probability([2 3]*w >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'cauchy',2,3)];
+optimize(Model,-t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','sqp','chance.characteristic','yes'))
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+%d = makedist('tLocationScale','mu',2,'sigma',3,'nu',1)
+%r = random(d,2,1e5);
+%nnz([2 3]*r >= value(t))/length(r)
+
+function test_cauchy_multi_2(testCase)
+yalmip('clear')
+w=sdpvar(2,1);
+sdpvar t g 
+x = sdpvar(100,1);
+truth = -84.7063;
+Model = [probability([2+sum(x) 3-sum(x)]*w >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'cauchy',2,3)];
+optimize(Model,-t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','sqp','chance.characteristic','yes'))
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+%d = makedist('tLocationScale','mu',2,'sigma',3,'nu',1)
+%r = random(d,2,1e5);
+%nnz([2 3]*r >= value(t))/length(r)
+
 
 function test_logistic_multi(testCase)
 

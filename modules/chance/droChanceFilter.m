@@ -1,4 +1,4 @@
-function model = droChanceFilter(b,c,distribution,gamma,w,options)
+function model = droChanceFilter(b,c,distribution,gamma,options)
 % Chance filter for distribution only specified by mean and variance
 %themean    = distribution.parameters{2};
 %covariance = distribution.parameters{3};
