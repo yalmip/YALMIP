@@ -62,15 +62,24 @@ end
 
 % Some strategies exploit simplex structure
 Simplicies = F(find(is(F,'simplex')));
-SimplexInfo = [];
-if length(Simplicies)>0
-    SimplexInfo = sparse([]);
+SimplexInfo = sparse([]);
+if length(Simplicies)>0    
     for i = 1:length(Simplicies)
         SimplexInfo(end+1,getvariables(Simplicies(i))) = 1;
     end
+else
+    Candidates = F(find(is(F,'equality')));
+    for i = 1:length(Candidates)
+        C = sdpvar(Candidates(i));
+        B = getbase(C);
+        if size(B,1)==1 && all((B(1) == -B(2:end))) && (abs(B(1)==1))
+            SimplexInfo(end+1,getvariables(C)) = sparse(1);
+        end
+    end
 end
+binaryVariables = union(getvariables(F(find(is(F,'binary')))),yalmip('binvariables'));
 
-[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo);
+[Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo,binaryVariables);
 Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
     Fchance = modelchance(Fchance,options,1);
@@ -80,7 +89,7 @@ if ~rec && options.verbose
 end
 
 
-function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo)
+function [Fchance,eliminatedConstraints,recursive] = deriveChanceModel(groupedChanceConstraints,randomVariables,options,SimplexInfo,binaryVariables)
 
 recursive = 0;
 Fchance = [];
@@ -164,7 +173,11 @@ for uncertaintyGroup = 1:length(randomVariables)
                     x_in_c = getvariables(c);
                     for i = 1:size(SimplexInfo,1)
                         if isequal(find(SimplexInfo(i,:)),x_in_c)
-                            DisjointWeight = 1;
+                            if all(ismember(x_in_c,binaryVariables))
+                                DisjointWeight = 1;
+                            else
+                                DisjointWeight = -1;
+                            end
                         end
                     end
                 end
