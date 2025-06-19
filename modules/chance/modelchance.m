@@ -63,7 +63,7 @@ end
 % Some strategies exploit simplex structure
 Simplicies = F(find(is(F,'simplex')));
 SimplexInfo = [];
-if ~isempty(Simplicies)
+if length(Simplicies)>0
     SimplexInfo = sparse([]);
     for i = 1:length(Simplicies)
         SimplexInfo(end+1,getvariables(Simplicies(i))) = 1;
