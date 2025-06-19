@@ -8,7 +8,7 @@ if any(p.K.e)
         M = p.F_struc(top:top+3-1,:);
         fixed = ~any(M(2,2:end));
         if fixed && M(2,1) == 0
-            inequalityRows = [-M(1,:);M(3,:)]
+            inequalityRows = [-M(1,:);M(3,:)];
             newinEqualities = [newinEqualities;inequalityRows];
             p.F_struc(top:top+3-1,:) = [];
         else
