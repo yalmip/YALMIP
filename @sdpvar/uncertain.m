@@ -74,18 +74,22 @@ else
                 end
             end
             % Check weights
-            alpha = x.extra.distribution.parameters{end};            
-            if ~(abs(sum([alpha{:}])-1)<1e-12)
+            mixtureweights = x.extra.distribution.parameters{end};            
+            mixtureweights = cell2mat(mixtureweights);
+            if ~all(abs(sum(mixtureweights,2)-1)<1e-12)
                 error('Mixture weights should sum up to 1.')
             end
+            if size(mixtureweights,1) < length(x.extra.distribution.parameters{2}{1})
+                mixtureweights = repmat(mixtureweights, length(x.extra.distribution.parameters{2}{1}),1);
+            end
             
-            nMix = cellfun(@length,x.extra.distribution.parameters);
+            nMix = cellfun(@(c)size(c,2),x.extra.distribution.parameters);
             if ~all(nMix(2) == nMix(2:end))
-                error('All parameter cells in mixture should have same length (#mixtures)')
+                error('All parameter cells and mixture weights should have same length (#mixtures)')
             end
             
             % Remove mixture parameters and place in object instead
-            x.extra.distribution.mixture = [x.extra.distribution.parameters{end}{:}];
+            x.extra.distribution.mixture = mixtureweights;
             x.extra.distribution.parameters = {x.extra.distribution.parameters{1:end-1}};
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mixture','');
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mix','');

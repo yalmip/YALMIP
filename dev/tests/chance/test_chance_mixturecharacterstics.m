@@ -36,3 +36,23 @@ xopt = value(x)
 estimated_probability = (nnz([2+xopt 3-xopt]*wsample <= value(t)))/length(wsample)
 
 testCase.assertTrue(abs(xopt-3)<=0.01 && abs(estimated_probability - 0.95) <= 0.01)
+
+
+function test_gaussian_mixture(testCase)
+
+yalmip('clear');
+gamma = sdpvar(1);
+sdpvar u w x
+a = 1/4;
+b = 1/4;
+c = 1/4;
+d = 1/4;
+P1 = probability((1+x)*w<=u);
+truth = 7.1581;
+Model = [uncertain(w,'normal mixture',{-3,0,3,2},{10,2,1,2},{a, b, c, d}),P1 >= 1-gamma, gamma <= 0.04, x >= 0]
+optimize(Model,u,sdpsettings('chance.char','yes','debug',1,'fmincon.alg','sqp'))
+
+testCase.assertTrue(abs(value(u)-truth)<=0.01)
+
+
+

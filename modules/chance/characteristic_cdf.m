@@ -28,7 +28,7 @@ switch class(varargin{1})
             phi_z = @(t) prod(phi(g(:)*t,parameters{:}),1);        
         else
             % This is a mixture!           
-             % Create mixture characteristic function...
+             % Create mixture characteristic function...             
              phi_mixture = @(t) createMixtureSum(phi,g(:)*t,mixtureweights,parameters{:});
              phi_z = @(t) prod(phi_mixture(t),1);
         end
@@ -176,6 +176,8 @@ function C = createMixtureSum(f, g_t,mixtureweights,varargin)
 C = [];
 % varargin are all distribution parameters, each containing a cell with
 % the indvidual component parameters
+% Every element can have different mixture weights, but the number of
+% components is the same for all elements
 n_mixtures = length(varargin{1});
 C = 0;
 for j = 1:n_mixtures
@@ -183,5 +185,5 @@ for j = 1:n_mixtures
     jthParameters = cellfun(@(c) c{j}, varargin, 'UniformOutput', false);
     % Evaluate characteristic function. Note that g(x)*t can be a row
     % vector as an integral evaluator might evaluate multiple points
-    C = C + mixtureweights(j)*f(g_t,jthParameters{:});
+    C = C + mixtureweights(:,j).*f(g_t,jthParameters{:});
 end

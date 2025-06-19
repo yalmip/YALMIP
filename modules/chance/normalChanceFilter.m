@@ -6,8 +6,9 @@ if strcmpi(options.chance.characteristic,'yes')
     % covariance and factorized covariance (std. dev in scalar case) and
     % thus has 3 parameters. However, the characteristic function is
     % defined from mean and std. dev to comply with standard notation.
-    % Hence remove second parameter
-    distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};    
+    % Hence remove second parameter and extract diagonal of factor
+    distribution.parameters = {distribution.parameters{1:2}, cellfun(@(c)diag(c),distribution.parameters{4},'UniformOutput', false)};    
+   % distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};    
     newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
     return    
 end
@@ -83,7 +84,7 @@ newWeights = [];
 newMean = {};
 newcovariance = {};
 n = length(c);
-m = length(distribution.mixture);
+m = size(distribution.mixture,2);
 Combs = allSequences(m,n);
 newMixture = [];
 for i = 1:length(Combs)
@@ -99,7 +100,9 @@ for i = 1:length(Combs)
     end
     allMeans{i} = aMean;
     allCovs{i} = diag(aCov);
-    newMixture(end+1) = prod(distribution.mixture(Combs(i,:)));
+    mix = 1;
+    for k = 1:size(Combs,2);mix = mix*distribution.mixture(k,Combs(i,k));end
+    newMixture(end+1) = mix;
 end
 distribution.mixture = [];
 gamma_i = sdpvar(1,length(newMixture));
