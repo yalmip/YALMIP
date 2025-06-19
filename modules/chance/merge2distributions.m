@@ -46,12 +46,13 @@ if any(strcmp(A.distribution.parameters{1},normalvariants)) || any(strcmp(A.dist
     meanB = B.distribution.parameters{2};
     if isa(meanA,'cell')
         for j = 1:length(meanA)
-                meanC{j} = [meanA{j};meanB{j}];;
+                meanC{j} = [meanA{j};meanB{j}];
         end 
     else
         meanC = [meanA;meanB];
     end
-        
+    C.distribution.mixture = [A.distribution.mixture;B.distribution.mixture];
+    
 	C.distribution.parameters{1} = 'normal';
     C.distribution.parameters{2} = meanC;
     C.distribution.parameters{3} = varC;
