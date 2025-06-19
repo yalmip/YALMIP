@@ -4,8 +4,7 @@ if any(p.K.e)
     newinEqualities = [];
     top = startofEXPCone(p.K);
     for j = 1:p.K.e
-        % Looking for exp(x1/0)*0 <= x3
-        m = p.K.e(j);
+        % Looking for exp(x1/0)*0 <= x3        
         M = p.F_struc(top:top+3-1,:);
         fixed = ~any(M(2,2:end));
         if fixed && M(2,1) == 0
