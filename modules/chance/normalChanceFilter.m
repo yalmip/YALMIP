@@ -84,7 +84,7 @@ newWeights = [];
 newMean = {};
 newcovariance = {};
 n = length(c);
-m = length(distribution.mixture);
+m = size(distribution.mixture,2);
 Combs = allSequences(m,n);
 newMixture = [];
 for i = 1:length(Combs)
@@ -100,7 +100,9 @@ for i = 1:length(Combs)
     end
     allMeans{i} = aMean;
     allCovs{i} = diag(aCov);
-    newMixture(end+1) = prod(distribution.mixture(Combs(i,:)));
+    mix = 1;
+    for k = 1:size(Combs,2);mix = mix*distribution.mixture(k,Combs(i,k));end
+    newMixture(end+1) = mix;
 end
 distribution.mixture = [];
 gamma_i = sdpvar(1,length(newMixture));
