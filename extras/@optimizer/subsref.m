@@ -184,7 +184,7 @@ elseif isequal(subs.type,'{}')
         
         left = ones(1,length(subs.subs));
         aux = [];
-        aux2 = [];
+        % aux2 = [];
         suppliedData = [];
         for i = 1:nBlocks
             aux2 = [];
@@ -327,7 +327,7 @@ elseif isequal(subs.type,'{}')
                 varargout{1} = self;
                 return
             else
-                eval(['output = ' self.model.solver.call '(self.model);']);
+                output = feval( self.model.solver.call, self.model );
             end
             
             if output.problem == 0 && self.model.options.warmstart
@@ -385,7 +385,7 @@ elseif isequal(subs.type,'{}')
     end
     if length(self.dimoutOrig)>1
         % top = 1;
-        realDimOut = self.dimoutOrig;
+        % realDimOut = self.dimoutOrig;
         allu = cell(1, length(self.dimoutOrig));
         for k = 1:nBlocks
             top = 1;
