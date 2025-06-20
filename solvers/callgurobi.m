@@ -100,5 +100,4 @@ end
 output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
 output.qcDual      = qcDual;
 
-
-
+output.restartInfo = struct( 'vbasis', result.vbasis, 'cbasis', result.cbasis );
