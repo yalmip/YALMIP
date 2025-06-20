@@ -813,6 +813,7 @@ gurobi.LazyConstraints = 0;
 gurobi.LiftProjectCuts = -1;
 gurobi.LogFile = '';
 gurobi.LogToConsole = 1;
+gurobi.LPWarmStart = 1;
 gurobi.MarkowitzTol = 0.0078125;
 gurobi.MemLimit = inf;
 gurobi.Method = -1;
