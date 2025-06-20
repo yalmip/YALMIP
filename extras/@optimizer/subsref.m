@@ -313,9 +313,14 @@ elseif isequal(subs.type,'{}')
         % presolve has benefits when the are stuff like log
         self.model.presolveequalities = length(self.model.evalMap) > 0;
         if ~self.model.infeasible
-            if self.model.options.warmstart && ~isempty(self.lastsolution)
-                self.model.x0 = zeros(length(self.model.c),1);
-                self.model.x0 = self.lastsolution;
+            if self.model.options.warmstart
+                if ~isempty(self.lastsolution)
+                    self.model.x0 = zeros(length(self.model.c),1);
+                    self.model.x0 = self.lastsolution;
+                end
+                if ~isempty(self.restartInfo)
+                    self.model.restartInfo = self.restartInfo;
+                end
             elseif ~self.model.options.warmstart
                 self.model.x0 = [];
             end
@@ -329,9 +334,14 @@ elseif isequal(subs.type,'{}')
             else
                 output = feval( self.model.solver.call, self.model );
             end
+
+            self.restartInfo = [];
             
             if output.problem == 0 && self.model.options.warmstart
                 self.lastsolution = output.Primal;
+                if isfield( output, 'restartInfo' )
+                    self.restartInfo = output.restartInfo;
+                end
             end
             x = self.instatiatedvalues;
             if isempty(output.Primal)

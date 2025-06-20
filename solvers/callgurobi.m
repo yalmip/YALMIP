@@ -12,6 +12,14 @@ options = interfacedata.options;
 xOriginal = interfacedata.variabletype == 0;
 model = yalmip2gurobinonlinear(interfacedata);
 
+if isfield(interfacedata,'restartInfo')
+    restartInfo = interfacedata.restartInfo;
+    if isfield(restartInfo, 'vbasis') && isfield(restartInfo, 'cbasis')
+        model.vbasis = restartInfo.vbasis;
+        model.cbasis = restartInfo.cbasis;
+    end
+end
+
 if interfacedata.options.savedebug
     save gurobidebug model
 end
