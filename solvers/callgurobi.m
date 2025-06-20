@@ -41,7 +41,7 @@ xtemp = zeros(length(interfacedata.c),1);
 xtemp(find(interfacedata.variabletype == 0)) = x;
 x = xtemp;
 
-problem = 0;
+% problem = 0;
 qcDual = [];
 if isfield(result,'pi')
     % Gurobi has reversed sign-convention
