@@ -12,11 +12,19 @@ options = interfacedata.options;
 xOriginal = interfacedata.variabletype == 0;
 model = yalmip2gurobinonlinear(interfacedata);
 
-if isfield(interfacedata,'restartInfo')
+if isfield( interfacedata, 'restartInfo' )
     restartInfo = interfacedata.restartInfo;
-    if isfield(restartInfo, 'vbasis') && isfield(restartInfo, 'cbasis')
+    if isfield( restartInfo, 'vbasis' )
         model.vbasis = restartInfo.vbasis;
+    end
+    if isfield( restartInfo, 'cbasis' )
         model.cbasis = restartInfo.cbasis;
+    end
+    if isfield( restartInfo, 'pstart' )
+        model.pstart = restartInfo.pstart;
+    end
+    if isfield( restartInfo, 'dstart' )
+        model.dstart = restartInfo.dstart;
     end
 end
 
@@ -111,9 +119,13 @@ output.qcDual      = qcDual;
 restartInfo = struct;
 if isfield( result, 'vbasis' )
     restartInfo.vbasis = result.vbasis;
+elseif isfield( result, 'x' )
+    restartInfo.pstart = result.x;
 end
 if isfield( result, 'cbasis' )
     restartInfo.cbasis = result.cbasis;
+elseif isfield( result, 'pi' )
+    restartInfo.dstart = result.pi;
 end
 
 output.restartInfo = restartInfo;
