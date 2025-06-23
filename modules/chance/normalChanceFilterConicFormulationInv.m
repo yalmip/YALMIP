@@ -32,7 +32,6 @@ if isa(gamma,'sdpvar')
     aa = 0.640638383232296;
     bb = 0.101239113003656;
     cc = 2.687433928030412;
-    invPhi_InverseApproximation = aa*(gamma.^bb)+cc*gamma;
 
     newConstraint = [norm([b-t,2*a]) <= b + t,
         t <= aa*z + cc*gamma,
