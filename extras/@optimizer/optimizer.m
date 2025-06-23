@@ -270,6 +270,7 @@ sys.input.expression = x;
 sys.output.expression = u;
 sys.output.z = z;
 sys.lastsolution = [];
+sys.restartInfo = [];
 sys.ParametricSolution = [];
 sys.model.infeasible = 0;
 % This is not guaranteed to give the index in the order the variables where
