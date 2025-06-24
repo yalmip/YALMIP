@@ -455,9 +455,13 @@ if (~isempty(h)) & ~isa(h,'double') & ~h_is_linear &~(relax==1) &~(relax==3)
                 R = [];
                 if any(~diag(Q) & any(triu(Q,1),2))
                     % Diagonal zero but non-zero outside, cannot be convex
-                else
-                    Q = full(Q);
-                    if min(eig(Q))>=-1e-10
+                else   
+                    try
+                        s = min(eig(Q));
+                    catch
+                        s = min(eig(full(Q)));
+                    end
+                    if s >= -1e-10
                         p=0;
                         try
                             [U,S,V]=svd(Q);
