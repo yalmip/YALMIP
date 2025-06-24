@@ -3,8 +3,11 @@ function x = uncertain(x,varargin)
 %
 %   F = UNCERTAIN(W) declares W to be (deterministic) uncertainty
 %
-%   F = UNCERTAIN(W,name, param1, param2,...) declares W to be
-%   stochastic uncertainty with distribution properties
+%   F = UNCERTAIN(W,'name', param1, param2,...) declares W to be
+%   stochastic uncertainty of type 'name' with properties param
+%
+%   F = UNCERTAIN(W,'name mixture', {param1}, {param2},...,mixtureweight)
+%   declares W to be stochastic uncertainty with mixture distribution
 %
 %   INPUT
 %    W : SDPVAR object
