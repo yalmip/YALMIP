@@ -1,2 +1,6 @@
 function sys = display(P)
-display(['Probability expression (' num2str(length(P.Constraint)) ' term)'])
+if P.joint
+    display(['Joint probability expression (' num2str(length(P.Constraint)) ' term)'])
+else
+    display(['Probability expression (' num2str(length(P.Constraint)) ' term)'])
+end

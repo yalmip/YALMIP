@@ -1,6 +1,10 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
 
-% Might be using characteristic framwork for mixtures
+if length(b) > 1
+    newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
+    return
+end
+
 if strcmpi(options.chance.characteristic,'yes')
     % A bit messy with normal/gaussian. Internal framework works with mean,
     % covariance and factorized covariance (std. dev in scalar case) and
@@ -115,6 +119,16 @@ for i = 1:length(newMixture)
 end
 return
 
+
+function newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
+% Trivial Bonferroni
+m = length(b);
+gamma_local = sdpvar(m,1);
+newConstraint = sum(gamma_local) <= gamma;
+for i = 1:m
+    newConstraint = [newConstraint, normalChanceFilter(b(i),c(:,i),distribution,gamma_local,options,funcs,x,isDisjointProblem)];
+end
+   
 function C = allSequences(m,n)
 % Returns an (m^n) x n matrix whose rows are all length-n sequences from 1:m.
 vectors = cell(1,n);

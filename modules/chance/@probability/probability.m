@@ -1,4 +1,4 @@
-function sys = probability(c)
+function sys = probability(c,joint)
 % PROBABILITY Create basis for chance constraint
 %
 % EXAMPLE:
@@ -25,6 +25,11 @@ if isa(c,'constraint') || isa(c,'lmi')
         sys.Risk{1} = sdpvar(1);
         sys.Offset{1} = 0;
         sys.Constraint{1} = sdpvar(c) >= 0;        
+        if nargin > 1 && strcmp(joint,'joint') && numel(sdpvar(c)) > 1
+            sys.joint = true;
+        else
+            sys.joint = false;
+        end
         sys = class(sys,'probability');
     end
 else
