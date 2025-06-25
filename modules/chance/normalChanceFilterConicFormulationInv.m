@@ -25,21 +25,17 @@ else
     a = sqrt(r);
 end
 
-sdpvar t y; % epigraph variables
+sdpvar t z; % epigraph variable
 
-% approximating and formulating
+% approximating and power cone formulation
 if isa(gamma,'sdpvar')
-    aa = 0.045463730850896;
-    bb = 1.186500274690110e+03;
-    cc = 2.676791341187682;
-    kk = 0.374878600022031;
-    dd = 0.012244142944388;
-
-    invPhi_InverseApproximation = aa*lambertw(bb*gamma)+kk+cc*gamma+dd*y;
+    aa = 0.640638383232296;
+    bb = 0.101239113003656;
+    cc = 2.687433928030412;
 
     newConstraint = [norm([b-t,2*a]) <= b + t,
-        t <= invPhi_InverseApproximation,
-        expcone([y;1;gamma])];
+        t <= aa*z + cc*gamma,
+        pcone([gamma;1;z;bb])];
 else
     % The approximation will be the exact value if gamma is fixed
     invPhi_InverseApproximation = inv(icdf('normal',1-gamma,0,1));

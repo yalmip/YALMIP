@@ -109,7 +109,7 @@ if any(model.K.p)
     prob.blc(powerRows) = prob.buc(powerRows);
     prob.c = [prob.c;zeros(nof_new,1)];
     % And now say that the new variables are in the POWER cone
-    prob.cones.conepar = [zeros(1,length(prob.cones.type)) full(alpha)];
+    prob.cones.conepar = [zeros(1,length(prob.cones.type)) full(alpha(:))'];
     top = nof_original;
     for i = 1:length(model.K.p)
         prob.cones.type = [prob.cones.type 4];

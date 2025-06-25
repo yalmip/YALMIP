@@ -3,8 +3,11 @@ function x = uncertain(x,varargin)
 %
 %   F = UNCERTAIN(W) declares W to be (deterministic) uncertainty
 %
-%   F = UNCERTAIN(W,name, param1, param2,...) declares W to be
-%   stochastic uncertainty with distribution properties
+%   F = UNCERTAIN(W,'name', param1, param2,...) declares W to be
+%   stochastic uncertainty of type 'name' with properties param
+%
+%   F = UNCERTAIN(W,'name mixture', {param1}, {param2},...,mixtureweight)
+%   declares W to be stochastic uncertainty with mixture distribution
 %
 %   INPUT
 %    W : SDPVAR object
@@ -114,6 +117,21 @@ else
             % 'normalm' (multivariate normal) or 'normalf' (factor covar)
         else
             if isempty(x.extra.distribution.mixture)
+                % Check if std. dev has been given as a matrix for a
+                % normal. If so, it must be diagonal, otherwise mvnrnd
+                % should be used
+                if strcmp(x.extra.distribution.parameters{1},'normal')
+                    stdDev = x.extra.distribution.parameters{3};
+                    if min(size(stdDev)) > 1
+                        msg1 = sprintf('Matrix standard deviation detected on ''normal'' declaration. A vector is expected\n');
+                        msg2 = sprintf('''mvnrnd'' (with covariance parameter) should be used for truly multivariate Gaussians.\n');
+                        msg3 = sprintf('''normal'' (with standard deviation parameter) is used for (possibly vectorized) scalar Gaussians');
+                        msg = [msg1 msg2 msg3];
+                        error(msg)
+                    end
+                end
+                % Sanity checks done, now try to use this distribution
+                % model by calling the data generator
                 temp = feval(temp{:});
             else
                 for i = 1:length(x.extra.distribution.mixture)
@@ -134,9 +152,9 @@ else
             error('normalm and normalf have been replaced by mvnrnd and mvrndnfactor')
         else
             disp(lasterr);
-            error('Trial evaluation of attached sample generator failed. Did you really specify correct parameters?')
+            error('Trial evaluation of attached sample generator failed. Did you really specify reasonable parameters?')
         end
     end
     yalmip('addDistribution',  x, x.extra.distribution);
-    %  x = lmi(x);
+    x = lmi(x);
 end

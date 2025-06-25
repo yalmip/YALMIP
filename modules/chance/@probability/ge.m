@@ -32,20 +32,29 @@ else
     % FIXME: Appears to trigger numerical issues sometimes in fmincon
     %ChanceConstraint = [1-P.Risk{1} >= level/P.Weight{1}, chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
     c = sdpvar(P.Constraint{1});
-    if length(c)>1 && length(level)>1 &&  length(c) ~=  length(level)
-        error('Dimension mismatch in probabilistic constraint')
-    elseif length(c)>1 && length(level)==1
-        level = repmat(level,length(c),1);
-    elseif length(c)==1 && length(level)>1
-        c = repmat(c,length(level),1);
-    end
-    if length(c) == 1
-        ChanceConstraint = [chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
-    else
-        ChanceConstraint = [];
-        for i = 1:length(c)
-            ChanceConstraint = [ChanceConstraint, chanceconstraint(lmi(c(i)),level(i)/P.Weight{1})];
+    if ~P.joint
+        % Some logic to sync scalar vs vector combinations
+        if length(c)>1 && length(level)>1 &&  length(c) ~=  length(level)
+            error('Dimension mismatch in probabilistic constraint')
+        elseif length(c)>1 && length(level)==1
+            level = repmat(level,length(c),1);
+        elseif length(c)==1 && length(level)>1
+            c = repmat(c,length(level),1);
         end
-    end            
+        if length(c) == 1
+            ChanceConstraint = [chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
+        else
+            ChanceConstraint = [];
+            for i = 1:length(c)
+                ChanceConstraint = [ChanceConstraint, chanceconstraint(lmi(c(i)),level(i)/P.Weight{1})];
+            end
+        end
+    else
+        if length(level) == 1
+            ChanceConstraint = [chanceconstraint(lmi(P.Constraint{1}),level/P.Weight{1})];
+        else
+            error('Weird dimension on risk parameter in joint chance constraint')
+        end
+    end
 end
 
