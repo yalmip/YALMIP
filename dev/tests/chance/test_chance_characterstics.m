@@ -64,6 +64,37 @@ testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 %r = random(d,10000,1);
 %nnz(r >= value(t))/length(r)
 
+function test_laplace_single(testCase)
+yalmip('clear')
+w=sdpvar(1,1);
+sdpvar t g
+truth = -3.2562;
+Model = [probability(w >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'laplace',0,2)];
+optimize(Model,-t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','','chance.characteristic','yes'))
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+if 0
+    r = random('exponential',2/sqrt(2),1,100000);
+    r = r - random('exponential',2/sqrt(2),1,100000);
+    nnz(r >= value(t))/length(r)
+end
+
+function test_laplace_multi(testCase)
+yalmip('clear')
+w=sdpvar(2,1);
+sdpvar t g
+truth = -13.8154;
+Model = [probability(2*w(1)+3*w(2) >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'laplace',[1;2],[3;4])];
+optimize(Model,-t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','','chance.characteristic','yes'))
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+if 0
+    r1 = random('exponential',3/sqrt(2),1,100000);
+    r1 = r1 - random('exponential',3/sqrt(2),1,100000) + 1;
+    r2 = random('exponential',4/sqrt(2),1,100000);
+    r2 = r2 - random('exponential',4/sqrt(2),1,100000) + 2;
+    nnz(2*r1+3*r2 >= value(t))/length(r)
+end
+
+
 function test_cauchy_multi(testCase)
 yalmip('clear')
 w=sdpvar(2,1);

@@ -390,6 +390,15 @@ for k = 1:length(randomVariables)
                     randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
+                case 'laplace'
+                    phi = @(t,mu,sigma)exp(1i.*mu(:).*t)./(1 + (1/2)*sigma(:).^2.*t.^2);
+                    dphi = @(t,mu,sigma)(exp(1i.*mu(:).*t)./(1 + (1/2)*sigma(:).^2.*t.^2).^2).*(1i*mu(:).*(1 + (1/2)*sigma(:).^2.*t.^2) - sigma(:).^2.*t);
+                    reldphi = @(t,mu) dphi(t,mu)./phi(t,mu);
+                    
+                    randomVariables{k}.distribution.characteristicfunction = phi;
+                    randomVariables{k}.distribution.characteristicfunction_derivative = dphi;
+                    randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;                    
+                    
                 case 'logistic'
                     phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
                     dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
