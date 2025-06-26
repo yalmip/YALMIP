@@ -74,6 +74,10 @@ emptysolver.powercone = 0;
 emptysolver.uncertain  = 0;
 emptysolver.global = 0;
 
+MATLAB_lexversion = version('-release');
+MATLAB_lexversion = MATLAB_lexversion(1:5); %Prune possible hotfix?
+MATLAB_lexversion = strrep(strrep(MATLAB_lexversion,'a','.1'),'b','.2');
+
 % **************************************
 % Some standard solvers to simplify code
 % **************************************
@@ -145,6 +149,8 @@ solver(i).constraint.sos2 = 1;
 solver(i).supportsinitial = 1;
 solver(i).supportsinitialNAN = 1;
 i = i+1;
+
+% The general nonlinear Gugobi definition is placed below fmincon
 
 solver(i) = qpsolver;
 solver(i).tag     = 'CPLEX';
@@ -608,14 +614,14 @@ i = i+1;
 
 solver(i) = lpsolver;
 solver(i).tag     = 'LINPROG';
-solver(i).version = '';
+solver(i).version = MATLAB_lexversion;
 solver(i).checkfor= {'linprog'};
 solver(i).call    = 'calllinprog';
 i = i+1;
 
 solver(i) = qpsolver;
 solver(i).tag     = 'QUADPROG';
-solver(i).version = '';
+solver(i).version =  MATLAB_lexversion;
 solver(i).checkfor= {'quadprog'};
 solver(i).call    = 'callquadprog';
 solver(i).supportsinitial = 1;
@@ -710,6 +716,13 @@ solver(i).version = '';
 solver(i).checkfor= {'daqp'};
 solver(i).call    = 'calldaqp';
 solver(i).constraint.binary = 1;
+i = i+1;
+
+solver(i) = qpsolver;
+solver(i).tag     = 'PIQP';
+solver(i).version = '';
+solver(i).checkfor= {'piqp'};
+solver(i).call    = 'callpiqp';
 i = i+1;
 
 solver(i) = qpsolver;
@@ -1628,6 +1641,30 @@ solver(i).call    = 'callintlinprog';
 solver(i).constraint.binary = 1;
 solver(i).constraint.integer = 1;
 solver(i).dual = 0;
+i = i+1;
+
+% Gurobi nonlinear solver is placed down here to make sure it is not
+% selected as a general nonlinear programming solver
+solver(i) = qpsolver;
+solver(i).tag     = 'GUROBI';
+solver(i).version = 'NONLINEAR';
+solver(i).checkfor= {'gurobi'};
+solver(i).call    = 'callgurobi';
+solver(i).objective.quadratic.nonconvex = 1;
+solver(i).objective.polynomial = 1;
+solver(i).constraint.inequalities.elementwise.quadratic.convex = 1;
+solver(i).constraint.inequalities.elementwise.quadratic.nonconvex = 1;
+solver(i).constraint.inequalities.elementwise.polynomial = 1;
+solver(i).constraint.equalities.quadratic = 1;
+solver(i).constraint.equalities.polynomial = 1;
+solver(i).constraint.inequalities.secondordercone.linear = 1;
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+solver(i).constraint.semivar = 1;
+solver(i).constraint.sos2 = 1;
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
+solver(i).evaluation = 1;
 i = i+1;
 
 % % ***************************************

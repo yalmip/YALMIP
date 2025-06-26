@@ -80,7 +80,8 @@ if length(Matrices.beq) > 0
         Matrices.H = M.H*S1;     
         if isfield(Matrices,'D')
             % Latest MPT does not fullify D
-            Matrices.D = full((Matrices.D'*S1)');
+            Matrices.Cx = full(Matrices.Cx + S3'*Matrices.D);            
+            Matrices.D = full((Matrices.D'*S1)');        
         end
     end
 

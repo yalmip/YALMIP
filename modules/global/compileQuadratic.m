@@ -1,8 +1,8 @@
 function [Q,c] = compileQuadratic(c,p,onlysquares)
 Q = spalloc(length(c),length(c),0);
-if ~p.options.bmibnb.lowerpsdfix
-    return
-end
+% if ~p.options.bmibnb.lowerpsdfix
+%     return
+% end
 for i = 1:size(p.bilinears,1)
     quadratic = (p.bilinears(i,2)==p.bilinears(i,3));
     if onlysquares == 3 && quadratic

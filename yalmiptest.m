@@ -500,5 +500,5 @@ function x = cleanversion(x)
 
 s = strfind(x,'-');
 if ~isempty(s)
-    x=x(1:s-1);
+    x=x(1:s(1)-1);
 end

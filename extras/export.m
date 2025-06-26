@@ -93,12 +93,8 @@ else
 end
 options.solver = lower(options.solver);
 
-if nargin<6
-    if isequal(options.solver,'')
-        findallsolvers = 1;
-    else
-        findallsolvers = 0;
-    end
+if nargin<6    
+    findallsolvers = 1;    
 else
     findallsolvers = varargin{6};
 end
@@ -150,6 +146,14 @@ end
 % ******************************************
 % CONVERT
 % ******************************************
+
+% Silly fix for the recent addition of release to solver name
+if findstr('linprog',lower(solver.tag))
+    solver.tag = 'linprog';
+elseif findstr('quadprog',lower(solver.tag))
+    solver.tag = 'quadprog';
+end
+
 switch lower(solver.tag)
     case 'copt'
         model = yalmip2copt(interfacedata);
@@ -167,16 +171,19 @@ switch lower(solver.tag)
     case 'osqp'
         model = yalmip2osqp(interfacedata);
 
+    case 'piqp'
+        model = yalmip2piqp(interfacedata);
+
     case 'cbc'
         model = yalmip2cbc(interfacedata);
 
     case 'dsdp-opti'
         model = yalmip2optidsdp(interfacedata);
 
-    case {'gurobi','gurobi-gurobi'}
+    case {'gurobi','gurobi-gurobi','gurobi-nonconvex'}
         model = yalmip2gurobi(interfacedata);
 
-    case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp'}
+    case {'mosek','mosek-socp','mosek-lp/qp','mosek-geometric','mosek-sdp','mosek-lp/qp-integer'}
         try
             if any(interfacedata.K.s)
                 model.prob = yalmip2SDPmosek(interfacedata);

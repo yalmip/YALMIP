@@ -199,8 +199,10 @@ newmonomtable(removethese,:) = [];
 if ~isequal(newmonomtable,model.precalc.newmonomtable)%~isempty(removethese)
     skipped = [];
     alreadyAdded = zeros(1,size(newmonomtable,1));         
-    [ii,jj,kk,skipped] = stableunique(newmonomtable*model.hashCache(1:size(newmonomtable,2)));   
-    %[ii,jj,kk,skipped] = stableunique(newmonomtable*gen_rand_hash(0,size(newmonomtable,2),1));   
+    %[ii,jj,kk,skipped] = stableunique(newmonomtable*model.hashCache(1:size(newmonomtable,2)));       
+    [ii,jj,kk] = unique(newmonomtable*model.hashCache(1:size(newmonomtable,2)),'stable');
+    skipped = setdiff(1:length(kk),jj);
+
     S = sparse(kk,1:length(kk),1);   
     model.precalc.S = S;
     model.precalc.skipped = skipped;

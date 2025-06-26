@@ -29,7 +29,7 @@ for i = 1:n
     z = (x(i)+x(i+n)+f)/2;
     x = [x;z];
 end
-sol = optimize([Domain, A*x <= b], c'*x,sdpsettings('solver','bmibnb'));
+sol = optimize([Domain, A*x <= b], c'*x,sdpsettings('solver','bmibnb','debug',1));
 testCase.assertTrue(sol.problem == 0);
 
 

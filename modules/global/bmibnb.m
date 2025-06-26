@@ -112,6 +112,7 @@ end
 p.nonshiftedQP.Q =[];
 p.nonshiftedQP.c =[];
 p.nonshiftedQP.f =[];
+p.possibleSol = [];
 % Flags used by BNB which uses common presolve
 p.binarycardinality.up = length(p.binary_variables);
 p.binarycardinality.down = 0;
@@ -203,6 +204,7 @@ p = detect_quadratic_disjoints_generalized(p);
 p = detect_hiddendelayedconvex_sdp(p);
 p = presolve_bounds_from_domains(p);
 p = presolve_bounds_from_modelbounds(p,1);
+p = presolve_boundargument_periodic(p);
 
 % *************************************************************************
 % Start some bound propagation
@@ -560,7 +562,7 @@ if p.feasible
 else
     if ~isinf(upper)
         if p.options.bmibnb.verbose>0
-            disp('* -Solution proven optimal already in root-node.');   
+            disp('* -Solution proven optimal already during presolve.');   
         end
         counter = p.counter;
         problem = 0;        
@@ -570,6 +572,9 @@ else
         History.upper = upper;
         History.solutions = x_min;
     else
+        if p.options.bmibnb.verbose>0
+            disp('* -Problem proven infeasible during presolve.');   
+        end
         counter = p.counter;
         problem = 1;
         x_min = repmat(nan,length(p.c),1);

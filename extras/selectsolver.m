@@ -20,52 +20,59 @@ end
 % Maybe the user is stubborn and wants to pick solver
 % ***************************************************
 forced_choice = 0;
-if length(options.solver)>0 & isempty(strfind(options.solver,'*'))
+if length(options.solver)>0 && isempty(strfind(options.solver,'*'))
     
-    if strfind(options.solver,'+')
-        forced_choice = 1;
-        options.solver = strrep(options.solver,'+','');
-    end
-    % Create tags with version also        
-    temp = expandSolverName(solvers);  
-    
-    opsolver = lower(options.solver);
-    splits = strfind(opsolver,',');
-    if isempty(splits)
-        names{1} = opsolver;
+    if isequal(strfind(options.solver,'-'),1)
+        % No, but avoid!
+        options.solver = '';
+        keep = find(~strcmpi({solvers.tag},'fmincon'));
+        solvers = solvers(keep);
     else
-        start = 1;
-        for i  = 1:length(splits)
-            names{i} = opsolver(start:splits(i)-1);
-            start = splits(i)+1;
+        if strfind(options.solver,'+')
+            forced_choice = 1;
+            options.solver = strrep(options.solver,'+','');
         end
-        names{end+1} = opsolver(start:end);
-    end
+        % Create tags with version also
+        temp = expandSolverName(solvers);
         
-    index1 = [];
-    index2 = [];
-    for i = 1:length(names)
-        index1 = [index1 find(strcmpi({solvers.tag},names{i}))];
-        index2 = [index1 find(strcmpi({temp.tag},names{i}))];
-    end
-    if isempty(index1) & isempty(index2)
-        % Specified solver not found among available solvers
-        % Is it even a supported solver
-        temp = expandSolverName(allsolvers);
+        opsolver = lower(options.solver);
+        splits = strfind(opsolver,',');
+        if isempty(splits)
+            names{1} = opsolver;
+        else
+            start = 1;
+            for i  = 1:length(splits)
+                names{i} = opsolver(start:splits(i)-1);
+                start = splits(i)+1;
+            end
+            names{end+1} = opsolver(start:end);
+        end
+        
+        index1 = [];
+        index2 = [];
         for i = 1:length(names)
-            index1 = [index1 find(strcmp(lower({allsolvers.tag}),names{i}))];
-            index2 = [index1 find(strcmp(lower({temp.tag}),names{i}))];
+            index1 = [index1 find(strcmpi({solvers.tag},names{i}))];
+            index2 = [index1 find(strcmpi({temp.tag},names{i}))];
         end
         if isempty(index1) & isempty(index2)
-            problem = -9;
+            % Specified solver not found among available solvers
+            % Is it even a supported solver
+            temp = expandSolverName(allsolvers);
+            for i = 1:length(names)
+                index1 = [index1 find(strcmp(lower({allsolvers.tag}),names{i}))];
+                index2 = [index1 find(strcmp(lower({temp.tag}),names{i}))];
+            end
+            if isempty(index1) & isempty(index2)
+                problem = -9;
+            else
+                problem = -3;
+            end
+            solver = [];
+            return;
         else
-            problem = -3;
+            solvers = solvers(union(index1,index2));
         end
-        solver = [];
-        return;
-    else
-        solvers = solvers(union(index1,index2));
-    end    
+    end
 end
 
 % ************************************************

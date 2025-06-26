@@ -4,12 +4,12 @@ function [xtemp,fail] = sdpextendsolution(p,xtemp)
 % Used in MISDP heuristics
 fail = 1;
 if p.sdpextendable  
-    Hy = p.sdpfix.H0 + reshape(p.sdpfix.Hz*xtemp(p.integral_variables),p.K.s(1),p.K.s(1));
+    Hy = p.sdpfix.H0 + reshape(p.sdpfix.Hz*xtemp(p.sdpfix.convars),p.K.s(1),p.K.s(1));
     s = eig(full(p.sdpfix.Hx),full(Hy));
     s(isinf(s))=[];
     s(isnan(s))=[];
     if any(s)
-        xtemp(p.noninteger_variables) = min(-1./s(s~=0));
+        xtemp(p.sdpfix.forvars) = min(-1./s(s~=0));
         fail = 0;
     end
 end

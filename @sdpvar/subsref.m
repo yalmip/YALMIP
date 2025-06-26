@@ -149,7 +149,7 @@ try
                     end
                     return                
                 otherwise
-                    error(['Indexation  ''' Y.type Y.subs ''' not supported']) ;
+                    error(['Indexation  ''' Y.type ''' not supported']) ;
             end
         otherwise
             error(['Indexation with ''' Y.type ''' not supported']) ;

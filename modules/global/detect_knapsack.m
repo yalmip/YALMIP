@@ -99,25 +99,28 @@ if (any(p.K.l) || any(p.K.f)) && ~isempty(binary)
                 b = p.knapsack.b{end};
                 v = p.knapsack.variables{end};
                 C = min(find(cumsum(sx_) > b));
-                p.knapsack.a{end+1} = sx*0+1;
-                p.knapsack.b{end+1} = C-1;
-                p.knapsack.variables{end+1} = p.knapsack.variables{end};
-                if C-1 == 1
-                    % Derived set packing
-                    p.knapsack.type(end+1) = 5;
-                    p.knapsack.hash(end+1) = sum(p.hash(p.knapsack.variables{end}));
-                    p.cliques.table(p.knapsack.variables{end},end+1)=1;
-                    p.cliques.hash(end+1) = sum(p.hash(p.knapsack.variables{end}));
-                else
-                    % Derived cardinality
-                    p.knapsack.type(end+1) = 4;
-                    p.knapsack.hash(end+1) = sum(p.hash(p.knapsack.variables{end}));
+                % Could be a redundant knapsack, should have been
+                % pre-processed away though
+                if ~isempty(C)
+                    p.knapsack.a{end+1} = sx*0+1;
+                    p.knapsack.b{end+1} = C-1;
+                    p.knapsack.variables{end+1} = p.knapsack.variables{end};
+                    if C-1 == 1
+                        % Derived set packing
+                        p.knapsack.type(end+1) = 5;
+                        p.knapsack.hash(end+1) = sum(p.hash(p.knapsack.variables{end}));
+                        p.cliques.table(p.knapsack.variables{end},end+1)=1;
+                        p.cliques.hash(end+1) = sum(p.hash(p.knapsack.variables{end}));
+                    else
+                        % Derived cardinality
+                        p.knapsack.type(end+1) = 4;
+                        p.knapsack.hash(end+1) = sum(p.hash(p.knapsack.variables{end}));
+                    end                                            
+                    % Based on this cover, can we update global cardinality?
+                    not_used = setdiff(1:length(p.binary_variables), binary(jx));
+                    active = nnz(p.ub(not_used)==1);
+                    p.binarycardinality.up = min(p.binarycardinality.up,C-1 + active);
                 end
-                              
-                % Based on this cover, can we update global cardinality?             
-                not_used = setdiff(1:length(p.binary_variables), binary(jx));
-                active = nnz(p.ub(not_used)==1);
-                p.binarycardinality.up = min(p.binarycardinality.up,C-1 + active);                
             end
         elseif all(Aineq_bin(i,:)<=0)
             [ix,jx,sx] = find(Aineq_bin(i,:));

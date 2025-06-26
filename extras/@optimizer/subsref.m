@@ -164,7 +164,7 @@ elseif isequal(subs.type,'{}')
         for i = 1:length(subs.subs)
             dimBlocks(i) = numel(subs.subs{i}) / prod(self.diminOrig{i});
         end
-        if any(dimBlocks)>1 && any(dimBlocks==0)
+        if any(dimBlocks>1) && any(dimBlocks==0)
             error('Blocked data in partial instantiation is not possible');
         end
         if all(dimBlocks)
@@ -299,7 +299,11 @@ elseif isequal(subs.type,'{}')
             self.model.evalVariables = [];
             for k = 1:length(self.model.evalMap)
                 self.model.evalMap{k}.computes = find(self.model.evalMap{k}.computes == keptvariablesIndex);
-                self.model.evalMap{k}.variableIndex = find(self.model.evalMap{k}.variableIndex == keptvariablesIndex);
+                temp = [];
+                for j = 1:length(self.model.evalMap{k}.variableIndex)
+                    temp = [temp find(self.model.evalMap{k}.variableIndex(j) == keptvariablesIndex)];
+                end
+                self.model.evalMap{k}.variableIndex = temp;
                 self.model.evalVariables = [self.model.evalVariables self.model.evalMap{k}.computes];
             end                                         
             self.model.evalVariables = sort(self.model.evalVariables);            

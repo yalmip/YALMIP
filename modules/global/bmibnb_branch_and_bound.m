@@ -9,6 +9,7 @@ History.upper = [];
 History.stacksize = [];
 History.solutions = solution_hist;
 
+
 % *************************************************************************
 % Create handles to solvers
 % *************************************************************************
@@ -57,6 +58,12 @@ p_upper = compile_quadraticslist(p_upper);
 
 % Save info about solution structure implied by box concavity
 p = addConcavityInfo(p);
+% r = p.c'*0;
+% r(1)= 1;r(2)= 1;
+% p = addEquality(p,[0 r]);
+% r = p.c'*0;
+% r(1)= 1;r(3)= -1;
+% p = addEquality(p,[0 r]);
 
 % Some simple probing
 p = addFromProbedBinary(p);
@@ -89,6 +96,11 @@ p = lastresortBounds(p,upper);
 p.InequalityConstraintState = ones(p.K.l,1);
 p.InequalityConstraintState(p.KCut.l,1) = 0;
 p.EqualityConstraintState = ones(p.K.f,1);
+
+% Probing fadients only possible on box-QP
+p.gradientprobepossible = isempty(p.evalMap) && size(p.F_struc,1)==0 && all(p.variabletype <= 2);
+%p = gradientPropagateQP(p);
+%p = gradientProbeQP(p);
 
 % *************************************************************************
 % LPs ARE USED IN  BOX-REDUCTION
@@ -139,7 +151,7 @@ if options.bmibnb.verbose>0
     end
     k = nnz(isinf(p.ub(p.branch_variables)));
     if k>0
-        if k == 1
+        if k == 1 
             disp(['* Warning: ' num2str(k) ' branch variable is unbounded from above']);
         else
             disp(['* Warning: ' num2str(k) ' branch variables are unbounded from above']);
@@ -174,6 +186,7 @@ end
 p.quadraticCutFailure = 0;
 lastUpper = upper;
 p.upper = upper;
+
 while go_on
     
     % Debug with plot
@@ -193,7 +206,7 @@ while go_on
             balanceIndicator = max(1,balanceIndicator - 1);
         end
     end
-    
+
     % We are waiting for an upper bound to pop up so we can use the SDP
     % relaxation to compute a global upper bound for a model where no
     % bounds were given (currently equality constrained QP)
@@ -210,7 +223,6 @@ while go_on
     % *********************************************************************
     p.changedbounds = 1;
     time_ok = 1;
-          
     p.upper = upper;       
     for i = 1:length(options.bmibnb.strengthscheme)
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));        
@@ -260,10 +272,11 @@ while go_on
             propagators{j}.reduction(end+1) = (volBefore-volAfter)/volAfter;     
             propagators{j}.worked  = [propagators{j}.worked [LU(:,1)~=p.lb | LU(:,2)~=p.ub]];                         
         end 
-        if ~p.feasible | ~time_ok
+        if ~p.feasible || ~time_ok
             break
         end
     end
+
     if size(History.solutions,1)>1
         if ~isequal(x_min(p.originallinears(:)),History.solutions(:,end))            
             History.solutions = [History.solutions x_min(p.originallinears(:))];
@@ -317,6 +330,7 @@ while go_on
         p = adjustMaxTime(p,p.options.bmibnb.maxtime,toc(timing.total));
         if solved_nodes == 0 && ~isempty(p.shiftedQP)           
             p_temp = p;p_temp.shiftedQP = [];
+            p_temp.solver.version = p_temp.solver.lowersolver.version;
             [output_1,cost_1,p_temp,timing] = solvelower_safelayer(p_temp,options,lowersolver,x_min,upper,timing);
             [output_2,cost_2,p,timing] = solvelower_safelayer(p,options,lowersolver,x_min,upper,timing);
             if output_1.problem ~= 0 && output_2.problem == 0
@@ -524,6 +538,9 @@ while go_on
                 pp.complementary( find((pp.complementary(:,1)==v1) | (pp.complementary(:,2)==v1)),:)=[];
                 node = savetonode(pp,v1,0,0,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                 node.bilinears = p.bilinears;
+%                 if any(isinf(node.lb) & node.lb > 0)
+%                     1
+%                 end
                 node = updateonenonlinearbound(node,spliton);
                 if all(node.lb <= node.ub)
                     node.branchwidth=[];
@@ -537,6 +554,9 @@ while go_on
                 node = savetonode(pp,v2,0,0,-1,x,cost,p.EqualityConstraintState,p.InequalityConstraintState,p.cutState);
                 node.bilinears = p.bilinears;
                 node = updateonenonlinearbound(node,spliton);
+%               if any(isinf(node.lb) & node.lb > 0)
+%                     1
+%               end
                 if all(node.lb <= node.ub)
                     node.branchwidth=[];
                     stack = push(stack,node);
@@ -986,8 +1006,8 @@ function p = addShiftedQP(p)
 
 % Diagonal shift of nonconvex QP
 % 0: Do nothing (i.e. will be relaxed as LP in lower bound)
-% 1: Add term to diagonal by eigenalue shift
-% 2: Solve SDP to compute diagonal convexifying shift
+% 1: Solve SDP to compute diagonal convexifying shift
+% 2: Add term to diagonal by eigenvalue shift
 
 p.shiftedQP = [];
 p.nonshiftedQP = [];
@@ -1021,8 +1041,11 @@ if p.options.bmibnb.lowerpsdfix && isempty(p.evalMap) && ~any(p.variabletype > 2
                 ops.warmstart = 0;
                 ops.solver = p.solver.sdpsolver.tag;
                 ops.verbose = max(ops.verbose-1,0);
-                sol = optimize([Q(r,r) + diag(x) >= 0, x >= 0], sum(x),ops);
+                ops.saveduals = 1;
+                Model = [Q(r,r) + diag(x) >= 0, x >= 0];
+                sol = optimize(Model, sum(x),ops);
                 if sol.problem == 0
+                    %[V,D] = eig(dual(Model(1)));
                     x = value(x);
                     % SDP solver can fail numerically
                     e = eig(Q(r,r) + diag(x));
@@ -1045,9 +1068,9 @@ if p.options.bmibnb.lowerpsdfix && isempty(p.evalMap) && ~any(p.variabletype > 2
                 p.shiftedQP.method = 'eig';
                 Q = Q + diag(q);
             end
-            for i = 1:length(r)
+            for i = 1:length(r)                
                 j = findrows(p.bilinears(:,2:3),[r(i) r(i)]);
-                if isempty(j)
+                if isempty(j)                    
                     % Ouch, cannot do this since we don't have these
                     % monomials in the model. Add them!
                     newv = length(c)+1;
@@ -1107,23 +1130,23 @@ if isempty(p.evalMap) && all(p.variabletype<=2) && nnz(diag(p.nonshiftedQP.Q) < 
         for i= 1:length(j)
             var = [var j(i)];
             nonlin = [nonlin p.bilinears(find(p.bilinears(:,2) == j(i) & p.bilinears(:,3) == j(i)),1)];
-            L = p.lb(var(end));
-            U = p.ub(var(end));
-            p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
-            p.f = p.f - L*U*p.c(nonlin(end));
-            p.c(nonlin(end)) = 0;
-            p.nonshiftedQP.c(var(end)) = p.nonshiftedQP.c(var(end)) + (U+L)*p.nonshiftedQP.Q(var(end),var(end));
-            p.nonshiftedQP.f = p.nonshiftedQP.f - L*U*p.nonshiftedQP.Q(var(end),var(end));
-            p.nonshiftedQP.Q(var(end),var(end)) = 0;
+%             L = p.lb(var(end));
+%             U = p.ub(var(end));
+%             p.c(var(end)) = p.c(var(end)) + (U+L)*p.c(nonlin(end));
+%             p.f = p.f - L*U*p.c(nonlin(end));
+%             p.c(nonlin(end)) = 0;
+%             p.nonshiftedQP.c(var(end)) = p.nonshiftedQP.c(var(end)) + (U+L)*p.nonshiftedQP.Q(var(end),var(end));
+%             p.nonshiftedQP.f = p.nonshiftedQP.f - L*U*p.nonshiftedQP.Q(var(end),var(end));
+%             p.nonshiftedQP.Q(var(end),var(end)) = 0;
         end
         M = spalloc(length(var),length(p.c)+1,0);
         % Optimality implies (x-L)*(x-U)==0 x^2 i.e. x^2-x(L+U) + L*U=0
-        for i = 1:length(var);
+        for i = 1:length(var)
             M(i,1)= p.lb(var(i))*p.ub(var(i));
             M(i,var(i)+1)=-(p.lb(var(i))+p.ub(var(i)));
             M(i,nonlin(i)+1)=1;
         end
-        p.concavityEqualities = M;
+        p.concavityEqualities = M;             
     end
 end
 
@@ -1237,4 +1260,128 @@ if isempty(stack)
 else
     L = [stack.lower];
     L = L(~isinf(L));
+end
+
+function p = addSquaredMonomial
+                    % Ouch, cannot do this since we don't have these
+                    % monomials in the model. Add them!
+                    newv = length(c)+1;
+                    if ~isempty(p.F_struc)
+                        p.F_struc(end,end+1) = 0;
+                    end
+                    p.monomtable(end+1,end+1) = 0;
+                    p.monomtable(end,r(i)) = 2;
+                    p.variabletype(end+1) = 2;
+                    p.lb(end+1) = -inf;
+                    p.ub(end+1) = inf;
+                    p.x0(end+1) = 0;
+                    p.bilinears = [p.bilinears;newv r(i) r(i)];
+                    p.monomials = [p.monomials newv];
+                    j = size(p.bilinears,1);
+                    p.c(end+1) = 0;c(end+1) = 0;
+                    p.Q(end+1,end+1) = 0;Q(end+1,end+1) = 0;
+                    p.Quadratics = [p.Quadratics newv];
+                    p.QuadraticsList(newv,:) = [r(i) r(i)];
+
+function p = gradientPropagateQP(p)
+if p.gradientprobepossible && p.options.bmibnb.gradientpropagateqp
+    k = find(p.variabletype == 0);
+    Q = full(p.nonshiftedQP.Q(k,k));
+    for s = 1:3
+        for i = k(:)'
+            if p.lb(i)~=p.ub(i) && Q(i,i) >= 0
+                g = 2*Q(i,:);
+                [gL,gU] = deriveRowBound(g,p.lb(k),p.ub(k));
+                gL = gL + p.nonshiftedQP.c(i);
+                gU = gU + p.nonshiftedQP.c(i);
+                if gL >= 0 && gU >= 0
+                    % Gradient w.r.t xi is always positive, hence optimal at lower
+                    % bound
+                    p.ub(i) = p.lb(i);
+                elseif gL <= 0 && gU <= 0
+                    % Gradient w.r.t xi is always negative, hence optimal at
+                    % upper bound
+                    p.lb(i) = p.ub(i);                
+                end
+            end
+        end
+    end
+end
+
+function [L,U] = deriveRowBound(g,xL,xU)
+
+gN = find(g < 0);
+gP = find(g > 0);
+g = g(:);
+
+U = sum(g(gP(:)).*xU(gP(:))) + sum(g(gN(:)).*xL(gN(:)));
+L = sum(g(gP(:)).*xL(gP(:))) + sum(g(gN(:)).*xU(gN(:)));
+
+
+function p = gradientProbeQP(p)
+
+if p.gradientprobepossible && p.options.bmibnb.gradientpropagateqp
+    linears = find(p.variabletype == 0);
+    for iter = 1:3
+    for i = 1:size(p.possibleSol,1)
+        probevar = p.possibleSol(i,1);
+        for k = setdiff(linears,probevar)
+            % Probe down
+            pDown = p;
+            pDown.lb(probevar) =  p.possibleSol(i,2);
+            pDown.ub(probevar) =  p.possibleSol(i,2);
+            g = 2*p.nonshiftedQP.Q(k,:);
+            [gL,gU] = deriveRowBound(g,pDown.lb(linears),pDown.ub(linears));
+            if gL >= 0 && gU >= 0
+                % Gradient w.r.t xi is always positive, hence optimal at lower
+                % bound
+                pDown.ub(k) = pDown.lb(k);
+            elseif gL <= 0 && gU <= 0
+                % Gradient w.r.t xi is always negative, hence optimal at
+                % upper bound
+                pDown.lb(k) = pDown.ub(k);
+            end
+             % Probe up
+            pUp = p;
+            pUp.lb(probevar) =  p.possibleSol(i,3);
+            pUp.ub(probevar) =  p.possibleSol(i,3);
+            g = 2*p.nonshiftedQP.Q(k,:);
+            [gL,gU] = deriveRowBound(g,pUp.lb(linears),pUp.ub(linears));
+            gL = gL + p.nonshiftedQP.c(k);
+            gU = gU + p.nonshiftedQP.c(k);
+            if gL >= 0 && gU >= 0
+                % Gradient w.r.t xi is always positive, hence optimal at lower
+                % bound
+                pUp.ub(k) = pUp.lb(k);
+            elseif gL <= 0 && gU <= 0
+                % Gradient w.r.t xi is always negative, hence optimal at
+                % upper bound
+                pUp.lb(k) = pUp.ub(k);
+            end
+            probeFixes = find(pUp.lb(linears) == pUp.ub(linears) & pDown.lb(linears) == pDown.ub(linears));
+            probeFixes = setdiff(probeFixes, probevar);
+            for j = probeFixes(:)'
+                L = min(pDown.lb(j),pUp.lb(j));
+                U = max(pDown.ub(j),pUp.ub(j));
+                if U>L
+                    p.possibleSol = [p.possibleSol;j L U];  
+                    row = zeros(1,length(p.c));
+                   if pDown.lb(j) < pUp.lb(j)
+                        row(probevar) = 1;
+                        row(j) = -1;
+                   else
+                       row(probevar) = 1;
+                       row(j) = 1;
+                   end
+                   p = addEquality(p,[0 row]);
+                   p.EqualityConstraintState = [1;p.EqualityConstraintState];
+                else
+                    p.lb(j) = L;
+                    p.ub(j) = L;
+                end                
+            end
+        end
+    end
+    end
+    p.possibleSol = unique(p.possibleSol,'rows');
 end

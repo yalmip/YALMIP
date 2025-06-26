@@ -233,6 +233,9 @@ else
     options.pensdp = setup_pensdp_options;
     Names = appendOptionNames(Names,options.pensdp,'pensdp');
 
+    options.piqp = setup_piqp_options;
+    Names = appendOptionNames(Names,options.piqp,'piqp');
+
     options.pop = setup_pop_options;
     Names = appendOptionNames(Names,options.pop,'pop');
 
@@ -290,7 +293,7 @@ else
     options.default.copt = options.copt;
     options.default.cplex = options.cplex;
     options.default.gurobi = options.gurobi;
-    options.default.mosek = options.mosek;   
+    options.default.mosek = options.mosek;
     options.default.osqp = options.osqp;   
     options.default.xpress = options.xpress;   
 end
@@ -314,12 +317,16 @@ while i <= nargin
 
         lowArg = strtrim(lower(arg));
 
-        if strcmp(lowArg,'usex0')
-            usex0wasused = 1;
-            warmstartwasused = 0;
-        elseif strcmp(lowArg,'warmstart')
-            usex0wasused = 0;
-            warmstartwasused = 1;
+        switch lowArg
+            case 'usex0'
+                usex0wasused = 1;
+                warmstartwasused = 0;
+            case 'warmstart'
+                usex0wasused = 0;
+                warmstartwasused = 1;
+            case {'shift','radius'}
+                warning(['Option ''' lowArg ''' will be removed in a future version and is no longer effective']);
+            otherwise
         end
         
         j = strmatch_octavesafe(lowArg,names);
@@ -501,6 +508,7 @@ bmibnb.cut.exponential = 0;
 bmibnb.cut.sincos = 0;
 bmibnb.sdpcuts = 0;
 bmibnb.sdpbounder = -1;
+bmibnb.gradientpropagateqp = 1;
 bmibnb.lpreduce = -1;
 bmibnb.lowrank  = 0;
 bmibnb.diagonalize  = -1;
@@ -526,6 +534,8 @@ function bnb = setup_bnb_options
 bnb.solver = '';
 bnb.maxiter = inf;
 bnb.maxtime = 3600;
+bnb.target =  -inf;
+bnb.lowertarget =  inf;
 bnb.inttol = 1e-6;
 bnb.feastol = 1e-6;
 bnb.gaptol = 1e-6;
@@ -783,6 +793,7 @@ gurobi.FuncPieceError = 1e-3;
 gurobi.FuncPieceLength = 1e-2;
 gurobi.FuncPieceRatio = -1;
 gurobi.FuncPieces = 0;
+gurobi.FuncNonLinear = 1;
 gurobi.GomoryPasses = -1;
 gurobi.GUBCoverCuts = -1;
 gurobi.Heuristics = 0.05;
@@ -890,7 +901,7 @@ gurobi.TuneOutput = 2;
 gurobi.TuneResults = -1;
 gurobi.TuneTargetMIPGap = 0;
 gurobi.TuneTargetTime = 0.005;
-gurobi.TuneTimeLimit = -1;
+gurobi.TuneTimeLimit = inf;
 gurobi.TuneTrials = 0;
 gurobi.UpdateMode = 1;
 gurobi.VarBranch = -1;
@@ -1048,6 +1059,14 @@ pensdp.P_EPS = 1e-6;
 pensdp.UMIN = 1e-14;
 pensdp.ALPHA = 1e-2;
 pensdp.P0 = 0.9;
+
+function piqp_options = setup_piqp_options
+try
+    s = piqp('dense');
+    piqp_options = s.get_settings();
+catch
+    piqp_options =[];
+end
 
 function sparsecolo = setup_sparsecolo_options
 sparsecolo.SDPsolver = '';
@@ -1338,8 +1357,8 @@ function scs = setup_scs_options
     scs.time_limit_secs = 0;
     scs.acceleration_lookback = 10;
     scs.acceleration_interval = 10;
-    scs.write_data_filename = "";
-    scs.log_csv_filename = "";
+    scs.write_data_filename = '';
+    scs.log_csv_filename = '';
     scs.eliminateequalities = 0;
     scs.gpu = false;
 

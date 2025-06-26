@@ -23,7 +23,7 @@ end
 
 if isa(Z,'double')
     
-    if  size(Z,1)==size(Z,2) &&  norm(Z-Z',inf)<1e-12 && ~isequal(quantifier,'==')
+    if  size(Z,1)>1 && size(Z,1)==size(Z,2) &&  norm(Z-Z',inf)<1e-12 && ~isequal(quantifier,'==')
         checkSDP = 1;
     else
         checkSDP = 0;

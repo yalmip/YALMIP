@@ -41,9 +41,9 @@ if nnz(cones.q) > 0
 end
 if nnz(cones.ep) > 0
     model.dims.e = cones.ep;
-    tempG = model.G(1:model.dims.l+sum(cones.q),:);
-    temph = model.h(1:model.dims.l+sum(cones.q));
-    top = 1+model.dims.l+sum(cones.q);
+    tempG = model.G(1:cones.l+sum(cones.q),:);
+    temph = model.h(1:cones.l+sum(cones.q));
+    top = 1+cones.l+sum(cones.q);
     for i = 1:model.dims.e
         tempG = [tempG;model.G(top + [0;2;1],:)];
         temph = [temph;model.h(top + [0;2;1],:)];

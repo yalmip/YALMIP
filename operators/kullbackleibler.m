@@ -20,7 +20,7 @@ switch class(varargin{1})
             x = varargin{1}(:);
             y = varargin{2}(:);
         end
-        l = log(x./y);
+        l = -log(y./x);
         l(x<=0) = 0;
         l = real(l);
         varargout{1} = sum(x.*l);       

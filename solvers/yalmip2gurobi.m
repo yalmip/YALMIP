@@ -284,3 +284,29 @@ model.NegativeSemiVar=NegativeSemiVar;
 if isfield(model,'quadcon') && isempty(model.quadcon)
 	model = rmfield(model,'quadcon');
 end
+
+if length(interfacedata.evalMap) > 0  
+
+    if any(cellfun(@(x) strcmp(x.fcn, 'sin'), interfacedata.evalMap))
+         model.genconsin=[]; 
+    end
+    if any(cellfun(@(x) strcmp(x.fcn, 'cos'), interfacedata.evalMap))
+         model.genconcos = [];         
+    end
+    if any(cellfun(@(x) strcmp(x.fcn, 'exp'), interfacedata.evalMap))
+         model.genconexp = [];         
+    end    
+
+    for i = 1:length(interfacedata.evalMap)
+        f = interfacedata.evalMap{i};
+        switch f.fcn
+            case 'exp'                
+                model.genconexp = [model.genconexp struct('xvar',f.variableIndex,'yvar', f.computes)];                
+            case 'sin'
+                model.genconsin = [model.genconsin struct('xvar',f.variableIndex,'yvar', f.computes)];                
+            case 'cos'
+                model.genconcos = [model.genconcos struct('xvar',f.variableIndex,'yvar', f.computes)];                
+            otherwise
+        end
+    end
+end

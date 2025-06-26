@@ -75,7 +75,8 @@ if p.options.bmibnb.roottight & p.feasible
         if p.lb(j) < p.ub(j) & (ismember(j,p.branch_variables) | (p.options.bmibnb.roottight == 2))
             p.c = eyev(length(p.c),j);
             start = tic;
-            output = feval(lowersolver,removenonlinearity(p));
+            p_temp = removenonlinearity(p);p_temp.solver.version = p_temp.solver.lowersolver.version;
+            output = feval(lowersolver,p_temp);
             if we_are_using_lower
                 p.counter.lowersolved = p.counter.lowersolved + 1;
                 timing.lowersolve = timing.lowersolve + toc(start);
@@ -92,7 +93,8 @@ if p.options.bmibnb.roottight & p.feasible
                 p.feasible = 0;
             elseif p.lb(j) < p.ub(j) % We might have updated lb
                 p.c = -eyev(length(p.c),j);
-                output = feval(lowersolver,removenonlinearity(p));
+                p_temp = removenonlinearity(p);p_temp.solver.version = p_temp.solver.lowersolver.version;
+                output = feval(lowersolver,p_temp);
                 if we_are_using_lower
                     p.counter.lowersolved = p.counter.lowersolved + 1;
                     timing.lowersolve = timing.lowersolve + toc(start);

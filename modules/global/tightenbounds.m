@@ -59,14 +59,14 @@ if ~infeasible & (iter1 < 10)
             if ~isempty(Cp)
                 r = At(Cp,i);              
                 new1=lbnew(Cp)+bminusbdn(i)./r;
-                ubnew(Cp) = min(ubnew(Cp),new1);
+                ubnew(Cp) = min(ubnew(Cp),new1+1e-12);
             end
             
             Cm = Cmm{i};
             if ~isempty(Cm)
                 r = At(Cm,i);
                 new2=ubnew(Cm)+bminusbdn(i)./r;
-                lbnew(Cm) = max(lbnew(Cm),new2);
+                lbnew(Cm) = max(lbnew(Cm),new2-1e-12);
             end
 
             if any(lbnew>ubnew)

@@ -58,7 +58,7 @@ if ~isempty(model.evalMap)
 else
     % Map to full format from tril
     Dual = y_s(1:scsmodel.cones.z+scsmodel.cones.l+sum(scsmodel.cones.q));
-    if ~isempty(scsmodel.cones.s) && any(scsmodel.cones.s)        
+    if isfield(scsmodel.cones, 's') && ~isempty(scsmodel.cones.s) && any(scsmodel.cones.s)        
         top = 1 + scsmodel.cones.z + scsmodel.cones.l + sum(scsmodel.cones.q);
         for i = 1:length(scsmodel.cones.s)
             n = scsmodel.cones.s(i);

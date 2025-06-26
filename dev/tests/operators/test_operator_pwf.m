@@ -1,7 +1,7 @@
 function tests = test_operator_pwf
 tests = functiontests(localfunctions);
 % 
-% function test1(testCase)
+ function test1(testCase)
 % % Worked 20130322
 % sdpvar t
 % F1 = [-1 <= t <= 0];
@@ -11,6 +11,7 @@ tests = functiontests(localfunctions);
 % z = pwf(f1,F1,f2,F2);
 % optimize([],z)
 % testCase.assertTrue(abs(value(t)--.5) <= 1e-4);
+testCase.assertTrue(true);
 % 
 % % Failed 20130322
 % sdpvar u
