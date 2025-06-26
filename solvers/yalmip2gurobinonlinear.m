@@ -335,6 +335,8 @@ if length(interfacedata.evalMap) > 0
                 model.genconsin = [model.genconsin struct('xvar',f.variableIndex,'yvar', f.computes)];
             case 'cos'
                 model.genconcos = [model.genconcos struct('xvar',f.variableIndex,'yvar', f.computes)];
+            case 'tan'
+                model.gencontan = [model.gencontan struct('xvar',f.variableIndex,'yvar', f.computes)];                
             case 'logistic'
                 model.genconlogistic = [model.genconlogistic struct('xvar',f.variableIndex,'yvar', f.computes)];                
             case 'power_internal1'
