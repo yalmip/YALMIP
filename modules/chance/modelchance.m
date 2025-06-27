@@ -149,10 +149,9 @@ for uncertaintyGroup = 1:length(randomVariables)
                 if ~isempty(Qxwi)
                     ci = ci + Qxwi'*x;
                 end
-                c = [c;ci'];
+                c = [c ci];
                 b = [b;bi];
-            end
-            c = c';
+            end            
             
             % Used in characteristics stuff but there notation is h(x)+g(x)^Tw <= 0
             % Assumes this is an individual constraint

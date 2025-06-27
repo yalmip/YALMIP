@@ -1,8 +1,8 @@
 function sampledData = dataSampler(distribution,dimData)
+temp = {distribution.generator,distribution.parameters{:},dimData};
 if any(cellfun('isclass',temp,'sdpvar'))
     error('Cannot sample when parameters are decision variables')
 end
-temp = {distribution.generator,distribution.parameters{:},dimData};
 if strcmp(func2str(temp{1}),'random')
     % We're most likely using a standard distribution from
     % the random command. However, we must check for some
