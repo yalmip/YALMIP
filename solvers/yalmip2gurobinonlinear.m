@@ -90,6 +90,12 @@ if ~isempty(quadraticMonoms)
     K = interfacedata.K;
 end
 
+% Normally, YALMIP should not bother about bounds. Solvers are more
+% efficient at extracting these from general constraints. However, when
+% meta-solvers such as bnb or bmibnb are the origin for the call, they are
+% already prepared and should be used. Why is binary clean-up here? No
+% idea, maybe some issue in early versions of Gurobi? Can probably be
+% removed but kept for now.
 if ~isempty(ub)
     LB = lb;
     UB = ub;
@@ -106,8 +112,14 @@ else
     UB = inf(n,1);
 end
 
-if ~isempty(semicont_variables)
-    % Bounds must be placed in LB/UB
+% Although YALMIP assumes bounds are extracted, this is not the case for
+% semi-continuous. The structure of these are explicitly communicated in
+% the bounds (variable is x=0 or l<=x<=u).
+% The presolve routine for nonlinear models is weak and requires explicit
+% bounds, so we go here for that case too
+if ~isempty(semicont_variables) || ~isempty(interfacedata.evalMap)
+    % Bounds must be placed in LB/UB for semi-cont, so we go through the
+    % effort to detect all bounds 
     [LB,UB,cand_rows_eq,cand_rows_lp] = find_lp_bounds(F_struc,K,LB,UB);
     F_struc(K.f+cand_rows_lp,:)=[];
     F_struc(cand_rows_eq,:)=[];
