@@ -12,6 +12,14 @@ x_min = x;
 intvars = p.integral_variables(:);
 convars = p.noninteger_variables;
 
+if 0
+    p = localPropagation(p);  
+    if any(p.lb > p.ub)
+        local_upper = inf;
+        x_min = [];
+        return
+    end
+end
 % Clean up things that we can consider integer
 close = find(abs(x(intvars)-round(x(intvars)))<=p.options.bnb.inttol);
 x(intvars(close)) = round(x(intvars(close)));
@@ -53,6 +61,9 @@ if ismember('shifted round',p.options.bnb.rounding)
                     % With x fixed, smallest t can be computed by gevp                    
                    % [xtemp,fail] = sdpextendsolution(p,xtemp);
                    [upperhere,xhere] = upper_from_sdpextension(p,xtemp,upper,x_min);
+                %   if sum(xtemp(1:100))==5
+                %    [upperhere,xhere] = upper_from_sdpextension(p,xtemp,upper,x_min);
+                %   end
                    if upperhere<upper
                        x_min = xhere;
                        local_upper = upperhere;
@@ -96,3 +107,34 @@ for i = 1:length(p.semicont_variables)
         end
     end
 end
+
+
+function p = localPropagation(p)
+givens = p.noninteger_variables;
+if p.sdpextendable
+    givens = setdiff(givens,p.sdpfix.forvars);
+end
+kept = setdiff(1:length(p.c),givens);
+[~,loc] = ismember(p.binary_variables,kept);
+p.binary_variables = loc(find(loc));
+[~,loc] = ismember(p.integer_variables,kept);
+p.integer_variables = loc(find(loc));
+[~,loc] = ismember(p.integral_variables,kept);
+p.integral_variables = loc(find(loc));
+[~,loc] =  ismember(p.noninteger_variables,kept);
+p.noninteger_variables = loc(find(loc));
+[~,loc] =  ismember(p.implied_integers,kept);
+p.implied_integers = loc(find(loc));
+
+p.F_struc(:,1) = p.F_struc(:,1) + p.F_struc(:,1+givens)*x(givens);
+p.F_struc(:,1+givens) = [];
+p.c(givens) = [];
+p.lb(givens) = [];
+p.ub(givens) = [];
+p = presolve_empty_rows(p);
+p = update_integer_bounds(p);
+p = presolve_dualreductions(p);
+p = presolve_bounds_from_modelbounds(p,0);
+p = update_integer_bounds(p);
+p.lb(kept) = max(p.lb(kept),p.lb);
+p.ub(kept) = min(p.ub(kept),p.ub);

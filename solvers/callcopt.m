@@ -1,4 +1,19 @@
 function output = callcopt(interfacedata)
+% Number of variables in original model
+numvars = length(interfacedata.c);
+
+% Convert bounded variables to constraints when SDP cones exist
+if ~isempty(interfacedata.K.s) && any(interfacedata.K.s)
+    if ~isempty(interfacedata.ub)
+        [interfacedata.F_struc, interfacedata.K] = addStructureBounds(interfacedata.F_struc, interfacedata.K, interfacedata.ub, interfacedata.lb);
+    end
+end
+
+% Write nonlinear functions using exponential cone operators if possible
+[interfacedata, output] = normalizeExponentialCone(interfacedata);
+if output.problem
+    return
+end
 
 options = interfacedata.options;
 model = yalmip2copt(interfacedata);
@@ -24,20 +39,20 @@ if isfield(solution, 'rowmap')
             end
         end
     end
-
+    
     if isfield(solution, 'psdx')
         if isfield(solution, 'x')
             y = [solution.x; solution.psdx];
         else
             y = solution.psdx;
         end
-
+        
         dims = model.conedata.K;
-
-        D_struc = y(1:dims.f + dims.l + sum(dims.q) + sum(dims.r));
+        
+        D_struc = y(1:dims.f + dims.l + sum(dims.q) + 3 * dims.ep);
         
         if isfield(solution, 'psdx')
-            top = 1 + dims.f + dims.l + sum(dims.q) + sum(dims.r);
+            top = 1 + dims.f + dims.l + sum(dims.q) + 3 * dims.ep;
             for i = 1:length(dims.s)
                 n = dims.s(i);
                 sdpdual = y(top:top + n * (n + 1) / 2 - 1);
@@ -54,7 +69,7 @@ if isfield(solution, 'rowmap')
     else
         D_struc = [];
     end
-
+    
     dualstatus = solution.status;
     switch dualstatus
         case 'infeasible'
@@ -65,14 +80,12 @@ if isfield(solution, 'rowmap')
             solution.status = dualstatus;
     end
 else
-    numvars = length(interfacedata.c);
-
     if isfield(solution, 'x')
         x = solution.x(1:numvars);
     else
         x = zeros(numvars, 1);
     end
-
+    
     if isfield(solution, 'pi')
         D_struc = -solution.pi;
     else
@@ -89,7 +102,7 @@ switch solution.status
         problem = 2;
     case {'timeout', 'nodelimit'}
         problem = 3;
-    case 'numerical'
+    case {'numerical', 'imprecise'}
         problem = 4;
     case 'interrupted'
         problem = 16;

@@ -1,5 +1,5 @@
 function [upper,x_min] = upper_from_sdpextension(p,xtemp,upper,x_min)
-if false%p.sdpextendable && p.lb(p.sdpfix.forvars)<p.ub(p.sdpfix.forvars)
+if p.sdpextendable && p.lb(p.sdpfix.forvars)<p.ub(p.sdpfix.forvars)
     [xtemp,fail] = sdpextendsolution(p,xtemp);
     if ~fail
         if ~isnan(xtemp(p.noninteger_variables))
