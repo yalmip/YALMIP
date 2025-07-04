@@ -335,6 +335,9 @@ if length(interfacedata.evalMap) > 0
     if any(cellfun(@(x) strcmp(x.fcn, 'power_internal1'), interfacedata.evalMap))
         model.genconexpa = [];
     end
+    if any(cellfun(@(x) strcmp(x.fcn, 'sqrtm_internal'), interfacedata.evalMap))
+        model.genconpow = [];
+    end
         
     for i = 1:length(interfacedata.evalMap)
         f = interfacedata.evalMap{i};
@@ -355,6 +358,9 @@ if length(interfacedata.evalMap) > 0
                 % a^x
                 aux = struct('xvar',f.variableIndex,'yvar', f.computes,'a',interfacedata.evalMap{i}.arg{2});
                 model.genconexpa = [model.genconexpa aux];                
+            case 'sqrtm_internal'
+                aux = struct('xvar',f.variableIndex,'yvar', f.computes,'a',0.5);
+                model.genconpow = [model.genconpow aux];                
             otherwise
                 error(['GUROBI does not support "'  f.fcn '"']);
         end
