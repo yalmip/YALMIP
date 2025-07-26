@@ -43,6 +43,9 @@ else
             for j = 1:length(clauses{i}.data)
                 Fivar = [Fivar getvariables(clauses{i}.data{j})];
             end
+        elseif clauses{i}.type == 55
+            % Complementarity Constraints, where we have a binvar in indicators
+            Fivar = [getvariables(clauses{i}.data) getvariables(clauses{i}.extra.indicators(:)')];
         else
             Fivar = getvariables(clauses{i}.data);
         end
