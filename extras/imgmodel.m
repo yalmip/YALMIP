@@ -1,7 +1,7 @@
-function [Fimage,objimage,x,y] = imagemodel(F,obj,options)
-% IMAGEMODEL Explicitely removes equality constraints from model.
+function [Fimage,objimage,x,y] = imgmodel(F,obj,options)
+% IMGMODEL Explicitely removes equality constraints from model.
 %
-% [Fi,hi,x,y] = imagemodel(F,h)
+% [Fi,hi,x,y] = imgmodel(F,h)
 %
 % Input
 %  F   : Constraint in form F(x)>0, Ax=b
@@ -23,14 +23,13 @@ function [Fimage,objimage,x,y] = imagemodel(F,obj,options)
 % See also DUALIZE, PRIMALIZE
 
 % Check for unsupported problems
-F = flatten(F);
 err = 0;
 p1 = ~(isreal(F) & isreal(obj));
 p2 = ~(islinear(F) & islinear(obj));
 p3 = any(is(F,'integer')) | any(is(F,'binary'));
 if p1 | p2 | p3
     if nargout == 5
-        Fdual = lmi([]);objdual = [];y = []; X = []; t = []; err = 1;
+        Fdual = ([]);objdual = [];y = []; X = []; t = []; err = 1;
     else
         problems = {'Cannot imagalize complex-valued problems','Cannot imagalize nonlinear problems','Cannot imagalize discrete problems'};
         error(problems{min(find([p1 p2 p3]))});
@@ -39,15 +38,10 @@ end
 
 if nargin < 3
     options = sdpsettings('solver','sedumi','remove',1);
-else
-    options = sdpsettings(options,'remove',1);
 end
     
 if any(is(F,'equality'))
     [model,recoverdata,solver,diagnostic,F] = compileinterfacedata(F,[],[],obj,options,0);
-    if ~isempty(model.F_struc)
-        model.F_struc(abs(model.F_struc) <= 1e-12)=0;
-    end
     if isfield(diagnostic,'problem')
         if diagnostic.problem == 1
             warning('Problem is infeasible');
@@ -78,17 +72,17 @@ y = sdpvar(length(model.c),1);
 
 vecF = model.F_struc*[1;y];
 K = model.K;
-Fimage = lmi([]);
+Fimage = ([]);
 start = 1;
 if any(model.K.l)
-    Fimage = Fimage + lmi(vecF(start:start+K.l-1) >= 0);
+    Fimage = Fimage + (vecF(start:start+K.l-1) >= 0);
     start = start + K.l;
 end
 
 if any(model.K.q)
     for i = 1:length(model.K.q)
         z = vecF(start:start+K.q(i)-1)
-        Fimage = Fimage + lmi(cone(z(2:end),z(1)));
+        Fimage = Fimage + (cone(z(2:end),z(1)));
         start = start + K.q(i);
     end
 end
@@ -96,7 +90,7 @@ end
 if any(model.K.s)
     for i = 1:length(model.K.s)
         z = vecF(start:start+K.s(i)^2-1);
-        Fimage = Fimage + lmi(reshape(z,K.s(i),K.s(i)));
+        Fimage = Fimage + (reshape(z,K.s(i),K.s(i)));
         start = start + K.s(i)^2;
     end
 end
