@@ -148,9 +148,11 @@ end
 % ******************************************
 
 % Silly fix for the recent addition of release to solver name
-if findstr('linprog',lower(solver.tag))
+if strncmpi('intlinprog', solver.tag, length('intlinprog'))
+    solver.tag = 'intlinprog';
+elseif strncmpi('linprog', solver.tag, length('inprog'))
     solver.tag = 'linprog';
-elseif findstr('quadprog',lower(solver.tag))
+elseif strncmpi('quadprog', solver.tag, length('quadprog'))
     solver.tag = 'quadprog';
 end
 
