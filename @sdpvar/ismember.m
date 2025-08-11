@@ -41,20 +41,25 @@ if isa(x,'double')
 end
 
 if isa(x,'sdpvar') & isa(p,'sdpvar')
-    x_base = x.basis;
-    x_vars = x.lmi_variables;
-
-    p_base = x.basis;
-    p_vars = x.lmi_variables;
-
-    % Member at all
-    varargout{1} = ismember(x.lmi_variables,p.lmi_variables);
-    if varargout{1}
-        index_in_x_vars = find(x.lmi_variables == p.lmi_variables);
-        varargout{1} = full(any(p.basis(:,1+index_in_x_vars),2));
-        if min(p.dim(1),p.dim(2))~=1
-            varargout{1} = reshape(YESNO,p.dim(1),p.dim(2));
+    if numel(x) > 1
+        d = size(x);
+        x = reshape(x,[],1);
+        YESNO = [];
+        for i = 1:length(x)
+            YESNO = [YESNO;ismember(subsref(x,struct('type','()','subs',{{i}})),p)];
         end
+        varargout{1} = reshape(YESNO,d);        
+    else
+        d = size(p);
+        p = reshape(p,[],1);
+        varargout{1} = false;
+        for k = 1:length(p)
+            pk = subsref(p,struct('type','()','subs',{{k}}));
+            if isequal(getbase(pk),getbase(x)) && isequal(getvariables(pk),getvariables(x))
+                varargout{1} = true;
+                return 
+            end
+        end        
     end
     return
 end
