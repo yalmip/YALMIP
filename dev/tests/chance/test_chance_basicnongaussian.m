@@ -5,7 +5,7 @@ function test_scalar_unit_exponential(testCase)
 yalmip('clear')
 w = sdpvar(1,1);
 sdpvar t s
-mu = 2;
+lambda = 2;
 truth = 2.3078;
 
 Model = [probability(2+3*w >= t) >= 0.95,uncertain(w,'exponential',lambda)];
@@ -109,7 +109,7 @@ optimize(Model,-t)
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 
 
-function test_different_scalar_uniform(testCase)
+function test_scalar_uniform(testCase)
 yalmip('clear')
 w = sdpvar(1,1);
 sdpvar t s
@@ -134,7 +134,7 @@ Model = [probability(2-3*w >= t) >= 1-s, s <= 0.05,uncertain(w,'uniform',-4,2)];
 optimize(Model,-t)
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 
-function test_different_scalar_laplace(testCase)
+function test_scalar_laplace(testCase)
 yalmip('clear')
 w = sdpvar(1,1);
 mu = 2;
@@ -162,7 +162,7 @@ Model = [probability(2-3*w >= t) >= 1-s, s <= 0.05, uncertain(w,'laplace',mu,sig
 optimize(Model,-t)
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 
-function test_different_scalar_studentt(testCase)
+function test_scalar_studentt(testCase)
 yalmip('clear')
 w = sdpvar(1,1);
 nu = 2;
@@ -178,7 +178,7 @@ Model = [probability(2+3*w >= t) >= 1-s, s <= 0.05, uncertain(w,'t',nu)];
 optimize(Model,-t)
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 
-function test_different_scalar_tlocationscale(testCase)
+function test_scalar_tlocationscale(testCase)
 yalmip('clear')
 w = sdpvar(1,1);
 sdpvar t s
@@ -192,6 +192,19 @@ testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 Model = [probability(2+3*w >= t) >= 1-s, s <= 0.05, uncertain(w,'tlocationScale',3,5,6)];
 optimize(Model,-t)
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+
+function test_scalar_cauchy(testCase)
+yalmip('clear')
+w=sdpvar(1,1);
+sdpvar t g
+
+truth = -16.9413;
+Model = [probability(w >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'cauchy',2,3)];
+optimize(Model,-t)
+testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
+%d = makedist('tLocationScale','mu',2,'sigma',3,'nu',1)
+%r = random(d,10000,1);
+%nnz(r >= value(t))/length(r)
 
 function test_different_scalar_stable_symmetric(testCase)
 yalmip('clear')

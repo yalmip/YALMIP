@@ -1,6 +1,6 @@
-function newConstraint =  sampledchebyshevChanceFilter(b,c,distribution,gamma,w,options);
+function newConstraint =  sampledchebyshevChanceFilter(b,c,distribution,gamma,options)
 N = options.chance.N;
-W = [];for i = 1:N;W = [W dataSampler(distribution,size(w))];end
+W = [];for i = 1:N;W = [W dataSampler(distribution,size(c(:)))];end
 alpha = sdpvar(1);
 s = sdpvar(1,N);
 if isa(gamma,'sdpvar')

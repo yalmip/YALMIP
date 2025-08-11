@@ -69,6 +69,11 @@ if size(x_opt,1)==1
     set(p,'EdgeColor',options.plot.edgecolor);
     set(p,'Facealpha',options.plot.shade);    
 elseif size(x_opt,1)==2
+    try
+        K = convhull(x_opt(1,:), x_opt(2,:));
+        x_opt = x_opt(:,K);        
+    catch        
+    end
     p = patch(x_opt(1,:),x_opt(2,:),color);
     set(p,'LineStyle',options.plot.wirestyle);   
     set(p,'LineWidth',options.plot.linewidth);
@@ -96,7 +101,7 @@ end
 
 
 
-function [x_opt,errorstatus] = generateBoundary(internalmodel,x,n,localindex);
+function [x_opt,errorstatus] = generateBoundary(internalmodel,x,n,localindex)
 
 x_opt = [];
 phi = [];

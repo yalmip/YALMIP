@@ -1,4 +1,4 @@
-function newConstraint =  sampledmomentChebyshevChanceFilter(b,c,distribution,gamma,w,options);
+function newConstraint =  sampledmomentChebyshevChanceFilter(b,c,distribution,gamma,options)
 theMean = [];
 theCov = [];
 if strcmpi(func2str(distribution.name),'random') && strcmpi(distribution.parameters{1},'data')
@@ -12,9 +12,9 @@ if strcmpi(func2str(distribution.name),'random') && strcmpi(distribution.paramet
 elseif strcmpi(func2str(distribution.name),'random') 
     % We can compute the required moments
     [theMean, theCov] = extractMoments(distribution);
-    if length(w) > 1 && length(distribution.parameters{2})==1
-        theMean = repmat(theMean,length(w),1);
-        theCov = theCov*eye(length(w));
+    if length(c) > 1 && length(distribution.parameters{2})==1
+        theMean = repmat(theMean,length(c),1);
+        theCov = theCov*eye(length(c));
     end
    % d.parameters{2} = theMean;
    % d.parameters{3} = theCov;
@@ -23,13 +23,13 @@ if isempty(theMean) || isempty(theCov)
     % General case, so draw samples to estimate mean and covariance
     % TODO: Don't though away analytical if available
     N = options.chance.N;
-    W = [];for i = 1:N;W = [W dataSampler(distribution,size(w))];end    
+    W = [];for i = 1:N;W = [W dataSampler(distribution,size(c(:)))];end    
     theMean = mean(W,2);
     theCov = cov(W');
 end
 d.parameters{2} = theMean;
 d.parameters{3} = theCov;
-newConstraint = momentChebyshevChanceFilter(b,c,d,gamma,w,options);
+newConstraint = momentChebyshevChanceFilter(b,c,d,gamma,options);
 
 function [theMean, theCov] = extractMoments(distribution)
 switch lower(distribution.parameters{1})

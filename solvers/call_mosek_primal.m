@@ -1,4 +1,4 @@
-function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model);
+function [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_primal(model)
 
 % Extract alpha in power cone and remove from basis
 if any(model.K.p)
@@ -109,7 +109,7 @@ if any(model.K.p)
     prob.blc(powerRows) = prob.buc(powerRows);
     prob.c = [prob.c;zeros(nof_new,1)];
     % And now say that the new variables are in the POWER cone
-    prob.cones.conepar = [zeros(1,length(prob.cones.type)) full(alpha)];
+    prob.cones.conepar = [zeros(1,length(prob.cones.type)) full(alpha(:))'];
     top = nof_original;
     for i = 1:length(model.K.p)
         prob.cones.type = [prob.cones.type 4];
@@ -194,11 +194,11 @@ if model.options.verbose == 0
     solvertime = toc(solvertime);
 else
     solvertime = tic;
-    [r,res] = mosekopt('minimize info',prob);
+    [r,res] = mosekopt('minimize info',prob,param);
     solvertime = toc(solvertime);
 end
 
-if (r == 1010) || (r == 1011) | (r==1001)
+if (r == 1010) || (r == 1011) || (r==1001)
     problem = -5;
     x = [];
     D_struc = [];

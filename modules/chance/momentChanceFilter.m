@@ -1,4 +1,4 @@
-function model = momentChanceFilter(b,c,distribution,gamma,w,options)
+function model = momentChanceFilter(b,c,distribution,gamma,options)
 % Chance filter for distribution only specified by mean and variance
 theMean    = distribution.parameters{2};
 covariance = distribution.parameters{3};

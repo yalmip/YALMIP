@@ -51,7 +51,7 @@ W = evalin('caller','whos');
 % relevant variable to display
 createTime = [];
 for i = 1:size(W,1)
-    if strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')
+    if (strcmp(W(i).class,'sdpvar') || strcmp(W(i).class,'ncvar')) && ~strcmp(W(i).name,'ans')
         keep(i) = 1;
         z = evalin('caller',['struct(' W(i).name ').extra.createTime;']);
         createTime = [createTime z];
