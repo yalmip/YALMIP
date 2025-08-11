@@ -117,7 +117,6 @@ NODES = rule.Nodes(:);
 % interval split
 interval = [0,1];
 pathlen = interval(end)-interval(1);
-interval = linspace(interval(1),interval(end),11);
 
 % compute phi_z(t)
 phi_u = @(t) phi(g0(:)*t);
@@ -125,11 +124,11 @@ phi_z = @(t) prod(phi(g0(:)*t),1);
 exp_ith = @(t) exp(1i*t*h0);
 
 % compute f_z(-h0)
-<<<<<<< HEAD
+
 integrand1 = @(t) real(exp_ith(t) .* phi_z(t));
 pdf_val = (1/pi)*integral(integrand1,0,inf);
 
-[PHI,E,U,W,INTERVAL,pdf_value,pdf_errbnd] = compute_pdf(phi_u,exp_ith,...
+[PHI,E,U,W,INTERVAL,pdf_value] = compute_pdf(phi_u,exp_ith,...
     interval,pathlen,WT,EWT,NODES,DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct);
 pdf_value = pdf_value/pi;
 DPHI = size(PHI);
@@ -156,7 +155,8 @@ dcdf = (-pdf_val.*dh0') + terms'*dg0;
     PHI,DPHI,E,W,INTERVAL,pathlen,WT,EWT,NODES,...
     DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct);
 dcdf_value = (-pdf_value.*dh0') + predcdf'*dg0;
-=======
+
+% ————————————————————————远程版本————————————————————————————
 integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 
 pdf_val = (1/pi)*integral(integrand_pdf,0,inf);
@@ -173,47 +173,46 @@ end
 
 % dcdf = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
 %[dcdf(:) dcdf_check(:)]
->>>>>>> 5b21828615520a09f772523ac1f843c1bb384fb1
+% ————————————————————————远程版本结束————————————————————————————
 
-% 
 dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
 [dcdf(:) dcdf_value(:) dcdf_check(:)]
 
 
-function [predcdf,predcdf_errbnd] = compute_predcdf(h0,g0,dh0,dg0,exp_ith,...
-    PHI,DPHI,E,W,INTERVAL,pathlen,WT,EWT,NODES,...
-    DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct)
+% function [predcdf,predcdf_errbnd] = compute_predcdf(h0,g0,dh0,dg0,exp_ith,...
+%     PHI,DPHI,E,W,INTERVAL,pathlen,WT,EWT,NODES,...
+%     DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct)
+% 
+% firstFunEval = true;
+% 
+% % subintervals
+% subs = [INTERVAL(1:end-1);INTERVAL(2:end)]; 
+% nsubs = size(subs,2);
+% 
+% % initial value
+% I_sum = zeros(size(g0));
+% I_error = zeros(size(g0));
+% 
+% while true
+%     midpt = sum(subs)/2;   % midpoints of the subintervals
+%     halfh = diff(subs)/2;  % half the lengths of the subintervals
+%     s = NODES*halfh + midpt; % NNODES x nsubs
+%     if firstFunEval
+%         PHI_mat_prod = prod(PHI,1);
+%         FX = imag(DPHI./PHI.*(PHI_mat_prod.*E)).*W;
+%         % compute fx with kronrod weight
+%         FX = reshape(FX,numel(WT),[]);
+%         I_K = (WT*FX) .* halfh;
+%         I_KminusG = (EWT*FX) .* halfh;
+% 
+%     else
+%         FX = imag(DPHI./PHI.*(PHI_mat_prod.*E)).*W;
+%     end
+% 
+% end
 
-firstFunEval = true;
 
-% subintervals
-subs = [INTERVAL(1:end-1);INTERVAL(2:end)]; 
-nsubs = size(subs,2);
-
-% initial value
-I_sum = zeros(size(g0));
-I_error = zeros(size(g0));
-
-while true
-    midpt = sum(subs)/2;   % midpoints of the subintervals
-    halfh = diff(subs)/2;  % half the lengths of the subintervals
-    s = NODES*halfh + midpt; % NNODES x nsubs
-    if firstFunEval
-        PHI_mat_prod = prod(PHI,1);
-        FX = imag(DPHI./PHI.*(PHI_mat_prod.*E)).*W;
-        % compute fx with kronrod weight
-        FX = reshape(FX,numel(WT),[]);
-        I_K = (WT*FX) .* halfh;
-        I_KminusG = (EWT*FX) .* halfh;
-
-    else
-        FX = imag(DPHI./PHI.*(PHI_mat_prod.*E)).*W;
-    end
-
-end
-
-
-function [PHI,E,U,W,INTERVAL,I,I_error] = compute_pdf(phi_u,exp_ith,...
+function [PHI,E,U,W,INTERVAL,I] = compute_pdf(phi_u,exp_ith,...
     interval,pathlen,WT,EWT,NODES,MAXINTERVALCOUNT,ATOL,RTOL,opstruct)
 
 % subintervals
@@ -269,13 +268,13 @@ while true
 
     % error bound
     I_errorbnd = abs(I_error) + norm(I_KminusG,1);
-    if ~(isfinite(I) && isfinite(I_errorbnd))
-        warning(message('NonFiniteValue'));
-        if opstruct.ThrowOnFail
-            error(message('integral fail'));
-        end
-        break
-    end
+    % if ~(isfinite(I) && isfinite(I_errorbnd))
+    %     warning(message('NonFiniteValue'));
+    %     if opstruct.ThrowOnFail
+    %         error(message('integral fail'));
+    %     end
+    %     break
+    % end
     if I_errorbnd <= tol
         break
     end
@@ -290,14 +289,14 @@ while true
     if isempty(subs)
         break
     end
-    nsubs = 2*size(subs,2);
-    if nsubs > MAXINTERVALCOUNT
-        warning(message('MaxIntervalCountReached',...
-            sprintf('%9.1e',I_errorbnd)));
-        if opstruct.ThrowOnFail
-            error(message('integral fail'));
-        end
-        break
-    end
+    % nsubs = 2*size(subs,2);
+    % if nsubs > MAXINTERVALCOUNT
+    %     warning(message('MaxIntervalCountReached',...
+    %         sprintf('%9.1e',I_errorbnd)));
+    %     if opstruct.ThrowOnFail
+    %         error(message('integral fail'));
+    %     end
+    %     break
+    % end
     subs = reshape([subs(1,:);midpt;midpt;subs(2,:)],2,[]);
 end
