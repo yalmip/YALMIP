@@ -22,6 +22,13 @@ keep = [];
 F = flatten(F);
 for i = 1:length(F.LMIid)
     F.clauses{i}.data = replace(F.clauses{i}.data,X,W,expand);
+    if F.clauses{i}.type == 55
+        % Complementarity Constraints, where we have a binvar in indicators
+        if ~is(W, 'binary')
+            error('Complementarity constraints indicators can only be replaced with binary variables');
+        end
+        F.clauses{i}.extra.indicators = replace(F.clauses{i}.extra.indicators,X,W,expand);
+    end
     if isempty(F.clauses{i}.data) | isa(F.clauses{i}.data,'double')
         keep(i)=0;
     else
