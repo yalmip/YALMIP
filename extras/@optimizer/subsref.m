@@ -196,7 +196,12 @@ elseif isequal(subs.type,'{}')
                         temp = temp(:);
                         suppliedData(j) = 0;
                     else
-                        temp = data(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
+                        if size(data, 3) > 1
+                            temp = data(:,left(j):self.diminOrig{j}(2)+left(j)-1,:);
+                        else
+                            temp = data(:,left(j):self.diminOrig{j}(2)+left(j)-1);
+                        end
+
                         suppliedData(j) = 1;
                     end
                     temp = temp(:);
