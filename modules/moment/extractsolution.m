@@ -53,7 +53,7 @@ if ~isempty(flat)
         xw = x(i)*w;
         k = [];
         for j = 1:length(xw)
-            k = [k;find(ismember(xw(j),monomials))];           
+           k = [k;find(ismember(monomials,xw(j)))];           
         end
         N{i} = R(k,:);
     end
