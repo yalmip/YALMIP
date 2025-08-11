@@ -24,7 +24,8 @@ for i = 1:length(F.LMIid)
     F.clauses{i}.data = replace(F.clauses{i}.data,X,W,expand);
     if F.clauses{i}.type == 55
         % Complementarity Constraints, where we have a binvar in indicators
-        if ~is(W, 'binary')
+        W_indicators = W(logical(ismember(X, F.clauses{i}.extra.indicators)));
+        if ~isempty(W_indicators) && ~all(ismember(depends(W_indicators),yalmip('binvariables')))
             error('Complementarity constraints indicators can only be replaced with binary variables');
         end
         F.clauses{i}.extra.indicators = replace(F.clauses{i}.extra.indicators,X,W,expand);
