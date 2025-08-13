@@ -20,39 +20,55 @@ n = length(c);
 % biterms of the form x^p*y^s into u*v
 high_monoms = find(interfacedata.variabletype > 2);
 if ~isempty(high_monoms)
-    model.genconpow = [];
     for i = high_monoms(:)'
         monoms = interfacedata.monomtable(i,:);
         if nnz(monoms) > 1
-        [~,vars,powers] = find(monoms);
-        % Detect case such as x*y^.5, introduce new variable z = y^5
-        nonlinear = find(powers ~=1);
-        for j = 1:length(nonlinear)            
-            % Introduce a new linear variable
-            n = size(interfacedata.monomtable,1)+1;
-            interfacedata.monomtable(i,vars(j)) = 0;
-            interfacedata.monomtable(i,n) = 1;
-            interfacedata.monomtable(n,vars(j)) = powers(j);            
-            if nnz(interfacedata.monomtable(i,:)) <= 2 && all(interfacedata.monomtable(i,:)<=1)
-                % We managed to bilinearize this so gurobi will solve
-                interfacedata.variabletype(i) = 1;    
-            else
-                % Nope, there are more than 2 terms so not supported
-                % To handle this, we would have to recursively decompose as
-                % is done in bmibnb to map to bilinears. Later...
-                interfacedata.variabletype(i) = 3;    
+            [~,vars,powers] = find(monoms);
+            % Detect case such as y^5*x^6, introduce new variable z = y^5
+            nonlinear = find(powers ~=1);
+            for j = 1:length(nonlinear)
+                % Introduce a new linear variable z to mimic this power
+                n = size(interfacedata.monomtable,1)+1;
+                interfacedata.monomtable(i,vars(j)) = 0;
+                interfacedata.monomtable(i,n) = 1;
+                interfacedata.monomtable(n,n) = 1;
+                interfacedata.variabletype(n) = 0;
+                interfacedata.c(n) = 0;c = interfacedata.c;
+                interfacedata.Q(n,n) = 0;Q = interfacedata.Q;
+                if ~isempty(interfacedata.F_struc);interfacedata.F_struc(1,n+1) = 0;end
+                if ~isempty(lb);lb(n)=-inf;end
+                if ~isempty(ub);ub(n)=inf;end
+                % And add a monimial which it should be equal to, i.e. y^5
+                n = size(interfacedata.monomtable,1)+1;
+                interfacedata.monomtable(n,n) = 0;
+                interfacedata.monomtable(n,vars(j)) = powers(j);                
+                interfacedata.c(n) = 0;c = interfacedata.c;
+                interfacedata.Q(n,n) = 0;Q = interfacedata.Q;
+                if ~isempty(interfacedata.F_struc);interfacedata.F_struc(1,n+1) = 0;end
+                if ~isempty(lb);lb(n)=-inf;end
+                if ~isempty(ub);ub(n)=inf;end
+                % Add equality z == y^5
+                row = zeros(1,n+1);row(1,1+n) = 1;row(1,n) =-1;
+                interfacedata.F_struc = [row;interfacedata.F_struc];
+                interfacedata.K.f = interfacedata.K.f + 1;
+                                
+                if nnz(interfacedata.monomtable(i,:)) <= 2 && all(interfacedata.monomtable(i,:)<=1)
+                    % We managed to bilinearize this so gurobi will solve
+                    interfacedata.variabletype(i) = 1;
+                else
+                    % Nope, there are more than 2 terms so not supported
+                    % To handle this, we would have to recursively decompose as
+                    % is done in bmibnb to map to bilinears. Later...
+                    interfacedata.variabletype(i) = 3;
+                end
+                if powers(j) == 2
+                    interfacedata.variabletype(n) = 2;
+                elseif powers(j)==round(powers(j))
+                    interfacedata.variabletype(n) = 3;
+                else
+                    interfacedata.variabletype(n) = 4;
+                end                
             end
-            if powers(j) == 2
-                interfacedata.variabletype(n) = 2;
-            else
-                interfacedata.variabletype(n) = 4;
-            end
-            interfacedata.c(n) = 0;c = interfacedata.c;
-            interfacedata.Q(n,n) = 0;Q = interfacedata.Q;
-            if ~isempty(interfacedata.F_struc);interfacedata.F_struc(1,n+1) = 0;end
-            if ~isempty(lb);lb(n)=-inf;end
-            if ~isempty(ub);ub(n)=inf;end            
-        end
         end
     end
 end
