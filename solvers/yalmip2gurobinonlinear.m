@@ -14,6 +14,51 @@ lb      = interfacedata.lb;
 x0      = interfacedata.x0;
 n = length(c);
 
+% If nonlinear model, preprocess some terms to increase likelihood of
+% Gurobis limited support to be sufficient
+% Single-terms like x^0.5 etc are dealth with later, here we just rerite
+% biterms of the form x^p*y^s into u*v
+high_monoms = find(interfacedata.variabletype > 2);
+if ~isempty(high_monoms)
+    model.genconpow = [];
+    for i = high_monoms(:)'
+        monoms = interfacedata.monomtable(i,:);
+        if nnz(monoms) > 1
+        [~,vars,powers] = find(monoms);
+        % Detect case such as x*y^.5, introduce new variable z = y^5
+        nonlinear = find(powers ~=1);
+        for j = 1:length(nonlinear)            
+            % Introduce a new linear variable
+            n = size(interfacedata.monomtable,1)+1;
+            interfacedata.monomtable(i,vars(j)) = 0;
+            interfacedata.monomtable(i,n) = 1;
+            interfacedata.monomtable(n,vars(j)) = powers(j);            
+            if nnz(interfacedata.monomtable(i,:)) <= 2 && all(interfacedata.monomtable(i,:)<=1)
+                % We managed to bilinearize this so gurobi will solve
+                interfacedata.variabletype(i) = 1;    
+            else
+                % Nope, there are more than 2 terms so not supported
+                % To handle this, we would have to recursively decompose as
+                % is done in bmibnb to map to bilinears. Later...
+                interfacedata.variabletype(i) = 3;    
+            end
+            if powers(j) == 2
+                interfacedata.variabletype(n) = 2;
+            else
+                interfacedata.variabletype(n) = 4;
+            end
+            interfacedata.c(n) = 0;c = interfacedata.c;
+            interfacedata.Q(n,n) = 0;Q = interfacedata.Q;
+            if ~isempty(interfacedata.F_struc);interfacedata.F_struc(1,n+1) = 0;end
+            if ~isempty(lb);lb(n)=-inf;end
+            if ~isempty(ub);ub(n)=inf;end            
+        end
+        end
+    end
+end
+            
+
+        
 % Model might have been compiled for the nonlinear layer which means we
 % have to compile the Q-part of the objective here instead
 quadraticMonoms = find(interfacedata.variabletype <= 2 & interfacedata.variabletype >= 1);
@@ -32,6 +77,9 @@ if ~isempty(quadraticMonoms)
     c = interfacedata.c;
     Q = interfacedata.Q;
 end
+
+
+
 
 if ~isempty(interfacedata.evalMap) && any(interfacedata.variabletype)
     % We might have the case such as exp(x^2). YALMIP handles this natively
