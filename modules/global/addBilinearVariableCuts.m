@@ -11,7 +11,7 @@ else
     
     nn = length(p.c);
     
-    still_uncertain = find(abs(p.lb(z)-p.ub(z))>1e-8);
+    still_uncertain = find((abs(p.lb(x)-p.ub(x))>1e-8) | (abs(p.lb(y)-p.ub(y))>1e-8));
     if ~isempty(still_uncertain)
         
         x_lb = p.lb(x);
