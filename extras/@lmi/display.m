@@ -77,13 +77,13 @@ if nlmi>0
                 classification = [classification ',chance'];                
             end
            
-            linearbilinearquadraticsigmonial = is(X.clauses{i}.data,'LBQS');
-            if ~linearbilinearquadraticsigmonial(1)
-                if linearbilinearquadraticsigmonial(4)
-                    classification = [classification ',sigmonial'];
-                elseif linearbilinearquadraticsigmonial(2)
+            linearbilinearquadraticsignomial = is(X.clauses{i}.data,'LBQS');
+            if ~linearbilinearquadraticsignomial(1)
+                if linearbilinearquadraticsignomial(4)
+                    classification = [classification ',signomial'];
+                elseif linearbilinearquadraticsignomial(2)
                     classification = [classification ',bilinear'];
-                elseif linearbilinearquadraticsigmonial(3)
+                elseif linearbilinearquadraticsignomial(3)
                     classification = [classification ',quadratic'];
                 else
                     classification = [classification ',polynomial'];

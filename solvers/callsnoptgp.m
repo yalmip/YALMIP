@@ -17,7 +17,7 @@ mt      = interfacedata.monomtable;
 % *********************************
 linear_variables = find((sum(abs(mt),2)==1) & (any(mt==1,2)));
 nonlinear_variables = setdiff((1:size(mt,1))',linear_variables);
-sigmonial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
+signomial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
 
 % Convert to common format for fmincon, mosek and gpposy
 ubtemp = ub;
@@ -62,7 +62,7 @@ if ~isempty(fixed)
 end
 
 %something failed, perhaps a QP
-if problem & isempty(sigmonial_variables)
+if problem & isempty(signomial_variables)
     % This is an LP or QP!
     % Go to standard fmincon
     if options.verbose

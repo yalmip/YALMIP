@@ -19,9 +19,9 @@ mt      = interfacedata.monomtable;
 % *********************************
 linear_variables = find((sum(abs(mt),2)==1) & (any(mt==1,2)));
 nonlinear_variables = setdiff((1:size(mt,1))',linear_variables);
-sigmonial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
+signomial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
 
-if ~isempty(sigmonial_variables) | isequal(interfacedata.solver.version,'GEOMETRIC')
+if ~isempty(signomial_variables) | isequal(interfacedata.solver.version,'GEOMETRIC')
     prob = create_mosek_geometric(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,extended_variables);
 else
     prob = create_mosek_lpqp(options,F_struc,c,Q,K,ub,lb,mt,linear_variables,integer_variables);

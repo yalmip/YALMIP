@@ -3,7 +3,7 @@ function [F,failure,cause,ALREADY_MODELLED] = expandmodel(F,h,options,w)
 % FIX : Current code experimental, complex, conservative, has issues with
 % nonlinearities and is slow...
 %
-% If it wasn't for polynomials and sigmonials, it would be trivial, but the
+% If it wasn't for polynomials and signomials, it would be trivial, but the
 % code is extremely messy since we want to have this functionality too
 
 global LUbounds
@@ -74,7 +74,7 @@ else
     
     % Temporary hack to deal with geometric programs. GPs are messy here,
     % becasue we can by mistake claim nonconvexity, since we may have no
-    % sigmonial terms but indefinite quadratic term, but the whole problem is
+    % signomial terms but indefinite quadratic term, but the whole problem is
     % meant to be solved using a GP solver. YES, globals suck, but this is
     % only temporary...hrm.
     DUDE_ITS_A_GP = 0;
@@ -182,7 +182,7 @@ else
         % support GPs, hence it cannot be intended to be a GP
         DUDE_ITS_A_GP = 0;
     else
-        % Check to see if there are any sigmonial terms on top-level
+        % Check to see if there are any signomial terms on top-level
         DUDE_ITS_A_GP = ~isempty(find(variabletype(variables) == 4));
     end
 end

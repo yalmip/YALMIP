@@ -44,8 +44,8 @@ elseif p.ProblemClass.objective.quadratic.nonconvex
     disp(['Objective is nonconvex quadratic']);
 elseif p.ProblemClass.objective.polynomial
     disp(['Objective is polynomial']);
-elseif p.ProblemClass.objective.sigmonial
-    disp(['Objective is sigmonial']);
+elseif p.ProblemClass.objective.signomial
+    disp(['Objective is signomial']);
 end
 
 if length(p.binary_variables)> 0 |  length(p.integer_variables)> 0

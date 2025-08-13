@@ -123,7 +123,7 @@ else
             end
         case 'eig'
             YESNO(i,1) = (Fi.type==10);
-        case 'sigmonial'
+        case 'signomial'
             for i = 1:length(F.clauses)
                 Fi = F.clauses{i};
                 monomtable = yalmip('monomtable');

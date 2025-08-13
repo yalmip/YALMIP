@@ -3,7 +3,7 @@ function model = build_recursive_scheme(model);
 model.evaluation_scheme = [];
 model.deppattern = model.monomtable | model.monomtable;
 
-% Figure out arguments in all polynomials & sigmonials. This info is
+% Figure out arguments in all polynomials & signomials. This info is
 % used on several places, so we might just as well save it
 model.monomials = find(model.variabletype);
 model.monomialMap = cell(length(model.monomials),1);

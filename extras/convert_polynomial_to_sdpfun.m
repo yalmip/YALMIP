@@ -9,18 +9,18 @@ if any(model.variabletype > 2)
     changed = 1;
 
     % Find a higher order term
-    sigmonials = find(model.variabletype == 3);
+    signomials = find(model.variabletype == 3);
 
     model = update_monomial_bounds(model);
 
-    monosig = sigmonials(find(sum(model.monomtable(sigmonials,:) | model.monomtable(sigmonials,:),2)==1));
+    monosig = signomials(find(sum(model.monomtable(signomials,:) | model.monomtable(signomials,:),2)==1));
     if ~isempty(monosig)
         % These are just monomial terms such as x^0.4 etc
         for i = 1:length(monosig)
             variable = find(model.monomtable(monosig(i),:));
             power = model.monomtable(monosig(i),variable);
 
-            model = add_sigmonial_eval(model,monosig(i),variable,power)
+            model = add_signomial_eval(model,monosig(i),variable,power)
             
             found_and_converted = [found_and_converted;variable power monosig(i)];
         end
@@ -30,11 +30,11 @@ if any(model.variabletype > 2)
     % Bugger...we have mixed terms such as x/y etc
 
     % Find a higher order term
-    sigmonials = find(model.variabletype == 3);
+    signomials = find(model.variabletype == 3);
 
-    for i = 1:length(sigmonials)
+    for i = 1:length(signomials)
         n_old_monoms = size(model.monomtable,1);
-        monoms = model.monomtable(sigmonials(i),:);
+        monoms = model.monomtable(signomials(i),:);
         sigs = find((monoms ~= fix(monoms)) | monoms<0);
         powers =  monoms(sigs);
         if ~isempty(found_and_converted)
@@ -42,8 +42,8 @@ if any(model.variabletype > 2)
                 old_index = findrows(found_and_converted(:,1:2),[sigs(j) powers(j)]);
                 if ~isempty(old_index)
                     corresponding_variable = found_and_converted(old_index,3);
-                    model.monomtable(sigmonials(i),sigs(j)) = 0;
-                    model.monomtable(sigmonials(i),corresponding_variable) = 1;
+                    model.monomtable(signomials(i),sigs(j)) = 0;
+                    model.monomtable(signomials(i),corresponding_variable) = 1;
                     sigs(j)=nan;
                 end
             end
@@ -52,10 +52,10 @@ if any(model.variabletype > 2)
         sigs(isnan(sigs)) = [];
         if length(sigs) > 0
             % Terms left that haven't been modeled
-            model.monomtable(sigmonials(i),sigs) = 0;
+            model.monomtable(signomials(i),sigs) = 0;
             model.monomtable = blkdiag(model.monomtable,speye(length(sigs)));
-            model.monomtable(sigmonials(i),n_old_monoms+1:n_old_monoms+length(sigs)) = 1;
-            model.variabletype(sigmonials(i)) = 3;
+            model.monomtable(signomials(i),n_old_monoms+1:n_old_monoms+length(sigs)) = 1;
+            model.variabletype(signomials(i)) = 3;
             model.variabletype(end+1:end+length(sigs)) = 0;
             model.c(end+1:end+length(sigs)) = 0;
             model.Q = blkdiag(model.Q,zeros(length(sigs)));
@@ -74,18 +74,18 @@ if any(model.variabletype > 2)
                 model.evalMap{end}.properties.convexhull = @power_convexhull;                
             end
         end
-        if sum(model.monomtable(sigmonials(i),:))<=2
-            if nnz(model.monomtable(sigmonials(i),:))==1
-                model.variabletype(sigmonials(i)) = 2;
+        if sum(model.monomtable(signomials(i),:))<=2
+            if nnz(model.monomtable(signomials(i),:))==1
+                model.variabletype(signomials(i)) = 2;
             else
-                model.variabletype(sigmonials(i)) = 1;
+                model.variabletype(signomials(i)) = 1;
             end
         end
     end
     model = propagate_bounds_from_evaluations(model);
 end
 
-function  model = add_sigmonial_eval(model,monosig,variable,power)
+function  model = add_signomial_eval(model,monosig,variable,power)
 model.evalVariables = [model.evalVariables monosig];
 model.evalMap{end+1}.fcn = 'power_internal2';
 model.evalMap{end}.arg{1} = recover(variable);

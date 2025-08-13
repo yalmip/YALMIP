@@ -3,7 +3,7 @@ function YESNO = is(X,property,additional)
 %   d = IS(x,property) returns 1 if 'property' holds
 %
 %   Properties possible to test are: 'real', 'symmetric', 'hermitian',
-%   'scalar', 'linear', 'bilinear','quadratic','sigmonial', 'homogeneous', 'integer', 'binary'
+%   'scalar', 'linear', 'bilinear','quadratic','signomial', 'homogeneous', 'integer', 'binary'
 
 switch property
     case 'logic'
@@ -47,7 +47,7 @@ switch property
         quadratic = 0;
         bilinear  = 0;
         linear    = 0;
-        sigmonial = 0;
+        signomial = 0;
               
         variabletype = yalmip('variabletype');
         variabletype = variabletype(X.lmi_variables);
@@ -55,9 +55,9 @@ switch property
         linear    = all(variabletype==0);        
         bilinear  = all(variabletype<=1) && ~linear;        
         quadratic = all(variabletype<=2) && ~bilinear;
-        sigmonial = any(variabletype==4);
+        signomial = any(variabletype==4);
         
-        YESNO = full([linear bilinear quadratic sigmonial]);
+        YESNO = full([linear bilinear quadratic signomial]);
          
          
          
@@ -207,7 +207,7 @@ switch property
             YESNO = YESNO && (nnz(cb)==0) && (nnz(vb-speye(n))==0);
         end   
         
-    case 'sigmonial'
+    case 'signomial'
           monomtable = yalmip('monomtable');
           monomtable = monomtable(getvariables(X),:);
           YESNO = any(find(any(0>monomtable,2) | any(monomtable-fix(monomtable),2)));   

@@ -7,6 +7,6 @@ if ~isempty(nonlinear)
     newvariabletype(quadratic) = 2;
     bilinear = max(newmt,[],2)<=1;
     newvariabletype(bilinear & quadratic) = 1;
-    sigmonial = any(0>newmt,2) | any(newmt-fix(newmt),2);
-    newvariabletype(sigmonial) = 4;
+    signomial = any(0>newmt,2) | any(newmt-fix(newmt),2);
+    newvariabletype(signomial) = 4;
 end

@@ -223,7 +223,7 @@ end
 % *************************************************************************
 %% CONVERT CONVEX QUADRATIC CONSTRAINTS
 % We do not convert quadratic constraints to SOCPs if we have have
-% sigmonial terms (thus indicating a GP problem), if we have relaxed
+% signomial terms (thus indicating a GP problem), if we have relaxed
 % nonlinear expressions, or if we have specified a nonlinear solver.
 % Why do we convert them already here? Don't remember, should be cleaned up
 % *************************************************************************

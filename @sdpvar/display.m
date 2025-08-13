@@ -11,14 +11,14 @@ switch(X.typeflag)
             if any(ismember(vars,yalmip('extvariables')))
                 classification = 'Nonlinear scalar ';
             else                
-                linearbilinearquadraticsigmonial = is(X,'LBQS');
-                if linearbilinearquadraticsigmonial(1)
+                linearbilinearquadraticsignomial = is(X,'LBQS');
+                if linearbilinearquadraticsignomial(1)
                     classification = 'Linear scalar ';
-                elseif linearbilinearquadraticsigmonial(4)
+                elseif linearbilinearquadraticsignomial(4)
                     classification = 'Signomial scalar ';
-                elseif linearbilinearquadraticsigmonial(2)
+                elseif linearbilinearquadraticsignomial(2)
                     classification = 'Bilinear scalar ';
-                elseif linearbilinearquadraticsigmonial(3)
+                elseif linearbilinearquadraticsignomial(3)
                     classification = 'Quadratic scalar ';
                 else
                     classification = 'Polynomial scalar ';
@@ -97,7 +97,7 @@ switch(X.typeflag)
             else
                 if islinear(X)
                     classification = 'Linear matrix variable ';
-                elseif is(X,'sigmonial')
+                elseif is(X,'signomial')
                     classification = 'Signomial matrix variable ';
                 elseif is(X,'bilinear')
                     classification = 'Bilinear matrix variable ';

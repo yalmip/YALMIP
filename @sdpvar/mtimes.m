@@ -502,8 +502,8 @@ switch 2*X_is_spdvar+Y_is_spdvar
                     newvariabletype(quadratic) = 2;
                     bilinear = max(newmt,[],2)<=1;
                     newvariabletype(bilinear & quadratic) = 1;
-                    sigmonial = any(0>newmt,2) | any(newmt-fix(newmt),2);
-                    newvariabletype(sigmonial) = 4;
+                    signomial = any(0>newmt,2) | any(newmt-fix(newmt),2);
+                    newvariabletype(signomial) = 4;
                 end
                 %                yalmip('setmonomtable',mt,[oldvariabletype newvariabletype],[mt_hash;new_mt_hash],oldhash);
                 yalmip('setmonomtable',mt,[oldvariabletype newvariabletype],[mt_hash;new_mt_hash_aux(1:new_mt_hash_counter)],oldhash);

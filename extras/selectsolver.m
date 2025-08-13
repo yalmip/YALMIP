@@ -98,10 +98,10 @@ end
 % ************************************************
 % Prune based on objective
 % ************************************************
-if ProblemClass.objective.sigmonial && ~forced_choice && length(solvers)>0
+if ProblemClass.objective.signomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        keep(i) = solvers(i).objective.sigmonial;                         
+        keep(i) = solvers(i).objective.signomial;                         
     end    
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial terms in objective');
 end   
@@ -109,31 +109,31 @@ end
 % ************************************************
 % Prune based on objective
 % ************************************************
-if ProblemClass.objective.sigmonial && ~forced_choice && length(solvers)>0
+if ProblemClass.objective.signomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        keep(i) = solvers(i).objective.sigmonial;                         
+        keep(i) = solvers(i).objective.signomial;                         
     end    
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial terms in objective');
 end    
 if ProblemClass.objective.polynomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.sigmonial;            
+        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.signomial;            
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'polynomial terms in objective');
 end  
 if ProblemClass.objective.quadratic.nonconvex && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.sigmonial | solvers(i).objective.quadratic.nonconvex;        
+        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.signomial | solvers(i).objective.quadratic.nonconvex;        
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'nonconvex quadratic terms in objective');
 end  
 if ProblemClass.objective.quadratic.convex && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        direct = solvers(i).objective.polynomial | solvers(i).objective.sigmonial | solvers(i).objective.quadratic.nonconvex | solvers(i).objective.quadratic.convex;
+        direct = solvers(i).objective.polynomial | solvers(i).objective.signomial | solvers(i).objective.quadratic.nonconvex | solvers(i).objective.quadratic.convex;
         indirect = solvers(i).constraint.inequalities.semidefinite.linear | solvers(i).constraint.inequalities.secondordercone.linear;
         if direct | indirect
             keep(i)=1;
@@ -146,7 +146,7 @@ end
 if ProblemClass.objective.linear && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)
-        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.sigmonial | solvers(i).objective.quadratic.nonconvex | solvers(i).objective.quadratic.convex | solvers(i).objective.linear;
+        keep(i) = solvers(i).objective.polynomial | solvers(i).objective.signomial | solvers(i).objective.quadratic.nonconvex | solvers(i).objective.quadratic.convex | solvers(i).objective.linear;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'linear terms in objective');
 end  
@@ -190,41 +190,41 @@ end
 % ******************************************************
 % Prune based on semidefinite constraints
 % ******************************************************
-if ProblemClass.constraint.inequalities.semidefinite.sigmonial && ~forced_choice && length(solvers)>0
+if ProblemClass.constraint.inequalities.semidefinite.signomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.semidefinite.sigmonial;
+        keep(i) = solvers(i).constraint.inequalities.semidefinite.signomial;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial semidefinite constraints');
 end  
 if ProblemClass.constraint.inequalities.semidefinite.polynomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.semidefinite.sigmonial |  solvers(i).constraint.inequalities.semidefinite.polynomial;
+        keep(i) = solvers(i).constraint.inequalities.semidefinite.signomial |  solvers(i).constraint.inequalities.semidefinite.polynomial;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'polynomial semidefinite constraints');
 end  
 if ProblemClass.constraint.inequalities.semidefinite.quadratic && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.semidefinite.sigmonial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic;
+        keep(i) = solvers(i).constraint.inequalities.semidefinite.signomial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'quadratic semidefinite constraints');
 end  
 if ProblemClass.constraint.inequalities.semidefinite.linear && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.semidefinite.sigmonial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.semidefinite.linear;
+        keep(i) = solvers(i).constraint.inequalities.semidefinite.signomial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.semidefinite.linear;
     end        
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'semidefinite constraints');
 end
 
 % If user has specified a, e.g., LP solver for an SDP when using OPTIMIZER,
 % we must bail out, as there is no chance this model instantiates as an LP.
-if forced_choice && (ProblemClass.constraint.inequalities.semidefinite.linear | ProblemClass.constraint.inequalities.semidefinite.quadratic | ProblemClass.constraint.inequalities.semidefinite.polynomial || ProblemClass.constraint.inequalities.semidefinite.sigmonial) && length(solvers)>0
+if forced_choice && (ProblemClass.constraint.inequalities.semidefinite.linear | ProblemClass.constraint.inequalities.semidefinite.quadratic | ProblemClass.constraint.inequalities.semidefinite.polynomial || ProblemClass.constraint.inequalities.semidefinite.signomial) && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.semidefinite.sigmonial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.semidefinite.linear;
+        keep(i) = solvers(i).constraint.inequalities.semidefinite.signomial |  solvers(i).constraint.inequalities.semidefinite.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.semidefinite.linear;
     end        
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'semidefinite constraints');
 end
@@ -279,38 +279,38 @@ end
 % ******************************************************
 % Prune based on element-wise inequality constraints
 % ******************************************************
-if ProblemClass.constraint.inequalities.elementwise.sigmonial && ~forced_choice && length(solvers)>0
+if ProblemClass.constraint.inequalities.elementwise.signomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial;            
+        keep(i) = solvers(i).constraint.inequalities.elementwise.signomial;            
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial constraints');
 end  
 if ProblemClass.constraint.inequalities.elementwise.polynomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial;
+        keep(i) = solvers(i).constraint.inequalities.elementwise.signomial |  solvers(i).constraint.inequalities.elementwise.polynomial;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'polynomial constraints');
 end  
 if ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
+        keep(i) = solvers(i).constraint.inequalities.elementwise.signomial |  solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'nonconvex quadratic constraints');
 end 
 if ProblemClass.constraint.inequalities.elementwise.quadratic.convex | (ProblemClass.constraint.inequalities.secondordercone.linear && socp_are_really_qc) && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex | solvers(i).constraint.inequalities.elementwise.quadratic.convex | solvers(i).constraint.inequalities.secondordercone.linear | solvers(i).constraint.inequalities.semidefinite.linear;
+        keep(i) = solvers(i).constraint.inequalities.elementwise.signomial |  solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex | solvers(i).constraint.inequalities.elementwise.quadratic.convex | solvers(i).constraint.inequalities.secondordercone.linear | solvers(i).constraint.inequalities.semidefinite.linear;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'quadratic constraints');
 end 
 if ProblemClass.constraint.inequalities.elementwise.linear && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.elementwise.linear;
+        keep(i) = solvers(i).constraint.inequalities.elementwise.signomial |  solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.semidefinite.quadratic | solvers(i).constraint.inequalities.elementwise.linear;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'constraints');
 end  
@@ -318,19 +318,19 @@ end
 % ******************************************************
 % Prune based on element-wise constraints
 % ******************************************************
-if ProblemClass.constraint.equalities.sigmonial && ~forced_choice && length(solvers)>0
+if ProblemClass.constraint.equalities.signomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        keep(i) = solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.equalities.sigmonial;            
+        keep(i) = solvers(i).constraint.inequalities.elementwise.signomial | solvers(i).constraint.equalities.signomial;            
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'signomial equality constraints');
 end  
 if ProblemClass.constraint.equalities.polynomial && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)    
-        indirect = solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.inequalities.elementwise.polynomial;
-        indirect = indirect | solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.inequalities.elementwise.polynomial;
-        direct = solvers(i).constraint.equalities.sigmonial | solvers(i).constraint.equalities.polynomial;
+        indirect = solvers(i).constraint.inequalities.elementwise.signomial | solvers(i).constraint.inequalities.elementwise.polynomial;
+        indirect = indirect | solvers(i).constraint.inequalities.elementwise.signomial | solvers(i).constraint.inequalities.elementwise.polynomial;
+        direct = solvers(i).constraint.equalities.signomial | solvers(i).constraint.equalities.polynomial;
         keep(i) = direct | indirect;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'polynomial equality constraints');
@@ -338,8 +338,8 @@ end
 if ProblemClass.constraint.equalities.quadratic && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers)                      
-        indirect = solvers(i).constraint.inequalities.elementwise.sigmonial | solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
-        direct = solvers(i).constraint.equalities.sigmonial |  solvers(i).constraint.equalities.polynomial |  solvers(i).constraint.equalities.quadratic;
+        indirect = solvers(i).constraint.inequalities.elementwise.signomial | solvers(i).constraint.inequalities.elementwise.polynomial | solvers(i).constraint.inequalities.elementwise.quadratic.nonconvex;
+        direct = solvers(i).constraint.equalities.signomial |  solvers(i).constraint.equalities.polynomial |  solvers(i).constraint.equalities.quadratic;
         keep(i) = direct | indirect;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'quadratic equality constraints');
@@ -347,8 +347,8 @@ end
 if ProblemClass.constraint.equalities.linear && ~forced_choice && length(solvers)>0
     keep = ones(length(solvers),1);
     for i = 1:length(solvers) 
-        indirect = solvers(i).constraint.inequalities.elementwise.linear | solvers(i).constraint.inequalities.elementwise.sigmonial |  solvers(i).constraint.inequalities.elementwise.polynomial;
-        direct = solvers(i).constraint.equalities.linear | solvers(i).constraint.equalities.sigmonial |  solvers(i).constraint.equalities.polynomial;
+        indirect = solvers(i).constraint.inequalities.elementwise.linear | solvers(i).constraint.inequalities.elementwise.signomial |  solvers(i).constraint.inequalities.elementwise.polynomial;
+        direct = solvers(i).constraint.equalities.linear | solvers(i).constraint.equalities.signomial |  solvers(i).constraint.equalities.polynomial;
         keep(i) = direct | indirect;
     end
     [solvers,failureMode] = pruneBasedOn(solvers,keep,failureMode,'equality constraints');
@@ -545,24 +545,24 @@ if ~isempty(solver)
     c1 = (length(options.solver)==0 | isequal(lower(options.solver),'fmincon')) & isequal(lower(solver.tag),'fmincon') & isequal(solver.version,'geometric');
     c2 = (length(options.solver)==0 | isequal(lower(options.solver),'snopt')) & isequal(lower(solver.tag),'snopt') & isequal(solver.version,'geometric');
     if c1 || c2
-        if ~(ProblemClass.objective.sigmonial | ProblemClass.constraint.inequalities.elementwise.sigmonial)
+        if ~(ProblemClass.objective.signomial | ProblemClass.constraint.inequalities.elementwise.signomial)
             solver.version = 'standard';
             solver.call    = strrep(solver.call,'gp','');
             solver.objective.linear = 1;
             solver.objective.quadratic.convex = 1;
             solver.objective.quadratic.nonconvex = 1;
             solver.objective.polynomial = 1;
-            solver.objective.sigmonial = 1;
+            solver.objective.signomial = 1;
             solver.constraint.equalities.elementwise.linear = 1;
             solver.constraint.equalities.elementwise.quadratic.convex = 1;
             solver.constraint.equalities.elementwise.quadratic.nonconvex = 1;
             solver.constraint.equalities.elementwise.polynomial = 1;
-            solver.constraint.equalities.elementwise.sigmonial = 1;
+            solver.constraint.equalities.elementwise.signomial = 1;
             solver.constraint.inequalities.elementwise.linear = 1;
             solver.constraint.inequalities.elementwise.quadratic.convex = 1;
             solver.constraint.inequalities.elementwise.quadratic.nonconvex = 1;
             solver.constraint.inequalities.elementwise.polynomial = 1;
-            solver.constraint.inequalities.elementwise.sigmonial = 1;
+            solver.constraint.inequalities.elementwise.signomial = 1;
             solver.constraint.inequalities.secondordercone.linear = 1;
             solver.constraint.inequalities.semidefinite.linear = 1;
             solver.constraint.inequalities.semidefinite.quadratic = 1;

@@ -97,7 +97,7 @@ end
 % Clean model and switch to conic solver
 model.variabletype = zeros(1,n_original+n_new_z+n_new_t);
 model.monomtable = speye(n_original+n_new_z+n_new_t);
-model.sigmonial_variables = [];
+model.signomial_variables = [];
 model.solver.version = 'SOCP';
 model.Q = spalloc(n_original+n_new_z+n_new_t,n_original+n_new_z+n_new_t,0);
 

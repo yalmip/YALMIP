@@ -6,14 +6,14 @@ function s = solver_can_solve(solver,problem)
 % bilinearizing a problem
 
 polynomial = any(problem.variabletype == 3);
-sigmonial = any(problem.variabletype == 4);
+signomial = any(problem.variabletype == 4);
 
 s = 1;
 s = s & (solver.constraint.equalities.polynomial >= polynomial);
 s = s & (solver.constraint.inequalities.elementwise.polynomial >= polynomial);
 s = s & (solver.objective.polynomial >= polynomial);
 
-s = s & (solver.constraint.equalities.sigmonial >= sigmonial);
-s = s & (solver.constraint.inequalities.elementwise.sigmonial >= sigmonial);
-s = s & (solver.objective.sigmonial >= sigmonial);
+s = s & (solver.constraint.equalities.signomial >= signomial);
+s = s & (solver.constraint.inequalities.elementwise.signomial >= signomial);
+s = s & (solver.objective.signomial >= signomial);
 

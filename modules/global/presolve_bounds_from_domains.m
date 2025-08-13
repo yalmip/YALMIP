@@ -1,9 +1,9 @@
 function model = presolve_bounds_from_domains(model);
 
 % Sigmonial with non-integer powers must be positive
-sigmonials = find((model.variabletype == 4));
-for i = 1:length(sigmonials)
-    j = sigmonials(i);
+signomials = find((model.variabletype == 4));
+for i = 1:length(signomials)
+    j = signomials(i);
     involved = find(model.monomtable(j,:));
     fractional = involved(model.monomtable(j,involved)~=fix(model.monomtable(j,involved)));
     for k = 1:length(fractional)

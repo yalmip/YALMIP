@@ -17,7 +17,7 @@ end
 [monomtable,variabletype] = yalmip('monomtable');
 
 if any(variabletype == 4)
-    if issigmonial(F)
+    if issignomial(F)
         return
     end
 end
@@ -35,7 +35,7 @@ for i = 1:1:length(F)
         % Definitely no quadratic to model as all variables are bilinear at
         % most
         Fconv = Fconv + F(i);
-    elseif is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'sigmonial')
+    elseif is(F(i),'element-wise') & ~is(F(i),'linear') & ~is(F(i),'signomial')
         % f-c'*x-x'*Q*x>0
         fi = sdpvar(F(i));fi = fi(:);
         %[Qs,cs,fs,x,info] = vecquaddecomp(fi);

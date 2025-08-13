@@ -37,7 +37,7 @@ while any(model.variabletype > 2)% & any(model.variabletype >= 3 & (sum(model.mo
 
     powers = model.monomtable(polynomials,:);
     if any(powers < 0)
-        model = eliminate_sigmonial(model,polynomials,powers);
+        model = eliminate_signomial(model,polynomials,powers);
     elseif nnz(powers) == 1
         model = bilinearize_recursive(model,polynomials,powers);
     else
@@ -58,7 +58,7 @@ if ~isempty(model.bilinearizations)
     model.K.l = model.K.l  + size(Q1,1) + size(Q2,1) + size(Q3,1);
 end
 
-function   model = eliminate_sigmonial(model,polynomial,powers);
+function   model = eliminate_signomial(model,polynomial,powers);
 % Silly bug
 if isempty(model.F_struc)
     model.F_struc = zeros(0,length(model.c) + 1);

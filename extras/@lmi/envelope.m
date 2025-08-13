@@ -57,7 +57,7 @@ p = propagate_bounds_from_arbitrary_quadratics(p);
 p.high_monom_model=[];
 p.originalModel = p;
 p = presolveOneMagicRound(p);   
-[p,changed] = convert_sigmonial_to_sdpfun(p);
+[p,changed] = convert_signomial_to_sdpfun(p);
 if changed
     p = compile_nonlinear_table(p);
 end

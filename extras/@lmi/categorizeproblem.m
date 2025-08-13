@@ -33,23 +33,23 @@ problem.objective.quadratic.nonnegative = 0;
 problem.objective.polynomial = 0;
 problem.objective.maxdet.convex = 0;
 problem.objective.maxdet.nonconvex = 0;
-problem.objective.sigmonial = 0;
+problem.objective.signomial = 0;
 
 problem.constraint.equalities.linear     = 0;
 problem.constraint.equalities.quadratic  = 0;
 problem.constraint.equalities.polynomial = 0;
-problem.constraint.equalities.sigmonial  = 0;
+problem.constraint.equalities.signomial  = 0;
 
 problem.constraint.inequalities.elementwise.linear = 0;
 problem.constraint.inequalities.elementwise.quadratic.convex = 0;
 problem.constraint.inequalities.elementwise.quadratic.nonconvex = 0;
-problem.constraint.inequalities.elementwise.sigmonial = 0;
+problem.constraint.inequalities.elementwise.signomial = 0;
 problem.constraint.inequalities.elementwise.polynomial = 0;
 
 problem.constraint.inequalities.semidefinite.linear = 0;
 problem.constraint.inequalities.semidefinite.quadratic = 0;
 problem.constraint.inequalities.semidefinite.polynomial = 0;
-problem.constraint.inequalities.semidefinite.sigmonial = 0;
+problem.constraint.inequalities.semidefinite.signomial = 0;
 
 problem.constraint.inequalities.rank = 0;
 
@@ -120,7 +120,7 @@ any_rank_variables = ~isempty(rank_variables);
 
 linear_variables = find(variabletype==0);
 nonlinear_variables = find(variabletype~=0);
-sigmonial_variables = find(variabletype==4);
+signomial_variables = find(variabletype==4);
 
 if isempty(F_vars)
     allvars = getvariables(F);
@@ -197,21 +197,21 @@ for i = 1:Counter
         vars = getvariables(Fi.data);
         usednonlins = find(ismembcYALMIP(nonlinear_variables,vars));
         if ~isempty(usednonlins)
-            usedsigmonials = find(ismember(sigmonial_variables,vars));
-            if ~isempty(usedsigmonials)
+            usedsignomials = find(ismember(signomial_variables,vars));
+            if ~isempty(usedsignomials)
                 switch Fi.type
                     case 1
-                        problem.constraint.inequalities.semidefinite.sigmonial = 1;
+                        problem.constraint.inequalities.semidefinite.signomial = 1;
                     case 2
-                        problem.constraint.inequalities.elementwise.sigmonial = 1;
+                        problem.constraint.inequalities.elementwise.signomial = 1;
                     case 3
-                        problem.constraint.equalities.sigmonial = 1;
+                        problem.constraint.equalities.signomial = 1;
                     case {4,54}
                        problem.constraint.inequalities.secondordercone.nonlinear = 1;
                     case 5
-                        error('Sigmonial RSOCP not supported');
+                        error('signomial RSOCP not supported');
                     otherwise
-                        error('Report bug in problem classification (sigmonial constraint)');
+                        error('Report bug in problem classification (signomial constraint)');
                 end
             else
                 %deg = degree(Fi.data);
@@ -364,21 +364,21 @@ if ~isempty(uncertain_variables)
 end
 
 if (relax==1) | (relax==3)
-    problem.constraint.equalities.linear = problem.constraint.equalities.linear | problem.constraint.equalities.quadratic | problem.constraint.equalities.polynomial | problem.constraint.equalities.sigmonial;
+    problem.constraint.equalities.linear = problem.constraint.equalities.linear | problem.constraint.equalities.quadratic | problem.constraint.equalities.polynomial | problem.constraint.equalities.signomial;
     problem.constraint.equalities.quadratic = 0;
     problem.constraint.equalities.polynomial = 0;
-    problem.constraint.equalities.sigmonial = 0;
+    problem.constraint.equalities.signomial = 0;
     
-    problem.constraint.inequalities.elementwise.linear = problem.constraint.inequalities.elementwise.linear | problem.constraint.inequalities.elementwise.quadratic.convex | problem.constraint.inequalities.elementwise.quadratic.nonconvex | problem.constraint.inequalities.elementwise.sigmonial | problem.constraint.inequalities.elementwise.polynomial;
+    problem.constraint.inequalities.elementwise.linear = problem.constraint.inequalities.elementwise.linear | problem.constraint.inequalities.elementwise.quadratic.convex | problem.constraint.inequalities.elementwise.quadratic.nonconvex | problem.constraint.inequalities.elementwise.signomial | problem.constraint.inequalities.elementwise.polynomial;
     problem.constraint.inequalities.elementwise.quadratic.convex = 0;
     problem.constraint.inequalities.elementwise.quadratic.nonconvex = 0;
-    problem.constraint.inequalities.elementwise.sigmonial   = 0;
+    problem.constraint.inequalities.elementwise.signomial   = 0;
     problem.constraint.inequalities.elementwise.polynomial  = 0;
     
-    problem.constraint.inequalities.semidefinite.linear =  problem.constraint.inequalities.semidefinite.linear | problem.constraint.inequalities.semidefinite.quadratic | problem.constraint.inequalities.semidefinite.polynomial | problem.constraint.inequalities.semidefinite.sigmonial;
+    problem.constraint.inequalities.semidefinite.linear =  problem.constraint.inequalities.semidefinite.linear | problem.constraint.inequalities.semidefinite.quadratic | problem.constraint.inequalities.semidefinite.polynomial | problem.constraint.inequalities.semidefinite.signomial;
     problem.constraint.inequalities.semidefinite.quadratic  = 0;
     problem.constraint.inequalities.semidefinite.polynomial = 0;
-    problem.constraint.inequalities.semidefinite.sigmonial  = 0;
+    problem.constraint.inequalities.semidefinite.signomial  = 0;
     
     problem.constraint.inequalities.elementwise.secondordercone.linear = problem.constraint.inequalities.secondordercone.linear |  problem.constraint.inequalities.secondordercone.nonlinear ;
     problem.constraint.inequalities.elementwise.secondordercone.nonlinear = 0;
@@ -408,8 +408,8 @@ if (~isempty(h)) & ~isa(h,'double') & ~h_is_linear &~(relax==1) &~(relax==3)
             problem.constraint.integer = 1;
         end
     end
-    if any(ismember(getvariables(h),sigmonial_variables))
-        problem.objective.sigmonial = 1;
+    if any(ismember(getvariables(h),signomial_variables))
+        problem.objective.signomial = 1;
     else        
         [Q,c,f,x,info] = quaddecomp(h);
         if ~isreal(Q) % Numerical noise common on imaginary parts

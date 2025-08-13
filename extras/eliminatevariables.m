@@ -281,7 +281,7 @@ model.used_variables = model.used_variables(keptvariablesIndex);
 
 % Check if there are remaining strange terms. This occurs in #152
 % FIXME: Use code above recursively instead...
-if ~model.solver.objective.sigmonial & any(model.variabletype == 4)
+if ~model.solver.objective.signomial & any(model.variabletype == 4)
     % Bugger. There are signomial terms left, despite elimination, and the
     % solver does not handle this. YALMIP has introduced an intermediate
     % variable which is a nasty function of the parameter.      
@@ -320,8 +320,8 @@ if ~isempty(nonlinear)
     model.variabletype(quadratic) = 2;
     bilinear = max(model.monomtable,[],2)<=1;
     model.variabletype(bilinear & quadratic) = 1;
-    sigmonial = any(0>model.monomtable,2) | any(model.monomtable-fix(model.monomtable),2);
-    model.variabletype(sigmonial) = 4;
+    signomial = any(0>model.monomtable,2) | any(model.monomtable-fix(model.monomtable),2);
+    model.variabletype(signomial) = 4;
 end
 
 

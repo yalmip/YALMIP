@@ -28,7 +28,7 @@ if isempty(internal_sdpvarstate)
     internal_sdpvarstate.hashedmonomtable = [];         % Hashed polynomial powers table
     internal_sdpvarstate.hash = [];
     internal_sdpvarstate.boundlist = [];
-    internal_sdpvarstate.variabletype = spalloc(0,0,0); % Pre-calc linear/quadratic/polynomial/sigmonial
+    internal_sdpvarstate.variabletype = spalloc(0,0,0); % Pre-calc linear/quadratic/polynomial/signomial
     internal_sdpvarstate.intVariables = [];   % ID of integer variables
     internal_sdpvarstate.binVariables = [];   % ID of binary variables
     internal_sdpvarstate.tempintVariables = [];   % ID of integer variables
@@ -141,8 +141,8 @@ switch varargin{1}
                 internal_sdpvarstate.variabletype(quadratic) = 2;
                 bilinear = max(internal_sdpvarstate.monomtable,[],2)<=1;
                 internal_sdpvarstate.variabletype(bilinear & quadratic) = 1;
-                sigmonial = any(0>internal_sdpvarstate.monomtable,2) | any(internal_sdpvarstate.monomtable-fix(internal_sdpvarstate.monomtable),2);
-                internal_sdpvarstate.variabletype(sigmonial) = 4;
+                signomial = any(0>internal_sdpvarstate.monomtable,2) | any(internal_sdpvarstate.monomtable-fix(internal_sdpvarstate.monomtable),2);
+                internal_sdpvarstate.variabletype(signomial) = 4;
             end
         end
         
@@ -1011,8 +1011,8 @@ switch varargin{1}
             internal_sdpvarstate.variabletype(quadratic) = 2;
             bilinear = max(internal_sdpvarstate.monomtable,[],2)<=1;
             internal_sdpvarstate.variabletype(bilinear & quadratic) = 1;
-            sigmonial = any(0>internal_sdpvarstate.monomtable,2) | any(internal_sdpvarstate.monomtable-fix(internal_sdpvarstate.monomtable),2);
-            internal_sdpvarstate.variabletype(sigmonial) = 4;
+            signomial = any(0>internal_sdpvarstate.monomtable,2) | any(internal_sdpvarstate.monomtable-fix(internal_sdpvarstate.monomtable),2);
+            internal_sdpvarstate.variabletype(signomial) = 4;
         end
         
         [n,m] = size(internal_sdpvarstate.monomtable);

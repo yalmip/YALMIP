@@ -208,8 +208,8 @@ for j = 1:nlmi
         
         
         if ~islinear(F.clauses{j}.data)
-            if is(F.clauses{j}.data,'sigmonial')
-                classification = 'sigmonial';
+            if is(F.clauses{j}.data,'signomial')
+                classification = 'signomial';
             elseif is(F.clauses{j}.data,'bilinear')
                 classification = 'bilinear';
             elseif is(F.clauses{j}.data,'quadratic')

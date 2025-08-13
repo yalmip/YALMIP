@@ -345,7 +345,7 @@ p.originallinears = p.linears;
 % *************************************************************************
 % Sigmonial terms are converted to evaluation based expressions.
 % *************************************************************************
-p = convert_sigmonial_to_sdpfun(p);
+p = convert_signomial_to_sdpfun(p);
 
 % *************************************************************************
 % The bilinear solver does not support non-quadratic models

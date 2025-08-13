@@ -112,7 +112,7 @@ end
 z = linspace(xL,xU,100);
 
 if isequal(p.evalMap{i}.fcn,'power_internal2')
-    % Special code for automatically converting sigmonial
+    % Special code for automatically converting signomial
     % terms to be solvable with bmibnb
     fz = feval(p.evalMap{i}.fcn,z,p.evalMap{i}.arg{2});
 else

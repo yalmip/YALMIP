@@ -19,7 +19,7 @@ mt      = model.monomtable;
 % *********************************
 model.linear_variables = find((sum(abs(mt),2)==1) & (any(mt==1,2)));
 model.nonlinear_variables = setdiff((1:size(mt,1))',model.linear_variables);
-model.sigmonial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
+model.signomial_variables = find(any(0>mt,2) | any(mt-fix(mt),2));
 
 % Some meta-solver thinks we handle binaries
 if ~isempty(model.binary_variables)
@@ -45,7 +45,7 @@ if any(model.K.q) && any(model.K.q == 0)
     model.K.q(model.K.q==0)=[];
 end
 
-if ~isempty(model.sigmonial_variables) || isequal(model.solver.version,'GEOMETRIC')
+if ~isempty(model.signomial_variables) || isequal(model.solver.version,'GEOMETRIC')
     [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_geometric(model);          
 else
     [x,D_struc,problem,r,res,solvertime,prob] = call_mosek_lpqpsocpsdp(model);        

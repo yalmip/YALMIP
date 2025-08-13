@@ -239,7 +239,7 @@ if  ~alreadydone(getvariables(variable),method,goal_vexity)
         end
         if ~do_not_check_nonlinearity  & ~DUDE_ITS_A_GP & ~options.expandbilinear & ~options.allownonconvex
             if isa(expression,'sdpvar')
-                if degree(expression)~=1 &~is(expression,'sigmonial')
+                if degree(expression)~=1 &~is(expression,'signomial')
                     [Q,c,f,x,info] = quaddecomp(expression);
                     if info
                         failure = 1;

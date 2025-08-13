@@ -17,17 +17,17 @@ tempProblemClass.constraint.inequalities.elementwise.linear = lp.linear | lp.qua
 tempProblemClass.constraint.inequalities.elementwise.quadratic.convex = 0;
 tempProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex = 0;
 tempProblemClass.constraint.inequalities.elementwise.polynomial = 0;
-tempProblemClass.constraint.inequalities.elementwise.sigmonial = 0;
+tempProblemClass.constraint.inequalities.elementwise.signomial = 0;
 
 equ = tempProblemClass.constraint.equalities;
 tempProblemClass.constraint.equalities.linear = equ.linear | equ.quadratic | equ.polynomial;
 tempProblemClass.constraint.equalities.quadratic = 0;
 tempProblemClass.constraint.equalities.polynomial = 0;
-tempProblemClass.constraint.equalities.sigmonial = 0;
+tempProblemClass.constraint.equalities.signomial = 0;
 
 tempProblemClass.objective.quadratic.nonconvex = 0;
 tempProblemClass.objective.polynomial = 0;
-tempProblemClass.objective.sigmonial = 0;
+tempProblemClass.objective.signomial = 0;
 
 tempProblemClass.constraint.inequalities.rank  = 0;
 tempProblemClass.evaluation  = 0;
@@ -128,11 +128,11 @@ if temp_options.bmibnb.uppersdprelax
     temp_ProblemClass.constraint.inequalities.elementwise.linear = temp_ProblemClass.constraint.inequalities.elementwise.linear | temp_ProblemClass.constraint.inequalities.semidefinite.linear;
     temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex = temp_ProblemClass.constraint.inequalities.elementwise.quadratic.nonconvex | temp_ProblemClass.constraint.inequalities.semidefinite.quadratic;
     temp_ProblemClass.constraint.inequalities.elementwise.polynomial = temp_ProblemClass.constraint.inequalities.elementwise.polynomial | temp_ProblemClass.constraint.inequalities.semidefinite.polynomial;    
-    temp_ProblemClass.constraint.inequalities.elementwise.sigmonial = temp_ProblemClass.constraint.inequalities.elementwise.sigmonial | temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial;
+    temp_ProblemClass.constraint.inequalities.elementwise.signomial = temp_ProblemClass.constraint.inequalities.elementwise.signomial | temp_ProblemClass.constraint.inequalities.semidefinite.signomial;
     temp_ProblemClass.constraint.inequalities.semidefinite.linear = 0;
     temp_ProblemClass.constraint.inequalities.semidefinite.quadratic = 0;
     temp_ProblemClass.constraint.inequalities.semidefinite.polynomial = 0;
-    temp_ProblemClass.constraint.inequalities.semidefinite.sigmonial = 0;
+    temp_ProblemClass.constraint.inequalities.semidefinite.signomial = 0;
 end
 if isempty(options.bmibnb.uppersolver)
     temp_options.avoidGlobalSolver = 1;
@@ -187,7 +187,7 @@ tempProblemClass.objective.quadratic.convex = 0;
 tempProblemClass.objective.quadratic.nonconvex = 0;
 tempProblemClass.objective.quadratic.nonconvex = 0;
 tempProblemClass.objective.polynomial = 0;
-tempProblemClass.objective.sigmonial = 0;
+tempProblemClass.objective.signomial = 0;
 
 [lpsolver,problem] = selectsolver(temp_options,tempProblemClass,allsolvers,socp_are_really_qc,allsolvers);
 
