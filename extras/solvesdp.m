@@ -417,10 +417,10 @@ end
 % TRY TO SOLVE PROBLEM
 % *************************************************************************
 if options.debug
-    eval(['output = ' solver.call '(interfacedata);']);
+    output = feval( solver.call, interfacedata );
 else
     try
-        eval(['output = ' solver.call '(interfacedata);']);
+        output = feval( solver.call, interfacedata );
     catch
         output = createOutputStructure(zeros(length(interfacedata.c),1)+NaN,[],[],9,yalmiperror(9,lasterr),[],[],nan);        
     end
