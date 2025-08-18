@@ -2,14 +2,14 @@ function output = callmosek(model)
 
 % Retrieve needed data
 options = model.options;
-F_struc = model.F_struc;
-c       = model.c;
-Q       = model.Q;
-K       = model.K;
-x0      = model.x0;
-integer_variables = model.integer_variables;
-binary_variables = model.binary_variables;
-extended_variables = model.extended_variables;
+% F_struc = model.F_struc;
+% c       = model.c;
+% Q       = model.Q;
+% K       = model.K;
+% x0      = model.x0;
+% integer_variables = model.integer_variables;
+% binary_variables = model.binary_variables;
+% extended_variables = model.extended_variables;
 ub      = model.ub;
 lb      = model.lb;
 mt      = model.monomtable;
