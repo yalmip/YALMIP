@@ -413,6 +413,8 @@ if strcmpi(solver.version,'geometric') || (strcmpi(solver.tag,'bnb') && strcmpi(
     end
 end
 
+clear varargin;
+
 % *************************************************************************
 % TRY TO SOLVE PROBLEM
 % *************************************************************************
