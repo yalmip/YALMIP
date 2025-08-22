@@ -53,9 +53,9 @@ switch class(varargin{1})
         parameters = {distribution.parameters{2:end}};
         mixtureweights = distribution.mixture;
         % Create a function which computes gradient at x
-        if isempty(mixtureweights)
+        % if isempty(mixtureweights)
             operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
-        end
+        % end
         
         varargout{1} = [];
         varargout{2} = operator;
@@ -84,105 +84,23 @@ g0  = g(x);
 dg0 = dg(x);
 
 % Create characteristic functions etc
+exp_ith = @(t) exp(1i*t*h0);
 if ~isa(parameters{1},'cell')
     phi_z   = @(t) prod(phi(g0(:)*t,parameters{:}),1);
     phi_    = @(t) phi(g0(:)*t,parameters{:});
     dphi_   = @(t) dphi(g0(:)*t,parameters{:});
-    exp_ith = @(t) exp(1i*t*h0);
 else
     % This is a mixture. The characteristic of the mixture has to be
     % created etc
-      
+    [phi_,dphi_,phi_z] = characteristic_mix(g0,mixtureweights,parameters,phi,dphi);  
 end
 
-<<<<<<< HEAD
-%% -------------------------------------------------------------------------------------- 
-function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,reldphi)
-% Compute derivative of Probability(h(x)+g(x)'*w <= 0)
-h0 = h(x);
-dh0 = dh(x);
-g0 = g(x);
-dg0 = dg(x);
 
-% fixed parameters
-DEFAULT_MAXINTERVALCOUNT = 16384;
-ATOL = 1e-10;
-RTOL = 1e-6;
-opstruct = struct('ThrowOnFail', false);
-
-% nodes and weights for Gauss-Kronrod 7/15 method
-% nodes and weights for Gauss-Kronrod 7/15 method
-rule.Nodes = [ ...
-    -0.9914553711208126, -0.9491079123427585, -0.8648644233597691, ...
-    -0.7415311855993944, -0.5860872354676911, -0.4058451513773972, ...
-    -0.2077849550078985, 0, 0.2077849550078985, ...
-    0.4058451513773972, 0.5860872354676911, 0.7415311855993944, ...
-    0.8648644233597691, 0.9491079123427585, 0.9914553711208126];
-rule.HighWeights = [ ...
-    0.02293532201052922, 0.06309209262997855, 0.1047900103222502, ...
-    0.1406532597155259, 0.1690047266392679, 0.1903505780647854, ...
-    0.2044329400752989, 0.2094821410847278, 0.2044329400752989, ...
-    0.1903505780647854, 0.1690047266392679, 0.1406532597155259, ...
-    0.1047900103222502, 0.06309209262997855, 0.02293532201052922];
-rule.LowWeights = [ ...
-    0, 0.1294849661688697, 0, ...
-    0.2797053914892767, 0, 0.3818300505051189, ...
-    0, 0.4179591836734694, 0, ...
-    0.3818300505051189, 0, 0.2797053914892767, ...
-    0, 0.1294849661688697, 0];
-WT = rule.HighWeights;
-EWT = WT - rule.LowWeights;
-NODES = rule.Nodes(:);
-
-% interval split
-interval = [0,1];
-pathlen = interval(end)-interval(1);
-
-% compute phi_z(t)
-phi_u = @(t) phi(g0(:)*t);
-phi_z = @(t) prod(phi(g0(:)*t),1);
-exp_ith = @(t) exp(1i*t*h0);
-
-% compute f_z(-h0)
-
-integrand1 = @(t) real(exp_ith(t) .* phi_z(t));
-pdf_val = (1/pi)*integral(integrand1,0,inf);
-
-[PHI,E,U,W,INTERVAL,pdf_value] = compute_pdf(phi_u,exp_ith,...
-    interval,pathlen,WT,EWT,NODES,DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct);
-pdf_value = pdf_value/pi;
-DPHI = size(PHI);
-for i = 1:length(g0)
-    for j = 1:length(U)
-        dphi_temp = dphi(g0(i)*U(j));
-        DPHI(i,j) = dphi_temp(i);
-    end
-end
-
-% compute dphi_z/dg
-num_j = length(g0);
-dphi_p1 = @(t) [];
-for j = 1:num_j
-    dphi_p1 = @(t) [dphi_p1(t),dphi(g0(j)*t)];
-end
-integrand2 = @(t) imag(exp_ith(t) .* phi_z(t) .* diag(dphi_p1(t)) ./ phi(g0(:)*t));
-terms = (-1/pi)*integral(integrand2,0,inf,'ArrayValued',true);
-
-% commpute the whole derivative
-dcdf = (-pdf_val.*dh0') + terms'*dg0;
-
-[predcdf,predcdf_errbnd] = compute_predcdf(h0,g0,dh0,dg0,exp_ith,...
-    PHI,DPHI,E,W,INTERVAL,pathlen,WT,EWT,NODES,...
-    DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct);
-dcdf_value = (-pdf_value.*dh0') + predcdf'*dg0;
-
-% ————————————————————————远程版本————————————————————————————
-=======
 % Compute f_z(-h0) using Gil-Pelaez
 % this will be moved to be computed together with derivative instead but
 % for now we do the double work to keep code simple. Also, for now we use
 % built-in integral
->>>>>>> 3722a8cddb992dccbbc8313888027791ab1dd123
+
 integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 if nnz(dh0)==0
     pdf_val = 0;
@@ -197,137 +115,7 @@ else
     dcdf = (-pdf_val.*dh0') + terms'*dg0;
 end
 
-<<<<<<< HEAD
-% dcdf = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
-%[dcdf(:) dcdf_check(:)]
-% ————————————————————————远程版本结束————————————————————————————
 
-dcdf_check = compute_dcdf_using_phi_finite_difference(x,h,dh,g,dg, phi,dphi);
-[dcdf(:) dcdf_value(:) dcdf_check(:)]
-
-
-% function [predcdf,predcdf_errbnd] = compute_predcdf(h0,g0,dh0,dg0,exp_ith,...
-%     PHI,DPHI,E,W,INTERVAL,pathlen,WT,EWT,NODES,...
-%     DEFAULT_MAXINTERVALCOUNT,ATOL,RTOL,opstruct)
-% 
-% firstFunEval = true;
-% 
-% % subintervals
-% subs = [INTERVAL(1:end-1);INTERVAL(2:end)]; 
-% nsubs = size(subs,2);
-% 
-% % initial value
-% I_sum = zeros(size(g0));
-% I_error = zeros(size(g0));
-% 
-% while true
-%     midpt = sum(subs)/2;   % midpoints of the subintervals
-%     halfh = diff(subs)/2;  % half the lengths of the subintervals
-%     s = NODES*halfh + midpt; % NNODES x nsubs
-%     if firstFunEval
-%         PHI_mat_prod = prod(PHI,1);
-%         FX = imag(DPHI./PHI.*(PHI_mat_prod.*E)).*W;
-%         % compute fx with kronrod weight
-%         FX = reshape(FX,numel(WT),[]);
-%         I_K = (WT*FX) .* halfh;
-%         I_KminusG = (EWT*FX) .* halfh;
-% 
-%     else
-%         FX = imag(DPHI./PHI.*(PHI_mat_prod.*E)).*W;
-%     end
-% 
-% end
-
-
-function [PHI,E,U,W,INTERVAL,I] = compute_pdf(phi_u,exp_ith,...
-    interval,pathlen,WT,EWT,NODES,MAXINTERVALCOUNT,ATOL,RTOL,opstruct)
-
-% subintervals
-subs = [interval(1:end-1);interval(2:end)];   
-
-% initial value 
-I_sum = 0;
-I_error = 0;
-PHI = [];
-E = [];
-U = [];
-W = [];
-INTERVAL = interval;
-
-while true
-    midpt = sum(subs)/2;   % midpoints of the subintervals
-    halfh = diff(subs)/2;  % half the lengths of the subintervals
-    s = NODES*halfh + midpt; % NNODES x nsubs
-    s = reshape(s,1,[]);
-    tt = s ./ (1 - s);
-    u = 0 + tt.^2;   % change back to original domain
-    U = [U,u];
-    w = 2*tt ./ (1 - s).^2;   % transform weight
-    W = [W,w];
-
-    % compute matrix phi_z
-    PHI_mat = phi_u(u);
-    PHI_mat_prod = prod(PHI_mat,1);
-
-    % compute exponential part
-    E_mat = exp_ith(u);
-
-    % save PHI and E matrix
-    PHI = [PHI,PHI_mat];
-    E = [E,E_mat];
-
-    % compute Real part with transform weight
-    FX = real(PHI_mat_prod.*E_mat).*w;
-
-    % compute fx with kronrod weight
-    FX = reshape(FX,numel(WT),[]);
-    I_K = (WT*FX) .* halfh;
-    I_KminusG = (EWT*FX) .* halfh;
-
-    % compute sum of integral
-    I = sum(I_K) + I_sum;
-    tol = max(ATOL,RTOL*abs(I));
-
-    % find convergent subintervals and remove
-    ndx = find(abs(I_KminusG) < (2*tol/pathlen)*abs(halfh));
-    I_error = I_error + sum(I_KminusG(ndx));
-    I_KminusG(ndx) = [];
-
-    % error bound
-    I_errorbnd = abs(I_error) + norm(I_KminusG,1);
-    % if ~(isfinite(I) && isfinite(I_errorbnd))
-    %     warning(message('NonFiniteValue'));
-    %     if opstruct.ThrowOnFail
-    %         error(message('integral fail'));
-    %     end
-    %     break
-    % end
-    if I_errorbnd <= tol
-        break
-    end
-
-    % remove subintervals with accurate approximation
-    subs(:,ndx) = [];
-
-    % update the partial sum for the integral
-    I_sum = I_sum + sum(I_K(ndx));
-    midpt(ndx) = [];
-    INTERVAL = unique([INTERVAL midpt]);
-    if isempty(subs)
-        break
-    end
-    % nsubs = 2*size(subs,2);
-    % if nsubs > MAXINTERVALCOUNT
-    %     warning(message('MaxIntervalCountReached',...
-    %         sprintf('%9.1e',I_errorbnd)));
-    %     if opstruct.ThrowOnFail
-    %         error(message('integral fail'));
-    %     end
-    %     break
-    % end
-    subs = reshape([subs(1,:);midpt;midpt;subs(2,:)],2,[]);
-end
-=======
 function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith)
 % Compute integral on the transformed domain 0->1
 % Could be various variants, but only one available now
@@ -402,4 +190,44 @@ for j = 1:n_mixtures
     % vector as an integral evaluator might evaluate multiple points
     C = C + mixtureweights(:,j).*f(g_t,jthParameters{:});
 end
->>>>>>> 3722a8cddb992dccbbc8313888027791ab1dd123
+
+
+function [phi_,dphi_,phi_z] = characteristic_mix(g0,mixtureweights,parameters,phi,dphi)
+W = size(mixtureweights,2);
+P = numel(parameters);
+% Change the parameters cell from being structured by the parameter number
+% to being structured by component number
+pars_cell = cell(1,W);
+for w = 1:W
+    pars = cell(1,P);
+    for p = 1:P
+        v = parameters{p};
+        if iscell(v)
+            pars{p} = v{w};
+        else
+            pars{p} = v(w);
+        end
+    end
+    pars_cell{w} = pars;
+end
+% Compute the characteristic function of the mixture distribution and its
+% derivative
+phi_ = @(t) phi_mix(t,g0,W,mixtureweights,pars_cell,phi);
+dphi_ = @(t) dphi_mix(t,g0,W,mixtureweights,pars_cell,dphi);
+phi_z = @(t) phi_z_mix(t,g0,W,mixtureweights,pars_cell,phi);
+
+function phi_ = phi_mix(t,g0,W,mixtureweights,pars_cell,phi)
+phi_ = 0;
+for w = 1:W
+    phi_ = phi_ + mixtureweights(:,w).*phi(g0(:)*t,pars_cell{w}{:});
+end
+
+function dphi_ = dphi_mix(t,g0,W,mixtureweights,pars_cell,dphi)
+dphi_ = 0;
+for w = 1:W
+    dphi_ = dphi_ + mixtureweights(:,w).*dphi(g0(:)*t,pars_cell{w}{:});
+end
+
+function phi_z = phi_z_mix(t,g0,W,mixtureweights,pars_cell,phi)
+phi_ = phi_mix(t,g0,W,mixtureweights,pars_cell,phi);
+phi_z = prod(phi_,1);

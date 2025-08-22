@@ -1,4 +1,4 @@
-function tests = test_chance_gaussianmixture
+gfunction tests = test_chance_gaussianmixture
 tests = functiontests(localfunctions);
 
 
