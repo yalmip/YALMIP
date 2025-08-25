@@ -771,6 +771,7 @@ gurobi.BQPCuts = -1;
 gurobi.BranchDir = 0;
 gurobi.CliqueCuts = -1;
 gurobi.ConcurrentJobs = 0;
+gurobi.ConcurrentMethod = -1;
 gurobi.ConcurrentMIP = 1;
 gurobi.CoverCuts =-1;
 gurobi.Crossover = -1;
