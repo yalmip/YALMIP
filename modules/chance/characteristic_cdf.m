@@ -218,14 +218,16 @@ phi_z = @(t) phi_z_mix(t,g0,W,mixtureweights,pars_cell,phi);
 
 function phi_ = phi_mix(t,g0,W,mixtureweights,pars_cell,phi)
 phi_ = 0;
+gt = g0(:)*t;
 for w = 1:W
-    phi_ = phi_ + mixtureweights(:,w).*phi(g0(:)*t,pars_cell{w}{:});
+    phi_ = phi_ + mixtureweights(:,w).*phi(gt,pars_cell{w}{:});
 end
 
 function dphi_ = dphi_mix(t,g0,W,mixtureweights,pars_cell,dphi)
 dphi_ = 0;
+gt = g0(:)*t;
 for w = 1:W
-    dphi_ = dphi_ + mixtureweights(:,w).*dphi(g0(:)*t,pars_cell{w}{:});
+    dphi_ = dphi_ + mixtureweights(:,w).*dphi(gt,pars_cell{w}{:});
 end
 
 function phi_z = phi_z_mix(t,g0,W,mixtureweights,pars_cell,phi)
