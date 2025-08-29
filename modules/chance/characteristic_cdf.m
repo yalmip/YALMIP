@@ -52,11 +52,9 @@ switch class(varargin{1})
         % First parameter is name, so remove that
         parameters = {distribution.parameters{2:end}};
         mixtureweights = distribution.mixture;
-        % Create a function which computes gradient at x
-        % if isempty(mixtureweights)
-            operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
-        % end
-        
+        % Create a function which computes gradient at x    
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
+                
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
@@ -64,13 +62,13 @@ switch class(varargin{1})
     otherwise
 end
 
-function cdf = compute_cdf_using_phi(y,phi)
+function cdf = compute_cdf_using_phi(y,phi_z)
 % Perform the inverse Fourier transform to obtain the CDF
 % for Probability(z <= y) where z has characterstic function phi(t)
 % Not much to exploit so for now we use built-in integrator
 % Later this will be computed together with derivatives etc but this
 % requires some global logic to sync those when solver wants stuff
-integrand = @(t) imag(phi(t) .* exp(-1i * t * y)./t);
+integrand = @(t) imag(phi_z(t) .* exp(-1i * t * y)./t);
 cdf =  .5-integral(integrand,0, inf)/pi;
 
 
@@ -119,9 +117,20 @@ end
 function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith)
 % Compute integral on the transformed domain 0->1
 % Could be various variants, but only one available now
-I = adaptiveGK715(phi_,dphi_,exp_ith,0,1,setupGK715);
+Points = setupGK715;
+N = 3;
+% We start with an initial sub-division
+D = linspace(0,1,N);
+% Record final sub-division
+Dnew = [];
+I = 0;
+for i = 1:length(D)-1
+    [Ii,n,Di] = adaptiveGK715(phi_,dphi_,exp_ith,D(i),D(i+1),Points,0);
+    Dnew = [Dnew Di];    
+    I = I+Ii;
+end
 
-function I = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715)
+function [I,n,D] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715,n)
 % We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
 % this interval and then map those to original domain 0->inf
 center = (a+b)/2;
@@ -130,6 +139,9 @@ s = GK715.Nodes*halfwidth + center;
 % and now map to original domain using nonlinear transformation
 t = (s./(1-s)).^2;
 coordinateChangeJacobian = (2*s./(1-s).^3).*halfwidth;
+
+% Counter to diagnose depth of recursion
+n = n+1;
 
 % Evaluate all functions in all points
 PHI    = phi_(t);
@@ -148,11 +160,17 @@ error = abs(I_15-I_7);
 % Simple stopping criteria for now, and we sub-divide in all despite some
 % might be done already or regions being all 0. Will be optimized later
 if all(error <= (b-a)*1e-6)
-    I = I_15;    
+    I = I_15; 
+    % Diagnostics on fuinal interval
+    D = [a b];
 else
-    I1 = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715);
-    I2 = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715);
+    [I1,n1,D1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715,n);
+    [I2,n2,D2] = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715,n);
     I = I1+I2;    
+    % Deepest recursion
+    n = max(n1,n2);
+    % Diagnostics
+    D = [D1 D2];    
 end
 
 function GK715 = setupGK715
