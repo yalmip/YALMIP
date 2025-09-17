@@ -1,7 +1,7 @@
 function varargout = characteristic_cdf(varargin)
 % Internal function to supply numerical evaluation of CDF and its
 % derivative based on characteristic function
-
+    
 switch class(varargin{1})
     
     case 'double'
@@ -52,13 +52,13 @@ switch class(varargin{1})
         % First parameter is name, so remove that
         parameters = {distribution.parameters{2:end}};
         mixtureweights = distribution.mixture;
-        % Create a function which computes gradient at x    
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
-                
+        % Create a function which computes gradient at x           
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);              
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
-        
+        % Clear the memoization used to speed up stuff during optimization
+        cacheData('clear')
     otherwise
 end
 
@@ -81,6 +81,10 @@ dh0 = dh(x);
 g0  = g(x);
 dg0 = dg(x);
 
+% Create an md5 identifier of these arguments, used to cache some data in
+% the integration routines over iterations
+functionHash = makeArgHash({h,dh,g,dg,phi,dphi,parameters,mixtureweights});
+
 % Create characteristic functions etc
 exp_ith = @(t) exp(1i*t*h0);
 if ~isa(parameters{1},'cell')
@@ -93,7 +97,6 @@ else
     [phi_,dphi_,phi_z] = characteristic_mix(g0,mixtureweights,parameters,phi,dphi);  
 end
 
-
 % Compute f_z(-h0) using Gil-Pelaez
 % this will be moved to be computed together with derivative instead but
 % for now we do the double work to keep code simple. Also, for now we use
@@ -103,32 +106,52 @@ integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 if nnz(dh0)==0
     pdf_val = 0;
 else
-    pdf_val = (1/pi)*integral(integrand_pdf,0,inf);
+    pdf_val = (1/pi)*integral(integrand_pdf,0,inf,'AbsTol',1e-6);
 end
 
 if nnz(dg0)==0
     dcdf = (-pdf_val.*dh0');
 else            
-    terms = (-1/pi)*dcdfintegralEvaluator(phi_,dphi_,exp_ith);
+    terms = (-1/pi)*dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash);
     dcdf = (-pdf_val.*dh0') + terms'*dg0;
 end
 
 
-function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith)
+function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash)
 % Compute integral on the transformed domain 0->1
 % Could be various variants, but only one available now
 Points = setupGK715;
 N = 3;
-% We start with an initial sub-division
-D = linspace(0,1,N);
+
+% We resuse subdivisions from earlier computations on the same integral
+% computation (for other x though) in the hope that they are somewhat
+% similiar over iterations
+cache = cacheData();
+try
+    % Cache de-activated for now
+    % oldSubDivisionData = cache(functionHash);
+    % D = unique(oldSubDivisionData);
+    oldSubDivisionData = [];
+    D = linspace(0,1,N);
+catch
+    % We start with an initial sub-division
+    oldSubDivisionData = [];
+    D = linspace(0,1,N);
+end
+
 % Record final sub-division
 Dnew = [];
 I = 0;
+Stabledivision = zeros(1,length(D)-1);
 for i = 1:length(D)-1
     [Ii,n,Di] = adaptiveGK715(phi_,dphi_,exp_ith,D(i),D(i+1),Points,0);
+    if length(Di) == 2
+       Stabledivision(i) = 1;
+    end
     Dnew = [Dnew Di];    
-    I = I+Ii;
+    I = I+Ii;     
 end
+cache(functionHash) = Dnew;
 
 function [I,n,D] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715,n)
 % We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
@@ -159,9 +182,9 @@ I_7 = imag(RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7).');
 error = abs(I_15-I_7);
 % Simple stopping criteria for now, and we sub-divide in all despite some
 % might be done already or regions being all 0. Will be optimized later
-if all(error <= (b-a)*1e-6)
+if all(error <= max(1e-6,(b-a)*1e-6))
     I = I_15; 
-    % Diagnostics on fuinal interval
+    % Diagnostics on final interval
     D = [a b];
 else
     [I1,n1,D1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715,n);
@@ -251,3 +274,16 @@ end
 function phi_z = phi_z_mix(t,g0,W,mixtureweights,pars_cell,phi)
 phi_ = phi_mix(t,g0,W,mixtureweights,pars_cell,phi);
 phi_z = prod(phi_,1);
+
+
+function db = cacheData(delete)
+persistent cache
+if nargin > 0
+    cache = [];
+    return
+end
+if isempty(cache)
+    cache = containers.Map('KeyType','char','ValueType','any');
+end
+db = cache;
+
