@@ -154,6 +154,10 @@ for uncertaintyGroup = 1:length(randomVariables)
             end
             c = c';
             cwi = cwi(:);
+            
+            % Find out if some of the grouped stochastic variables aren't
+            % used in this constraint. If so, we will prune them away to
+            % avoid working with redundant stuff
             actuallyUsedw = find(any(getbase(c),2));
             
             % Used in characteristics stuff but there notation is h(x)+g(x)^Tw <= 0
@@ -164,12 +168,14 @@ for uncertaintyGroup = 1:length(randomVariables)
             funcs.dg =@(x)(-Qxwi(:,actuallyUsedw)');
             
             
-            % Are all variables in c constrained to a simple (this
+            % Are all variables in c constrained to a simplex (this
             % is exploited in the normalChancefilter
             DisjointWeight = 0;
             if ~isempty(SimplexInfo) && isa(c,'sdpvar')
                 x_in_c = getvariables(c);
                 for i = 1:size(SimplexInfo,1)
+                    % FIXME: Should be adjusted now that we might have
+                    % pruned
                     if isequal(find(SimplexInfo(i,:)),x_in_c)
                         if all(ismember(x_in_c,binaryVariables))
                             DisjointWeight = 1;
@@ -184,8 +190,8 @@ for uncertaintyGroup = 1:length(randomVariables)
             if ~fail
                 ThisDistribution = pruneVariables(randomVariables{uncertaintyGroup}.distribution,actuallyUsedw);              
                 c = c(actuallyUsedw);
-                if strcmp(func2str(randomVariables{uncertaintyGroup}.distribution.generator),'random')
-                    distName = randomVariables{uncertaintyGroup}.distribution.parameters{1};                   
+                if strcmp(func2str(ThisDistribution.generator),'random')
+                    distName = ThisDistribution.parameters{1};                   
                     switch distName
                         case 'dro'
                             newConstraint = droChanceFilter(b,c,ThisDistribution,gamma,options);
@@ -205,19 +211,19 @@ for uncertaintyGroup = 1:length(randomVariables)
                             eliminatedConstraints(ic)=1;
                         case {'normal'}
                             newConstraint = normalChanceFilter(b,c,ThisDistribution,gamma,options,funcs,x,DisjointWeight);
-                            printout(options.verbose,'exact normal',ThisDistribution,ic,length(groupedChanceConstraints));
+                            printout(options.verbose,'normal',ThisDistribution,ic,length(groupedChanceConstraints));
                             eliminatedConstraints(ic)=1;
                         case {'logistic', 'laplace','uniform','t','tlocationScale','cauchy'}
                             newConstraint = symmetricUnivariateChanceFilter(b,c,ThisDistribution,gamma,options,funcs,x);
-                            printout(options.verbose,['exact symmetric univariate'],ThisDistribution,ic,length(groupedChanceConstraints));
+                            printout(options.verbose,['symmetric univariate'],ThisDistribution,ic,length(groupedChanceConstraints));
                             eliminatedConstraints(ic)=1;
                         case {'stable'}
                             newConstraint = conditionallysymmetricUnivariateChanceFilter(b,c,ThisDistribution,gamma,options,funcs,x);
-                            printout(options.verbose,['exact conditionally symmetric univariate'],ThisDistribution,ic,length(groupedChanceConstraints));
+                            printout(options.verbose,['conditionally symmetric univariate'],ThisDistribution,ic,length(groupedChanceConstraints));
                             eliminatedConstraints(ic)=1;
                         case {'gamma','weibull','exponential'}
                             newConstraint = nonsymmetricUnivariateChanceFilter(b,c,ThisDistribution,gamma,options,funcs,x);
-                            printout(options.verbose,['exact nonsymmetric univariate'],ThisDistribution,ic,length(groupedChanceConstraints));
+                            printout(options.verbose,['nonsymmetric univariate'],ThisDistribution,ic,length(groupedChanceConstraints));
                             eliminatedConstraints(ic)=1;
                         otherwise
                             switch options.chance.method
@@ -353,7 +359,12 @@ function printout(verbose,method,distribution,count,amountSame)
 
 if verbose && count == 1
     if strcmpi(func2str(distribution.generator),'random')
-        disp([' - Using ''' method '''-filter on ' num2str(amountSame) ' constraint' pluralS(amountSame) ' with ''' distribution.parameters{1} ''' distribution']);
+        if ~isempty(distribution.mixture)
+            mix = ' mixture';
+        else
+            mix = '';
+        end
+        disp([' - Using ''' method '''-filter on ' num2str(amountSame) ' constraint' pluralS(amountSame) ' with ''' distribution.parameters{1} mix ''' distribution']);
     else
         disp([' - Using ''' method '''-filter on ' num2str(amountsame) ' constraint' pluralS(amountSame) ' with data created by @' distribution.name']);
     end
@@ -482,4 +493,15 @@ if ~isempty(D.mixture)
         D.parameters{p} = S;
     end
 else
+    for p = 2:length(D.parameters)
+        param = D.parameters{p};
+        
+        if size(param,2)>1
+            % Matrix format
+            param = param(actuallyUsedw,actuallyUsedw);
+        else
+            param = param(actuallyUsedw);
+        end
+        D.parameters{p} = param;
+    end
 end

@@ -1034,7 +1034,7 @@ switch varargin{1}
     case 'getDistribution'        
         varargout{1} = internal_sdpvarstate.distributions;
             
-    case 'addDistribution'        
+    case 'addDistribution'  
         variables = varargin{2};
         parameters = varargin{3};
         data.variables = variables;
@@ -1042,7 +1042,14 @@ switch varargin{1}
         data.distribution.generator = parameters.generator;
         data.distribution.parameters = parameters.parameters;
         data.distribution.mixture = parameters.mixture;
-        %distribution.parameters = parameters;
+        for i = 1:length(internal_sdpvarstate.distributions)
+            if isequal(getvariables(variables), getvariables(internal_sdpvarstate.distributions{i}.variables))
+                if isequal(getbase(variables), getbase(internal_sdpvarstate.distributions{i}.variables))
+                    internal_sdpvarstate.distributions{i} = data;
+                    return
+                end
+            end
+        end
         internal_sdpvarstate.distributions{end+1} = data;
         
     case 'getDistribution'                

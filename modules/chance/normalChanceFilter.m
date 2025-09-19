@@ -11,8 +11,12 @@ if any(strcmpi(options.chance.characteristic,{'yes','on'})) || isequal(options.c
     % thus has 3 parameters. However, the characteristic function is
     % defined from mean and std. dev to comply with standard notation.
     % Hence remove second parameter and extract diagonal of factor
-    distribution.parameters = {distribution.parameters{1:2}, cellfun(@(c)diag(c),distribution.parameters{4},'UniformOutput', false)};    
-   % distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};    
+    if isa(distribution.parameters{4},'cell')
+        % Mixture case
+        distribution.parameters = {distribution.parameters{1:2}, cellfun(@(c)diag(c),distribution.parameters{4},'UniformOutput', false)};    
+    else
+        distribution.parameters = {distribution.parameters{1:2}, diag(distribution.parameters{4})};
+    end  
     newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
     return    
 end
