@@ -5,7 +5,7 @@ options = interfacedata.options;
 model = yalmip2intlinprog(interfacedata);
 
 if options.savedebug    
-    save intlinprogdebug model ops
+    save intlinprogdebug model options
 end
  
 solvertime = tic;
