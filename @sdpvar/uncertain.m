@@ -197,7 +197,7 @@ for i = 2:length(params)
     else
         p = params{i};
         if d > 1 && numel(p) == 1
-            params{i}{j} = repmat(p,d,1);
+            params{i} = repmat(p,d,1);
         end
     end
 end
