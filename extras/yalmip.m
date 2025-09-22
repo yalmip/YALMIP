@@ -449,11 +449,14 @@ switch varargin{1}
                                 this_hash = vec_hashes(i);                                
                                 j = correct_operator(find(this_hash == internal_sdpvarstate.ExtendedMapHashes(correct_operator)));
                                 if ~isempty(j)
-                                    if isequal(Xi,internal_sdpvarstate.ExtendedMap(j).arg{1},1)
-                                        allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
-                                        allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
-                                        found = 1;                                        
-                                    end    
+                                    for matches = 1:length(j)
+                                        if isequal(Xi,internal_sdpvarstate.ExtendedMap(j(matches)).arg{1},1)
+                                            allPreviouslyDefinedExtendedToIndex = [allPreviouslyDefinedExtendedToIndex i];
+                                            allPreviouslyDefinedExtendedFromIndex = [allPreviouslyDefinedExtendedFromIndex j];
+                                            found = 1;                                        
+                                            break
+                                        end    
+                                    end
                                 end
                             end
                         end
