@@ -33,13 +33,35 @@ end
 if any(model.K.q)
     nq = length(model.K.q);
     top0 = top;
-    for i = 1:length(model.K.q)
-        prob.cones.conepar = [prob.cones.conepar 0];
-        prob.cones.type = [prob.cones.type 0];
-        prob.cones.subptr = [prob.cones.subptr(:)' length(prob.cones.sub)+1];
-        prob.cones.sub = [prob.cones.sub top+1:top+model.K.q(i)];
-        top = top + model.K.q(i);
-    end
+    
+    % Number of second-order cone blocks
+    q    = model.K.q(:);
+    n    = numel(q);
+    
+    % Remember how many subs we already have and the current variable offset
+    origSubLen = numel(prob.cones.sub);
+    top0       = top;
+    
+    % Build new entries in one shot
+    coneparNew = zeros(1, n);
+    typeNew    = zeros(1, n);
+    
+    % Where each block's sub-vector starts (in prob.cones.sub)
+    subptrNew  = origSubLen + 1 + cumsum([0; q(1:end-1)]);
+    
+    % The actual variable indices for all new blocks,
+    % starting at the old 'top0'
+    subNew     = top0 + (1:sum(q));
+    
+    % Append once instead of growing inside the loop
+    prob.cones.conepar = [prob.cones.conepar, coneparNew];
+    prob.cones.type    = [prob.cones.type,    typeNew];
+    prob.cones.subptr  = [prob.cones.subptr(:)', subptrNew'];
+    prob.cones.sub     = [prob.cones.sub,     subNew];
+    
+    % Advance 'top' by the total size of all added cones
+    top = top0 + sum(q);
+    
 end
 
 if any(model.K.e)

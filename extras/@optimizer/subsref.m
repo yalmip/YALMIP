@@ -111,12 +111,6 @@ elseif isequal(subs.type,'{}')
         return
     end
     
-    if self.model.options.warmstart
-        if nargout < 5
-            warning('If you intend to use initial guesses, you must use a fifth output as [sol,problem,~,~,P] = P(p)');
-        end
-    end
-    
     % This is not really supported yet...
     if isa(subs.subs{1},'sdpvar')
         varargout{1} = yalmip('definemulti','optimizer_operator',subs(1).subs{1},self,self.dimout);
@@ -230,6 +224,8 @@ elseif isequal(subs.type,'{}')
         nBlocks = 1;
     end
     
+    initialGuessWarningIssued = false;
+
     for i = 1:nBlocks
         
         if ~isempty(self.diminOrig)
@@ -296,6 +292,11 @@ elseif isequal(subs.type,'{}')
             varargout{1} = self;
             return
         else                                   
+            if self.model.options.warmstart && ( nargout < 5 ) && ~initialGuessWarningIssued
+                warning('If you intend to use initial guesses, you must use a fifth output as [sol,problem,~,~,P] = P(p)');
+                initialGuessWarningIssued = true;
+            end
+    
             % Standard case where we eliminate all variables left
             self.instatiatedvalues(ismember(self.orginal_usedvariables,self.model.used_variables(self.model.parameterIndex))) = thisData(:);
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,self.model.parameterIndex,thisData(:),self.model.parameterIndex);
