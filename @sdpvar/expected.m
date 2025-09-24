@@ -66,9 +66,7 @@ elseif degree(f) <= 2
             end
         end
         f = reshape(Ef,size(f));
-    end
-    
-    
+    end       
 end
 return
 
@@ -96,22 +94,45 @@ function [mu,S] = expect_from_distr(distribution)
 
 switch func2str(distribution.generator)
     case 'random'
-        switch distribution.parameters{1}
-            case 'normal'
-                mu = distribution.parameters{2};
-                S = distribution.parameters{3};
-                if min(size(S))==1 && max(size(mu))>1
-                    S = diag(S);
-                end
-            case 'exponential'                           
-                 mu = distribution.parameters{2};
-                 S = diag(distribution.parameters{2}.^2);
-            case 'logistic'
-                 mu = distribution.parameters{2};
-                 S = diag(distribution.parameters{3}.^2*pi^2/3);
-            otherwise
+        parameters = {distribution.parameters{2:end}};
+        if ~isempty(distribution.mixture)            
+            mu = 0;
+            S  = 0;
+            for i = 1:size(distribution.mixture,2)
+                parameters_i = parameter_components(parameters,i);
+                [mu_i,S_i] = extract_mu_sigma(distribution.parameters{1},parameters_i);
+                mu = mu + mu_i.*distribution.mixture(:,i);
+                S = S + (S_i + mu_i*mu_i').*distribution.mixture(:,i);
+            end            
+            S = S-mu*mu';
+        else            
+            [mu,S] = extract_mu_sigma(distribution.parameters{1},parameters);
         end
+                
     otherwise
-        error
+        error('FIXME: expected all cases')
 end
 
+function parameters_i = parameter_components(parameters,i)
+for k = 1:length(parameters)
+    parameters_i{k} = parameters{k}{i};
+end
+
+function [mu,S] = extract_mu_sigma(name,parameters)
+switch name
+    case 'normal'
+        % Careful. We redefine the normal, second parameters is (co)variance
+        mu = parameters{1};
+        S = parameters{2};
+        if min(size(S))==1 && max(size(mu))>1
+            S = diag(S);
+        end
+    case 'exponential'
+        mu = parameters{1};
+        S = diag(parameters{1}.^2);
+    case 'logistic'
+        mu = parameters{1};
+        S = diag(parameters{2}.^2*pi^2/3);
+    otherwise
+        error('FIXME: expected all cases')
+end
