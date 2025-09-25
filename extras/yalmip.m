@@ -1050,6 +1050,16 @@ switch varargin{1}
                 end
             end
         end
+        if isequal(data.distribution.parameters{1},'mvnrnd')
+            id = ones(1,numel(data.variables));
+        else
+            id = 1:numel(data.variables);
+        end
+        if isempty(internal_sdpvarstate.distributions)
+            data.id = id;
+        else
+            data.id = internal_sdpvarstate.distributions{end}.id(end) + id;                        
+        end        
         internal_sdpvarstate.distributions{end+1} = data;
         
     case 'getDistribution'                

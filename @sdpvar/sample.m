@@ -38,7 +38,7 @@ for i = 1:length(randomVariables)
     wi = randomVariables{i}.variables;
     samples{i} = [];
     for j = 1:N
-        samples{i} =  [samples{i} dataSampler(randomVariables{i}.distribution,size(wi))];
+        samples{i} =  [samples{i} dataSampler(randomVariables{i}.distribution,size(wi),randomVariables{i}.id)];
     end
     allSamples = [allSamples;samples{i}];
 end

@@ -16,6 +16,10 @@ randomVariables = {randomVariables{find(keep)}};
 % This merges various normal/gaussian models, beware
 [randomVariables,map] = mergeDistributions(randomVariables);
 
+for i = 1:length(randomVariables)
+    randomVariables{i}.distribution = combineElementMixtures(randomVariables{i}.distribution,randomVariables{i}.id);
+end
+
 % Get a variable representing them
 allwVars = [];
 for i = 1:length(randomVariables)
@@ -27,7 +31,7 @@ if all(degree(f,w) <= 1)
     % Simple case, expression is linear in random variable
     Ef = f;
     for i = 1:length(randomVariables)
-        Ef = replace(Ef,randomVariables{i}.variables,expect_from_distr(randomVariables{i}.distribution));
+        Ef = replace(Ef,randomVariables{i}.variables,expect_from_distr(randomVariables{i}.distribution,randomVariables{i}.id));
     end
     return
 elseif length(randomVariables) == 1 && degree(f) <= 2
@@ -90,8 +94,14 @@ for i = 1:length(X)
     f_{i} = f;
 end
 
-function [mu,S] = expect_from_distr(distribution)
+function [mu,S] = expect_from_distr(distribution,id)
 
+if length(unique(id)) > 1 && ~isempty(distribution.mixture)
+    % We have a concatenation of mixtures, so we must generate the new
+    % mixture by combinatorial combinations
+    
+end
+    
 switch func2str(distribution.generator)
     case 'random'
         parameters = {distribution.parameters{2:end}};

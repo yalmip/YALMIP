@@ -48,8 +48,7 @@ function normalized = normalize(D)
 normalvariants = {'normal','mvnrnd','mvnrndfactor'};
 normalized = D;
 if strcmp(func2str(D.distribution.generator),'random')
-    if any(strcmp(D.distribution.parameters{1},normalvariants))
-                       
+    if any(strcmp(D.distribution.parameters{1},normalvariants))                       
         if isempty(D.distribution.mixture)
             [varD,facD] = normalizeOneTerm(D.distribution.parameters{1},D.distribution.parameters{3},D.variables);
             normalized = D;
@@ -57,7 +56,7 @@ if strcmp(func2str(D.distribution.generator),'random')
             normalized.distribution.parameters{3} = varD;
             normalized.distribution.parameters{4} = facD;         
         else
-            for i = 1:length(D.distribution.mixture)
+            for i = 1:size(D.distribution.mixture,2)
                 [varD{i},facD{i}] = normalizeOneTerm(D.distribution.parameters{1},D.distribution.parameters{3}{i},D.variables);
             end
             normalized.distribution.parameters{1} = 'normal';

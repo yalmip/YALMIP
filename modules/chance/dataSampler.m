@@ -1,7 +1,11 @@
-function sampledData = dataSampler(distribution,dimData)
+function sampledData = dataSampler(distribution,dimData,id)
+
+if nargin < 3
+    id = [];
+end
 
 if ~isempty(distribution.mixture)
-    sampledData = mixLayer(distribution,dimData);
+    sampledData = mixLayer(distribution,dimData,id);
     return
 end
 
@@ -47,16 +51,20 @@ else
 end
 
 
-function sampledData = mixLayer(distribution,dimData)
+function sampledData = mixLayer(distribution,dimData,id)
 
-% Draw a mixture for every component
+[unique_distributionIDs,index_to,index_from] = unique(id,'stable') ;
+% Draw a mixture for every unique component (the problem is multivariate
+% mixtures)
 component = [];
-for i = 1:size(distribution.mixture,1)
+for i = 1:length(unique_distributionIDs)
     n = size(distribution.mixture,2);
-    cdf = cumsum(distribution.mixture(i,:));
+    cdf = cumsum(distribution.mixture(index_to(i),:));
     u = rand();
     component = [component;find(u <= cdf, 1)];
 end
+component = component(index_from);
+
 D = distribution;D.mixture = [];
 for i = 2:length(distribution.parameters)
     p = [];
