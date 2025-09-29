@@ -30,7 +30,8 @@ end
 
 keep = ones(length(F),1);
 keep(chanceDeclarations)=0;
-randomVariables = extractRandomDefinitions(F(randomDeclarations));
+%randomVariables = extractRandomDefinitions(F(randomDeclarations));
+randomVariables = yalmip('getDistribution');
 if options.verbose
     if ~rec
         disp('***** Starting YALMIP chance constraint module. ***************************')
@@ -97,7 +98,8 @@ eliminatedConstraints = zeros(length(groupedChanceConstraints),1);
 
 allwVars = [];
 for i = 1:length(randomVariables)
-    allwVars = [allwVars;getvariables(randomVariables{i}.variables)];
+    wi = getvariables(randomVariables{i}.variables);
+    allwVars = [allwVars;wi(:)];
 end
 
 for uncertaintyGroup = 1:length(randomVariables)
@@ -434,7 +436,7 @@ for k = 1:length(randomVariables)
                     
                 case 'cauchy'
                     phi = @(t,mu,theta)(exp(1i*mu(:).*t - abs(t).*theta(:)));
-                    dphi = @(t,mu,theta) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)))
+                    dphi = @(t,mu,theta) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)));
                     reldphi = @(t,mu,theta) dphi(t,mu,theta)./phi(t,mu,theta);
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
