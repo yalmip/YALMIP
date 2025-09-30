@@ -1045,6 +1045,11 @@ switch varargin{1}
         for i = 1:length(internal_sdpvarstate.distributions)
             if isequal(getvariables(variables), getvariables(internal_sdpvarstate.distributions{i}.variables))
                 if isequal(getbase(variables), getbase(internal_sdpvarstate.distributions{i}.variables))
+                    % FIXME: Fails if switch from mixture to non-mixture
+                    if ~isequal(length(data.distribution.mixture),length(internal_sdpvarstate.distributions{i}.distribution.mixture))
+                        error('Please use YALMIP clear before redefining an uncertainty model')
+                    end
+                    data.id = internal_sdpvarstate.distributions{i}.id;                    
                     internal_sdpvarstate.distributions{i} = data;
                     return
                 end

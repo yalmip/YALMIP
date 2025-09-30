@@ -6,27 +6,13 @@ end
 
 % Get all definitions
 randomVariables = yalmip('getDistribution');
+% Now prune for those that are actually asked for
+[randomVariables,simple] = pruneVariables(randomVariables,Expression);
+
 % Scalar definitions of same distribution bunched together
 % This merges various normal/gaussian models, beware
 randomVariables = mergeDistributions(randomVariables);
 
-% Now prune for those that are actually asked for
-w_variables = depends(Expression);
-keep = zeros(1,length(randomVariables));
-simple = 0;
-for i = 1:length(randomVariables)
-    wi = randomVariables{i}.variables;
-    if any(ismember(w_variables,getvariables(wi)))
-        keep(i) = 1;
-        if isequal(w_variables,getvariables(wi))
-            if isequal(getbase(Expression),getbase(wi))
-                simple = i;
-                break
-            end
-        end
-    end
-end
-randomVariables = {randomVariables{find(keep)}};
 W = [];
 for i = 1:length(randomVariables)
     W = [W;randomVariables{i}.variables];
@@ -53,3 +39,22 @@ else
         wrealization = [wrealization replace(Expression,W,allSamples(:,i))];
     end
 end
+
+function [randomVariables,simple] = pruneVariables(randomVariables,Expression)
+w_variables = depends(Expression);
+keep = zeros(1,length(randomVariables));
+simple = 0;
+for i = 1:length(randomVariables)
+    wi = randomVariables{i}.variables;
+    if any(ismember(w_variables,getvariables(wi)))
+        keep(i) = 1;
+        if isequal(w_variables,getvariables(wi))
+            if isequal(getbase(Expression),getbase(wi))
+                simple = i;
+                keep = 0*keep;keep(i) = 1;
+                break
+            end
+        end
+    end
+end
+randomVariables = {randomVariables{find(keep)}};
