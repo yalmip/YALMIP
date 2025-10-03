@@ -404,6 +404,9 @@ for i = 1:length(cNames)
     temporaryOptions = getfield(options,cNames{i});
     if isa(temporaryOptions,'struct')
         cNames = [cNames;recursivefieldnames(temporaryOptions,[cNames{i}])];
+    elseif isa(temporaryOptions,'optim.options.MultiAlgorithm')
+        temporaryOptions = cell2struct( cellfun(@(x) getfield(temporaryOptions,x), properties(temporaryOptions),'UniformOutput', false), properties(temporaryOptions), 1);
+        cNames = [cNames; recursivefieldnames(temporaryOptions,[cNames{i}])];
     end
 end
 for i = 1:length(cNames)
