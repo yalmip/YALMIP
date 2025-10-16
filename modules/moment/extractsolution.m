@@ -41,7 +41,7 @@ if ~isempty(flat)
         cV = cond(V);
         tol = 1e-10;
         [R,pivot] = rref(V',tol);R = R';
-        while tol<1 & (cond(R)/cond(cV)>1e4)
+        while tol<1 & (cond(R)/cV>1e4)
             tol = tol*5;
             [R,pivot] = rref(V',tol);R = R';
         end
