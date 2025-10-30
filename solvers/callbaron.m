@@ -176,6 +176,29 @@ elseif strcmp(model.evalMap{pos}.fcn,'plog')
             end 
         end
         z = [z(1:end-1) ')'];        
+   elseif strcmp(model.evalMap{pos}.fcn,'kullbackleibler')
+        z = ['('];   
+        n = length(map.variableIndex)/2;
+        for k = 1:n
+            j1 = map.variableIndex(k);
+            j2 = map.variableIndex(k + n);
+            jx = find(model.linearindicies == j1);
+            jy = find(model.linearindicies == j2);                        
+           z =  [z '-x(' num2str(jx) ')*log(x(' num2str(jy) '))'];           
+           z =  [z '+x(' num2str(jx) ')*log(x(' num2str(jx) '))+'];                       
+        end
+        z = [z(1:end-1) ')'];
+elseif strcmp(model.evalMap{pos}.fcn,'crossentropy_internal')
+        z = ['('];   
+        n = length(map.variableIndex)/2;
+        for k = 1:n
+            j1 = map.variableIndex(k);
+            j2 = map.variableIndex(k + n);
+            jx = find(model.linearindicies == j1);
+            jy = find(model.linearindicies == j2);                        
+           z =  [z '-x(' num2str(jx) ')*log(x(' num2str(jy) '))+'];                      
+        end
+        z = [z(1:end-1) ')'];        
     elseif strcmp(model.evalMap{pos}.fcn,'logsumexp')
         z = ['('];                
         for j = map.variableIndex
