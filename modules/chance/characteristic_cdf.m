@@ -69,7 +69,9 @@ function cdf = compute_cdf_using_phi(y,phi_z)
 % Later this will be computed together with derivatives etc but this
 % requires some global logic to sync those when solver wants stuff
 integrand = @(t) imag(phi_z(t) .* exp(-1i * t * y)./t);
-cdf =  .5-integral(integrand,0, inf)/pi;
+%cdf =  .5-integral(integrand,0, inf)/pi;
+[I,n,D] = GKtemporary(integrand,0, 1,setupGK715,0);
+cdf = .5 - I/pi;
 
 
 function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,parameters,mixtureweights)
@@ -106,7 +108,8 @@ integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 if nnz(dh0)==0
     pdf_val = 0;
 else
-    pdf_val = (1/pi)*integral(integrand_pdf,0,inf,'AbsTol',1e-6);
+    %pdf_val = (1/pi)*integral(integrand_pdf,0,inf,'AbsTol',1e-6);
+    pdf_val = (1/pi)*integral(integrand_pdf,0,10,'AbsTol',1e-8);
 end
 
 if nnz(dg0)==0
@@ -287,3 +290,41 @@ if isempty(cache)
 end
 db = cache;
 
+
+
+
+function [I,n,D] = GKtemporary(f,a,b,GK715,n)
+% We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
+% this interval and then map those to original domain 0->inf
+center = (a+b)/2;
+halfwidth = (b-a)/2;
+s = GK715.Nodes*halfwidth + center; 
+% and now map to original domain using nonlinear transformation
+t = (s./(1-s)).^2;
+coordinateChangeJacobian = (2*s./(1-s).^3).*halfwidth;
+
+% Counter to diagnose depth of recursion
+n = n+1;
+
+% Product characteristic, exponential and transformation can be combined
+Weight = coordinateChangeJacobian;
+% Integral = sum of weighted columns
+f_t = f(t);
+I_15 = f_t*(Weight.*GK715.Weights_15).';
+I_7 = f_t(2:2:end)*(Weight(2:2:end).*GK715.Weights_7).';
+error = abs(I_15-I_7);
+% Simple stopping criteria for now, and we sub-divide in all despite some
+% might be done already or regions being all 0. Will be optimized later
+if all(error <= max(1e-6,(b-a)*1e-6))
+    I = I_15; 
+    % Diagnostics on final interval
+    D = [a b];
+else
+    [I1,n1,D1] = GKtemporary(f,a,(a+b)/2,GK715,n);
+    [I2,n2,D2] = GKtemporary(f,(a+b)/2,b,GK715,n);
+    I = I1+I2;    
+    % Deepest recursion
+    n = max(n1,n2);
+    % Diagnostics
+    D = [D1 D2];    
+end
