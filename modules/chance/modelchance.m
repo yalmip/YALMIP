@@ -417,7 +417,8 @@ for k = 1:length(randomVariables)
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;                    
                     
                 case 'logistic'
-                    phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
+                    phi = @(t,mu,s)(guarded_logistic_char(1i*mu(:).*t,pi*s(:).*t));
+                    %phi = @(t,mu,s)(exp(1i*mu(:).*t))./guarded_sinhc(pi*s(:).*t);
                     dphi = @(t,mu,s) guarded_logistic_derivative(t,mu,s);
                     reldphi = @(t,mu,s) dphi(t,mu,s)./phi(t,mu,s);
                     
@@ -448,8 +449,20 @@ for k = 1:length(randomVariables)
     end
 end
 
+function y = guarded_logistic_char(a,b)
+y1 = exp(a);
+y2 = guarded_sinhc(b);
+y = y1./y2;
+y(isnan(y))=0;
+
 function y = guarded_sinhc(x)
-y = sinh(x)./x;y(x==0)=1;
+y = sinh(x);
+if isinf(y)    
+    return    
+else
+    y = y./x;
+    y(x==0)=1;
+end
 
 function y = guarded_expdiv(z1,z2,z3)
 y = (exp(1i*z1)-exp(1i*z2))./(1i*z3);

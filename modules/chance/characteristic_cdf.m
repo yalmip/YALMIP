@@ -21,11 +21,21 @@ switch class(varargin{1})
         g = funcs.g(x);
         h = funcs.h(x);
         
+        % Silly case Probability(h + 0*w <= 0)
+        if nnz(g)==0
+            varargout{1} = h <= 0;
+            return
+        end
+        
         % Define char. func for linear combination z = g(x)^Tw, and insert
         % the numerical parameters (means, shapes etc)  into the function
         % definition of the characteristic functions
-        if ~isa(parameters{1},'cell')
-            phi_z = @(t) prod(phi(g(:)*t,parameters{:}),1);        
+        if ~isa(parameters{1},'cell')    
+            if length(g) == 1
+                phi_z = @(t) phi(g(:)*t,parameters{:});
+            else
+                phi_z = @(t) prod(phi(g(:)*t,parameters{:}),1);                
+            end
         else
             % This is a mixture!           
              % Create mixture characteristic function...             
@@ -68,10 +78,30 @@ function cdf = compute_cdf_using_phi(y,phi_z)
 % Not much to exploit so for now we use built-in integrator
 % Later this will be computed together with derivatives etc but this
 % requires some global logic to sync those when solver wants stuff
+
 integrand = @(t) imag(phi_z(t) .* exp(-1i * t * y)./t);
-%cdf =  .5-integral(integrand,0, inf)/pi;
-[I,n,D] = GKtemporary(integrand,0, 1,setupGK715,0);
-cdf = .5 - I/pi;
+I_builtin = integral(integrand,0, inf);
+
+[I_gk,n,D] = GKtemporary(integrand,0, 1,setupGK715,0);
+
+a = 0.1;
+integrand_0_a = @(t)(phi_z(t)./t).*exp(-1i*t*y);
+I_1 = integral(integrand_0_a,eps, a);
+integrand_a_inf = @(t)(exp(-1i*a*y).*phi_z(a + t)./(a + t));
+I_2 =  integral_lazy_rotation(integrand_a_inf,-y);
+I_2_gk =  integral_lazy_rotation_gk(integrand_a_inf,-y);
+I_deformation = imag(I_1 + I_2);
+I_deformation_gk = imag(I_1 + I_2_gk);
+
+    
+fprintf('CDF comparison:\n');
+fprintf('  Built in      : %.12g\n', 0.5 - I_builtin/pi);
+fprintf('  Own GK        : %.12g\n', 0.5 - I_gk/pi);
+fprintf('  Deformation   : %.12g\n', 0.5 - I_deformation/pi);
+fprintf('  Deformation GK: %.12g\n', 0.5 - I_deformation_gk/pi);
+
+cdf = max(0,.5 - I_deformation/pi);
+
 
 
 function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,parameters,mixtureweights)
@@ -88,7 +118,6 @@ dg0 = dg(x);
 functionHash = makeArgHash({h,dh,g,dg,phi,dphi,parameters,mixtureweights});
 
 % Create characteristic functions etc
-exp_ith = @(t) exp(1i*t*h0);
 if ~isa(parameters{1},'cell')
     phi_z   = @(t) prod(phi(g0(:)*t,parameters{:}),1);
     phi_    = @(t) phi(g0(:)*t,parameters{:});
@@ -103,16 +132,31 @@ end
 % this will be moved to be computed together with derivative instead but
 % for now we do the double work to keep code simple. Also, for now we use
 % built-in integral
-
+exp_ith = @(t) exp(1i*t*h0);
 integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
-if nnz(dh0)==0
+if nnz(dh0)==0 || (nnz(g0)==0)
     pdf_val = 0;
-else
-    %pdf_val = (1/pi)*integral(integrand_pdf,0,inf,'AbsTol',1e-6);
-    pdf_val = (1/pi)*integral(integrand_pdf,0,10,'AbsTol',1e-8);
+else    
+    I_builtin = integral(integrand_pdf,0,1000,'AbsTol',1e-6);            
+    I_deformation  = integral_lazy_rotation(phi_z,h0);
+    I_deformation_gk  = integral_lazy_rotation_gk(phi_z,h0);
+
+   % pdf_val_lazy = real(integral_lazy) / pi;
+   % pdf_val_builtin = real(integral_builtin) / pi;    
+    
+    fprintf('PDF comparison (-h0 = %.4g):\n',full(-h0));
+    fprintf('  Built in      : %.12g\n', real(I_builtin)/pi);    
+    fprintf('  Deformation   : %.12g\n', real(I_deformation)/pi);
+    fprintf('  Deformation GK: %.12g\n', real(I_deformation_gk)/pi);
+    fprintf('\n');
+    
+    % Negative is impossible so must be error/numerics    
+    pdf_val = max(0,real(I_deformation)/pi);
 end
 
-if nnz(dg0)==0
+if nnz(dg0)==0 || nnz(g0)==0
+    % If pdf_val is 0 problematic as we won't get any derivative. 
+    pdf_val = max(pdf_val,1e-3);
     dcdf = (-pdf_val.*dh0');
 else            
     terms = (-1/pi)*dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash);
@@ -320,11 +364,70 @@ if all(error <= max(1e-6,(b-a)*1e-6))
     % Diagnostics on final interval
     D = [a b];
 else
-    [I1,n1,D1] = GKtemporary(f,a,(a+b)/2,GK715,n);
-    [I2,n2,D2] = GKtemporary(f,(a+b)/2,b,GK715,n);
+    [I1,n1,D1] = GKtemporary(f,a,a + (b-a)*0.75,GK715,n);
+    zero_tail = max(find(cumsum(fliplr(abs(f_t)<1e-10))==1:length(f_t)));
+    if zero_tail > 1 
+        [I2,n2,D2] = GKtemporary(f,a + (b-a)*0.75,s(end-zero_tail+1),GK715,n);
+    else
+        [I2,n2,D2] = GKtemporary(f,a + (b-a)*0.75,b,GK715,n);
+    end
     I = I1+I2;    
     % Deepest recursion
     n = max(n1,n2);
     % Diagnostics
     D = [D1 D2];    
 end
+
+function [I,n,D] = GKtemporary_exp(f,a,b,GK715,n)
+% Gauss–Kronrod integration on interval [a,b] in transformed variable t,
+% where original variable is x = exp(t), so that the full integral
+% ?_0^? f(x) dx = ?_{-?}^{?} f(exp(t)) * exp(t) dt.
+%
+% Here, a and b are finite limits in t (e.g. [-20, 20]).
+% The function recursively subdivides [a,b] until convergence.
+
+% Map standard Gauss–Kronrod nodes [-1,1] to [a,b]
+center    = (a + b)/2;
+halfwidth = (b - a)/2;
+t = GK715.Nodes * halfwidth + center;   % Gauss–Kronrod nodes in t-space
+
+% Map to original x-domain via exponential transformation
+x = exp(t);
+coordinateChangeJacobian = exp(t) .* halfwidth;  % dx/dt * dt/ds = e^t * halfwidth
+
+% Counter to diagnose recursion depth
+n = n + 1;
+
+% Evaluate integrand
+f_t = f(x);
+
+% Weighted sums for 15- and 7-point rules
+I_15 = f_t * (coordinateChangeJacobian .* GK715.Weights_15).';
+I_7  = f_t(2:2:end) * (coordinateChangeJacobian(2:2:end) .* GK715.Weights_7).';
+
+% Estimate local error
+error = abs(I_15 - I_7);
+
+% Simple stopping criterion
+if all(error <= max(1e-6, (b - a) * 1e-6))
+    I = I_15;
+    D = [a b];   % Diagnostics
+else
+    % Subdivide interval (for simplicity: 3/4–1/4 split)
+    mid = a + 0.75*(b - a);
+    [I1,n1,D1] = GKtemporary_exp(f,a,mid,GK715,n);
+    [I2,n2,D2] = GKtemporary_exp(f,mid,b,GK715,n);
+    I = I1 + I2;
+    n = max(n1,n2);
+    D = [D1 D2];
+end
+
+
+
+function I = integral_lazy_rotation_gk(phi, w)
+theta = 30 * (pi/180)*sign(w);
+line_dir = exp(1i*theta);
+integrand_complex = @(r) (phi(r*line_dir) .* exp(1i * w * (r*line_dir))) .* line_dir;
+%I = integral(integrand_complex, 0, Inf, 'RelTol', 1e-12);
+I = GKtemporary(integrand_complex,0, 1,setupGK715,0);
+
