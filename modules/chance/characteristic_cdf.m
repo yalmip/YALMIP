@@ -352,6 +352,7 @@ if isempty(dg0)
 else
     % We are not using the integrals individually, but the weighted sum. 
     % This should be exploited when deciding termination
+    %    error = abs(part(I_15-I_7))'*abs(dg0);
     error = abs(part(I_15-I_7))'*abs(dg0);
 end
 % Simple stopping criteria for now, and we sub-divide in all despite some
