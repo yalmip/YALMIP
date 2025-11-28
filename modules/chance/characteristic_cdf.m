@@ -1,7 +1,7 @@
 function varargout = characteristic_cdf(varargin)
 % Internal function to supply numerical evaluation of CDF and its
 % derivative based on characteristic function
-    
+
 switch class(varargin{1})
     
     case 'double'
@@ -21,6 +21,13 @@ switch class(varargin{1})
         g = funcs.g(x);
         h = funcs.h(x);
         
+        % Rudimentary scaling to get rid of huge numbers
+        if 0
+            scale = scaleFactor(h,g);
+            g = g/scale;
+            h = h/scale;
+        end
+        
         % Silly case Probability(h + 0*w <= 0)
         if nnz(g)==0
             varargout{1} = h <= 0;
@@ -30,40 +37,40 @@ switch class(varargin{1})
         % Define char. func for linear combination z = g(x)^Tw, and insert
         % the numerical parameters (means, shapes etc)  into the function
         % definition of the characteristic functions
-        if ~isa(parameters{1},'cell')    
+        if ~isa(parameters{1},'cell')
             if length(g) == 1
                 phi_z = @(t) phi(g(:)*t,parameters{:});
             else
-                phi_z = @(t) prod(phi(g(:)*t,parameters{:}),1);                
+                phi_z = @(t) prod(phi(g(:)*t,parameters{:}),1);
             end
         else
-            % This is a mixture!           
-             % Create mixture characteristic function...             
-             phi_mixture = @(t) createMixtureSum(phi,g(:)*t,mixtureweights,parameters{:});
-             phi_z = @(t) prod(phi_mixture(t),1);
+            % This is a mixture!
+            % Create mixture characteristic function...
+            phi_mixture = @(t) createMixtureSum(phi,g(:)*t,mixtureweights,parameters{:});
+            phi_z = @(t) prod(phi_mixture(t),1);
         end
         
         % Compute the cdf
         varargout{1} = compute_cdf_using_phi(-h, phi_z);
         
-    case 'sdpvar'       
-        varargout{1} = yalmip('define',mfilename,varargin{:});    
+    case 'sdpvar'
+        varargout{1} = yalmip('define',mfilename,varargin{:});
         
     case 'char'
         
-        operator = struct('convexity','none','monotonicity','increasing','definiteness','positive','model','callback');        
+        operator = struct('convexity','none','monotonicity','increasing','definiteness','positive','model','callback');
         operator.range = [0 1];
         
-        % Create a derivative callback 
+        % Create a derivative callback
         funcs = varargin{4};
         distribution = varargin{5};
         phi = distribution.characteristicfunction;
-        dphi = distribution.characteristicfunction_derivative;     
+        dphi = distribution.characteristicfunction_derivative;
         % First parameter is name, so remove that
         parameters = {distribution.parameters{2:end}};
         mixtureweights = distribution.mixture;
-        % Create a function which computes gradient at x           
-        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);              
+        % Create a function which computes gradient at x
+        operator.derivative = @(x)compute_dcdf_using_phi(x,funcs.h,funcs.dh,funcs.g,funcs.dg,phi,dphi,parameters,mixtureweights);
         varargout{1} = [];
         varargout{2} = operator;
         varargout{3} = varargin{3};
@@ -75,34 +82,25 @@ end
 function cdf = compute_cdf_using_phi(y,phi_z)
 % Perform the inverse Fourier transform to obtain the CDF
 % for Probability(z <= y) where z has characterstic function phi(t)
-% Not much to exploit so for now we use built-in integrator
 % Later this will be computed together with derivatives etc but this
 % requires some global logic to sync those when solver wants stuff
 
-integrand = @(t) imag(phi_z(t) .* exp(-1i * t * y)./t);
-I_builtin = integral(integrand,0, inf);
-
-[I_gk,n,D] = GKtemporary(integrand,0, 1,setupGK715,0);
-
-a = 0.1;
-integrand_0_a = @(t)(phi_z(t)./t).*exp(-1i*t*y);
-I_1 = integral(integrand_0_a,eps, a);
-integrand_a_inf = @(t)(exp(-1i*a*y).*phi_z(a + t)./(a + t));
-I_2 =  integral_lazy_rotation(integrand_a_inf,-y);
-I_2_gk =  integral_lazy_rotation_gk(integrand_a_inf,-y);
-I_deformation = imag(I_1 + I_2);
-I_deformation_gk = imag(I_1 + I_2_gk);
-
-    
-fprintf('CDF comparison:\n');
-fprintf('  Built in      : %.12g\n', 0.5 - I_builtin/pi);
-fprintf('  Own GK        : %.12g\n', 0.5 - I_gk/pi);
-fprintf('  Deformation   : %.12g\n', 0.5 - I_deformation/pi);
-fprintf('  Deformation GK: %.12g\n', 0.5 - I_deformation_gk/pi);
-
-cdf = max(0,.5 - I_deformation/pi);
-
-
+if 1
+    % Use contour deformation. Due to t in denominator we
+    % first integrate a bit on the real line to avoid the pole
+    a = 0.1;
+    integrand_0_a = @(t)imag((phi_z(t)./t).*exp(-1i*t*y));
+    I_1 = integral(integrand_0_a,eps, a);
+    integrand_a_inf = @(t)(exp(-1i*a*y).*phi_z(a + t)./(a + t));
+    I_2 =  integral_lazy_rotation(integrand_a_inf,-y,30*pi/180,@(f)imag(f));
+    I_deformation = I_1 + I_2;
+    cdf = min(1,max(0,.5 - I_deformation/pi));
+else
+    % Vanilla integration
+    integrand = @(t) imag(phi_z(t) .* exp(-1i * t * y)./t);
+    I_builtin = integral(integrand,0, 100);
+    cdf = min(1,max(0,.5 - I_builtin/pi));
+end
 
 function dcdf = compute_dcdf_using_phi(x,h,dh,g,dg,phi,dphi,parameters,mixtureweights)
 % Compute derivative of Probability(h(x)+g(x)'*w <= 0)
@@ -112,6 +110,14 @@ h0  = h(x);
 dh0 = dh(x);
 g0  = g(x);
 dg0 = dg(x);
+
+if 0
+    scale = scaleFactor(h0,g0);
+    h0 = h0/scale;
+    dh0 = dh0/scale;
+    g0 = g0/scale;
+    dg0 = dg0/scale;
+end
 
 % Create an md5 identifier of these arguments, used to cache some data in
 % the integration routines over iterations
@@ -125,7 +131,7 @@ if ~isa(parameters{1},'cell')
 else
     % This is a mixture. The characteristic of the mixture has to be
     % created etc
-    [phi_,dphi_,phi_z] = characteristic_mix(g0,mixtureweights,parameters,phi,dphi);  
+    [phi_,dphi_,phi_z] = characteristic_mix(g0,mixtureweights,parameters,phi,dphi);
 end
 
 % Compute f_z(-h0) using Gil-Pelaez
@@ -136,111 +142,32 @@ exp_ith = @(t) exp(1i*t*h0);
 integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 if nnz(dh0)==0 || (nnz(g0)==0)
     pdf_val = 0;
-else    
-    I_builtin = integral(integrand_pdf,0,1000,'AbsTol',1e-6);            
-    I_deformation  = integral_lazy_rotation(phi_z,h0);
-    I_deformation_gk  = integral_lazy_rotation_gk(phi_z,h0);
-
-   % pdf_val_lazy = real(integral_lazy) / pi;
-   % pdf_val_builtin = real(integral_builtin) / pi;    
+else
     
-    fprintf('PDF comparison (-h0 = %.4g):\n',full(-h0));
-    fprintf('  Built in      : %.12g\n', real(I_builtin)/pi);    
-    fprintf('  Deformation   : %.12g\n', real(I_deformation)/pi);
-    fprintf('  Deformation GK: %.12g\n', real(I_deformation_gk)/pi);
-    fprintf('\n');
-    
-    % Negative is impossible so must be error/numerics    
-    pdf_val = max(0,real(I_deformation)/pi);
+    if 1
+        if h0~=0
+            I_deformation  = real(integral_lazy_rotation(phi_z,h0));
+        else
+            I_deformation = integral(@(t)real(phi_z(t)),0,inf,'AbsTol',1e-12);
+        end
+        pdf_val = max(0,real(I_deformation)/pi);     
+    else        
+        I_builtin = integral(integrand_pdf,0,100,'AbsTol',1e-6);
+        pdf_val = max(0,real(I_builtin)/pi);                       
+    end
 end
 
 if nnz(dg0)==0 || nnz(g0)==0
-    % If pdf_val is 0 problematic as we won't get any derivative. 
-    pdf_val = max(pdf_val,1e-3);
     dcdf = (-pdf_val.*dh0');
-else            
-    terms = (-1/pi)*dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash);
-    dcdf = (-pdf_val.*dh0') + terms'*dg0;
-end
-
-
-function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash)
-% Compute integral on the transformed domain 0->1
-% Could be various variants, but only one available now
-Points = setupGK715;
-N = 3;
-
-% We resuse subdivisions from earlier computations on the same integral
-% computation (for other x though) in the hope that they are somewhat
-% similiar over iterations
-cache = cacheData();
-try
-    % Cache de-activated for now
-    % oldSubDivisionData = cache(functionHash);
-    % D = unique(oldSubDivisionData);
-    oldSubDivisionData = [];
-    D = linspace(0,1,N);
-catch
-    % We start with an initial sub-division
-    oldSubDivisionData = [];
-    D = linspace(0,1,N);
-end
-
-% Record final sub-division
-Dnew = [];
-I = 0;
-Stabledivision = zeros(1,length(D)-1);
-for i = 1:length(D)-1
-    [Ii,n,Di] = adaptiveGK715(phi_,dphi_,exp_ith,D(i),D(i+1),Points,0);
-    if length(Di) == 2
-       Stabledivision(i) = 1;
-    end
-    Dnew = [Dnew Di];    
-    I = I+Ii;     
-end
-cache(functionHash) = Dnew;
-
-function [I,n,D] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715,n)
-% We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
-% this interval and then map those to original domain 0->inf
-center = (a+b)/2;
-halfwidth = (b-a)/2;
-s = GK715.Nodes*halfwidth + center; 
-% and now map to original domain using nonlinear transformation
-t = (s./(1-s)).^2;
-coordinateChangeJacobian = (2*s./(1-s).^3).*halfwidth;
-
-% Counter to diagnose depth of recursion
-n = n+1;
-
-% Evaluate all functions in all points
-PHI    = phi_(t);
-dPHI   = dphi_(t);
-PHIZ   = prod(PHI,1);
-RelPHI = dPHI./PHI;
-% Careful edge-case when phi is 0
-RelPHI(isnan(RelPHI))=0;
-
-% Product characteristic, exponential and transformation can be combined
-Weight = (PHIZ.*exp_ith(t).*coordinateChangeJacobian);
-% Integral = sum of weighted columns
-I_15 = imag(RelPHI*(Weight.*GK715.Weights_15).');
-I_7 = imag(RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7).');
-error = abs(I_15-I_7);
-% Simple stopping criteria for now, and we sub-divide in all despite some
-% might be done already or regions being all 0. Will be optimized later
-if all(error <= max(1e-6,(b-a)*1e-6))
-    I = I_15; 
-    % Diagnostics on final interval
-    D = [a b];
 else
-    [I1,n1,D1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715,n);
-    [I2,n2,D2] = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715,n);
-    I = I1+I2;    
-    % Deepest recursion
-    n = max(n1,n2);
-    % Diagnostics
-    D = [D1 D2];    
+    if 1
+        theta = (30*pi/180)*sign(h0);
+        z = exp(1i*theta);
+        terms = ((-1/pi)*dcdfintegralEvaluator(@(t)phi_(t*z),@(t)dphi_(t*z),@(t)(z*exp_ith(t*z)),functionHash,dg0,@(z)imag(z)));
+    else
+        terms = (-1/pi)*dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash,dg0,@(z)(imag(z)));
+    end
+    dcdf = (-pdf_val.*dh0') + terms'*dg0;
 end
 
 function GK715 = setupGK715
@@ -261,7 +188,6 @@ GK715.Weights_7 = [ ...
     0.4179591836734694, 0.3818300505051189, 0.2797053914892767, ...
     0.1294849661688697];
 
-
 function C = createMixtureSum(f, g_t,mixtureweights,varargin)
 % Characteristic functions sum_j alpha_j phi(g*t,parameters_j)
 C = [];
@@ -278,7 +204,6 @@ for j = 1:n_mixtures
     % vector as an integral evaluator might evaluate multiple points
     C = C + mixtureweights(:,j).*f(g_t,jthParameters{:});
 end
-
 
 function [phi_,dphi_,phi_z] = characteristic_mix(g0,mixtureweights,parameters,phi,dphi)
 W = size(mixtureweights,2);
@@ -334,15 +259,74 @@ if isempty(cache)
 end
 db = cache;
 
+function y = fixNaN(x)
+% Replace NaN or Inf in real part with 0
+re = real(full(x));
+re(isnan(re)) = 0;
+% Replace NaN or Inf in imaginary part with 0
+im = imag(full(x));
+im(isnan(im)) = 0;
+y = complex(re, im);
+
+function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash,dg0,part)
+% Compute integral on the transformed domain 0->1
+% Could be various variants, but only one available now
+Points = setupGK715;
+N = 3;
+
+if nargin < 6
+    % Possibility to send operator to apply operator on resulting integral
+    % terms
+    part = @(z)z;
+end
+
+if nargin < 5
+    % Not used at the moment, but it should be possible to exploit that we
+    % know what the computed integrals are multiplied with
+    dg0 = [];
+end
+
+% Protect from weird stuff (silently so a bit dangerous)
+phi_   = @(t)fixNaN(phi_(t));
+dphi_ = @(t)fixNaN(dphi_(t));
 
 
+% We resuse subdivisions from earlier computations on the same integral
+% computation (for other x though) in the hope that they are somewhat
+% similiar over iterations
+cache = cacheData();
+try
+    % Cache de-activated for now
+    % oldSubDivisionData = cache(functionHash);
+    % D = unique(oldSubDivisionData);
+    oldSubDivisionData = [];
+    D = linspace(0,1,N);
+catch
+    % We start with an initial sub-division
+    oldSubDivisionData = [];
+    D = linspace(0,1,N);
+end
 
-function [I,n,D] = GKtemporary(f,a,b,GK715,n)
+% Record final sub-division
+Dnew = [];
+I = 0;
+Stabledivision = zeros(1,length(D)-1);
+for i = 1:length(D)-1
+    [Ii,n,Di] = adaptiveGK715(phi_,dphi_,exp_ith,D(i),D(i+1),Points,0,dg0,part);
+    if length(Di) == 2
+        Stabledivision(i) = 1;
+    end
+    Dnew = [Dnew Di];
+    I = I+Ii;
+end
+cache(functionHash) = Dnew;
+
+function [I,n,D] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715,n,dg0,part)
 % We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
 % this interval and then map those to original domain 0->inf
 center = (a+b)/2;
 halfwidth = (b-a)/2;
-s = GK715.Nodes*halfwidth + center; 
+s = GK715.Nodes*halfwidth + center;
 % and now map to original domain using nonlinear transformation
 t = (s./(1-s)).^2;
 coordinateChangeJacobian = (2*s./(1-s).^3).*halfwidth;
@@ -350,84 +334,46 @@ coordinateChangeJacobian = (2*s./(1-s).^3).*halfwidth;
 % Counter to diagnose depth of recursion
 n = n+1;
 
+% Evaluate all functions in all points
+PHI    = phi_(t);
+dPHI   = dphi_(t);
+PHIZ   = prod(PHI,1);
+RelPHI = dPHI./PHI;
+% Careful edge-case when phi is 0
+RelPHI(isnan(RelPHI))=0;
+
 % Product characteristic, exponential and transformation can be combined
-Weight = coordinateChangeJacobian;
+Weight = (PHIZ.*exp_ith(t).*coordinateChangeJacobian);
 % Integral = sum of weighted columns
-f_t = f(t);
-I_15 = f_t*(Weight.*GK715.Weights_15).';
-I_7 = f_t(2:2:end)*(Weight(2:2:end).*GK715.Weights_7).';
-error = abs(I_15-I_7);
+I_15 = (RelPHI*(Weight.*GK715.Weights_15).');
+I_7 = (RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7).');
+if isempty(dg0)
+    error = abs(part(I_15-I_7));
+else
+    % We are not using the integrals individually, but the weighted sum. 
+    % This should be exploited when deciding termination
+    error = abs(part(I_15-I_7))'*abs(dg0);
+end
 % Simple stopping criteria for now, and we sub-divide in all despite some
 % might be done already or regions being all 0. Will be optimized later
 if all(error <= max(1e-6,(b-a)*1e-6))
-    I = I_15; 
+    I = part(I_15);
     % Diagnostics on final interval
     D = [a b];
 else
-    [I1,n1,D1] = GKtemporary(f,a,a + (b-a)*0.75,GK715,n);
-    zero_tail = max(find(cumsum(fliplr(abs(f_t)<1e-10))==1:length(f_t)));
-    if zero_tail > 1 
-        [I2,n2,D2] = GKtemporary(f,a + (b-a)*0.75,s(end-zero_tail+1),GK715,n);
-    else
-        [I2,n2,D2] = GKtemporary(f,a + (b-a)*0.75,b,GK715,n);
-    end
-    I = I1+I2;    
+    [I1,n1,D1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715,n,dg0,part);
+    [I2,n2,D2] = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715,n,dg0,part);
+    I = I1+I2;
     % Deepest recursion
     n = max(n1,n2);
     % Diagnostics
-    D = [D1 D2];    
-end
-
-function [I,n,D] = GKtemporary_exp(f,a,b,GK715,n)
-% Gauss–Kronrod integration on interval [a,b] in transformed variable t,
-% where original variable is x = exp(t), so that the full integral
-% ?_0^? f(x) dx = ?_{-?}^{?} f(exp(t)) * exp(t) dt.
-%
-% Here, a and b are finite limits in t (e.g. [-20, 20]).
-% The function recursively subdivides [a,b] until convergence.
-
-% Map standard Gauss–Kronrod nodes [-1,1] to [a,b]
-center    = (a + b)/2;
-halfwidth = (b - a)/2;
-t = GK715.Nodes * halfwidth + center;   % Gauss–Kronrod nodes in t-space
-
-% Map to original x-domain via exponential transformation
-x = exp(t);
-coordinateChangeJacobian = exp(t) .* halfwidth;  % dx/dt * dt/ds = e^t * halfwidth
-
-% Counter to diagnose recursion depth
-n = n + 1;
-
-% Evaluate integrand
-f_t = f(x);
-
-% Weighted sums for 15- and 7-point rules
-I_15 = f_t * (coordinateChangeJacobian .* GK715.Weights_15).';
-I_7  = f_t(2:2:end) * (coordinateChangeJacobian(2:2:end) .* GK715.Weights_7).';
-
-% Estimate local error
-error = abs(I_15 - I_7);
-
-% Simple stopping criterion
-if all(error <= max(1e-6, (b - a) * 1e-6))
-    I = I_15;
-    D = [a b];   % Diagnostics
-else
-    % Subdivide interval (for simplicity: 3/4–1/4 split)
-    mid = a + 0.75*(b - a);
-    [I1,n1,D1] = GKtemporary_exp(f,a,mid,GK715,n);
-    [I2,n2,D2] = GKtemporary_exp(f,mid,b,GK715,n);
-    I = I1 + I2;
-    n = max(n1,n2);
     D = [D1 D2];
 end
 
+function scale = scaleFactor(h,g)
 
+% Rescale Probability(h + g'*w <= 0) to avoid
+% some bad numerics
 
-function I = integral_lazy_rotation_gk(phi, w)
-theta = 30 * (pi/180)*sign(w);
-line_dir = exp(1i*theta);
-integrand_complex = @(r) (phi(r*line_dir) .* exp(1i * w * (r*line_dir))) .* line_dir;
-%I = integral(integrand_complex, 0, Inf, 'RelTol', 1e-12);
-I = GKtemporary(integrand_complex,0, 1,setupGK715,0);
+scale = geomean([1 + norm(h) 1+norm(g,1)]);
 

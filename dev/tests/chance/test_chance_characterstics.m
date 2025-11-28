@@ -1,6 +1,32 @@
 function tests = test_characterstics
 tests = functiontests(localfunctions);
 
+% From Gaussian tests, but now using characteristics
+function test_gaussian_representmedian(testCase)
+yalmip('clear')
+w = sdpvar(2,1);
+wmean = [3;4];
+a = [1;3];
+sdpvar s
+Model = [uncertain(w,'normal',wmean,1), probability(a'*w >= s) >= .5,
+                                        probability(a'*w <= s) >= .5];
+optimize(Model,[],sdpsettings('solver','fmincon','chance.char','yes'))
+testCase.assertTrue(abs(value(s)-15) <= 1e-3)
+
+function test_gaussian_nonlinear(testCase)
+yalmip('clear')
+w = sdpvar(2,1);
+wmean = [3;4];
+a = [1;3];
+L = sdpvar(2,1);
+sdpvar s
+Model = [uncertain(w,'normal',wmean,1), probability(L'*w >= 1-sum(L)) >= .95];
+optimize(Model,L'*L,sdpsettings('solver','fmincon','chance.char','no'))
+optimize(Model,L'*L,sdpsettings('solver','fmincon','chance.char','yes'))
+testCase.assertTrue(abs(value(s)-15) <= 1e-3)
+
+
+
 function test_exponential_single(testCase)
 w = sdpvar(1);
 sdpvar t x

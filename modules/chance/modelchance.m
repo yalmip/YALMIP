@@ -85,8 +85,12 @@ Fchance = Fchance + F(find(keep)) + F(find(keep(~eliminatedConstraints)));
 if recursive
     Fchance = modelchance(Fchance,options,1);
 end
-if ~rec && options.verbose
-    disp('***** Modeling of chance constraints done. ********************************')
+if ~rec 
+    if options.verbose
+        disp('***** Modeling of chance constraints done. ********************************')
+    end
+    % Prune out the distribution declarations
+    Fchance = Fchance(find(~is(Fchance,'random')));
 end
 
 
