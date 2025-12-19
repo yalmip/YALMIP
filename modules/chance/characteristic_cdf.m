@@ -20,14 +20,7 @@ switch class(varargin{1})
         % Evaluate terms at x
         g = funcs.g(x);
         h = funcs.h(x);
-        
-        % Rudimentary scaling to get rid of huge numbers
-        if 0
-            scale = scaleFactor(h,g);
-            g = g/scale;
-            h = h/scale;
-        end
-        
+              
         % Silly case Probability(h + 0*w <= 0)
         if nnz(g)==0
             varargout{1} = h <= 0;
@@ -111,14 +104,6 @@ dh0 = dh(x);
 g0  = g(x);
 dg0 = dg(x);
 
-if 0
-    scale = scaleFactor(h0,g0);
-    h0 = h0/scale;
-    dh0 = dh0/scale;
-    g0 = g0/scale;
-    dg0 = dg0/scale;
-end
-
 % Create an md5 identifier of these arguments, used to cache some data in
 % the integration routines over iterations
 functionHash = makeArgHash({h,dh,g,dg,phi,dphi,parameters,mixtureweights});
@@ -142,18 +127,17 @@ exp_ith = @(t) exp(1i*t*h0);
 integrand_pdf = @(t) real(exp_ith(t) .* phi_z(t));
 if nnz(dh0)==0 || (nnz(g0)==0)
     pdf_val = 0;
-else
-    
+else    
     if 1
         if h0~=0
             I_deformation  = real(integral_lazy_rotation(phi_z,h0));
         else
             I_deformation = integral(@(t)real(phi_z(t)),0,inf,'AbsTol',1e-12);
         end
-        pdf_val = max(0,real(I_deformation)/pi);     
-    else        
+        pdf_val = max(0,real(I_deformation)/pi);
+    else
         I_builtin = integral(integrand_pdf,0,100,'AbsTol',1e-6);
-        pdf_val = max(0,real(I_builtin)/pi);                       
+        pdf_val = max(0,real(I_builtin)/pi);
     end
 end
 
@@ -272,7 +256,7 @@ function I = dcdfintegralEvaluator(phi_,dphi_,exp_ith,functionHash,dg0,part)
 % Compute integral on the transformed domain 0->1
 % Could be various variants, but only one available now
 Points = setupGK715;
-N = 3;
+N = 10;
 
 if nargin < 6
     % Possibility to send operator to apply operator on resulting integral
@@ -295,33 +279,151 @@ dphi_ = @(t)fixNaN(dphi_(t));
 % computation (for other x though) in the hope that they are somewhat
 % similiar over iterations
 cache = cacheData();
+useCache = 1;
+useMerge = 1;
+useRedistribution = 1;
+mergeStrategy = 1; % 1: Greedy left-to-right, 2: Greedy right-to-left, 3: Greedy min-error, 4: Conservative tree-based
+
 try
-    % Cache de-activated for now
-    % oldSubDivisionData = cache(functionHash);
-    % D = unique(oldSubDivisionData);
-    oldSubDivisionData = [];
-    D = linspace(0,1,N);
+    if ~useCache
+        error('Cache disabled');
+    end
+    cachedData = cache(functionHash);
+    if isstruct(cachedData)
+        oldSubDivisionData = cachedData.Intervals;
+        if isfield(cachedData, 'History')
+            History = cachedData.History;
+        else
+            History = [];
+        end
+    else
+        oldSubDivisionData = cachedData;
+        History = [];
+    end
+    D = unique(oldSubDivisionData);
+    wasCached = true;
 catch
     % We start with an initial sub-division
     oldSubDivisionData = [];
+    History = [];
     D = linspace(0,1,N);
+    if useCache
+        disp('Cache miss. Starting with default coarse grid.');
+    else
+        disp('Cache disabled. Starting with default coarse grid.');
+    end
+    wasCached = false;
 end
 
 % Record final sub-division
 Dnew = [];
 I = 0;
-Stabledivision = zeros(1,length(D)-1);
+max_recursion = 0;
+AllErrors = [];
 for i = 1:length(D)-1
-    [Ii,n,Di] = adaptiveGK715(phi_,dphi_,exp_ith,D(i),D(i+1),Points,0,dg0,part);
-    if length(Di) == 2
-        Stabledivision(i) = 1;
-    end
+    [Ii,n,Di,Ei] = adaptiveGK715(phi_,dphi_,exp_ith,D(i),D(i+1),Points,0,dg0,part);
     Dnew = [Dnew Di];
     I = I+Ii;
+    max_recursion = max(max_recursion, n);
+    AllErrors = [AllErrors Ei];
 end
-cache(functionHash) = Dnew;
 
-function [I,n,D] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715,n,dg0,part)
+if max_recursion <= 1
+    if wasCached
+        disp(['Performance: Excellent (0 extra recursions). Cache was perfect. ' num2str(length(unique(Dnew))-1) ' intervals']);
+    else
+        disp('Performance: Excellent (0 recursions). Problem was easy.');
+    end
+elseif max_recursion <= 3
+    disp(['Performance: Good (' num2str(max_recursion) ' recursions). Minor refinement needed. ' num2str(length(unique(Dnew))-1) ' intervals']);
+else
+    disp(['Performance: Heavy work (' num2str(max_recursion) ' recursions). Grid needed significant refinement. ' num2str(length(unique(Dnew))-1) ' intervals']);
+end
+
+% Redistribute grid points before merging
+if useRedistribution && size(Dnew, 2) > 1
+    Dnew = redistribute_grid(Dnew, AllErrors, 0.05);
+end
+
+% Merge intervals
+if useMerge
+    % Check for cycling in history
+    if length(History) >= 3
+        if History(end) == History(end-2) && History(end) ~= History(end-1)
+            useMerge = 0;
+            disp('Cycling detected in grid size. Merging disabled to stabilize.');
+        end
+    end
+end
+
+if useMerge
+    Intervals = Dnew;
+    if 1
+    [MergedIntervals, MergedErrors] = merge_adaptive_intervals(Intervals, AllErrors, mergeStrategy);
+    [MergedIntervals, MergedErrors] = merge_adaptive_intervals(MergedIntervals, MergedErrors, 2);    
+    else
+    [MergedIntervals, MergedErrors] = merge_adaptive_intervals(Intervals, AllErrors, 2);
+    [MergedIntervals, MergedErrors] = merge_adaptive_intervals(MergedIntervals, MergedErrors, 1);
+    end
+    % Diagnostics for merging
+    initial_count = size(Intervals, 2);
+    final_count = size(MergedIntervals, 2);
+    if final_count < initial_count
+        disp(['Merged intervals: ' num2str(initial_count) ' -> ' num2str(final_count)]);
+    end
+else
+    MergedIntervals = Dnew;
+end
+
+% Update history
+final_count = size(MergedIntervals, 2);
+History = [History, final_count];
+if length(History) > 10
+    History = History(end-9:end);
+end
+
+% Redistribute grid points based on error equidistribution
+if useRedistribution && size(MergedIntervals, 2) > 1
+    redistributionAlpha = 0.01;
+    
+    % Extract current grid points
+    current_grid = [MergedIntervals(1, :) MergedIntervals(2, end)];
+    
+    % Calculate scalar error metric for each interval
+    % "average error m1,m2 etc on the average vector"
+    if exist('MergedErrors', 'var') && ~isempty(MergedErrors)
+        m = mean(MergedErrors, 1);
+    else
+        % Fallback if errors are not available (e.g. if useMerge=0 and we didn't compute them properly)
+        m = ones(1, size(MergedIntervals, 2));
+    end
+    
+    % Avoid division by zero and extreme scaling
+    m = max(m, 1e-12);
+    
+    % We want m_i * h_i = C
+    % h_i = C / m_i
+    % sum(h_i) = 1 => C * sum(1/m_i) = 1 => C = 1 / sum(1/m_i)
+    inv_m = 1 ./ m;
+    C = 1 / sum(inv_m);
+    fair_lengths = C * inv_m;
+    
+    % Construct fair grid
+    fair_grid = [0 cumsum(fair_lengths)];
+    fair_grid(end) = 1; % Ensure exact 1
+    
+    % Damped update
+    new_grid = current_grid + redistributionAlpha * (fair_grid - current_grid);
+    
+    % Reconstruct intervals
+    MergedIntervals = [new_grid(1:end-1); new_grid(2:end)];
+end
+
+if useCache
+    cache(functionHash) = struct('Intervals', MergedIntervals(:)', 'Integral', I, 'History', History);
+end
+
+function [I,n,D,E] = adaptiveGK715(phi_,dphi_,exp_ith,a,b,GK715,n,dg0,part)
 % We have sub-divided down to a->b. Map standard Gauss-Kronrad points to
 % this interval and then map those to original domain 0->inf
 center = (a+b)/2;
@@ -347,34 +449,23 @@ Weight = (PHIZ.*exp_ith(t).*coordinateChangeJacobian);
 % Integral = sum of weighted columns
 I_15 = (RelPHI*(Weight.*GK715.Weights_15).');
 I_7 = (RelPHI(:,2:2:end)*(Weight(2:2:end).*GK715.Weights_7).');
-if isempty(dg0)
-    error = abs(part(I_15-I_7));
-else
-    % We are not using the integrals individually, but the weighted sum. 
-    % This should be exploited when deciding termination
-    %    error = abs(part(I_15-I_7))'*abs(dg0);
-    error = abs(part(I_15-I_7))'*abs(dg0);
-end
+error = abs(part(I_15-I_7));
 % Simple stopping criteria for now, and we sub-divide in all despite some
 % might be done already or regions being all 0. Will be optimized later
 if all(error <= max(1e-6,(b-a)*1e-6))
     I = part(I_15);
     % Diagnostics on final interval
-    D = [a b];
+    D = [a;b];
+    E = error;
 else
-    [I1,n1,D1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715,n,dg0,part);
-    [I2,n2,D2] = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715,n,dg0,part);
+    [I1,n1,D1,E1] = adaptiveGK715(phi_,dphi_,exp_ith,a,(a+b)/2,GK715,n,dg0,part);
+    [I2,n2,D2,E2] = adaptiveGK715(phi_,dphi_,exp_ith,(a+b)/2,b,GK715,n,dg0,part);
     I = I1+I2;
     % Deepest recursion
     n = max(n1,n2);
     % Diagnostics
     D = [D1 D2];
+    E = [E1 E2];
 end
 
-function scale = scaleFactor(h,g)
-
-% Rescale Probability(h + g'*w <= 0) to avoid
-% some bad numerics
-
-scale = geomean([1 + norm(h) 1+norm(g,1)]);
 
