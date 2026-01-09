@@ -13,20 +13,6 @@ Model = [uncertain(w,'normal',wmean,1), probability(a'*w >= s) >= .5,
 optimize(Model,[],sdpsettings('solver','fmincon','chance.char','yes'))
 testCase.assertTrue(abs(value(s)-15) <= 1e-3)
 
-function test_gaussian_nonlinear(testCase)
-yalmip('clear')
-w = sdpvar(2,1);
-wmean = [3;4];
-a = [1;3];
-L = sdpvar(2,1);
-sdpvar s
-Model = [uncertain(w,'normal',wmean,1), probability(L'*w >= 1-sum(L)) >= .95];
-optimize(Model,L'*L,sdpsettings('solver','fmincon','chance.char','no'))
-optimize(Model,L'*L,sdpsettings('solver','fmincon','chance.char','yes'))
-testCase.assertTrue(abs(value(s)-15) <= 1e-3)
-
-
-
 function test_exponential_single(testCase)
 w = sdpvar(1);
 sdpvar t x
@@ -48,8 +34,10 @@ w = sdpvar(2,1);
 sdpvar t x
 gamma = sdpvar(1)
 
+% Starting in 0 is bad as the uncertain term is non-negagtive
+assign(t,1);
 Model = [probability([3 2]*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'exponential',[3;0.3])];
-     optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp'))
+optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp','warmstart',1))
 
 % Confirm numerically
 N = 1e6;
@@ -111,8 +99,9 @@ yalmip('clear')
 w=sdpvar(2,1);
 sdpvar t g
 truth = -13.8154;
+assign(t,-1);
 Model = [probability(2*w(1)+3*w(2) >= t) >= 1-g,0 <= g <= 0.05,uncertain(w,'laplace',[1;2],[3;4])];
-optimize(Model,-t,sdpsettings('debug',1,'solver','fmincon','fmincon.alg','','chance.characteristic','yes'))
+optimize(Model,-t,sdpsettings('warmstart',1,'debug',1,'solver','fmincon','fmincon.alg','','chance.characteristic','yes'))
 testCase.assertTrue(abs(value(t)-truth) <= 1e-3)
 if 0
     r1 = random('exponential',3/sqrt(2),1,100000);
@@ -124,6 +113,8 @@ end
 
 
 function test_cauchy_multi(testCase)
+% Cauchy requires an analytic continuation model of the char. func which
+% appears to work
 yalmip('clear')
 w=sdpvar(2,1);
 sdpvar t g
@@ -138,6 +129,8 @@ if 0
 end
 
 function test_cauchy_multi_2(testCase)
+% Cauchy requires an analytic continuation model of the char. func which
+% appears to work
 yalmip('clear')
 w=sdpvar(2,1);
 sdpvar t g 
@@ -194,3 +187,23 @@ xopt = value(x)
 estimated_probability = (nnz([2+xopt 3-xopt]*wsample <= value(t)))/N
 testCase.assertTrue(abs(xopt-2.4769)<=0.01 && abs(estimated_probability - 0.95) <= 0.01)
 
+
+
+function test_lowrank(testCase)
+
+n = 7;
+m = 1500;
+x = sdpvar(n,1);
+w = sdpvar(m,1);
+sdpvar t
+gamma = sdpvar(1)
+A = 1./(1:m) + [1:n]*diag(x)*sin(reshape(1:n*m,n,m));
+Model = [x>=0, probability(A*w <= t) >= 1-gamma, 0 <= gamma <= 0.05, uncertain(w,'normal',0,1)];   
+optimize(Model,t,sdpsettings('debug',1,'fmincon.alg','sqp','chance.char','yes'))
+
+% Confirm numerically
+A = value(A);
+N = 1e5;
+w = randn(m,N);
+estimated_probability = (nnz(A*w <= value(t)))/N;
+testCase.assertTrue(abs(estimated_probability - 0.95) <= 0.01)

@@ -440,8 +440,13 @@ for k = 1:length(randomVariables)
                     randomVariables{k}.distribution.characteristicfunction_relativederivative = reldphi;
                     
                 case 'cauchy'
-                    phi = @(t,mu,theta)(exp(1i*mu(:).*t - abs(t).*theta(:)));
-                    dphi = @(t,mu,theta) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)));
+                    %phi = @(t,mu,theta)(exp(1i*mu(:).*t - abs(t).*theta(:)));
+                    %dphi = @(t,mu,theta) ((1i*mu(:)-sign(t).*theta(:)).*exp(1i*mu(:).*t - abs(t).*theta(:)));
+                    
+                    % Analytic Characteristic Function to allow for contour
+                    % rotation trickery
+                    phi = @(t, mu, theta) exp(1i * mu(:) .* t - theta(:) .* sqrt(t.^2));
+                    dphi = @(t, mu, theta) (1i * mu(:) - theta(:) .* (t ./ sqrt(t.^2))) .* exp(1i * mu(:) .* t - theta(:) .* sqrt(t.^2));
                     reldphi = @(t,mu,theta) dphi(t,mu,theta)./phi(t,mu,theta);
                     
                     randomVariables{k}.distribution.characteristicfunction = phi;
