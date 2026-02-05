@@ -155,8 +155,9 @@ for uncertaintyGroup = 1:length(randomVariables)
                 if ~isempty(Qxwi)
                     ci = ci + Qxwi'*x;
                 end
-                c = [c;ci'];
+                c = [c ci];
                 b = [b;bi];
+
             end
             c = c';
             cwi = cwi(:);

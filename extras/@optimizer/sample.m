@@ -32,7 +32,7 @@ for k = 1:N
     cells = cell(1,length(self.diminOrig));
     for i = 1:length(self.diminOrig)
         if isfield(self.input,'stochastics')
-            if ~isempty(self.input.stochastics{i});
+            if ~isempty(self.input.stochastics{i})
                 sampledData = dataSampler(self.input.stochastics{i},self.diminOrig{i});
                 cells{i} = sampledData;
             else

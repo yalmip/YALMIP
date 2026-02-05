@@ -3,6 +3,7 @@ function Ef = expected(f)
 % Gather all distribution definitions, and prune them for the ones used in
 % this expressions
 randomVariables = yalmip('getDistribution');
+
 keep = zeros(1,length(randomVariables));
 f_variables = depends(f);
 for i = 1:length(randomVariables)
@@ -72,13 +73,13 @@ elseif degree(f) <= 2
         f = reshape(Ef,size(f));
     end       
 end
-return
+Ef = reshape(Ef,n,m);
 
 function [c_w,c_x,Q_xx,Q_xw,Q_ww,f_] = quadraticDecomposition(X,x,w)
 xw = [x;w];
 xind = find(ismembc(getvariables(xw),getvariables(x)));
 wind = find(ismembc(getvariables(xw),getvariables(w)));
-[Qs,cs,fs,dummy,nonquadratic] = vecquaddecomp(X,xw);
+[Qs,cs,fs,dummy,h_] = vecquaddecomp(X,xw);
 c_wTbase = [];
 AAA = [];
 ccc = [];
