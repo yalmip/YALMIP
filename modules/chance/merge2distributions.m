@@ -62,3 +62,4 @@ else
         C.distribution.parameters{k} = [A.distribution.parameters{k};B.distribution.parameters{k}];
     end
 end
+C.id = [A.id B.id];

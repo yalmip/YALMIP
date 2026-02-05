@@ -1,66 +1,60 @@
-function data = sample(w,N)
+function wrealization = sample(Expression,N)
 
-if nargin == 1
+if nargin < 2
     N = 1;
 end
+
+% Get all definitions
 randomVariables = yalmip('getDistribution');
-% Prune unused random declarations to avoid extra work. ALso check for
-% special case where w is a simple variable
-allVars = depends(w);
-allwVars = [];
-keep = false(1,length(randomVariables));
-simpleCase = [];
+% Now prune for those that are actually asked for
+[randomVariables,simple] = pruneVariables(randomVariables,Expression);
+
+% Scalar definitions of same distribution bunched together
+% This merges various normal/gaussian models, beware
+randomVariables = mergeDistributions(randomVariables);
+
+W = [];
 for i = 1:length(randomVariables)
-    wVars = getvariables(randomVariables{i}.variables);
-    if any(ismember(allVars, wVars))
-        allwVars = [allwVars;wVars];
-        keep(i) = true;
-        if isequal(getvariables(w),getvariables(randomVariables{i}.variables))
-            if isequal(getbase(w), getbase(randomVariables{i}.variables))
-                simpleCase = i;
+    W = [W;randomVariables{i}.variables];
+end
+
+% Generate samples for all involved random variables
+allSamples = [];
+for i = 1:length(randomVariables)
+    wi = randomVariables{i}.variables;
+    samples{i} = [];
+    for j = 1:N
+        samples{i} =  [samples{i} dataSampler(randomVariables{i}.distribution,size(wi),randomVariables{i}.id)];
+    end
+    allSamples = [allSamples;samples{i}];
+end
+
+% And now map to the requested variable
+if simple
+    wrealization = allSamples;
+else
+    % FIXME: Do this faster
+    wrealization = [];
+    for i = 1:N
+        wrealization = [wrealization replace(Expression,W,allSamples(:,i))];
+    end
+end
+
+function [randomVariables,simple] = pruneVariables(randomVariables,Expression)
+w_variables = depends(Expression);
+keep = zeros(1,length(randomVariables));
+simple = 0;
+for i = 1:length(randomVariables)
+    wi = randomVariables{i}.variables;
+    if any(ismember(w_variables,getvariables(wi)))
+        keep(i) = 1;
+        if isequal(w_variables,getvariables(wi))
+            if isequal(getbase(Expression),getbase(wi))
+                simple = i;
+                keep = 0*keep;keep(i) = 1;
                 break
             end
         end
     end
 end
-
-if ~simpleCase
-    randomVariables = randomVariables(keep);
-end
-
-if length(randomVariables) == 0
-    data = repmat(w,1,N);
-    return
-end
-
-if ~isempty(simpleCase)
-    data = [];
-    distribution = randomVariables{simpleCase}.distribution;
-    data = getSamples(distribution,N);
-else
-    error
-end
-
-function data = getSamples(distribution,N)
-
-switch func2str(distribution.generator)
-    case 'random'
-        switch distribution.parameters{1}
-            case 'mvnrnd'
-                data = [];
-                for i = 1:N
-                    s = mvnrnd(distribution.parameters{2:end});
-                    data = [data s(:)];
-                end
-            case 'data'
-                i = randi(size(distribution.parameters{2},2),N,1);
-                data = distribution.parameters{2}(:,i);
-            otherwise
-                data = [];
-                for i = 1:N
-                    data = [data random(distribution.parameters{:})];
-                end
-        end
-    otherwise
-        error
-end
+randomVariables = {randomVariables{find(keep)}};

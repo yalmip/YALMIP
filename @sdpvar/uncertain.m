@@ -61,7 +61,13 @@ else
     x.extra.distribution.pcdf = [];
     
     if isequal(x.extra.distribution.generator, @random)
-        % Check for a mixture definition
+        % Check for a mixture definition missing but data indicating this is what user wanted       
+        if isempty(findstr('mix',x.extra.distribution.parameters{1}))
+            if isa(x.extra.distribution.parameters{2},'cell')
+                error('Did you forget to specify mixture in name, such as ''normal mixture''?')
+            end
+        end
+        
         if findstr('mix',x.extra.distribution.parameters{1})
             % Yes, mixture defined
             for i = 2:length(x.extra.distribution.parameters)
@@ -78,12 +84,21 @@ else
             end
             % Check weights
             mixtureweights = x.extra.distribution.parameters{end};            
-            mixtureweights = cell2mat(mixtureweights);
+            mixtureweights = cell2mat(mixtureweights);           
+            % Normalize weights to be a row vector, if it is a vector
+            if min(size(mixtureweights)) == 1
+                mixtureweights = mixtureweights(:)';
+            end
+            % Repeat if same on all elements as it is only one row
+            if size(mixtureweights,1) < length(x)
+                mixtureweights = repmat(mixtureweights, length(x),1);
+            end
+            % But if it was a matrix, was it correct dimension
+            if size(mixtureweights,1)~=numel(x)
+                error('The dimension of the mixture weight matrix is inconsistent wih dimension of variable.')
+            end
             if ~all(abs(sum(mixtureweights,2)-1)<1e-12)
                 error('Mixture weights should sum up to 1.')
-            end
-            if size(mixtureweights,1) < length(x.extra.distribution.parameters{2}{1})
-                mixtureweights = repmat(mixtureweights, length(x.extra.distribution.parameters{2}{1}),1);
             end
             
             nMix = cellfun(@(c)size(c,2),x.extra.distribution.parameters);
@@ -98,6 +113,7 @@ else
             x.extra.distribution.parameters{1} = strrep(x.extra.distribution.parameters{1},'mix','');
             x.extra.distribution.parameters{1} = lower(strtrim(x.extra.distribution.parameters{1}));
             
+                        
             if strcmp(x.extra.distribution.parameters{1},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf'})
                 error(['Mixtures of ' x.extra.distribution.parameters{1} ' distributions not supported (yet...)']);
             end
@@ -110,6 +126,13 @@ else
             end
         end        
     end
+    
+    % Make sure all  parameters have the same length, and clean up
+	% cases where user set a scalar for a vector parameter
+    if strcmp(func2str(temp{1}),'random')
+        x.extra.distribution.parameters = cleanup(x.extra.distribution.parameters, numel(x));
+    end    
+        
     try
         if any(cellfun('isclass',temp,'sdpvar')) || (strcmp(func2str(temp{1}),'random') && (any(strcmp(temp{2},{'mvnrnd','mvnrndfactor','dro','data','moment','momentf','laplace','cauchy'}))))
             % Don't try to evaluate special case distributions, such as
@@ -134,7 +157,7 @@ else
                 % model by calling the data generator
                 temp = feval(temp{:});
             else
-                for i = 1:length(x.extra.distribution.mixture)
+                for i = 1:size(x.extra.distribution.mixture,2)
                     temp = x.extra.distribution.parameters;
                     for j = 2:length(x.extra.distribution.parameters)
                         temp{j} = temp{j}{i};
@@ -157,4 +180,24 @@ else
     end
     yalmip('addDistribution',  x, x.extra.distribution);
     x = lmi(x);
+end
+
+% Ensure scalar parameters are extended to vector parameters if the user
+% has been lazy
+function params = cleanup(params,d)
+for i = 2:length(params)
+    if isa(params{i},'cell')
+        % Mixture case, go through all components
+        for j = 1:length(params{i})
+            p = params{i}{j};
+            if d > 1 && numel(p) == 1
+                params{i}{j} = repmat(p,d,1);
+            end
+        end
+    else
+        p = params{i};
+        if d > 1 && numel(p) == 1
+            params{i} = repmat(p,d,1);
+        end
+    end
 end

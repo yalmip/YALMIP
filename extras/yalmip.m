@@ -1034,7 +1034,7 @@ switch varargin{1}
     case 'getDistribution'        
         varargout{1} = internal_sdpvarstate.distributions;
             
-    case 'addDistribution'        
+    case 'addDistribution'  
         variables = varargin{2};
         parameters = varargin{3};
         data.variables = variables;
@@ -1042,7 +1042,29 @@ switch varargin{1}
         data.distribution.generator = parameters.generator;
         data.distribution.parameters = parameters.parameters;
         data.distribution.mixture = parameters.mixture;
-        %distribution.parameters = parameters;
+        for i = 1:length(internal_sdpvarstate.distributions)
+            if isequal(getvariables(variables), getvariables(internal_sdpvarstate.distributions{i}.variables))
+                if isequal(getbase(variables), getbase(internal_sdpvarstate.distributions{i}.variables))
+                    % FIXME: Fails if switch from mixture to non-mixture
+                    if ~isequal(length(data.distribution.mixture),length(internal_sdpvarstate.distributions{i}.distribution.mixture))
+                        error('Please use YALMIP clear before redefining an uncertainty model')
+                    end
+                    data.id = internal_sdpvarstate.distributions{i}.id;                    
+                    internal_sdpvarstate.distributions{i} = data;
+                    return
+                end
+            end
+        end
+        if isequal(data.distribution.parameters{1},'mvnrnd')
+            id = ones(1,numel(data.variables));
+        else
+            id = 1:numel(data.variables);
+        end
+        if isempty(internal_sdpvarstate.distributions)
+            data.id = id;
+        else
+            data.id = internal_sdpvarstate.distributions{end}.id(end) + id;                        
+        end        
         internal_sdpvarstate.distributions{end+1} = data;
         
     case 'getDistribution'                
