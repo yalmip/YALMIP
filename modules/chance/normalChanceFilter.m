@@ -1,8 +1,42 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
 
+% Formulating P(b(x) + c(x)'*w >= 0) >= 1-gamma w with Gaussian 
+
 if length(b) > 1
-    newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
-    return
+    
+    % If user inserted constraints without random variable, remove columns
+    % of the corresponding constraint in c
+    if isa(c,'sdpvar')
+        % Not used at the moment but might be useful in the future
+        baseC = getbase(c);
+        colsAllZero = all(baseC==0,1);
+    else
+        colsAllZero = all(c==0,1);
+    end
+    if any(colsAllZero)
+        c(:,colsAllZero) = [];
+        b(colsAllZero) = [];
+    end
+
+    % The covariance
+    Sigma = distribution.parameters{4};
+    SigmaX = c'*Sigma*c;
+    SigmaX = (SigmaX + SigmaX')/2; % Ensure numerical symmetry
+
+    % Eigenvalue decomposition
+    [theta,eigValues] = eig(SigmaX); % theta'*SigmaX*theta = eigvalues
+    lambda = diag(eigValues);
+    lambda(lambda<0) = 0; % Ensure lambdas are positive (numerical noise might give -1e-16)
+    nphi = length(lambda); % Dimension of random vector phi
+    nm = size(SigmaX,2); % Number of constraints
+
+    % check orthogonality and diagonalization
+    assert(norm(theta'*theta-eye(size(theta,2)),'inf') < 1e-12,'Theta not orthonormal within tol 1e-8');
+    assert(norm(theta'*SigmaX*theta-eigValues,'fro') < 1e-12,'Diagonalization failed within tol 1e-8');
+
+    
+    % newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
+    % return
 end
 
 if strcmpi(options.chance.characteristic,'yes')
