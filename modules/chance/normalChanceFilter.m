@@ -1,42 +1,11 @@
 function newConstraint = normalChanceFilter(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
 
-% Formulating P(b(x) + c(x)'*w >= 0) >= 1-gamma w with Gaussian 
+% Formulating P(b(x) + c(x)'*w >= 0) >= 1-gamma w with Gaussian
 
 if length(b) > 1
-    
-    % If user inserted constraints without random variable, remove columns
-    % of the corresponding constraint in c
-    if isa(c,'sdpvar')
-        % Not used at the moment but might be useful in the future
-        baseC = getbase(c);
-        colsAllZero = all(baseC==0,1);
-    else
-        colsAllZero = all(c==0,1);
-    end
-    if any(colsAllZero)
-        c(:,colsAllZero) = [];
-        b(colsAllZero) = [];
-    end
 
-    % The covariance
-    Sigma = distribution.parameters{4};
-    SigmaX = c'*Sigma*c;
-    SigmaX = (SigmaX + SigmaX')/2; % Ensure numerical symmetry
-
-    % Eigenvalue decomposition
-    [theta,eigValues] = eig(SigmaX); % theta'*SigmaX*theta = eigvalues
-    lambda = diag(eigValues);
-    lambda(lambda<0) = 0; % Ensure lambdas are positive (numerical noise might give -1e-16)
-    nphi = length(lambda); % Dimension of random vector phi
-    nm = size(SigmaX,2); % Number of constraints
-
-    % check orthogonality and diagonalization
-    assert(norm(theta'*theta-eye(size(theta,2)),'inf') < 1e-12,'Theta not orthonormal within tol 1e-8');
-    assert(norm(theta'*SigmaX*theta-eigValues,'fro') < 1e-12,'Diagonalization failed within tol 1e-8');
-
-    
-    % newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
-    % return
+    newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem);
+    return
 end
 
 if strcmpi(options.chance.characteristic,'yes')
@@ -45,10 +14,10 @@ if strcmpi(options.chance.characteristic,'yes')
     % thus has 3 parameters. However, the characteristic function is
     % defined from mean and std. dev to comply with standard notation.
     % Hence remove second parameter and extract diagonal of factor
-    distribution.parameters = {distribution.parameters{1:2}, cellfun(@(c)diag(c),distribution.parameters{4},'UniformOutput', false)};    
-   % distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};    
+    distribution.parameters = {distribution.parameters{1:2}, cellfun(@(c)diag(c),distribution.parameters{4},'UniformOutput', false)};
+    % distribution.parameters = {distribution.parameters{1:2}, distribution.parameters{4}};
     newConstraint = [characteristic_cdf(x,funcs,distribution) >= 1-gamma];
-    return    
+    return
 end
 
 % default though is to simply use analytic stuff
@@ -155,17 +124,68 @@ return
 
 
 function newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
-% Trivial Bonferroni
-m = length(b);
-gamma_local = sdpvar(m,1);
-newConstraint = sum(gamma_local) <= gamma;
-for i = 1:m
-    newConstraint = [newConstraint, normalChanceFilter(b(i),c(:,i),distribution,gamma_local,options,funcs,x,isDisjointProblem)];
+% Identify constraints that do not have stochastic variables
+if isa(c,'sdpvar')
+    % Not used at the moment but might be useful in the future
+    baseC = getbase(c);
+    allZero = all(baseC==0,1);
+else
+    allZero = all(c==0,1);
 end
-   
-function C = allSequences(m,n)
-% Returns an (m^n) x n matrix whose rows are all length-n sequences from 1:m.
-vectors = cell(1,n);
-[vectors{:}] = ndgrid(1:m);
-C = cell2mat( cellfun(@(V) V(:), vectors, 'UniformOutput', false) );
+
+newConstraint = b(allZero,1) >= 0; % deterministic constraints
+
+% Remove the deterministic constraints
+if any(allZero)
+    c(:,allZero) = [];
+    b(allZero) = [];
+end
+
+% The covariance
+Sigma = distribution.parameters{4};
+SigmaX = c'*Sigma*c;
+SigmaX = (SigmaX + SigmaX')/2; % Ensure numerical symmetry
+
+% Eigenvalue decomposition
+[theta,eigValues] = eig(SigmaX); % theta'*SigmaX*theta = eigvalues
+lambda = diag(eigValues);
+lambda(lambda<0) = 0; % Ensure lambdas are positive (numerical noise might give -1e-16)
+nphi = length(lambda); % Dimension of random vector phi
+nm = size(SigmaX,2); % Number of constraints
+
+% check orthogonality and diagonalization
+assert(norm(theta'*theta-eye(size(theta,2)),'inf') < 1e-12,'Theta not orthonormal within tol 1e-8');
+assert(norm(theta'*SigmaX*theta-eigValues,'fro') < 1e-12,'Diagonalization failed within tol 1e-8');
+
+% Auxiliary betas
+beta1 = sdpvar(length(lambda),1);
+beta2 = sdpvar(length(lambda),1);
+
+% Create the product constraint with log for computational burden
+logBeta = 0;
+for i = 1:length(lambda)
+    logBeta = logBeta + log(beta1(i) + beta2(i) - 1);
+end
+newConstraint = [newConstraint,
+    logBeta >= log(1-gamma),
+    beta1 + beta2 >= 1,
+    0 <= beta1 <= 1,
+    0 <= beta2 <= 1];
+
+for i = 1:size(SigmaX,2)
+    lhs_sum = 0;
+    for j = 1:length(lambda)
+        % Check sign of theta_ij to select beta1 or beta2
+        if theta(i,j) >= 0
+            b_val = beta1(j);
+        else
+            b_val = beta2(j);
+        end
+        lhs_sum = lhs_sum + sqrt(lambda(j))*abs(theta(i,j))*norminv(b_val);
+    end
+
+    newConstraint = [newConstraint, lhs_sum - b(i) <= 0];
+
+end
+
 
