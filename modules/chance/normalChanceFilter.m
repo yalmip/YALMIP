@@ -124,38 +124,20 @@ return
 
 
 function newConstraint = normalChanceFilterJointLayer(b,c,distribution,gamma,options,funcs,x,isDisjointProblem)
-% Identify constraints that do not have stochastic variables
-if isa(c,'sdpvar')
-    % Not used at the moment but might be useful in the future
-    baseC = getbase(c);
-    allZero = all(baseC==0,1);
-else
-    allZero = all(c==0,1);
-end
-
-newConstraint = b(allZero,1) >= 0; % deterministic constraints
-
-% Remove the deterministic constraints
-if any(allZero)
-    c(:,allZero) = [];
-    b(allZero) = [];
-end
 
 % The covariance
-Sigma = distribution.parameters{4};
-SigmaX = c'*Sigma*c;
-SigmaX = (SigmaX + SigmaX')/2; % Ensure numerical symmetry
+factorcovariance = distribution.parameters{4};
+Sigma = c'*factorcovariance*c;
+Sigma = (Sigma + Sigma')/2; % Ensure numerical symmetry
 
 % Eigenvalue decomposition
-[theta,eigValues] = eig(SigmaX); % theta'*SigmaX*theta = eigvalues
+[theta,eigValues] = eig(Sigma); % theta'*SigmaX*theta = eigvalues
 lambda = diag(eigValues);
 lambda(lambda<0) = 0; % Ensure lambdas are positive (numerical noise might give -1e-16)
-nphi = length(lambda); % Dimension of random vector phi
-nm = size(SigmaX,2); % Number of constraints
 
 % check orthogonality and diagonalization
 assert(norm(theta'*theta-eye(size(theta,2)),'inf') < 1e-12,'Theta not orthonormal within tol 1e-8');
-assert(norm(theta'*SigmaX*theta-eigValues,'fro') < 1e-12,'Diagonalization failed within tol 1e-8');
+assert(norm(theta'*Sigma*theta-eigValues,'fro') < 1e-12,'Diagonalization failed within tol 1e-8');
 
 % Auxiliary betas
 beta1 = sdpvar(length(lambda),1);
@@ -166,13 +148,12 @@ logBeta = 0;
 for i = 1:length(lambda)
     logBeta = logBeta + log(beta1(i) + beta2(i) - 1);
 end
-newConstraint = [newConstraint,
-    logBeta >= log(1-gamma),
+newConstraint = [logBeta >= log(1-gamma),
     beta1 + beta2 >= 1,
     0 <= beta1 <= 1,
     0 <= beta2 <= 1];
 
-for i = 1:size(SigmaX,2)
+for i = 1:size(Sigma,2)
     lhs_sum = 0;
     for j = 1:length(lambda)
         % Check sign of theta_ij to select beta1 or beta2
@@ -187,5 +168,5 @@ for i = 1:size(SigmaX,2)
     newConstraint = [newConstraint, lhs_sum - b(i) <= 0];
 
 end
-
+return
 
