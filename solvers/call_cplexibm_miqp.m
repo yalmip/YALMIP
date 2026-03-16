@@ -1,7 +1,7 @@
 function output = call_cplexibm_miqp(interfacedata)
 
 %Turn on support for nonconvex QP if required and user hasn't touched this
-if interfacedata.ProblemClass.objective.quadratic.nonconvex
+if interfacedata.problemclass.objective.quadratic.nonconvex
     if isfield(interfacedata.options.cplex,'solutiontarget')
         % User is using old version of cplex
         if ~interfacedata.options.cplex.solutiontarget          
