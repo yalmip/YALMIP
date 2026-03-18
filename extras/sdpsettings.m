@@ -185,6 +185,9 @@ else
     options.gurobi = setup_gurobi_options;
     Names = appendOptionNames(Names,options.gurobi,'gurobi');
 
+    options.highsmex = setup_highsmex_options;
+    Names = appendOptionNames(Names,options.highsmex,'highsmex');
+
     options.ipopt = setup_ipopt_options;
     Names = appendOptionNames(Names,options.ipopt,'ipopt');
 
@@ -949,6 +952,13 @@ try
 %     end
 catch
     intlinprog = [];
+end
+
+function highsmex = setup_highsmex_options
+try
+    highsmex = callhighs('defopts');
+catch
+    highsmex = [];
 end
 
 function kktqp = setup_kktqp_options

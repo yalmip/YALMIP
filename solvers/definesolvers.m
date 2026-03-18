@@ -742,6 +742,27 @@ solver(i).checkfor= {'OSQP'};
 solver(i).call    = 'callosqp';
 i = i+1;
 
+solver(i) = qpsolver;
+solver(i).tag     = 'HIGHSMEX';
+solver(i).version = '';
+solver(i).checkfor= {'callhighs'};
+solver(i).call    = 'call_highsmex';
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
+i = i+1;
+
+solver(i) = lpsolver;
+solver(i).tag     = 'HIGHSMEX';
+solver(i).version = 'MIP';
+solver(i).checkfor= {'callhighs'};
+solver(i).call    = 'call_highsmex';
+solver(i).constraint.integer = 1;
+solver(i).constraint.binary = 1;
+solver(i).supportsinitial = 1;
+solver(i).supportsinitialNAN = 1;
+solver(i).dual = 0;
+i = i+1;
+
 solver(i) = lpsolver;
 solver(i).tag     = 'CBC';
 solver(i).version = '';
