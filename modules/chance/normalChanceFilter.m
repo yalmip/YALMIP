@@ -139,34 +139,49 @@ lambda(lambda<0) = 0; % Ensure lambdas are positive (numerical noise might give 
 assert(norm(theta'*theta-eye(size(theta,2)),'inf') < 1e-12,'Theta not orthonormal within tol 1e-8');
 assert(norm(theta'*Sigma*theta-eigValues,'fro') < 1e-12,'Diagonalization failed within tol 1e-8');
 
-% Auxiliary betas
-beta1 = sdpvar(length(lambda),1);
-beta2 = sdpvar(length(lambda),1);
+% Auxiliary variables
+gamma1 = sdpvar(length(lambda),1);
+gamma2 = sdpvar(length(lambda),1);
+u = sdpvar(length(lambda), 1);
+z = sdpvar(length(lambda), 1);
+y = sdpvar(length(lambda), 1);
 
-% Create the product constraint with log for computational burden
-logBeta = 0;
-for i = 1:length(lambda)
-    logBeta = logBeta + log(beta1(i) + beta2(i) - 1);
-end
-newConstraint = [logBeta >= log(1-gamma),
-    beta1 + beta2 >= 1,
-    0 <= beta1 <= 1,
-    0 <= beta2 <= 1];
+% Coefficients of the general approximation
+aa = -0.499492956059166;
+bb = 8.082867432374761e+03;
+cc = -1.475743096725997;
+kk =  3.965651977413067;
+
+% Coefficients to address the asymptotic behavior of probit
+ee = -1.325786346642915e+03;
+ff = 2.042472559346282;
+dd = -0.196422986236589;
+
+% Constraints
+newConstraint = [sum(u) >= log(1-gamma),
+    expcone([u';ones(1,length(lambda));1-gamma1'-gamma2']),
+    gamma1 + gamma2 <= 1,
+    0 <= gamma1 <= 1,
+    0 <= gamma2 <= 1];
 
 for i = 1:size(Sigma,2)
     lhs_sum = 0;
     for j = 1:length(lambda)
         % Check sign of theta_ij to select beta1 or beta2
         if theta(i,j) >= 0
-            b_val = beta1(j);
+            b_val = gamma1(j);
         else
-            b_val = beta2(j);
+            b_val = gamma2(j);
         end
-        lhs_sum = lhs_sum + sqrt(lambda(j))*abs(theta(i,j))*norminv(b_val);
+
+        lhs_sum = lhs_sum + sqrt(lambda(j))*abs(theta(i,j))*z(j);
+        newConstraint = [newConstraint, 
+            z(j) >= aa*lambertw(bb*b_val)+kk+cc*b_val, % approximation to the probit function
+            z(j) >= ff+ee*b_val+dd*y(j), % to address the asymptotic behavior of probit
+            expcone([y(j);1;b_val])];
     end
 
     newConstraint = [newConstraint, lhs_sum - b(i) <= 0];
-
 end
 return
 
