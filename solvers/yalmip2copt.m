@@ -10,6 +10,43 @@ binary_variables   = interfacedata.binary_variables;
 semicont_variables = interfacedata.semicont_variables;
 n                  = length(c);
 
+% Quadratic constraints are represented by YALMIP using auxiliary
+% monomial variables. Save the rows containing those variables and remove
+% the auxiliary columns before creating the COPT model.
+quadraticconstraints = [];
+quadraticConstraintSense = [];
+variabletype_original = interfacedata.variabletype;
+if any(variabletype_original) && all(variabletype_original < 3)
+    nonlinearMonoms = find(variabletype_original);
+    quadraticRows = any(F_struc(1:K.f + K.l,1 + nonlinearMonoms),2);
+    if any(quadraticRows)
+        quadraticRowIndices = find(quadraticRows);
+        quadraticconstraints = F_struc(quadraticRowIndices,:);
+        allConstraintSense = [repmat('E',K.f,1); repmat('L',K.l,1)];
+        quadraticConstraintSense = allConstraintSense(quadraticRows);
+        F_struc(quadraticRowIndices,:) = [];
+        numberOfQuadraticEqualities = nnz(quadraticRows(1:K.f));
+        K.f = K.f - numberOfQuadraticEqualities;
+        K.l = K.l - nnz(quadraticRows) + numberOfQuadraticEqualities;
+
+        F_struc(:,1 + nonlinearMonoms) = [];
+        c(nonlinearMonoms) = [];
+        interfacedata.Q(:,nonlinearMonoms) = [];
+        interfacedata.Q(nonlinearMonoms,:) = [];
+        lb(nonlinearMonoms) = [];
+        ub(nonlinearMonoms) = [];
+        if ~isempty(x0)
+            x0(nonlinearMonoms) = [];
+        end
+
+        retainedVariables = find(variabletype_original == 0);
+        [~,integer_variables] = ismember(integer_variables,retainedVariables);
+        [~,binary_variables] = ismember(binary_variables,retainedVariables);
+        [~,semicont_variables] = ismember(semicont_variables,retainedVariables);
+        n = length(c);
+    end
+end
+
 nlindim = K.f + K.l;
 if ~isempty(K.q) && any(K.q)
     nsocdim = sum(K.q); % Standard quadratic cone only
@@ -139,6 +176,35 @@ model.vtype = VARTYPE;
 model.lhs   = LHS;
 model.rhs   = RHS;
 
+if ~isempty(quadraticconstraints)
+    retainedVariables = find(variabletype_original == 0);
+    oldToRetained = zeros(1,length(variabletype_original));
+    oldToRetained(retainedVariables) = 1:length(retainedVariables);
+    monomials = find(variabletype_original > 0);
+    monomialRows = zeros(length(monomials),1);
+    monomialCols = zeros(length(monomials),1);
+    for i = 1:length(monomials)
+        variables = find(interfacedata.monomtable(monomials(i),:));
+        if length(variables) == 1
+            variables = [variables variables];
+        end
+        monomialRows(i) = oldToRetained(variables(1));
+        monomialCols(i) = oldToRetained(variables(2));
+    end
+
+    for i = 1:size(quadraticconstraints,1)
+        row = quadraticconstraints(i,2:end);
+        quadraticCoefficients = row(monomials);
+        usedMonomials = find(quadraticCoefficients);
+        model.quadcon(i).Qrow = monomialRows(usedMonomials)';
+        model.quadcon(i).Qcol = monomialCols(usedMonomials)';
+        model.quadcon(i).Qval = full(-quadraticCoefficients(usedMonomials));
+        model.quadcon(i).q = sparse(-row(retainedVariables)');
+        model.quadcon(i).sense = quadraticConstraintSense(i);
+        model.quadcon(i).rhs = full(quadraticconstraints(i,1));
+    end
+end
+
 if ~isempty(x0)
     model.start = x0;
 end
@@ -214,6 +280,9 @@ if ~isempty(K.sos.type)
 end
 
 model.params = interfacedata.options.copt;
+if ~isempty(quadraticconstraints)
+    model.params.NonConvex = 1;
+end
 if interfacedata.options.verbose == 0
     model.params.Logging = 0;
 else

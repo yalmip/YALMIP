@@ -1,6 +1,7 @@
 function output = callcopt(interfacedata)
 % Number of variables in original model
 numvars = length(interfacedata.c);
+linearVariables = interfacedata.variabletype == 0;
 
 % Convert bounded variables to constraints when SDP cones exist
 if ~isempty(interfacedata.K.s) && any(interfacedata.K.s)
@@ -81,7 +82,12 @@ if isfield(solution, 'rowmap')
     end
 else
     if isfield(solution, 'x')
-        x = solution.x(1:numvars);
+        if isfield(model, 'quadcon')
+            x = zeros(numvars, 1);
+            x(linearVariables) = solution.x(1:nnz(linearVariables));
+        else
+            x = solution.x(1:numvars);
+        end
     else
         x = zeros(numvars, 1);
     end
