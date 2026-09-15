@@ -130,7 +130,7 @@ else
     model.A = sparse(A);
 end
 model.obj   = full(c);
-if any(interfacedata.Q)
+if nnz(interfacedata.Q)
     model.Q     = interfacedata.Q;
 end
 model.lb    = LB;
@@ -192,7 +192,7 @@ if nexpdim > 0
 end
 
 if nsocdim > 0 || nexpdim > 0
-    if any(interfacedata.Q)
+    if nnz(interfacedata.Q)
         model.Q(length(model.obj),length(model.obj)) = 0;
     end
     if ~isempty(x0)
