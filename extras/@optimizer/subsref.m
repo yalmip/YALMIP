@@ -261,6 +261,9 @@ elseif isequal(subs.type,'{}')
             self.model.parameterIndex = currentParametricIndex;
             self = optimizer_precalc(self);                 
             [self.model,keptvariablesIndex] = eliminatevariables(self.model,currentParametricIndex,thisData(:),allParametricIndex);
+            if ~isempty(self.lastsolution)
+                self.lastsolution = self.lastsolution(keptvariablesIndex);
+            end
             
             % Update as new optimizer in remaining variables, remap
             % parameters to currently used variables                                   
