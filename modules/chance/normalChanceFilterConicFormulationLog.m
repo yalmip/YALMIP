@@ -32,7 +32,7 @@ if isa(gamma,'sdpvar')
     aa = -0.126076585404480;
     bb = 3.641618927421549e+02;
     cc = -2.889803452561948;
-    kk = 0.718561982271681;
+    kk = 0.718926287682575;
     dd = -0.065102814535832;
 
     logPhi_InverseApproximation = aa*lambertw(bb*gamma)+kk+cc*gamma+dd*y;

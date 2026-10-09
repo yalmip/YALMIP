@@ -29,9 +29,10 @@ sdpvar t z; % epigraph variable
 
 % approximating and power cone formulation
 if isa(gamma,'sdpvar')
-    aa = 0.640638383232296;
-    bb = 0.101239113003656;
-    cc = 2.687433928030412;
+
+    aa = 0.645708241402802;
+    bb = 0.102604637391149;
+    cc = 2.654917981124250;
 
     newConstraint = [norm([b-t,2*a]) <= b + t,
         t <= aa*z + cc*gamma,

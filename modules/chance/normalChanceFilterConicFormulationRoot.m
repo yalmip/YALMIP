@@ -33,8 +33,9 @@ if isa(gamma,'sdpvar')
     aa = -0.099181619811223;
     bb = 2.746525371530841e+03;
     cc = -1.305888804476780;
-    kk = 1.579829567439729;
+    kk = 1.581184622173645;
     dd = -0.043478545831448;
+
     rootPhi_Inverse = aa*lambertw(bb*gamma)+kk+cc*gamma+dd*y;
 
     newConstraint = [norm([b-a,2*t]',2) <= b+a,
