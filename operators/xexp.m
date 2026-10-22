@@ -12,7 +12,8 @@ switch class(varargin{1})
 
     case 'char'
         
-        operator = CreateBasicOperator('callback','convex');
+        operator = CreateBasicOperator('callback');
+        operator.convexity = @convexity;
         operator.derivative = @derivative;
         operator.range = [-1*exp(-1) inf];
         operator.domain = [-inf inf];
@@ -27,3 +28,12 @@ end
 
 function d = derivative(z)
 d = (1+z).*exp(z);
+
+function vexity = convexity(xL,xU)
+if xL >= -2
+    vexity = 'convex';
+elseif xU <= -2
+    vexity = 'concave';
+else
+    vexity = 'none';
+end

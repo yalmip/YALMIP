@@ -15,6 +15,7 @@ try
     if length(Y)==1
         if isinf(Y)
             y = zeros(X.dim);
+            return
         else
             y = X;
             y.basis = y.basis/Y;
@@ -29,13 +30,15 @@ try
     n = X.dim(1);
     m = X.dim(2);    
     if (n==1) & (m==1) % SPECIAL CODE FOR FREAKY MATLAB BUG        
-        y.basis = sparse(reshape(reshape(full(X.basis(:,1)),n,m)/Y,n*m,1));    
+        temp = reshape(full(X.basis(:,1)),n,m)/Y;
+        y.basis = sparse(temp(:));
         for i = 1:nv
             temp = reshape(full(X.basis(:,i+1)),n,m)/Y;
             y.basis(:,i+1) = sparse(temp(:));   
         end;
     else
-        y.basis = reshape(reshape(X.basis(:,1),n,m)/Y,n*m,1);    
+        temp = reshape(X.basis(:,1),n,m)/Y;
+        y.basis = temp(:);
         for i = 1:nv
             temp = reshape(X.basis(:,i+1),n,m)/Y;
             y.basis(:,i+1) = temp(:);   

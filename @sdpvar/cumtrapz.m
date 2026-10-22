@@ -2,7 +2,7 @@ function X=cumtrapz(X,I)
 %CUMTRAPZ (overloaded)
 
 if nargin == 1 && min(X.dim)==1
-    B = cumtrapz(X.basis);
+    B = cumtrapz(X.basis,1);
 else
     if nargin == 1
         I = find(X.dim>1,1);

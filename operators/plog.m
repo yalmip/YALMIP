@@ -60,7 +60,11 @@ z = x(2)/x(1);
 dp = [log(z)-1;1./z];
 
 function [L,U] = bounds(xL,xU)
-xU(isinf(xU)) = 1e12;
+if any(isinf(xU))
+    L = -inf;
+    U = inf;
+    return
+end
 x1 = xL(1)*log(xL(2)/xL(1));
 x2 = xU(1)*log(xU(2)/xU(1));
 x3 = xL(1)*log(xU(2)/xL(1));

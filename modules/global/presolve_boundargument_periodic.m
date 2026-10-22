@@ -20,7 +20,7 @@ if ~isempty(model.evalMap)
             if ~isinf(Q(k))                               
                     if nnz(model.monomtable(:,k)) == 1
                         % It is  ot used in any monomial
-                        if isempty(model.F_struc) || nnz(model.F_struc(:,k+1))==0
+                        if (isempty(model.F_struc) || nnz(model.F_struc(:,k+1))==0) && model.c(k)==0 && nnz(model.Q(k,:))==0 && nnz(model.Q(:,k))==0
                             % and not used in any constraint
                             % Hence, since variable is used nowhere except as
                             % argument in this periodic function, we can bound

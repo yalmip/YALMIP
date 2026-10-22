@@ -31,19 +31,14 @@ if xU-xL >= 2*pi
     L = -1;
     U = 1;
 else
-    xL = xL + pi/2;
-    xU = xU + pi/2;
-    n = floor(( (xL + xU)/2/(2*pi)));
-    xL = xL - n*2*pi;
-    xU = xU - n*2*pi;
-    yL = sin(xL);
-    yU = sin(xU);
+    yL = cos(xL);
+    yU = cos(xU);
     L = min([yL yU]);
     U = max([yL yU]);
-    if (xL<pi/2 & xU>pi/2) |  (xL<-3*pi/2 & xU>-3*pi/2)
+    if ceil(xL/(2*pi)) <= floor(xU/(2*pi))
         U = 1;
     end
-    if (xL < 3*pi/2 & xU > 3*pi/2) | (xL < -pi/2 & xU > -pi/2)
+    if ceil((xL-pi)/(2*pi)) <= floor((xU-pi)/(2*pi))
         L = -1;
     end
 end

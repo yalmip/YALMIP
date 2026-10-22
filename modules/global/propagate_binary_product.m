@@ -22,15 +22,16 @@ if p.feasible
         return
     end
     
-    if any(x1_true & x2_true & ~y_true) || any(y_true & ~(x1_true & x2_true))
-        for i = 1:length(p.binaryProduct)
+    if any(x1_true & x2_true & ~y_true) || any(y_true & ~(x1_true & x2_true)) || any((x1_false | x2_false) & ~y_false)
+        for i = 1:size(p.binaryProduct,1)
             % Convoluted code to avoid rare reference
             if x1_true(i)
                 if x2_true(i)
                     y = p.binaryProduct(i,1);
                     p.lb(y) = 1;
                 end
-            elseif (x1_false(i) || x2_false(i)) & ~y_false(i)
+            end
+            if (x1_false(i) || x2_false(i)) & ~y_false(i)
                 y = p.binaryProduct(i,1);
                 p.ub(y) = 0;
             end

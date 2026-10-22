@@ -35,6 +35,7 @@ if n*m==1
         var(i,1)=getvariables(x(i));
     end
     [i,j]=sort(var);
+    [~,j]=sort(j);
     dfdx = dfdx(1,j);
     return
     
@@ -50,6 +51,7 @@ else
         var(i,1)=getvariables(x(i));
     end
     [i,j]=sort(var);
+    [~,j]=sort(j);
     dfdx = dfdx(:,j);
 end
 

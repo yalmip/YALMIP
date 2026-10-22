@@ -9,9 +9,10 @@ if p.feasible && any(p.K.f)
     for i = 1:p.K.f
         if fix(p.F_struc(i,1)) == p.F_struc(i,1)
             s = find(p.F_struc(i,2:end));
-            if all(s == fix(s))
+            coefficients = p.F_struc(i,1+s);
+            if all(coefficients == fix(coefficients))
                 y = ismember(s,integers);
-                if nnz(y) == length(s)-1
+                if nnz(y) == length(s)-1 && abs(coefficients(~y)) == 1
                     newinteger = s(y == 0);
                     implied_integers = [implied_integers newinteger];
                     integers = [integers newinteger];

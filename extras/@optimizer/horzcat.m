@@ -64,9 +64,9 @@ if any(model2.K.f)
     index = top2:top2 + model2.K.f-1;
     index = find(~ismember(model2.hash.f,model1.hash.f));
     if ~isempty(index)
-        Data = [Data;model2.F_struc(top2:top2 + model2.K.f-1,:)];
+        Data = [Data;model2.F_struc(top2+index-1,:)];
         K.f = K.f + length(index);
-        hash.f = [hash.f;model2.hash.f(index)]
+        hash.f = [hash.f;model2.hash.f(index)];
     end
 end
 top1 = top1 + model1.K.f;
@@ -98,9 +98,8 @@ top1 = top1 + sum(model1.K.q);
 K.q = model1.K.q;
 
 if any(model2.K.q)        
-    keep = find(~ismember(model2.hash.q,model1.hash.q));
-    if any(keep)
-        for i = 1:length(keep)
+    keep = ~ismember(model2.hash.q,model1.hash.q);
+    for i = 1:length(keep)
         if keep(i)
             Data = [Data;model2.F_struc(top2:top2 + model2.K.q(i)-1,:)];
             K.q = [K.q model2.K.q(i)];
@@ -109,9 +108,6 @@ if any(model2.K.q)
         else
             top2 = top2 + model2.K.q(i);
         end
-        end
-    else
-        top2 = top2 + sum(model2.K.q);
     end
 end
 
@@ -122,9 +118,8 @@ top1 = top1 + sum(model1.K.s.^2);
 K.s = model1.K.s;
 
 if any(model2.K.s)        
-    keep = find(~ismember(model2.hash.s,model1.hash.s));
-    if any(keep)
-        for i = 1:length(keep)
+    keep = ~ismember(model2.hash.s,model1.hash.s);
+    for i = 1:length(keep)
         if keep(i)
             Data = [Data;model2.F_struc(top2:top2 + model2.K.s(i)^2-1,:)];
             K.s = [K.s model2.K.s(i)];
@@ -133,9 +128,6 @@ if any(model2.K.s)
         else
             top2 = top2 + model2.K.s(i)^2;
         end
-        end
-    else
-        top2 = top2 + sum(model2.K.s.^2);
     end
 end
 
@@ -174,7 +166,7 @@ end
 if any(model.K.s)
     for i = 1:length(model.K.s)
         model.hash.s(i) = hashcon(1:model.K.s(i)^2)'*(model.F_struc(top:top+model.K.s(i)^2-1,:)*hashvar);
-        top = top + model.K.s(i);
+        top = top + model.K.s(i)^2;
     end
 else
     model.hash.s = [];

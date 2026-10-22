@@ -26,8 +26,8 @@ end
 
 function [L,U] = bounds(xL,xU);
 pass0 = xU > 0 & xL < 0;
-low   = min([xL xU],[],2).^2;
-high  = max([xL xU],[],2).^2;
+low   = min([xL.^2 xU.^2],[],2);
+high  = max([xL.^2 xU.^2],[],2);
 low(pass0) = 0;
 L = sum(low);
 U = sum(high);

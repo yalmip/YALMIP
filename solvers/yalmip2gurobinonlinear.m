@@ -26,7 +26,7 @@ if ~isempty(high_monoms)
             [~,vars,powers] = find(monoms);
             % Detect case such as y^5*x^6, introduce new variable z = y^5
             nonlinear = find(powers ~=1);
-            for j = 1:length(nonlinear)
+            for j = nonlinear(:)'
                 % Introduce a new linear variable z to mimic this power
                 n = size(interfacedata.monomtable,1)+1;
                 interfacedata.monomtable(i,vars(j)) = 0;

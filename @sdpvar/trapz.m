@@ -16,7 +16,8 @@ try
             % Standard case
 
             temp = trapz(reshape(X.basis(:,1),n,m));
-            Y.basis =  kron(speye(m),ones(1,n))*X.basis;
+            weights = [0.5 ones(1,n-2) 0.5];
+            Y.basis = kron(speye(m),weights)*X.basis;
 
         end
     else

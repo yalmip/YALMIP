@@ -16,13 +16,18 @@ switch class(varargin{1})
             switch varargin{2} 
                 case 'descend'
                     % Sort and then reverse answer
+                    if size(varargin{1},1) == 1
+                        reverse = @fliplr;
+                    else
+                        reverse = @flipud;
+                    end
                     if nargout > 1
                         [y,loc] = sort(varargin{1});
-                        varargout{1} = flipud(fliplr(y));
-                        varargout{2} = flipud(fliplr(loc));
+                        varargout{1} = reverse(y);
+                        varargout{2} = reverse(loc);
                     else                    
                         s = sort(varargin{1});
-                        varargout{1} = flipud(fliplr(s));
+                        varargout{1} = reverse(s);
                     end
                     return
                 case 'ascend'

@@ -49,6 +49,14 @@ end
 
 function [L,U] = bounds(xL,xU)
 
+% A denominator interval containing a pole has no finite corner bound.
+% Include the small shift used by the numerical callback as well.
+if xL(2) <= 0 && xU(2) >= -sqrt(eps)
+    L = -inf;
+    U = inf;
+    return
+end
+
 % Derive bounds on x1/x2
 z = [xL(1)./xL(2) xU(1)./xL(2) xL(1)./xU(2) xU(1)./xU(2)];
 fL = min(z);

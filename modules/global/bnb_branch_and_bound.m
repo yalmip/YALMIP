@@ -1079,9 +1079,9 @@ node1.deltafixed = p1.deltafixed;
 function [p,stack] = simpleConvexDiagonalQuadraticPropagation(p,upper,stack)
 if ~isinf(upper) && isempty(p.evalMap) && ~any(p.c) && nnz(p.Q-diag(diag(p.Q)))==0
     d = diag(p.Q);
-    if all(d)>=0
+    if all(d >= 0) && upper >= p.f
         i = find(d);
-        U = sqrt(upper./d(i));
+        U = sqrt((upper-p.f)./d(i));
         p.lb(i) = max(p.lb(i),-U);
         p.ub(i) = min(p.ub(i),U);
         p = update_integer_bounds(p);

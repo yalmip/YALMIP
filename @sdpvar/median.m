@@ -15,7 +15,7 @@ switch length(x)
     case 1
         varargout{1} = x;
     case 2
-        varargout{1} = sum(x);
+        varargout{1} = sum(x)/2;
     otherwise
         y = sort(x);
         if even(length(x))

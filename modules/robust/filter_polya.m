@@ -53,7 +53,7 @@ if any(sum(mt(Fvars,wvars),2)>1)
                         if isa(ci,'sdpvar')
                             F_polya = F_polya + (ci >= 0);
                         else
-                            if any(ci)<0
+                            if any(ci < 0)
                                 error('Trivially infeasible. there are unparameterized negative coefficients in Polya relaxation')
                             end
                             %                        disp('Whoops, take care of this silly case in filter_polya...')

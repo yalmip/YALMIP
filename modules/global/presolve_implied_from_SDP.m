@@ -43,6 +43,10 @@ if p.feasible && nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
     % TODO: Check for possibility of different signs etc, currently only
     % implemented for typical test cases
     candidates = find(~any(p.F_struc(1:p.K.f + p.K.l,2:end),1));
+    % This fixing rule uses only the linear objective and affine SDP data.
+    if nnz(p.Q) || any(p.variabletype) || ~isempty(p.evalMap)
+        candidates = [];
+    end
     fixable = nan(1,length(candidates));   
     
     top = startofSDPCone(p.K);
@@ -69,10 +73,8 @@ if p.feasible && nnz(p.K.q)==0 && nnz(p.K.e)==0 && nnz(p.K.s) > 0
     for i = (find(~isnan(fixable)))
         if fixable(i) == 1 && ~isinf(p.ub(candidates((i))))
             p.lb(candidates((i))) = p.ub(candidates((i)));
-            p.F_struc(4,1+candidates((i))) =  0;
         elseif fixable(i) == -1 && ~isinf(p.lb(candidates((i))))
             p.ub(candidates(i)) = p.lb(candidates((i)));
-            p.F_struc(4,1+candidates(i))=  0;
         end
     end
     % Make sure we didn't add redundants

@@ -2,7 +2,7 @@ function X=cumsum(X,I)
 %CUMSUM (overloaded)
 
 if nargin == 1 & min(X.dim)==1
-    X.basis = cumsum(X.basis);     
+    X.basis = cumsum(X.basis,1);
 else
     if nargin == 1
         I = min(find(X.dim>1));
@@ -12,7 +12,7 @@ else
     end    
     if I == 2
         X = (tril(ones(size(X,2)))*X')';
-    else
+    elseif I == 1
         X = tril(ones(size(X,1)))*X;
     end
 end

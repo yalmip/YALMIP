@@ -55,13 +55,13 @@ if ~isa(varargin{1},'char') && any(strcmp(cellfun(@class,varargin,'UniformOutput
                             operator.definiteness = varargin{reading};
                             reading = reading + 1;
                         case {'increasing','decreasing'}
-                            operator.monotinicity = varargin{reading};
+                            operator.monotonicity = varargin{reading};
                             reading = reading + 1;
                         case 'bounds'
                             operator.bounds  = varargin{reading+1};
                             reading = reading + 2;
                         case 'convexhull'
-                            operator.bound  = varargin{reading+1};
+                            operator.convexhull  = varargin{reading+1};
                             reading = reading + 2;
                         case 'stationary'
                             operator.stationary  = varargin{reading+1};

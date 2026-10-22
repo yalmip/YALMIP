@@ -59,11 +59,19 @@ switch class(varargin{1})
 end
 
 function [L,U] = bounds(xL,xU)
+if xL(1) <= 0 || any(~isfinite([xL(:);xU(:)]))
+    L = 0;
+    U = inf;
+    return
+end
 x1 = [xL(1);xL(2)];
 x2 = [xU(1);xL(2)];
 x3 = [xL(1);xU(2)];
 x4 = [xU(1);xU(2)];
-L = min([pexp(x1) pexp(x2) pexp(x3) pexp(x4)]);
+% Increasing in x2; on its lower face the minimum is at x1 = x2,
+% or at the closest endpoint of the interval for x1.
+xmin = max(xL(1),min(xU(1),xL(2)));
+L = pexp([xmin;xL(2)]);
 U = max([pexp(x1) pexp(x2) pexp(x3) pexp(x4)]);
 
 function dp = derivative(x)

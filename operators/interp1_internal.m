@@ -104,8 +104,9 @@ else
 end
 
 function isconvex = isconvexdata(xi,yi)
-finterp = (yi(1:end-2) + yi(3:end))/2;
-if all(finterp >= yi(2:end-1))
+spacing = diff(xi(:));
+slopes = diff(yi(:))./spacing;
+if all(diff(slopes)./spacing(1:end-1) >= 0)
     isconvex = 1;
 else
     isconvex = 0;
@@ -166,7 +167,7 @@ yout = yin(keep);
 
 
 function [mono,def] = classifyData(yi);
-if all(diff(yi)) >= 0
+if all(diff(yi) >= 0)
     mono = 'increasing';
 elseif all(diff(yi) <= 0)
     mono = 'decreasing';

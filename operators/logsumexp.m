@@ -16,13 +16,13 @@ switch class(varargin{1})
 
     case 'double'
         x = varargin{1};
-        temp = sum(exp(x));
-        if isinf(temp)
-            % Saturated as something was close to infinite
-            varargout{1} = max(x);
-        else
+        if isempty(x)
             varargout{1} = log(sum(exp(x)));
-        end      
+            return
+        end
+        shift = max(x);
+        shift(~isfinite(shift)) = 0;
+        varargout{1} = shift + log(sum(exp(bsxfun(@minus,x,shift))));
         
     case 'sdpvar'
 
@@ -56,23 +56,21 @@ end
 
 function df=derivative(x)
 
-df = exp(x)./(sum(exp(x)));
-if any(isnan(df))
-    df(isnan(df)) = 1;
-end
+z = exp(bsxfun(@minus,x,max(x)));
+df = bsxfun(@rdivide,z,sum(z));
 function [L, U] = bounds(xL,xU)
 
-L = log(sum(exp(xL)));
-U = log(sum(exp(xU)));
+L = logsumexp(xL);
+U = logsumexp(xU);
 
 function [Ax, Ay, b, K] = convexhull(xL,xU)
 % Ax*x + Ay*y < b
 % Use lower cut from center point
 c = (xL + xU)/2;
-df = exp(c)./sum(exp(c));
+df = derivative(c);
 Ax = df';
 Ay = -1;
-b = -(log(sum(exp(c)))-df'*c);
+b = -(logsumexp(c)-df'*c);
 
 % Add simple Fourier-Motzkins projections of disaggregated model
 % log(sum(q)) upper bounded by y <= k*sum(q)+c, 

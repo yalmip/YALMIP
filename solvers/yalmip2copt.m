@@ -109,8 +109,8 @@ if size(F_struc, 1) > 0
     LHS = -inf(length(RHS), 1);
 else
     A   = sparse(ones(1, length(c)));
-    RHS = +inf(length(c), 1);
-    LHS = -inf(length(c), 1);
+    RHS = inf;
+    LHS = -inf;
 end
 
 if K.f > 0
@@ -145,11 +145,7 @@ end
 
 norigcol = size(F_struc, 2) - 1;
 if nsocdim > 0
-    if nlindim > 0
-        model.A = [model.A, [spalloc(nlindim, nsocdim, 0); speye(nsocdim)]];
-    else
-        model.A = [model.A, speye(nsocdim)];
-    end
+    model.A = [model.A, [spalloc(nlindim, nsocdim, 0); speye(nsocdim); spalloc(nexpdim, nsocdim, 0)]];
     model.obj   = [model.obj; zeros(nsocdim, 1)];
     model.lb    = [model.lb; -inf(nsocdim, 1)];
     model.ub    = [model.ub; +inf(nsocdim, 1)];

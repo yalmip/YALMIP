@@ -2,6 +2,10 @@ function product=prod(X,dimen)
 %PROD (overloaded)
 
 if nargin == 2
+    if dimen > 2 || size(X,dimen) == 1
+        product = X;
+        return
+    end
     if dimen == 2
         product = prod(X')';
         return
@@ -15,7 +19,10 @@ if min(size(X))==1
     base = getbase(X);
     for i = 1:size(X.basis,1)
         si = norm(full(base(i,:)));
-        if si<1
+        if si == 0
+            product = 0;
+            return
+        elseif si<1
             scale = scale * si;
             base(i,:) = base(i,:)/si;
         end
@@ -29,7 +36,7 @@ if X.dim(1)==1 | X.dim(2)==1
         pick = cell(1,1);pick{1}={i};
         product = product*subsref(X,struct('type','()','subs',pick));
     end
-    product.basis = product.basis*scale;    
+    product = product*scale;
 else
     vecProd = [];
     top = 1;
@@ -42,8 +49,5 @@ else
         end
         vecProd = [vecProd;product];
     end
-    dim = X.dim;dim(1) = 1;
-    vecProd.dim = dim;
-    vecProd.basis = vecProd.basis*scale;
-    product = vecProd;
+    product = reshape(vecProd,1,X.dim(2))*scale;
 end

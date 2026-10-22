@@ -136,8 +136,9 @@ switch class(varargin{3})
 end
 
 function isconvex = isconvexdata(xi,yi)
-finterp = (yi(1:end-2) + yi(3:end))/2;
-if all(finterp >= yi(2:end-1))
+spacing = diff(xi(:));
+slopes = diff(yi(:))./spacing;
+if all(diff(slopes)./spacing(1:end-1) >= 0)
     isconvex = 1;
 else
     isconvex = 0;

@@ -88,8 +88,9 @@ else
     A = bA(:,2:end);
     S = zeros(0,length(di));
     for i = 1:length(b)
-        j = findrows(abs(A),abs(A(i,:)));
+        j = findrows(A,-A(i,:));
         j = j(j > i);
+        j = j(b(i)+b(j) <= 0);
         if length(j)==1
             S(end+1,[i j]) = 1;
         end

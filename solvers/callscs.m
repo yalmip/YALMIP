@@ -86,7 +86,7 @@ switch info.status
      case 'Unbounded'
         problem = 2;    
     otherwise
-        status = 9;
+        problem = 9;
 end
 
 % Save ALL data sent to solver
@@ -111,10 +111,10 @@ output = createOutputStructure(Primal,Dual,[],problem,model.solver.tag,solverinp
 
 function [model,x0,H] = removeequalitiesinmodel(model)
 
-if any(model.K.f)
+if any(model.K.z)
     % Extract the inequalities
-    A_equ = model.F_struc(1:model.K.f,2:end);
-    b_equ = -model.F_struc(1:model.K.f,1);
+    A_equ = model.F_struc(1:model.K.z,2:end);
+    b_equ = -model.F_struc(1:model.K.z,1);
     
     if 1
         % Find a basis for the column space of A_equ
@@ -139,8 +139,8 @@ if any(model.K.f)
     model.c = H'*model.c;
     model.F_struc(:,1) = model.F_struc(:,1) + model.F_struc(:,2:end)*x0;
     model.F_struc = [model.F_struc(:,1) model.F_struc(:,2:end)*H];
-    model.F_struc(1:model.K.f,:)=[];
-    model.K.f = 0;
+    model.F_struc(1:model.K.z,:)=[];
+    model.K.z = 0;
 else
     H = speye(length(model.c));
     x0 = zeros(length(model.c),1);

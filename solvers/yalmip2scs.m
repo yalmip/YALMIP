@@ -15,10 +15,11 @@ param.verbose = interfacedata.options.verbose;
 
 %% Extract lower diagonal form for new SCS format
 if ~isempty(cones.s) && any(cones.s)
-    sdpA = data.A(1+cones.l + cones.z+sum(cones.q):end,:);
-    sdpb = data.b(1+cones.l + cones.z+sum(cones.q):end,:);
-    expA = data.A(end-3*cones.ep+1:end,:);
-    expb = data.b(end-3*cones.ep+1:end,:);
+    top = cones.l + cones.z + sum(cones.q);
+    expA = data.A(top+1:top+3*cones.ep,:);
+    expb = data.b(top+1:top+3*cones.ep,:);
+    sdpA = data.A(top+3*cones.ep+1:end,:);
+    sdpb = data.b(top+3*cones.ep+1:end,:);
     data.A = data.A(1:cones.l + cones.z+sum(cones.q),:);    
     data.b = data.b(1:cones.l + cones.z+sum(cones.q),:);
     top = 1;

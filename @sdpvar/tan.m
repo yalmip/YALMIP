@@ -22,9 +22,9 @@ end
 
 
 function [L,U] = bounds(xL,xU)
-n1 = fix((xL+pi/2)/(pi));
-n2 = fix((xU+pi/2)/(pi));
-if n1==n2
+n1 = ceil((xL-pi/2)/pi);
+n2 = floor((xU-pi/2)/pi);
+if n1 > n2
     L = tan(xL);
     U = tan(xU);
 else

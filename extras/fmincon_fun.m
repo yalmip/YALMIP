@@ -42,7 +42,7 @@ elseif model.SimpleNonlinearObjective
     df = [];
     n = length(model.c);
     linearindicies = model.linearindicies;
-    mtNonlinear = model.monomtable(model.nonlinearindicies,:);
+    mtNonlinear = model.monomtable(model.nonlinearindicies,linearindicies);
     xevaled = zeros(1,n);
     xevaled(linearindicies) = x;
     [the_linearindex,the_nonlinearindex,the_powers] = find(mtNonlinear');
@@ -54,8 +54,8 @@ elseif model.SimpleNonlinearObjective
     xpower_all = x(the_linearindex).^the_powers;
     can_nan_occur = any(model.variabletype > 3);
     for i = 1:length(linearindicies)
-        if requested(i)            
-            oldpower = mtNonlinear(:,linearindicies(i));
+        if requested(linearindicies(i))
+            oldpower = mtNonlinear(:,i);
                         
             xpower = xpower_all;
             currentdifferentiation = find((the_linearindex == i));
