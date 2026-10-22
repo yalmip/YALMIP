@@ -8,7 +8,7 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('callback');
-        operator.derivative = @(x)(-1./(x.*sqrt(x.^2-1)));
+        operator.derivative = @(x)(-1./(abs(x).*sqrt(x.^2-1)));
         operator.forbidden = [-1 1];
         operator.inflection = [-inf -1 1 1];
         operator.range = [-pi/2 pi/2];

@@ -9,7 +9,7 @@ switch class(varargin{1})
 
         operator = CreateBasicOperator('callback');        
         operator.bounds = @bounds;
-        operator.derivative = @(x)(1./(x.*(x.^2-1).^0.5));
+        operator.derivative = @(x)(1./(abs(x).*sqrt(x.^2-1)));
 
         varargout{1} = [];
         varargout{2} = operator;

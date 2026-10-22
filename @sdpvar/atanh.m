@@ -8,7 +8,7 @@ switch class(varargin{1})
     case 'char'
 
         operator = CreateBasicOperator('increasing','callback');                                    
-        operator.derivative = @(x)((1 + x.^2).^-0.5);
+        operator.derivative = @(x)(1./(1-x.^2));
         operator.inflection = [-inf -1 0 1];
         operator.domain = [-1 1];           
             
