@@ -18,7 +18,7 @@ objective = -(-(8.9248e-5*x1-0.0218343*sqr(x1)+0.998266*power(x1,3)-1.6995*power
 F = ([]);
 F=[F,0<=x1<=10];
 
-% Solve problem
-sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'))
+% The objective assertion below is tighter than BMIBNB's default 1% gap.
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.relgaptol',1e-5));
 testCase.assertTrue(sol.problem == 0)
 testCase.assertTrue(abs(value(objective)- -4.43672e2) <= 1e-2)
