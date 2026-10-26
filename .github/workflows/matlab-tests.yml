@@ -1,0 +1,119 @@
+name: MATLAB test job
+
+on:
+  workflow_call:
+    inputs:
+      group:
+        description: Name used in the job summary and diagnostic artifact
+        required: true
+        type: string
+      folders:
+        description: Semicolon-separated test folders
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: ${{ inputs.group }} (R2024a)
+    # R2024a supports Ubuntu 22.04; pin the image to avoid ubuntu-latest drift.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    env:
+      MATLAB_RELEASE: R2024a
+      CI_GROUP: ${{ inputs.group }}
+    steps:
+      - name: Check out YALMIP
+        id: checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Prepare diagnostics
+        id: diagnostics
+        shell: bash
+        run: |
+          mkdir -p ci-results
+          {
+            echo "MATLAB: $MATLAB_RELEASE"
+            echo "Runner: $RUNNER_OS / $RUNNER_ARCH"
+            uname -a
+            git rev-parse HEAD
+          } > ci-results/environment.txt
+
+      - name: Check CI reporting
+        id: reporting
+        run: node .github/scripts/ci-summary.test.cjs
+
+      - name: Check out SeDuMi
+        id: sedumi
+        uses: actions/checkout@v7
+        with:
+          repository: sqlp/sedumi
+          path: sedumi
+          persist-credentials: false
+
+      - name: Record SeDuMi revision
+        id: revision
+        run: git -C sedumi rev-parse HEAD >> ci-results/environment.txt
+
+      - name: Install MATLAB and Optimization Toolbox
+        id: setup
+        uses: matlab-actions/setup-matlab@v3
+        with:
+          release: ${{ env.MATLAB_RELEASE }}
+          products: Optimization_Toolbox
+          cache: true
+
+      - name: Check MATLAB startup and toolbox license
+        id: preflight
+        timeout-minutes: 5
+        uses: matlab-actions/run-command@v3
+        with:
+          startup-options: -logfile ${{ github.workspace }}/ci-results/preflight.log
+          command: >-
+            disp(version); ver;
+            [ok, message] = license('checkout', 'Optimization_Toolbox');
+            assert(ok, 'YALMIP:CI:License', '%s', message);
+            assert(exist('fmincon', 'file') == 2, 'Optimization Toolbox is not installed');
+            disp('MATLAB startup and Optimization Toolbox license OK');
+
+      - name: Build SeDuMi
+        id: build
+        timeout-minutes: 15
+        uses: matlab-actions/run-command@v3
+        with:
+          startup-options: -logfile ${{ github.workspace }}/ci-results/sedumi.log
+          command: cd('sedumi'); install_sedumi('-rebuild');
+
+      - name: Run tests
+        id: tests
+        uses: matlab-actions/run-tests@v3
+        with:
+          source-folder: .
+          select-by-folder: ${{ inputs.folders }}
+          startup-options: -logfile ${{ github.workspace }}/ci-results/tests.log
+          test-results-junit: ci-results/tests.xml
+          output-detail: detailed
+          # Test details are useful; automatic coverage instrumentation is costly.
+          code-coverage-metrics: ''
+          generate-summary: true
+
+      - name: Upload logs and test results
+        id: artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.group }}-R2024a-attempt-${{ github.run_attempt }}
+          path: ci-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Explain job outcome
+        if: always()
+        env:
+          CI_STEPS: ${{ toJSON(steps) }}
+          CI_ARTIFACT_URL: ${{ steps.artifacts.outputs.artifact-url }}
+        run: node .github/scripts/ci-summary.cjs
