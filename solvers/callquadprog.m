@@ -53,14 +53,14 @@ if nnz(model.Q) == 0
     % cases. To avoid seeing this when we don't want the lambdas anyway, we
     % don't ask for it
     if options.saveduals
-        if isVersionRecent(interfacedata.solver.version,'2017.1')   
+        if ~verLessThan('matlab','9.2') % R2017a and later
             [x,fmin,flag,output,lambda] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.ops);
         else
             [x,fmin,flag,output,lambda] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0, model.ops);
         end
     else
         lambda = [];
-        if isVersionRecent(interfacedata.solver.version,'2017.1')   
+        if ~verLessThan('matlab','9.2') % R2017a and later
             [x,fmin,flag,output] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.ops);
         else
             [x,fmin,flag,output] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0, model.ops);

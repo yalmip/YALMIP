@@ -53,7 +53,8 @@ if options.savedebug
 end
 
 solvertime = tic;
-if isVersionRecent(interfacedata.solver.version,'2017.1')   
+% The LINPROG signature depends on MATLAB, not on the caller's solver tag.
+if ~verLessThan('matlab','9.2') % R2017a and later
     [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, options.linprog);
 else
     [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0, options.linprog);

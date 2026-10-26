@@ -50,9 +50,11 @@ if p.options.bmibnb.roottight & p.feasible
     end
     if all(p.K.q == 0) & all(p.K.e == 0) & all(p.K.s == 0) & all(p.K.r == 0)
         lowersolver = eval(['@' p.solver.lpcall]);
+        selectedSolver = p.solver.lpsolver;
         we_are_using_lower = 0;
     else
         lowersolver = eval(['@' p.solver.lowercall]);
+        selectedSolver = p.solver.lowersolver;
         we_are_using_lower = 1;
     end
 
@@ -75,7 +77,9 @@ if p.options.bmibnb.roottight & p.feasible
         if p.lb(j) < p.ub(j) & (ismember(j,p.branch_variables) | (p.options.bmibnb.roottight == 2))
             p.c = eyev(length(p.c),j);
             start = tic;
-            p_temp = removenonlinearity(p);p_temp.solver.version = p_temp.solver.lowersolver.version;
+            p_temp = removenonlinearity(p);
+            p_temp.solver.version = selectedSolver.version;
+            p_temp.solver.tag = selectedSolver.tag;
             output = feval(lowersolver,p_temp);
             if we_are_using_lower
                 p.counter.lowersolved = p.counter.lowersolved + 1;
@@ -93,7 +97,9 @@ if p.options.bmibnb.roottight & p.feasible
                 p.feasible = 0;
             elseif p.lb(j) < p.ub(j) % We might have updated lb
                 p.c = -eyev(length(p.c),j);
-                p_temp = removenonlinearity(p);p_temp.solver.version = p_temp.solver.lowersolver.version;
+                p_temp = removenonlinearity(p);
+                p_temp.solver.version = selectedSolver.version;
+                p_temp.solver.tag = selectedSolver.tag;
                 output = feval(lowersolver,p_temp);
                 if we_are_using_lower
                     p.counter.lowersolved = p.counter.lowersolved + 1;

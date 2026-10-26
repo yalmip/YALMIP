@@ -11,8 +11,10 @@ if ~p.options.bmibnb.lpreduce | ((size(p.lpcuts,1)==0) & (any(p.lb(p.linears)<-1
 else
     try
         [p,p.feasible,seen_x] =  boxreduce(p,upper,lower,lpsolver,p.options,xmin);
-    catch
-        % LINPROG easiy crashes in poorly constrained cases
+    catch err
+        % LP tightening is optional, but a solver/interface failure must be visible.
+        warning('YALMIP:BMIBNB:LPPropagationFailed', ...
+            'LP bound propagation skipped: %s',err.message);
     end
 end
 if ~isequal(LU,[p.lb p.ub])

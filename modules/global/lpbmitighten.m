@@ -107,7 +107,10 @@ while feasible & j<=length(jj)
     i = p_test.linears(jj(j));
     if abs(p.ub(i)-p.lb(i)>p.options.bmibnb.vartol) & improvethese(i)    
         p_test.c = eyev(length(p_test.c),i);        
-        output = feval(lpsolver,removenonlinearity(p_test));        
+        p_lp = removenonlinearity(p_test);
+        p_lp.solver.version = p.solver.lpsolver.version;
+        p_lp.solver.tag = p.solver.lpsolver.tag;
+        output = feval(lpsolver,p_lp);
         p.counter.lpsolved = p.counter.lpsolved + 1;
         if output.problem == 0 | output.problem == 2 | output.problem == 12
             if output.problem == 0
@@ -118,7 +121,10 @@ while feasible & j<=length(jj)
                 end
             end
             p_test.c = -p_test.c;          
-            output = feval(lpsolver,removenonlinearity(p_test));   
+            p_lp = removenonlinearity(p_test);
+            p_lp.solver.version = p.solver.lpsolver.version;
+            p_lp.solver.tag = p.solver.lpsolver.tag;
+            output = feval(lpsolver,p_lp);
             p.counter.lpsolved = p.counter.lpsolved + 1;
             if output.problem == 0
                 seen_x{end+1} = output.Primal;
