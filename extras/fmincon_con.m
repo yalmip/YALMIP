@@ -79,18 +79,23 @@ end
 % Append SDP cones (eigenvalues)
 if any(model.K.s)
     top = startofSDPCone(model.K);
+    invariantSpectralAlgorithm = isInvariantSpectralAlgorithm(model.options.slayer.algorithm);
     for i = 1:length(model.K.s)
         n = model.K.s(i);
         X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
         X = full(reshape(X,n,n));
-        [eigenvectors,eigenvalues] = eig(X);
-        eigenvalues = diag(eigenvalues);       
-        if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
-            eigenvalues = cumsum(eigenvalues);
+        if invariantSpectralAlgorithm
+            blockg = sdpLayerProjectorOracle(X,[],model.options.slayer.algorithm,sdpLayer.n(i),model.options.slayer.clustertol,model.options.slayer.p);
+            g = [g;blockg];
+        else
+            [eigenvectors,eigenvalues] = eig(X);
+            eigenvalues = diag(eigenvalues);
+            if strcmpi(model.options.slayer.algorithm,'convex') || isequal(model.options.slayer.algorithm,1)
+                eigenvalues = cumsum(eigenvalues);
+            end
+            % These will reordered later
+            g = [g;-eigenvalues(1:sdpLayer.n(i))];
         end
-        % These will reordered later
-        g = [g;-eigenvalues(1:sdpLayer.n(i))];
-        %g = [g;-v(1:min(n,sdpLayer.n))];FX
         top = top + n^2;
     end
 end
@@ -316,6 +321,14 @@ for i = 1:length(model.K.s)
     n = model.K.s(i);
     X = model.F_struc(top:top+n^2-1,:)*[1;xevaled];
     X = full(reshape(X,n,n));
+    if isInvariantSpectralAlgorithm(model.options.slayer.algorithm)
+        [~,blockdg] = sdpLayerProjectorOracle(X,B(top:top+n^2-1,:),model.options.slayer.algorithm,sdpLayer.n(i),model.options.slayer.clustertol,model.options.slayer.p);
+        sdpLayer.oldGradient{i} = [];
+        sdpLayer.reordering{i} = [];
+        newF = [newF;-blockdg];
+        top = top + n^2;
+        continue
+    end
     [eigenvectors,eigenvalues] = eig(X);
     eigenvalues = diag(eigenvalues);
    
@@ -511,3 +524,6 @@ for i = 2:n
         clusters{current_cluster} = [i];
     end
 end
+
+function yes = isInvariantSpectralAlgorithm(algorithm)
+yes = ischar(algorithm) && any(strcmpi(algorithm,{'projector','projector-multi','signed-distance','signed-distance-multi'}));

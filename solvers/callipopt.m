@@ -33,7 +33,8 @@ showprogress('Calling IPOPT',model.options.showprogress);
 % but only expose the model in the original variables to the nonlinear
 % solver. 
 % model = compressLifted(model);
-cones = nnz(model.K.q)+model.K.e+nnz(model.K.p)+sum(model.K.s);
+sdpConstraintCount = sdpLayerConstraintCount(model);
+cones = nnz(model.K.q)+model.K.e+nnz(model.K.p)+sum(sdpConstraintCount);
 Fupp = [ repmat(0,length(model.bnonlinineq)+cones,1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
@@ -83,13 +84,7 @@ sdpLayer.eigenVectors = cell(length(model.K.s),1);
 sdpLayer.oldGradient = cell(length(model.K.s),1);
 sdpLayer.reordering  = cell(length(model.K.s),1);
 
-if isequal(model.options.slayer.m,inf)
-    sdpLayer.n  = model.K.s;
-elseif isequal(model.options.slayer.m,-1)
-    sdpLayer.n  = min(length(model.c),model.K.s);
-else
-    sdpLayer.n = repmat(model.options.slayer.m,1,length(model.K.s));
-end
+sdpLayer.n = sdpConstraintCount;
 
 funcs.objective = @(x)ipopt_callback_f(x,model);
 funcs.gradient = @(x)ipopt_callback_df(x,model);

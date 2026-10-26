@@ -16,12 +16,13 @@ if model.options.savedebug
 end
 showprogress('Calling filterSD',model.options.showprogress);
 
-cu = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
+sdpConstraintCount = sdpLayerConstraintCount(model);
+cu = [ repmat(0,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(sdpConstraintCount),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(0,length(model.b),1);
     repmat(0,length(model.beq),1)];
 
-cl = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(model.K.s),1);
+cl = [ repmat(-inf,length(model.bnonlinineq)+length(model.K.q)*(model.K.q(1)>0)+sum(sdpConstraintCount),1);
     repmat(0,length(model.bnonlineq),1);
     repmat(-inf,length(model.b),1);
     repmat(0,length(model.beq),1)];
@@ -41,13 +42,14 @@ global latest_G
 global latest_g
 global latest_xevaled
 global latest_x_xevaled
+global sdpLayer
 latest_G = [];
 latest_g = [];
 latest_x_f = [];
 latest_x_g = [];
 latest_xevaled = [];
 latest_x_xevaled = [];
-sdpLayer.n  = inf;
+sdpLayer.n  = sdpConstraintCount;
 sdpLayer.f = @(x)((x>=0).*(1*x) + (x<0).*(3*x));
 sdpLayer.df = @(x)((x>=0)*1 + (x<0)*3);
 sdpLayer.f = @(x)(x);

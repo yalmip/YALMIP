@@ -38,9 +38,10 @@ end
 if any(model.K.s)
     top = startofSDPCone(model.K);
     allQ = [];
+    nConstraints = sdpLayerConstraintCount(model);
     for i = 1:length(model.K.s)
         s = any(model.F_struc(top:top+model.K.s(i)^2-1,2:end));
-        allQ = [allQ;repmat(s,model.K.s(i),1)];
+        allQ = [allQ;repmat(s,nConstraints(i),1)];
         top = top + model.K.s(i)^2;
     end
     allA = [allA;allQ];
