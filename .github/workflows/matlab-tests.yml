@@ -59,12 +59,12 @@ jobs:
         id: revision
         run: git -C sedumi rev-parse HEAD >> ci-results/environment.txt
 
-      - name: Install MATLAB and Optimization Toolbox
+      - name: Install MATLAB and required toolboxes
         id: setup
         uses: matlab-actions/setup-matlab@v3
         with:
           release: ${{ env.MATLAB_RELEASE }}
-          products: Optimization_Toolbox
+          products: Optimization_Toolbox Control_System_Toolbox
           cache: true
 
       - name: Check MATLAB startup and toolbox license
@@ -78,7 +78,8 @@ jobs:
             [ok, message] = license('checkout', 'Optimization_Toolbox');
             assert(ok, 'YALMIP:CI:License', '%s', message);
             assert(exist('fmincon', 'file') == 2, 'Optimization Toolbox is not installed');
-            disp('MATLAB startup and Optimization Toolbox license OK');
+            assert(exist('lqr', 'file') == 2, 'Control System Toolbox is not installed');
+            disp('MATLAB startup and required toolboxes OK');
 
       - name: Build SeDuMi
         id: build

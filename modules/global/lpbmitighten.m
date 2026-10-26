@@ -134,12 +134,15 @@ while feasible & j<=length(jj)
                 end
             end
             if output.problem == 1
-                seen_x{end+1} = (p.lb + p.ub)/2;
-                feasible = 0;
+                % An LP infeasibility report during optional tightening is
+                % not sufficient to discard a node. Let the lower solver
+                % decide feasibility using the full relaxation.
+                break
             end
         end
         if output.problem == 1
-            feasible = 0;
+            % A numerically fragile LP can report a feasible box infeasible.
+            break
         end
     end
     j = j + 1;

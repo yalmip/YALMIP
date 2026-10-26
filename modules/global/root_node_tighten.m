@@ -94,7 +94,9 @@ if p.options.bmibnb.roottight & p.feasible
                 p = clean_bounds(p);
             end
             if output.problem == 1
-                p.feasible = 0;
+                % Root tightening is optional. The main lower solve will
+                % decide feasibility if this LP reports infeasible.
+                break
             elseif p.lb(j) < p.ub(j) % We might have updated lb
                 p.c = -eyev(length(p.c),j);
                 p_temp = removenonlinearity(p);
@@ -117,7 +119,7 @@ if p.options.bmibnb.roottight & p.feasible
                     p = clean_bounds(p);
                 end
                 if output.problem == 1
-                    p.feasible = 0;
+                    break
                 end
                 i = i+1;
             end
