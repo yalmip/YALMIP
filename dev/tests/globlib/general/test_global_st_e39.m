@@ -17,6 +17,6 @@ objective = -(-(-1/(0.1+power(x1-4,2)+power(x2-4,2))-1/(0.2+power(x1-1,2)+power(
 
 % Define constraints 
 F = ([]);
-% Solve problem
-sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb'));
+% This unconstrained model does not need root LP bound tightening.
+sol = optimize(F,objective,sdpsettings('bmibnb.uppersolver','fmincon','solver','bmibnb','bmibnb.roottight',0));
 testCase.assertTrue(sol.problem == 0)
