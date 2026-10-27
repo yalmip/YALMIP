@@ -1,8 +1,8 @@
 function upper_bound = upper_from_sdpcuts(p,sdpCuts,upper)
 % In models here we have a simple unit continuous objective
 % we can use sdp cuts collected on the way to quickly derive
-% a crude bound
-% If this bound is larger than upper bound, there is no
+% a crude lower bound
+% If this bound is larger than the incumbent upper bound, there is no
 % way the optimal solution is here, so we can give up
 
 % Fix given variables
@@ -22,32 +22,24 @@ c =  p.c(cont_var);
 upper_bound = -inf;
 % S(cont)*cont + rest >= 0
 for i = 1:size(S,1)
-    if S(i,1+cont_var)
+    if S(i,1+cont_var) && ...
+            isempty(setdiff(find(S(i,2:end)),[cont_var(:); p.binary_variables(:)]))
         % At most n_free of the remaining variables can be set to 1
         % Hence with q = sum of the k largest positive elements
         % S(1) + q + S(cont)*xc >= 0  
-        % Our cost is c*xc and thus we can derive an upper bound on
+        % Our cost is f+c*xc and thus we can derive a lower bound on
         % the objective
         if sign(c) == sign(S(i,1+cont_var))          
-            if n_free == 0
-                upper_bound = max(upper_bound,-c*(S(i,1))./S(i,1+cont_var));
-            else
-                row = S(i,1+p.binary_variables);
-                row = S(i,1+not_fixed);
-                if ~must_be_set
-                    % We only set variables to 1 when positive
-                    row = max(row,0);              
-                end              
-                try
-                    if isempty(row)
-                        upper_bound = max(upper_bound,-c*(S(i,1))./S(i,1+cont_var));              
-                    else
-                        upper_bound = max(upper_bound,-c*(S(i,1) + sumk(row,n_free))./S(i,1+cont_var));              
-                    end
-                catch
-                    1
-                end
+            row = full(S(i,1+not_fixed));
+            if ~must_be_set
+                % At most n_free binaries are set.
+                row = max(row,0);
             end
+            row = sort(row,'descend');
+            count = max(0,min(n_free,numel(row)));
+            max_binary_contribution = sum(row(1:count));
+            bound = p.f - c*(S(i,1) + max_binary_contribution)/S(i,1+cont_var);
+            upper_bound = max(upper_bound,bound);
         end
     end
     if upper_bound > upper

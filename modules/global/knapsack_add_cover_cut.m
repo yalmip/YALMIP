@@ -2,11 +2,16 @@ function cuts = knapsack_add_cover_cut(p,x,alg,upper)
 
 if ~isinf(upper) && p.LinearBinaryPositiveCost
     % We can add a global knapsack from c'*x <= upper
-    relevant_to_use = find(p.c & p.c <= upper);
-    p.knapsack.a{end+1} = p.c(relevant_to_use);
-    p.knapsack.b{end+1} = upper;
-    p.knapsack.variables{end+1} = relevant_to_use;
-    p.knapsack.type(end+1) = 0;    
+    objective_upper = upper - p.f;
+    if objective_upper >= 0
+        relevant_to_use = find(p.c & p.c <= objective_upper);
+        if ~isempty(relevant_to_use)
+            p.knapsack.a{end+1} = p.c(relevant_to_use);
+            p.knapsack.b{end+1} = objective_upper;
+            p.knapsack.variables{end+1} = relevant_to_use;
+            p.knapsack.type(end+1) = 0;
+        end
+    end
 end
 
 cuts = [];

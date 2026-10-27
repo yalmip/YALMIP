@@ -599,6 +599,10 @@ if any(p.K.s)
                 % Set continuous to best possible
                 row = row0;
                 row = fix_continuous_in_row_at_best_possible(row,p_original,inf);
+                used = find(row(2:end));
+                if isempty(used) || ~all(p_original.isbinary(used))
+                    continue
+                end
             
                 % Use general cover separator
                 % Eigenvalues are easily somewhat shaky numerically so

@@ -33,8 +33,18 @@ if (any(p.K.l) || any(p.K.f)) && ~isempty(binary)
        
         if all(Aineq_bin(i,:)>=0)
             [ix,jx,sx] = find(Aineq_bin(i,:));
+            % Only an integer-valued left-hand side permits rounding the RHS.
+            if all(sx == fix(sx))
+                if isequality && bineq_bin(i) ~= fix(bineq_bin(i))
+                    p.feasible = 0;
+                    continue
+                end
+                if ~isequality
+                    bineq_bin(i) = floor(bineq_bin(i));
+                end
+            end
             p.knapsack.a{end+1} = sx;
-            p.knapsack.b{end+1} = full(floor(bineq_bin(i)));
+            p.knapsack.b{end+1} = full(bineq_bin(i));
             p.knapsack.variables{end+1} = binary(jx);
             p.knapsack.hash(end+1) = sum(p.hash(binary(jx)));
             if all(sx == 1) && bineq_bin(i) == 1

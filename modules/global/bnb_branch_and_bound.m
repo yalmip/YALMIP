@@ -424,7 +424,7 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         if p.options.bnb.cuts && p.options.bnb.cut.knapsack.cover
             covers_knap1 = knapsack_add_cover_cut(p,output.Primal,'crowder',upper);
             covers_knap2 = knapsack_add_cover_cut(p,output.Primal,'gu',upper);
-            new_cuts = [covers_knap1;covers_knap1];
+            new_cuts = [covers_knap1;covers_knap2];
         end
         
         % Derive some cut from SDP cone and use to propagate
@@ -436,9 +436,10 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
             if p.options.bnb.cut.sdpknapsack.cover && p_sdpknapsackcovers.K.l > 0
                 new_cuts = [new_cuts;p_sdpknapsackcovers.F_struc];
             end
-            if p_binarycut.K.l>0
+            if p_sdpcuts.K.l > 0
                 sdpCuts = addInequality(sdpCuts,p_sdpcuts.F_struc);
-                
+            end
+            if p_binarycut.K.l>0
                 % Propgate implications from this cut on cardinality
                 % The cut is valid globally
                 poriginal = updateLowerCardinalityFromCut(poriginal,p_binarycut);
@@ -827,7 +828,7 @@ if nnz(p.Q) == 0 && isempty(p.evalMap) && nnz(p.variabletype)==0 && isequal(p.K.
         % obj = sum (c_i >=0)*xi xi binary
         % if any ci is larger than upper, ub has to be 0
         % if lb is 1, it is infeasible
-        r = find(p.c > upper);
+        r = find(p.c > upper - p.f);
         if ~isempty(r)
             for i = find(~isinf(stack.lower))
                 if any(stack.nodes{i}.lb(r))
@@ -1117,7 +1118,7 @@ if p.LinearBinaryPositiveCost && ~isinf(upper)
     probe = find(s.lb(s.binary_variables) < s.ub(s.binary_variables));
     probe = s.binary_variables(probe);
     % This is as low we can go if we keep everything at lb
-    trivialBound = sum(p.c.*s.lb);
+    trivialBound = p.f + sum(p.c.*s.lb);
     % Check what happens if we fix a variable to 1
     must_be_zero = [];
     for j = probe
@@ -1135,7 +1136,7 @@ elseif p.LinearBinaryNegativeCost && ~isinf(upper)
     probe = find(s.lb(s.binary_variables) < s.ub(s.binary_variables));
     probe = s.binary_variables(probe);
     % This is as low we can go if we keep everything at ub
-    trivialBound = sum(p.c.*s.ub);
+    trivialBound = p.f + sum(p.c.*s.ub);
     % Check what happens if we fix a variable to 0
     must_be_one = [];
     for j = probe
@@ -1163,13 +1164,14 @@ end
 function p = updateCardinalityFromUpper(p,upper)
 
 if p.LinearBinaryPositiveCost && ~isinf(upper)
+    objective_upper = upper - p.f;
     fixed_binary = find(p.lb==1 & p.isbinary(:));
     free_binary = find(p.lb==0 & p.ub==1 & p.isbinary(:));
     if ~isempty(free_binary)
         c = sort(p.c(free_binary),'ascend');
-        k = max(find(sum(p.c(fixed_binary))+cumsum(c) < upper));
+        k = max(find(sum(p.c(fixed_binary))+cumsum(c) < objective_upper));
         if isempty(k)
-            if sum(p.c(fixed_binary)) > upper
+            if sum(p.c(fixed_binary)) >= objective_upper
                 p.feasible=0;
                 return
             else
@@ -1178,6 +1180,10 @@ if p.LinearBinaryPositiveCost && ~isinf(upper)
         end
     else
         k=0;
+        if sum(p.c(fixed_binary)) >= objective_upper
+            p.feasible = 0;
+            return
+        end
     end
     p.binarycardinality.up = min(length(fixed_binary)+k,p.binarycardinality.up);
     
@@ -1186,7 +1192,7 @@ elseif p.LinearBinaryCost && ~isinf(upper)
     % Find those we actually can set
     c = p.c(p.ub == 1);
     c = c(find(c));
-    k = min(find(cumsum(sort(c,'ascend')) < upper));
+    k = min(find(cumsum(sort(c,'ascend')) < upper - p.f));
     p.binarycardinality.down = max(k,p.binarycardinality.down);
 end
 
@@ -1337,16 +1343,27 @@ if size(globalcuts,1) > 0
     if length(p.cutredundant)<size(globalcuts,1)
         p.cutredundant(size(globalcuts,1)) = 0;
     end
+    objective_norm = norm(p.c);
     for i = 1:size(globalcuts,1)
         a0 = globalcuts(i,1);
         a  = -globalcuts(i,2:end);
-        eff(i,1) = (a*x - a0)/norm(a);
-        isp(i,1) = nnz(p.c(p.binary_variables))/nnz(p.c);
-        obp(i,1) = abs(a*p.c/(norm(a)*norm(p.c)));
+        cut_norm = norm(a);
+        if cut_norm == 0
+            eff(i,1) = -inf;
+            isp(i,1) = 0;
+            obp(i,1) = 0;
+            continue
+        end
+        eff(i,1) = (a*x - a0)/cut_norm;
+        isp(i,1) = nnz(a(p.binary_variables))/nnz(a);
+        if objective_norm > 0
+            obp(i,1) = abs(a*p.c/(cut_norm*objective_norm));
+        else
+            obp(i,1) = 0;
+        end
     end
     meas = [eff isp obp]*[1/3;1/3;1/3];
     meas(eff<0) = -inf;
-    meas(obp<0.1) = -inf;
     meas(find(p.cutactivate))=-inf;
     for loops = 1:4
         if any(~isinf(meas))
@@ -1356,7 +1373,7 @@ if size(globalcuts,1) > 0
             a = globalcuts(j,2:end);
             for k = 1:size(globalcuts,1)
                 b = globalcuts(k,2:end);
-                if (abs(a*b')/(norm(a)*norm(b)))>0.9
+                if norm(a)>0 && norm(b)>0 && (abs(a*b')/(norm(a)*norm(b)))>0.9
                     meas(k) = -inf;
                 end
             end
