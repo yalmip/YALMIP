@@ -130,6 +130,8 @@ AddedCoverCuts = 0;
 globalcuts = [];
 p.cutactivate  = [];% This is global information
 p.cutredundant = [];% Local node copied to children
+gramAdaptiveCuts = false;
+gramPropagation = {};
 
 % Some simple trial solutions
 [x_min,upper] = root_node_heuristics(p,x_min,upper);
@@ -162,6 +164,10 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
     
     p_start = p;
     
+    if gramAdaptiveCuts
+        p.cutactivate = p.cutactivate(:);
+        p.cutredundant = p.cutredundant(:);
+    end
     p = cut_process(p,globalcuts);
     
     % We will use the change in fixed variables as
@@ -193,6 +199,81 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
             use = ~p.cutredundant(:) & p.cutactivate(:);
             p_node = addInequality(relaxed_p,globalcuts,use);           
             output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);            
+            if solved_nodes == 0 && output.problem == 0 && ...
+                    p.options.bnb.cuts && any(p.K.s) && ...
+                    all(isfinite(output.Primal)) && ...
+                    p.options.bnb.maxtime > 2 && ...
+                    any(abs(output.Primal(p.binary_variables)- ...
+                            round(output.Primal(p.binary_variables))) > p.options.bnb.inttol)
+                rootCost = computecost(p.f,p.c,p.Q,output.Primal,p);
+                if (isinf(upper) || rootCost < upper-1e-6*(1+abs(upper))) && ...
+                        (~p.IntegerCost || abs(rootCost-round(rootCost)) > 1e-4)
+                    % Strengthen this root SDP relaxation using certified
+                    % Gram cuts, then solve the same node with those cuts.
+                    gramTriangles = initGramTriangleSeparator(p);
+                    if ~isempty(gramTriangles)
+                        maxRounds = 1;
+                        if all(cellfun(@(block) size(block.pair,1) <= 30,gramTriangles))
+                            maxRounds = 3;
+                        end
+                        for cutRound = 1:maxRounds
+                            if etime(clock,bnbsolvertime) >= p.options.bnb.maxtime-0.1
+                                break
+                            end
+                            [triangleCuts,maxViolation] = separateGramTriangles(gramTriangles,output.Primal,numel(p.c));
+                            [cliqueCuts,cliqueViolation] = separateGramCliques(gramTriangles,output.Primal,numel(p.c),p.c);
+                            [turanCuts,turanViolation] = separateGramTuran(gramTriangles,output.Primal,numel(p.c),p.c);
+                            triangleCuts = [triangleCuts;cliqueCuts;turanCuts];
+                            maxViolation = max([maxViolation,cliqueViolation,turanViolation]);
+                            % Weakly violated cuts did not repay another SDP
+                            % solve in the measured panel.
+                            if cutRound == 1 && maxViolation < 0.2
+                                break
+                            end
+                            if ~isempty(globalcuts) && ~isempty(triangleCuts)
+                                triangleCuts = triangleCuts(~ismember(triangleCuts,globalcuts,'rows'),:);
+                            end
+                            if isempty(triangleCuts)
+                                break
+                            end
+                            globalcuts = [globalcuts;triangleCuts];
+                            p.cutactivate = true(size(globalcuts,1),1);
+                            p.cutredundant = false(size(globalcuts,1),1);
+                            p_node = addInequality(relaxed_p,globalcuts);
+                            output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);
+                            if output.problem ~= 0 || ~all(isfinite(output.Primal))
+                                break
+                            end
+                        end
+                        if output.problem == 0 && ~isempty(globalcuts) && ...
+                                any(abs(output.Primal(p.binary_variables)- ...
+                                        round(output.Primal(p.binary_variables))) > p.options.bnb.inttol)
+                            pairVariables = [];
+                            for block = 1:numel(gramTriangles)
+                                pairVariables = [pairVariables;nonzeros(gramTriangles{block}.pair(:))]; %#ok<AGROW>
+                            end
+                            pairVariables = unique(pairVariables);
+                            pairObjectiveDensity = nnz(p.c(pairVariables))/numel(pairVariables);
+                            pairFractionalDensity = nnz(abs(output.Primal(pairVariables)- ...
+                                round(output.Primal(pairVariables))) > p.options.bnb.inttol)/numel(pairVariables);
+                            if isinf(upper) && pairObjectiveDensity < 0.5 && ...
+                                    pairFractionalDensity < 0.1
+                                % Saturated Gram pairs identify identical
+                                % rows. Use this when the root is nearly
+                                % integral but has no incumbent yet.
+                                gramPropagation = gramTriangles(cellfun(@(block) ...
+                                    block.saturated && size(block.pair,1) >= 32,gramTriangles));
+                            end
+                            if pairObjectiveDensity < 0.5 && pairFractionalDensity >= 0.1
+                                % Sparse pair objectives use BNB's existing
+                                % violated-cut selector in descendants.
+                                p.cutactivate = false(size(globalcuts,1),1);
+                                gramAdaptiveCuts = true;
+                            end
+                        end
+                    end
+                end
+            end
         end
         
         if (output.problem == 12 || output.problem == 2) && ~(isinf(p.lower) || isnan(p.lower))
@@ -520,6 +601,10 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         % **********************************
         [index,whatsplit,globalindex] = branchvariable(x,p.integer_variables,p.binary_variables,p.options,x_min,[],p);
         
+        if gramAdaptiveCuts
+            p.cutactivate = p.cutactivate(:);
+            p.cutredundant = p.cutredundant(:);
+        end
         p = activateCuts(p,globalcuts,x);
               
         % **********************************
@@ -542,6 +627,16 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         p1.feasible = 1;
         p0 = propagate_multiple(p0);
         p1 = propagate_multiple(p1);
+        if ~isempty(gramPropagation)
+            [p0,gramChanged] = propagateGramEqualities(p0,gramPropagation);
+            if gramChanged && p0.feasible
+                p0 = propagate_multiple(p0);
+            end
+            [p1,gramChanged] = propagateGramEqualities(p1,gramPropagation);
+            if gramChanged && p1.feasible
+                p1 = propagate_multiple(p1);
+            end
+        end
         p0 = checkConsistentSDPcutUpper(p0,sdpCuts,upper);
         p1 = checkConsistentSDPcutUpper(p1,sdpCuts,upper);
         
