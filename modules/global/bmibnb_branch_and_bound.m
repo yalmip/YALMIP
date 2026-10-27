@@ -738,27 +738,20 @@ end
 
 function [stack,lower] = prune(stack,upper,options,solved_nodes,p)
 if ~isempty(stack)
-    toolarge = find([stack.lower]>upper - abs(upper)*1e-4);
+    toolarge = find([stack.lower]>=upper);
     if ~isempty(toolarge)
         stack(toolarge)=[];
     end
-    if ~isempty(stack)
-        
-        for j = 1:length(stack)
-            if nnz(p.c.*(stack(j).ub-stack(j).lb)) == 1 & nnz(p.Q)==0
-                i = find(p.c.*(stack(j).ub-stack(j).lb));
-                if p.c(i)>0
-                    stack(j).ub(i) = min([stack(j).ub(i) upper]);
-                end
-            end
-        end
-        
+    if ~isempty(stack) && nnz(p.Q)==0
+        % A linear objective has a valid lower bound over each node's box.
+        % The objective constant must be included before comparing with the
+        % incumbent. A quadratic objective needs a bound on its Q term too.
         indPOS = find(p.c>0);
         indNEG = find(p.c<0);
         LB = [stack.lb];
         UB = [stack.ub];
-        LOWER =  p.c([indPOS(:);indNEG(:)])'*[LB(indPOS,:);UB(indNEG,:)];
-        toolarge = find(LOWER > upper - abs(upper)*1e-8);
+        LOWER = p.f + p.c([indPOS(:);indNEG(:)])'*[LB(indPOS,:);UB(indNEG,:)];
+        toolarge = find(LOWER >= upper);
         stack(toolarge)=[];
     end
 end
