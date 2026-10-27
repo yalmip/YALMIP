@@ -1349,24 +1349,22 @@ if size(globalcuts,1) > 0
     if length(p.cutredundant)<size(globalcuts,1)
         p.cutredundant(size(globalcuts,1)) = 0;
     end
+    A = globalcuts(:,2:end);
+    support = full(sum(spones(A),2));
+    cut_norm = sqrt(full(sum(A.^2,2)));
+    exceptional_norm = find(support > 0 & (~isfinite(cut_norm) | cut_norm == 0));
+    for i = exceptional_norm(:)'
+        cut_norm(i) = norm(A(i,:));
+    end
+    valid = cut_norm > 0;
+    eff = -inf(size(A,1),1);
+    isp = zeros(size(A,1),1);
+    obp = zeros(size(A,1),1);
+    eff(valid) = (-A(valid,:)*x-globalcuts(valid,1))./cut_norm(valid);
+    isp(valid) = full(sum(spones(A(valid,p.binary_variables)),2))./support(valid);
     objective_norm = norm(p.c);
-    for i = 1:size(globalcuts,1)
-        a0 = globalcuts(i,1);
-        a  = -globalcuts(i,2:end);
-        cut_norm = norm(a);
-        if cut_norm == 0
-            eff(i,1) = -inf;
-            isp(i,1) = 0;
-            obp(i,1) = 0;
-            continue
-        end
-        eff(i,1) = (a*x - a0)/cut_norm;
-        isp(i,1) = nnz(a(p.binary_variables))/nnz(a);
-        if objective_norm > 0
-            obp(i,1) = abs(a*p.c/(cut_norm*objective_norm));
-        else
-            obp(i,1) = 0;
-        end
+    if objective_norm > 0
+        obp(valid) = abs(A(valid,:)*p.c)./(cut_norm(valid)*objective_norm);
     end
     meas = [eff isp obp]*[1/3;1/3;1/3];
     meas(eff<0) = -inf;
@@ -1376,12 +1374,9 @@ if size(globalcuts,1) > 0
             [~,j] = max(meas);
             p.cutactivate(j) = 1;
             meas(j) = -inf;
-            a = globalcuts(j,2:end);
-            for k = 1:size(globalcuts,1)
-                b = globalcuts(k,2:end);
-                if norm(a)>0 && norm(b)>0 && (abs(a*b')/(norm(a)*norm(b)))>0.9
-                    meas(k) = -inf;
-                end
+            if valid(j)
+                similarity = abs(A*A(j,:)')./(cut_norm*cut_norm(j));
+                meas(valid & similarity > 0.9) = -inf;
             end
         end
     end
