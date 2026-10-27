@@ -423,7 +423,13 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         new_cuts = [];
         if p.options.bnb.cuts && p.options.bnb.cut.knapsack.cover
             covers_knap1 = knapsack_add_cover_cut(p,output.Primal,'crowder',upper);
-            covers_knap2 = knapsack_add_cover_cut(p,output.Primal,'gu',upper);
+            % Avoid doubling cover separation when continuous variables
+            % are auxiliary and absent from the objective.
+            if ~isempty(p.noninteger_variables) && ~any(p.c(p.noninteger_variables))
+                covers_knap2 = [];
+            else
+                covers_knap2 = knapsack_add_cover_cut(p,output.Primal,'gu',upper);
+            end
             new_cuts = [covers_knap1;covers_knap2];
         end
         
