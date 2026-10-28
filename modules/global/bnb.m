@@ -99,6 +99,9 @@ p = presolve_binaryinteger(p);
 
 % Wrong encoding in some historical files with integer -1 -> 0
 [p,negated_binary] = detect_negated_binary(p);
+[p,oneHotLevelGroups] = reencodeOneHotLevelGroups(p,negated_binary);
+p.oneHotLevelGroups = oneHotLevelGroups;
+p.isintegral = p.isbinary | p.isinteger;
 p.integral_variables = union(p.binary_variables,p.integer_variables);
 p.noninteger_variables = setdiff(1:length(p.c),[p.integral_variables p.semicont_variables]);
 
@@ -223,6 +226,15 @@ bnbsolvertime = clock;
 [x_min,solved_nodes,lower,upper,profile,diagnostics] = bnb_branch_and_bound(p);
 bnbsolvertime =  etime(clock,bnbsolvertime);
 output.solvertime = setuptime + bnbsolvertime;
+
+% Recover the original one-hot variables from cumulative thresholds.
+if ~isempty(x_min)
+    for groupIndex = 1:numel(oneHotLevelGroups)
+        members = oneHotLevelGroups{groupIndex};
+        thresholds = x_min(members);
+        x_min(members) = thresholds-[thresholds(2:end);0];
+    end
+end
 
 % Map back in weird models with negated binary
 if ~isempty(x_min) && ~isempty(negated_binary)

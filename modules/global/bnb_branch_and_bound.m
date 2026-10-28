@@ -768,6 +768,35 @@ switch options.bnb.branchrule
             indic = (1+min(10,abs(p.c(all_variables)))).*(abs(x(all_variables)-round(x(all_variables))));
         end
         [val,index] = max(indic);
+        if ~isempty(p.oneHotLevelGroups)
+            % Prefer a bar whose feasible size is spread over several
+            % levels. A threshold near half its relaxed mass splits it.
+            bestScore = 0;
+            bestVariable = 0;
+            for groupIndex = 1:numel(p.oneHotLevelGroups)
+                group = p.oneHotLevelGroups{groupIndex};
+                group = group(ismember(group,all_variables));
+                if isempty(group)
+                    continue
+                end
+                fractional = abs(x(group)-round(x(group)));
+                [splitScore,splitIndex] = max(fractional);
+                if splitScore <= options.bnb.inttol
+                    continue
+                end
+                [~,groupPositions] = ismember(group,all_variables);
+                groupScore = max(indic(groupPositions)) * ...
+                    (1 + 0.5*(sum(fractional)/splitScore-1));
+                if groupScore > bestScore
+                    bestScore = groupScore;
+                    bestVariable = group(splitIndex);
+                end
+            end
+            if bestVariable
+                [~,index] = ismember(bestVariable,all_variables);
+                val = bestScore;
+            end
+        end
         
     otherwise
         error('Branch-rule not supported')
