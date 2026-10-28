@@ -162,6 +162,14 @@ end
 % Save the root node to keep data which does not have to
 % be copied to every node, and to keep global information
 poriginal = p;
+objectiveSpectrumModel = p;
+objectiveSpectrum = [];
+objectiveSpectrumAttempted = false;
+objectiveCounts = [];
+profile.objectiveCounts = struct('entries',0,'init_seconds',0,'seconds',0, ...
+    'calls',0,'changed',0,'fixed',0,'pruned',0,'groups',0,'cuts',0,'reason','not attempted');
+profile.objectiveSpectrum = struct('entries',0,'classes',0,'init_seconds',0, ...
+    'lifts',0,'closed',0,'seconds',0,'max_lift',0,'reason','not attempted');
 
 while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(node) && (etime(clock,bnbsolvertime) < p.options.bnb.maxtime) && (solved_nodes < p.options.bnb.maxiter) && (isinf(lower) || gap>p.options.bnb.gaptol)
          
@@ -170,6 +178,7 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
     % ********************************************
     keep_digging = 1;
     p.feasible = 1;
+    countCuts = [];
     Message = 'Node solved succesfully.';
     % This should be perhaps be done directly on the stack
     p = updateCardinalityFromUpper(p,upper);
@@ -190,6 +199,21 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
     % *************************************
     % SOLVE NODE PROBLEM
     % *************************************
+    if ~isempty(objectiveCounts) && p.feasible && ~isnan(p.lower) && isfinite(upper)
+        countTimer = tic;
+        [p,countCuts,countInfo] = bnbPropagateObjectiveCounts(objectiveCounts,p,p.lower,upper);
+        profile.objectiveCounts.cuts = profile.objectiveCounts.cuts+size(countCuts,1);
+        if countInfo.changed && p.feasible
+            p = propagate_multiple(p);
+        end
+        profile.objectiveCounts.seconds = profile.objectiveCounts.seconds+toc(countTimer);
+        profile.objectiveCounts.calls = profile.objectiveCounts.calls+1;
+        profile.objectiveCounts.changed = profile.objectiveCounts.changed+countInfo.changed;
+        profile.objectiveCounts.fixed = profile.objectiveCounts.fixed+countInfo.fixed;
+        profile.objectiveCounts.pruned = profile.objectiveCounts.pruned+(~p.feasible);
+        profile.objectiveCounts.groups = profile.objectiveCounts.groups+countInfo.groups;
+    end
+
     if any(p.ub < p.lb - 1e-12) || p.feasible == 0
         % Trivially infeasible
         x = zeros(length(p.c),1);
@@ -209,7 +233,8 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         % Solve node relaxation
         if p.feasible
             use = ~p.cutredundant(:) & p.cutactivate(:);
-            p_node = addInequality(relaxed_p,globalcuts,use);           
+            p_node = addInequality(relaxed_p,globalcuts,use);
+            if ~isempty(countCuts), p_node = addInequality(p_node,countCuts); end
             screenPruned = false;
             compressedCandidate = [];
             if dualCompressionAvailable && solved_nodes>0 && isfinite(upper)
@@ -632,6 +657,37 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
     end
     
     % **************************************
+    % Round only the relaxation lower bound, after extracting any integer
+    % incumbent. A small cached superset of discrete costs accounts for
+    % repeated real coefficients without modifying the model or its costs.
+    if keep_digging && output.problem == 0 && isfinite(upper) && isfinite(cost)
+        if ~objectiveSpectrumAttempted
+            [objectiveSpectrum,spectrumInfo] = bnbInitObjectiveSpectrum(objectiveSpectrumModel,upper);
+            objectiveSpectrumAttempted = true;
+            profile.objectiveSpectrum.entries = spectrumInfo.entries;
+            profile.objectiveSpectrum.classes = spectrumInfo.classes;
+            profile.objectiveSpectrum.init_seconds = spectrumInfo.seconds;
+            profile.objectiveSpectrum.reason = spectrumInfo.reason;
+            if ~isempty(objectiveSpectrum)
+                [objectiveCounts,countInfo] = bnbInitObjectiveCounts(objectiveSpectrumModel,upper);
+                profile.objectiveCounts.entries = countInfo.entries;
+                profile.objectiveCounts.init_seconds = countInfo.seconds;
+                profile.objectiveCounts.reason = countInfo.reason;
+            else
+                profile.objectiveCounts.reason = 'no cached spectrum';
+            end
+        end
+        if ~isempty(objectiveSpectrum)
+            spectrumTimer = tic;
+            oldCost = cost;
+            cost = bnbRoundObjectiveSpectrum(objectiveSpectrum,cost);
+            profile.objectiveSpectrum.seconds = profile.objectiveSpectrum.seconds+toc(spectrumTimer);
+            profile.objectiveSpectrum.lifts = profile.objectiveSpectrum.lifts+(cost>oldCost+1e-8);
+            profile.objectiveSpectrum.max_lift = max(profile.objectiveSpectrum.max_lift,cost-oldCost);
+            profile.objectiveSpectrum.closed = profile.objectiveSpectrum.closed+ ...
+                (oldCost<=upper*(1-p.options.bnb.gaptol) && cost>upper*(1-p.options.bnb.gaptol));
+        end
+    end
     % Stop digging if it won't give sufficient improvement anyway
     % **************************************
     if cost>upper*(1-p.options.bnb.gaptol) || p.feasible == 0
