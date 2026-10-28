@@ -277,6 +277,8 @@ if p.options.savesolveroutput
     output.solveroutput.localsolver = p.solver.lower.tag;
     output.solveroutput.branchingtime = bnbsolvertime;
     output.solveroutput.solved_nodes = solved_nodes;
+    output.solveroutput.dualcompress_direct = profile.dualcompress_direct;
+    output.solveroutput.dualcompress_direct_finite = profile.dualcompress_direct_finite;
     output.solveroutput.dualcompress_attempts = profile.dualcompress_attempts;
     output.solveroutput.dualcompress_prunes = profile.dualcompress_prunes;
     output.solveroutput.dualcompress_branches = profile.dualcompress_branches;

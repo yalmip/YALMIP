@@ -5,7 +5,7 @@ function [prune,bound,info,candidate] = bnbDualCompressedScreen(p,upper)
 prune = false;
 bound = -inf;
 candidate = [];
-info = struct('reason','inapplicable','compressedTime',0,'lpTime',0);
+info = struct('reason','inapplicable','compressedTime',0,'lpTime',0,'direct',false,'directFinite',false);
 if ~isfinite(upper) || isempty(p.oneHotLevelGroups) || p.K.f || ...
         numel(p.K.s)~=1 || any(p.K.q) || nnz(p.Q) || ...
         any(p.variabletype) || ~isempty(p.evalMap) || ...
@@ -87,8 +87,9 @@ q.K.l = nnz(keepLinear);
 q.rowtype = zeros(1,q.K.l);
 compressed = feval(p.solver.lower.call,q);
 info.compressedTime = compressed.solvertime;
+compressedBoundRows = nnz(isfinite(q.ub))+nnz(isfinite(q.lb));
 if compressed.problem~=0 || ~isfield(compressed,'Dual') || ...
-        numel(compressed.Dual) < q.K.l+numel(coneRows)
+        numel(compressed.Dual) < compressedBoundRows+q.K.l+numel(coneRows)
     info.reason = 'compressed solve has no SDP dual';
     return
 end
@@ -105,32 +106,61 @@ Z = (Z+Z')/2;
 [V,D] = eig(Z);
 B = diag(sqrt(max(diag(D),0)))*V';
 Z = B'*B;
-lp = p;
-lp.F_struc = p.F_struc(1:p.K.l,:);
-lp.K.s = [];
-lp.c = p.c-p.F_struc(coneRows,2:end)'*Z(:);
-lp.f = p.f-p.F_struc(coneRows,1)'*Z(:);
-lp.integer_variables = [];
-lp.binary_variables = [];
-lp.semicont_variables = [];
-lp.x0 = [];
-lp.options.saveduals = 1;
-lp.options.savesolverinput = 0;
-lp.options.savesolveroutput = 0;
-lp.solver = p.solver.lower;
-linearResult = feval(p.solver.lower.call,lp);
-info.lpTime = linearResult.solvertime;
-boundRows = nnz(isfinite(p.ub))+nnz(isfinite(p.lb));
-linearDualRows = boundRows+(1:p.K.l);
-if linearResult.problem~=0 || ~isfield(linearResult,'Dual') || ...
-        numel(linearResult.Dual)<boundRows+p.K.l
-    info.reason = 'original LP has no dual';
-    return
-end
+% The compressed linear rows correspond to retained original rows. Lift their
+% multipliers, assigning zero to dropped rows. Bounds stay in the original
+% box; their compressed multipliers are deliberately not transplanted.
+directY = zeros(p.K.l,1);
+directY(keepLinear) = compressed.Dual(compressedBoundRows+(1:q.K.l));
 At = -p.F_struc(:,2:end);
 c = p.F_struc(:,1);
-[bound,certificate] = bnbCertifySDPDualLPBound(At,-p.c,c,p.K,B, ...
-    linearResult.Dual(linearDualRows),[],[],p.lb,p.ub);
+% This estimate only skips work. It is never returned as a lower bound.
+% If it is unbounded or uncertain, let the interval checker try its bound
+% inference and residual repair as before.
+weights = [max(0,directY);Z(:)];
+residual = p.c-p.F_struc(:,2:end)'*weights;
+terms = min(residual.*p.lb,residual.*p.ub);
+terms(residual==0) = 0;
+estimate = -p.F_struc(:,1)'*weights+sum(terms);
+surrogateCost = q.c'*compressed.Primal;
+bound = -inf;
+if ~isfinite(estimate) || estimate >= surrogateCost-1e-5*max(1,abs(surrogateCost))
+    [bound,certificate] = bnbCertifySDPDualLPBound(At,-p.c,c,p.K,B, ...
+        directY,[],[],p.lb,p.ub);
+end
+% The surrogate objective is used only to judge usefulness, never as a
+% bound. Keep the existing LP fallback if the checked bound is weak.
+useDirect = isfinite(bound) && ...
+    bound >= surrogateCost-1e-5*max(1,abs(surrogateCost));
+info.direct = useDirect;
+info.directFinite = isfinite(bound);
+if ~useDirect
+    lp = p;
+    lp.F_struc = p.F_struc(1:p.K.l,:);
+    lp.K.s = [];
+    lp.c = p.c-p.F_struc(coneRows,2:end)'*Z(:);
+    lp.f = p.f-p.F_struc(coneRows,1)'*Z(:);
+    lp.integer_variables = [];
+    lp.binary_variables = [];
+    lp.semicont_variables = [];
+    lp.x0 = [];
+    lp.options.saveduals = 1;
+    lp.options.savesolverinput = 0;
+    lp.options.savesolveroutput = 0;
+    lp.solver = p.solver.lower;
+    linearResult = feval(p.solver.lower.call,lp);
+    info.lpTime = linearResult.solvertime;
+    boundRows = nnz(isfinite(p.ub))+nnz(isfinite(p.lb));
+    linearDualRows = boundRows+(1:p.K.l);
+    if linearResult.problem~=0 || ~isfield(linearResult,'Dual') || ...
+            numel(linearResult.Dual)<boundRows+p.K.l
+        info.reason = 'original LP has no dual';
+        return
+    end
+    At = -p.F_struc(:,2:end);
+    c = p.F_struc(:,1);
+    [bound,certificate] = bnbCertifySDPDualLPBound(At,-p.c,c,p.K,B, ...
+        linearResult.Dual(linearDualRows),[],[],p.lb,p.ub);
+end
 % The certificate omits the constant objective term. Leave a rounding
 % allowance when restoring it before comparing against the incumbent.
 bound = bound+p.f-8*eps(1)*max(1,abs(p.f));

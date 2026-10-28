@@ -16,6 +16,8 @@ diagnostics = 0;
 bnbsolvertime = clock;
 profile.local_solver_time = 0;
 profile.dualcompress_attempts = 0;
+profile.dualcompress_direct = 0;
+profile.dualcompress_direct_finite = 0;
 profile.dualcompress_prunes = 0;
 profile.dualcompress_branches = 0;
 profile.dualcompress_failures = 0;
@@ -215,6 +217,8 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
                 try
                     [screenPruned,screenBound,screenInfo,compressedCandidate] = ...
                         bnbDualCompressedScreen(p_node,upper);
+                    profile.dualcompress_direct = profile.dualcompress_direct+screenInfo.direct;
+                    profile.dualcompress_direct_finite = profile.dualcompress_direct_finite+screenInfo.directFinite;
                 catch screenError
                     screenPruned = false;
                     screenBound = -inf;

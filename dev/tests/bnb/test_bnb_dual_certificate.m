@@ -74,3 +74,22 @@ testCase.verifyLessThanOrEqual(bound,0);
 testCase.verifyEqual(bound,-inf);
 testCase.verifyEqual(details.reason,'extreme input scale');
 end
+
+function test_scalar_sdp_block_with_multiple_variable_coefficients(testCase)
+K.f = 0; K.l = 0; K.q = 0; K.e = 0; K.p = 0; K.s = 1;
+out = appendMosekSDPdata(sparse([2 0 3 0 -1]),K,struct);
+testCase.verifyEqual(out.bardim,1);
+testCase.verifyEqual(out.bara.subi(:),[2;4]);
+testCase.verifyEqual(out.bara.val(:),[-3;1]);
+testCase.verifyEqual(out.bara.subk(:),ones(2,1));
+testCase.verifyEqual(out.bara.subl(:),ones(2,1));
+end
+
+function test_certificate_without_linear_rows(testCase)
+K.l = 0; K.s = 1;
+[bound,details] = bnbCertifySDPDualLPBound(sparse(1,3),-[2;5;1],1,K,0,zeros(0,1), ...
+    sparse(0,3),zeros(0,1),zeros(3,1),ones(3,1));
+testCase.verifyEqual(details.reason,'finite');
+testCase.verifyGreaterThan(bound,-1e-10);
+testCase.verifyLessThanOrEqual(bound,0);
+end
