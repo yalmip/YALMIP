@@ -562,6 +562,7 @@ bnb.cut.knapsack.cover = 1;
 bnb.cut.sdpknapsack.cover = 1;
 bnb.round = 1;
 bnb.profile = 0;
+bnb.dualcompress = 0; % Opt-in checked dual bound and branch point for SDP level groups
 function cutsdp = setup_cutsdp_options
 cutsdp.solver = '';
 cutsdp.maxiter = inf;

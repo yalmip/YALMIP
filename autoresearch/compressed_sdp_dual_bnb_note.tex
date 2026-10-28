@@ -1,0 +1,116 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=23mm]{geometry}
+\usepackage{microtype}
+
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\RR}{\mathbb{R}}
+
+\title{A compressed SDP dual bound inside MISDP branch and bound}
+\author{YALMIP autoresearch note}
+\date{28 October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Some MISDP instances contain ordered binary thresholds whose SDP columns
+are almost identical.  Solving an SDP with one level variable per group is
+cheap, but its objective is not necessarily a lower bound for the original
+problem.  The implemented BNB method uses that small SDP only to obtain a
+positive semidefinite dual direction and a branching point.  It computes
+any pruning bound from the original node coefficients.
+\end{abstract}
+
+\section*{The bound}
+At a BNB node, write the original relaxation as
+\begin{equation}
+ \min_{x\in P_{\rm lin}} f(x)=f_0+c^\mathsf{T}x
+ \quad\text{subject to}\quad
+ S(x)=C-\sum_i A_i x_i\succeq0,                 \label{eq:original}
+\end{equation}
+where $P_{\rm lin}$ contains the original linear rows and variable bounds.
+When threshold variables $y_1\geq\cdots\geq y_k$ have nearly equal SDP
+columns, an auxiliary SDP replaces them by a bounded level
+$\ell=\sum_i y_i$.  Its coefficients may only approximate those in
+\eqref{eq:original}.  We therefore use its solution as follows:
+\begin{enumerate}
+ \item Extract an SDP dual matrix, project it to a Gram factor $B$, and
+       set $Z=B^\mathsf{T}B\succeq0$.
+ \item Compute
+       \begin{equation}
+       L(Z)=\min_{x\in P_{\rm lin}}
+          \bigl[f(x)-\ip{Z}{S(x)}\bigr].       \label{eq:bound}
+       \end{equation}
+       Every feasible $x$ has $\ip{Z}{S(x)}\geq0$, so $L(Z)$ is a
+       lower bound for the \emph{original} node regardless of errors in
+       the auxiliary SDP.  This minimization is a linear program.
+ \item Check the LP dual on the original rows.  The implementation clips
+       its multipliers to nonnegative values and minimizes any remaining
+       stationarity residual over outward-rounded variable boxes.  Error
+       allowances cover the Gram product and scalar products.  If a
+       finite bound cannot be established, solve the original SDP node.
+\end{enumerate}
+The auxiliary primal point may choose a fractional original threshold for
+branching.  It cannot become an incumbent: an integral candidate receives
+an exact original-SDP node solve.  The root is also solved exactly.
+
+\clearpage
+\section*{A two-threshold example}
+Let $\delta=0.02$ and consider
+\begin{equation}
+ \begin{aligned}
+ \min\quad &y_1+y_2\\
+ \text{subject to}\quad
+ &y_2\leq y_1,\qquad y_1,y_2\in\{0,1\},\\
+ &S_\delta(y)=
+ \begin{pmatrix}
+  1&1/2\\[1pt] 1/2&y_1+(1+\delta)y_2
+ \end{pmatrix}\succeq0.
+ \end{aligned}                                      \label{eq:example}
+\end{equation}
+The binary optimum is $1$, attained at $(y_1,y_2)=(1,0)$.  In the
+continuous relaxation, positive semidefiniteness requires
+$y_1+(1+\delta)y_2\geq1/4$.  Because $y_2\leq y_1$, its optimum is
+\begin{equation}
+ v_{\rm original}^{\rm LP/SDP}
+   =\frac{1/4}{1+\delta/2}
+   =0.24752475\ldots .                              \label{eq:true}
+\end{equation}
+
+Now let $\ell=y_1+y_2$ and replace the bottom-right entry by $\ell$ in
+an auxiliary compressed SDP.  Its optimum is $\ell=1/4$.  Using this
+$0.25$ as an original lower bound would be \emph{invalid}: it exceeds
+\eqref{eq:true}.  The compressed SDP supplies the Gram factor
+\begin{equation}
+ B=\begin{pmatrix}1/2&-1\end{pmatrix},\qquad
+ Z=B^\mathsf{T}B=
+ \begin{pmatrix}1/4&-1/2\\-1/2&1\end{pmatrix}.
+\end{equation}
+For the \emph{original} matrix,
+$\ip{Z}{S_\delta(y)}=y_1+(1+\delta)y_2-1/4$.
+Hence \eqref{eq:bound} becomes
+\begin{equation}
+ L(Z)=\min_{0\leq y_2\leq y_1\leq1}
+       \left(\frac14-\delta y_2\right)
+     =\frac14-\delta=0.23
+     \;\leq\;0.24752475\ldots .
+\end{equation}
+The correction loses a little strength, but it restores a valid lower
+bound.  In a BNB node it can justify pruning only when it exceeds the
+incumbent by the prescribed numerical margin; otherwise the compressed
+point is used for branching or the original SDP is solved.
+
+\section*{Observed performance and scope}
+In one paired ten-model truss panel, exact BNB used $3{,}090$ nodes and
+$37.56$ seconds, versus $2{,}842$ nodes and $28.47$ seconds with the
+checked compressed path.  All paired objectives agreed.  The full BNB
+test suite had the same passes and failures with the path enabled and
+disabled; suite times varied between alternating runs.  The method is
+enabled only for detected level groups with a supported single SDP block,
+linear objective, and Mosek lower solver.  Extreme numeric scales and
+failed certificate checks fall back to the original SDP.
+
+\end{document}

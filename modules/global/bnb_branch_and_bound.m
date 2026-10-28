@@ -15,6 +15,13 @@ p.fixdir = '';
 diagnostics = 0;
 bnbsolvertime = clock;
 profile.local_solver_time = 0;
+profile.dualcompress_attempts = 0;
+profile.dualcompress_prunes = 0;
+profile.dualcompress_branches = 0;
+profile.dualcompress_failures = 0;
+profile.dualcompress_seconds = 0;
+profile.dualcompress_finite = 0;
+profile.dualcompress_last_reason = '';
 lower = NaN;
 solved_nodes = 0;
 gap = inf;
@@ -60,6 +67,9 @@ oldp = p;
 
 % Remember if pure integer or mixed
 p.all_integers  = (length(p.integral_variables) == length(p.c));
+dualCompressionAvailable = p.options.bnb.dualcompress && ...
+    ~isempty(p.oneHotLevelGroups) && ...
+    strcmp(p.solver.lower.call,'callmosek');
 
 % Resuse some code from cutsdp to add simple cuts required for SDP
 % feasibility for problems with some trivial symmetries
@@ -198,7 +208,43 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         if p.feasible
             use = ~p.cutredundant(:) & p.cutactivate(:);
             p_node = addInequality(relaxed_p,globalcuts,use);           
-            output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);            
+            screenPruned = false;
+            compressedCandidate = [];
+            if dualCompressionAvailable && solved_nodes>0 && isfinite(upper)
+                screenTimer = tic;
+                try
+                    [screenPruned,screenBound,screenInfo,compressedCandidate] = ...
+                        bnbDualCompressedScreen(p_node,upper);
+                catch screenError
+                    screenPruned = false;
+                    screenBound = -inf;
+                    compressedCandidate = [];
+                    screenInfo = struct('reason',screenError.identifier, ...
+                        'compressedTime',0,'lpTime',0);
+                    profile.dualcompress_failures = profile.dualcompress_failures+1;
+                end
+                screenSeconds = toc(screenTimer);
+                profile.dualcompress_attempts = profile.dualcompress_attempts+1;
+                profile.dualcompress_seconds = profile.dualcompress_seconds+screenSeconds;
+                profile.dualcompress_finite = profile.dualcompress_finite+isfinite(screenBound);
+                profile.dualcompress_last_reason = screenInfo.reason;
+            end
+            if screenPruned
+                profile.dualcompress_prunes = profile.dualcompress_prunes+1;
+                output.problem = 1;
+                output.Primal = [];
+                output.solvertime = screenInfo.compressedTime+screenInfo.lpTime;
+                p.feasible = 0;
+            elseif ~isempty(compressedCandidate)
+                profile.dualcompress_branches = profile.dualcompress_branches+1;
+                output.problem = 0;
+                output.Primal = compressedCandidate;
+                output.CertifiedLower = screenBound;
+                output.IsCompressed = true;
+                output.solvertime = screenInfo.compressedTime+screenInfo.lpTime;
+            else
+                output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);
+            end
             if solved_nodes == 0 && output.problem == 0 && ...
                     p.options.bnb.cuts && any(p.K.s) && ...
                     all(isfinite(output.Primal)) && ...
@@ -321,7 +367,8 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
             % These are kept, but not in any constraint
             %x(p.removableVariables) = 0;
             x = setnonlinearvariables(p,output.Primal);
-            if (p.K.l>0) && any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
+            if ~isfield(output,'IsCompressed') && (p.K.l>0) && ...
+                    any(p.F_struc(p.K.f+1:p.K.f+p.K.l,:)*[1;x]<-1e-5)
                 output.problem = 1;
             end
         end
@@ -376,6 +423,9 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
     
     if output.problem==0 || output.problem==3 || output.problem==4 || output.problem==5
         cost = computecost(p.f,p.c,p.Q,x,p);
+        if isfield(output,'CertifiedLower')
+            cost = output.CertifiedLower;
+        end
         
         if output.problem~=1
             if output.problem == 3 || output.problem == 4 || output.problem == 5
@@ -390,7 +440,8 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
                 lower = cost;
             end
             
-            if cost <= upper & ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
+            if cost <= upper & ~isfield(output,'IsCompressed') & ...
+                    ~(isempty(non_integer_binary) & isempty(non_integer_integer) & isempty(non_semivar_semivar))
                 for k = 1:length(upperSolversList)
                     [upper1,x_min1,globalcuts] = feval(upperSolversList{k},p,upper,x,poriginal,output,lower,globalcuts);
                     if ~isinf(upper1)
@@ -496,7 +547,8 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
         end
         p = adaptivestrategy(p,upper,solved_nodes);
         keep_digging = 0;
-    elseif output.problem == 0 && ~isempty(p.binary_variables)
+    elseif output.problem == 0 && ~isempty(p.binary_variables) && ...
+            ~isfield(output,'IsCompressed')
         
         % Not integer feasible,
         % Try to add some GLOBAL cuts

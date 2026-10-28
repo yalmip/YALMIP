@@ -277,6 +277,13 @@ if p.options.savesolveroutput
     output.solveroutput.localsolver = p.solver.lower.tag;
     output.solveroutput.branchingtime = bnbsolvertime;
     output.solveroutput.solved_nodes = solved_nodes;
+    output.solveroutput.dualcompress_attempts = profile.dualcompress_attempts;
+    output.solveroutput.dualcompress_prunes = profile.dualcompress_prunes;
+    output.solveroutput.dualcompress_branches = profile.dualcompress_branches;
+    output.solveroutput.dualcompress_failures = profile.dualcompress_failures;
+    output.solveroutput.dualcompress_seconds = profile.dualcompress_seconds;
+    output.solveroutput.dualcompress_finite = profile.dualcompress_finite;
+    output.solveroutput.dualcompress_last_reason = profile.dualcompress_last_reason;
     output.solveroutput.lower = lower;
     output.solveroutput.upper = upper;
 else
