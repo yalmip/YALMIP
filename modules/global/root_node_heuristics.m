@@ -83,3 +83,7 @@ if ~isempty(p.knapsack.variables)
         end
     end
 end
+if isfield(p,'oneHotLevelGroups') && iscell(p.oneHotLevelGroups) && ...
+        numel(p.oneHotLevelGroups)>=16 && numel(p.oneHotLevelGroups)<=64
+    [x_min,upper] = bnbMatrixDesignPeelRoot(p,x_min,upper);
+end
