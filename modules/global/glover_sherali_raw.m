@@ -29,12 +29,7 @@ if any(a<0)
     u = min(u, max(find(cumsum(a_) >= a0)));
 end
 
-%From here, we only work with binary and in sorted
-for j = 1:n
-    s = a_(1:j);
-    SN(j) = sum(s(s>0));
-end
-%SN = cumsum(a_);
+% From here, we only work with binary and in sorted order.
 try
     SN_u_plus_1 = sum(max(0,a_(1:u+1)));
 catch

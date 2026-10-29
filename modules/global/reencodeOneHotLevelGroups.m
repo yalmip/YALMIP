@@ -34,22 +34,38 @@ for row = 1:p.K.l
     % all subsequent coefficients use the exact original values.
     A = p.F_struc(coneRows,1+members);
     scales = full(max(abs(A),[],1));
-    if any(scales<=1e-9)
+    if any(~isfinite(scales)) || any(scales<=1e-9)
         continue
     end
     [scales,order] = sort(scales);
     members = members(order);
-    levels = 1:k;
-    if max(abs(scales/scales(1)-levels))>1e-6 || ...
-            max(abs(p.c(members(:))-levels(:)*p.c(members(1))))> ...
-            1e-7*max(1,max(abs(p.c(members))))
+    ordered = full(A(:,order));
+    if any(~isfinite(ordered(:))) || any(~isfinite(p.c(members)))
         continue
     end
-    base = full(A(:,order(1)));
-    ordered = full(A(:,order));
-    if max(max(abs(ordered-base*levels)))> ...
-            1e-7*max(1,max(abs(ordered(:))))
-        continue
+    levels = 1:k;
+    regularLevels = max(abs(scales/scales(1)-levels))<=1e-6 && ...
+        max(abs(p.c(members(:))-levels(:)*p.c(members(1))))<= ...
+        1e-7*max(1,max(abs(p.c(members)))) && ...
+        max(max(abs(ordered-ordered(:,1)*levels)))<= ...
+        1e-7*max(1,max(abs(ordered(:))));
+    if ~regularLevels
+        % Other distinct positive scales also define an exact ordering.
+        if any(diff(scales)<=1e-8*scales(end))
+            continue
+        end
+        % Test the SDP ray against the largest column to avoid
+        % magnifying file rounding in the smallest column.
+        base = ordered(:,end)/scales(end);
+        if max(max(abs(ordered-base*scales)))> ...
+                1e-7*max(1,max(abs(ordered(:))))
+            continue
+        end
+        if max(abs(p.c(members(:))- ...
+                scales(:)*(p.c(members(end))/scales(end))))> ...
+                1e-7*max(1,max(abs(p.c(members))))
+            continue
+        end
     end
     groups{end+1} = members(:)'; %#ok<AGROW>
     used(members) = true;

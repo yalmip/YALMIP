@@ -8,6 +8,7 @@ if all(relaxed_p.lb==relaxed_p.ub)
         output.problem = 24;
     end
     output.Primal = x;
+    output.solvertime = 0;
     return
 end
 

@@ -62,6 +62,11 @@ switch alg
 end
 % Initial cover
 C = min(find(cumsum(a(loc))>b));
+if isempty(C)
+    % Summation order can erase a rounding-sized cover violation.
+    cut = [];
+    return
+end
 
 % Apply Balas lifting
 q = knapsack_cover_lift_balas(a,loc(1:C));

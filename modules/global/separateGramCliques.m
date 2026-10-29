@@ -1,7 +1,8 @@
 function [cuts,maxViolation] = separateGramCliques(gram,x,nvars,objective)
-% Greedy separation of pigeonhole cuts certified by a Gram minor.
-% If d+(r-1)*b<0, an r-vertex all-other-value pattern is not PSD, so
-% at least one pair must use the diagonal (equal) value.
+% Greedy separation of pigeonhole cuts certified by Gram minors.
+% The detector has certified that equal-value edges are transitive. If
+% d+(r-1)*b<0, an r-vertex all-other-value pattern is not PSD, so at
+% least one pair must have the equal value. Exact saturation is unnecessary.
 cuts = sparse(0,nvars+1);
 maxViolation = 0;
 for block = 1:numel(gram)
@@ -9,7 +10,7 @@ for block = 1:numel(gram)
     n = size(g.pair,1);
     d = g.diagonal;
     b = g.otherEntry;
-    if ~g.saturated || ~g.exactPattern || d <= 0 || b >= 0 || ...
+    if ~g.exactPattern || d <= 0 || b >= 0 || ...
             nnz(triu(g.pair,1)) ~= n*(n-1)/2
         continue
     end
@@ -19,8 +20,16 @@ for block = 1:numel(gram)
             continue
         end
     end
-    r = floor(-d/b)+2;
-    if r < 3 || r > n || d+(r-1)*b >= -1e-8*(1+abs(d))
+    % SDPA decimals can put -d/b just below an integer. Find the first
+    % cardinality with a strictly negative all-other eigenvalue instead
+    % of flooring a numerically rounded ratio.
+    margin = 1e-5*(1+abs(d)+abs(b));
+    K = 2;
+    while K < n && d+K*b >= -margin
+        K = K+1;
+    end
+    r = K+1;
+    if r > n || d+K*b >= -margin
         continue
     end
     weight = zeros(n);

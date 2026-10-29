@@ -1,5 +1,5 @@
 function verify_gram_turan
-rng(42);
+rng(42,'twister');
 n = 40;
 K = 3;
 d = 1;
@@ -58,5 +58,40 @@ reused{1}.pair = double(pair > 0);
 [reusedCuts,~] = separateGramTuran(reused,0,1,1);
 assert(~isempty(reusedCuts));
 assert(all(reusedCuts*[1;1] >= -1e-9));
+% SDPA decimals may put the intended equal entry just below the diagonal
+% and the class limit just below an integer. The 3x3 witness and the
+% all-other eigenvalue still certify the partition inequalities.
+rounded = struct;
+rounded.K = struct('f',0,'l',0,'q',[],'e',0,'p',[],'s',n);
+rounded.isbinary = true(1,m);
+rounded.F_struc = sparse(n*n,m+1);
+rounded.F_struc(1:n+1:n*n,1) = d;
+roundedOther = -0.166666667;
+roundedEqual = d-1e-9;
+for j = 2:n
+    for i = 1:j-1
+        rows = [i+(j-1)*n,j+(i-1)*n];
+        rounded.F_struc(rows,1) = roundedOther;
+        rounded.F_struc(rows,1+pair(i,j)) = roundedEqual-roundedOther;
+    end
+end
+detected = initGramTriangleSeparator(rounded);
+assert(numel(detected) == 1 && ~detected{1}.saturated && ...
+    detected{1}.exactPattern);
+[roundedClique,~] = separateGramCliques(detected,zeros(m,1),m,ones(m,1));
+[roundedCount,~] = separateGramTuran(detected,zeros(m,1),m,ones(m,1));
+assert(~isempty(roundedClique) && ~isempty(roundedCount));
+roundedCuts = [roundedClique;roundedCount];
+for sample = 1:500
+    labels = randi(7,n,1);
+    z = zeros(m,1);
+    for j = 2:n
+        for i = 1:j-1
+            z(pair(i,j)) = labels(i) == labels(j);
+        end
+    end
+    assert(min(roundedCuts*[1;z]) >= -1e-9);
+end
 fprintf('Verified PSD witness beyond clique cuts and 1,000 K-class assignments.\n');
+fprintf('Verified rounded near-saturation cuts on 500 seven-class assignments.\n');
 end

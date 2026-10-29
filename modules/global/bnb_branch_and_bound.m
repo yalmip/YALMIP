@@ -257,6 +257,10 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
                 profile.dualcompress_seconds = profile.dualcompress_seconds+screenSeconds;
                 profile.dualcompress_finite = profile.dualcompress_finite+isfinite(screenBound);
                 profile.dualcompress_last_reason = screenInfo.reason;
+                if strcmp(screenInfo.reason,'weakly collinear group')
+                    % Group coefficients do not change across nodes.
+                    dualCompressionAvailable = false;
+                end
             end
             if screenPruned
                 profile.dualcompress_prunes = profile.dualcompress_prunes+1;
@@ -273,6 +277,45 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
                 output.solvertime = screenInfo.compressedTime+screenInfo.lpTime;
             else
                 output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);
+            end
+            % Class-size arithmetic can strengthen a complete binary Gram
+            % model before the ordinary root Gram cut rounds. Screen size
+            % and variable layout here so small SDP tests pay no scan cost.
+            if solved_nodes == 0 && output.problem == 0 && ...
+                    p.options.bnb.cuts && numel(p.K.s) == 1 && ...
+                    p.K.s >= 24 && p.K.s <= 40 && p.K.f == 0 && ...
+                    p.K.l >= 2*p.K.s && ...
+                    numel(p.c) == p.K.s*(p.K.s-1)/2 && ...
+                    all(p.lb == 0) && all(p.ub == 1) && ...
+                    p.options.bnb.maxtime > 2 && ...
+                    etime(clock,bnbsolvertime) < p.options.bnb.maxtime-0.1 && ...
+                    all(isfinite(output.Primal))
+                profileCuts = separateGramProfiles(p,output.Primal);
+                if ~isempty(profileCuts) && ...
+                        etime(clock,bnbsolvertime) < p.options.bnb.maxtime-0.1
+                    % Keep the original relaxation if this optional solve
+                    % fails. In particular, do not fathom the root on an
+                    % infeasible/numerical status from the extra solve.
+                    candidateCuts = [globalcuts;profileCuts];
+                    candidateModel = addInequality(relaxed_p,candidateCuts);
+                    try
+                        candidateOutput = bnb_solvelower(lowersolver,candidateModel,upper,lower,x_min,allFeasibleSolutions);
+                        acceptProfiles = candidateOutput.problem == 0 && ...
+                            numel(candidateOutput.Primal) == numel(p.c) && ...
+                            isreal(candidateOutput.Primal) && ...
+                            all(isfinite(candidateOutput.Primal)) && ...
+                            all(profileCuts*[1;candidateOutput.Primal(:)] >= -1e-5);
+                    catch
+                        acceptProfiles = false;
+                    end
+                    if acceptProfiles
+                        globalcuts = candidateCuts;
+                        p.cutactivate = true(size(globalcuts,1),1);
+                        p.cutredundant = false(size(globalcuts,1),1);
+                        p_node = candidateModel;
+                        output = candidateOutput;
+                    end
+                end
             end
             if solved_nodes == 0 && output.problem == 0 && ...
                     p.options.bnb.cuts && any(p.K.s) && ...
@@ -291,13 +334,28 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
                         if all(cellfun(@(block) size(block.pair,1) <= 30,gramTriangles))
                             maxRounds = 3;
                         end
+                        roundedClassBlocks = any(cellfun(@(block) ...
+                            block.exactPattern && ~block.saturated,gramTriangles));
+                        if roundedClassBlocks
+                            maxRounds = max(maxRounds,2);
+                        end
                         for cutRound = 1:maxRounds
                             if etime(clock,bnbsolvertime) >= p.options.bnb.maxtime-0.1
                                 break
                             end
                             [triangleCuts,maxViolation] = separateGramTriangles(gramTriangles,output.Primal,numel(p.c));
-                            [cliqueCuts,cliqueViolation] = separateGramCliques(gramTriangles,output.Primal,numel(p.c),p.c);
-                            [turanCuts,turanViolation] = separateGramTuran(gramTriangles,output.Primal,numel(p.c),p.c);
+                            % On rounded near-saturated blocks, give the
+                            % triangle cuts a chance to close the root before
+                            % generating the more expensive class cuts.
+                            delayClass = cutRound == 1 && roundedClassBlocks && ...
+                                ~isempty(triangleCuts) && maxViolation >= 0.2;
+                            classBlocks = gramTriangles;
+                            if delayClass
+                                classBlocks = gramTriangles(cellfun(@(block) ...
+                                    block.saturated,gramTriangles));
+                            end
+                            [cliqueCuts,cliqueViolation] = separateGramCliques(classBlocks,output.Primal,numel(p.c),p.c);
+                            [turanCuts,turanViolation] = separateGramTuran(classBlocks,output.Primal,numel(p.c),p.c);
                             triangleCuts = [triangleCuts;cliqueCuts;turanCuts];
                             maxViolation = max([maxViolation,cliqueViolation,turanViolation]);
                             % Weakly violated cuts did not repay another SDP
@@ -318,6 +376,13 @@ while ~(upper <= p.options.bnb.target) && unknownErrorCount < 10 && ~isempty(nod
                             output = bnb_solvelower(lowersolver,p_node,upper,lower,x_min,allFeasibleSolutions);
                             if output.problem ~= 0 || ~all(isfinite(output.Primal))
                                 break
+                            end
+                            if delayClass && p.IntegerCost
+                                afterCost = computecost(p.f,p.c,p.Q,output.Primal,p);
+                                if abs(afterCost-round(afterCost)) <= 1e-4 || ...
+                                        (~isinf(upper) && ceil(afterCost-1e-5) >= upper)
+                                    break
+                                end
                             end
                         end
                         if output.problem == 0 && ~isempty(globalcuts) && ...

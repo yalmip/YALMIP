@@ -1,5 +1,6 @@
 function [cuts,maxViolation] = separateGramTuran(gram,x,nvars,objective)
-% A saturated Gram block represents at most K distinct vector classes.
+% A uniform binary Gram block represents at most K equality classes when
+% its 3x3 witness certifies transitivity and its all-other minor is negative.
 % For r vertices, balanced K-way classes minimize the number of equal pairs.
 cuts = sparse(0,nvars+1);
 maxViolation = 0;
@@ -8,7 +9,7 @@ for block = 1:numel(gram)
     n = size(g.pair,1);
     d = g.diagonal;
     b = g.otherEntry;
-    if ~g.saturated || ~g.exactPattern || d <= 0 || b >= 0 || ...
+    if ~g.exactPattern || d <= 0 || b >= 0 || ...
             nnz(triu(g.pair,1)) ~= n*(n-1)/2
         continue
     end
@@ -17,8 +18,14 @@ for block = 1:numel(gram)
             nnz(objective(pairVariables)) < 0.5*numel(pairVariables)
         continue
     end
-    K = floor(1-d/b);
-    if K < 2 || K >= n || d+K*b >= -1e-8*(1+abs(d))
+    % A rounded SDPA coefficient can make 1-d/b a little less than the
+    % intended integer. Require a strict eigenvalue witness instead.
+    margin = 1e-5*(1+abs(d)+abs(b));
+    K = 2;
+    while K < n && d+K*b >= -margin
+        K = K+1;
+    end
+    if K >= n || d+K*b >= -margin
         continue
     end
     weight = zeros(n);
