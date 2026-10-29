@@ -87,3 +87,10 @@ if isfield(p,'oneHotLevelGroups') && iscell(p.oneHotLevelGroups) && ...
         numel(p.oneHotLevelGroups)>=16 && numel(p.oneHotLevelGroups)<=64
     [x_min,upper] = bnbMatrixDesignPeelRoot(p,x_min,upper);
 end
+if numel(p.K.s)==1 && p.K.s(1)>=24 && p.K.s(1)<=30
+    [gramX,gramUpper] = bnbGramPartitionRoot(p,0.2);
+    if ~isempty(gramX) && gramUpper < upper-1e-8
+        x_min = gramX;
+        upper = gramUpper;
+    end
+end

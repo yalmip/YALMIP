@@ -1,13 +1,14 @@
-function gram = initGramTriangleSeparator(p)
+function gram = initGramTriangleSeparator(p,minSize)
 % Recognize binary Gram blocks with a uniform two-value off-diagonal pattern.
 % Fixed off-diagonals are allowed, but triangles involving them are skipped.
+if nargin<2, minSize=25; end
 gram = {};
 top = startofSDPCone(p.K);
 for cone = 1:numel(p.K.s)
     n = p.K.s(cone);
     % A root cut round has not repaid its work on smaller blocks. Limit the
     % cubic separator work on very large blocks until a cheaper oracle exists.
-    if n < 25 || n > 80
+    if n < minSize || n > 80
         top = top+n*n;
         continue
     end
