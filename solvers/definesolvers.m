@@ -74,9 +74,14 @@ emptysolver.powercone = 0;
 emptysolver.uncertain  = 0;
 emptysolver.global = 0;
 
-MATLAB_lexversion = version('-release');
-MATLAB_lexversion = MATLAB_lexversion(1:5); %Prune possible hotfix?
-MATLAB_lexversion = strrep(strrep(MATLAB_lexversion,'a','.1'),'b','.2');
+if exist('OCTAVE_VERSION','builtin')
+    % version('-release') is empty in Octave, so use the Octave version instead
+    MATLAB_lexversion = OCTAVE_VERSION;
+else
+    MATLAB_lexversion = version('-release');
+    MATLAB_lexversion = MATLAB_lexversion(1:5); %Prune possible hotfix?
+    MATLAB_lexversion = strrep(strrep(MATLAB_lexversion,'a','.1'),'b','.2');
+end
 
 % **************************************
 % Some standard solvers to simplify code
