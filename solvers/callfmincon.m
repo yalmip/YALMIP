@@ -79,6 +79,10 @@ showprogress('Calling FMINCON',model.options.showprogress);
 
 if model.linearconstraints && ~any(model.K.s)
     g = [];
+elseif exist('OCTAVE_VERSION','builtin')
+    % The fmincon of Octave's optim package expects constraint Jacobians (a row per
+    % constraint), not MATLAB's gradients (a column per constraint)
+    g = @(x)fmincon_con_octave(x,model);
 else
     g = @(x)fmincon_con_liftlayer(x,model);
 end
@@ -154,3 +158,13 @@ end
 
 % Standard interface
 output = createOutputStructure(x,D_struc,[],problem,model.solver.tag,solverinput,solveroutput,solvertime);
+
+
+function [g,geq,dg,dgeq] = fmincon_con_octave(x,model)
+if nargout > 2
+    [g,geq,dg,dgeq] = fmincon_con_liftlayer(x,model);
+    dg = dg.';
+    dgeq = dgeq.';
+else
+    [g,geq] = fmincon_con_liftlayer(x,model);
+end
