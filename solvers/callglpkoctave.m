@@ -12,6 +12,10 @@ lb      = interfacedata.lb;
 interfacedata.gettime = 0;
 n = length(c);
 
+% Remember where the artificial bounds +-1e6 below are added: a solution at one of them
+% means that the problem is unbounded
+artificialLB = isempty(ub);
+artificialUB = isempty(ub);
 if ~isempty(ub)
     LB = lb;
     UB = ub;
@@ -22,9 +26,11 @@ if ~isempty(ub)
 
     if all(isinf(LB))
         LB=repmat(-1e6,n,1);    % just for sure
+        artificialLB = true;
     end
     if all(isinf(UB))
         UB=repmat(1e6,n,1);    % just for sure
+        artificialUB = true;
     end
 else
     LB=repmat(-1e6,n,1);    % just for sure
@@ -91,19 +97,39 @@ else
     D_struc = [];
 end
 
-% Hack
-if isempty([ub;lb]) & (any(LB==x & C>0) | any(UB==x & C<0))
-    STATUS = 214;
+% STATUS is GLPK's error code; on success, LAMBDA_EXTRA.status holds the solution status
+% (GLP_OPT 5, GLP_FEAS 2, GLP_NOFEAS 4, GLP_UNBND 6)
+solstatus = 5;
+if isstruct(LAMBDA_EXTRA) && isfield(LAMBDA_EXTRA,'status')
+    solstatus = LAMBDA_EXTRA.status;
+end
+% An artificial bound that is binding means that the problem is unbounded. For an LP,
+% the bound is binding when its reduced cost is nonzero (positive at a lower bound,
+% negative at an upper bound); otherwise fall back to the sign of the cost.
+atLB = artificialLB & abs(x-LB) <= 1e-6;
+atUB = artificialUB & abs(x-UB) <= 1e-6;
+if isstruct(LAMBDA_EXTRA) && isfield(LAMBDA_EXTRA,'redcosts') && numel(LAMBDA_EXTRA.redcosts) == n ...
+        && isempty(integer_variables) && isempty(binary_variables)
+    d = LAMBDA_EXTRA.redcosts(:);
+    tol = 1e-9*max(1,norm(C,inf));
+    atartificial = any(atLB & d > tol) || any(atUB & d < -tol);
+else
+    atartificial = any(atLB & C > 0) || any(atUB & C < 0);
 end
 
 % Check, currently not exhaustive...
-switch STATUS
-    case {0}
-        problem = 0;
-    case {10}
-        problem = 1;   
-    otherwise
-        problem = -1;
+if STATUS == 0 && (solstatus == 6 || atartificial)
+    problem = 2;        % unbounded
+elseif STATUS == 0 && solstatus == 4
+    problem = 1;        % infeasible
+elseif STATUS == 0
+    problem = 0;
+elseif STATUS == 10
+    problem = 1;        % presolver: no primal feasible solution
+elseif STATUS == 11
+    problem = 12;       % presolver: no dual feasible solution, infeasible or unbounded
+else
+    problem = -1;
 end
 
 % Save all data sent to solver?
