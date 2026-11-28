@@ -94,7 +94,9 @@ solvertime = tic;
 if ~exist('OCTAVE_VERSION','builtin')
     [xout,fmin,flag,output,lambda] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
 else
-    [xout,fmin,flag,output] = fmincon('fmincon_fungp',x0,[],[],[],[],lb,ub,'fmincon_congp',options.fmincon,prob);
+    % The fmincon of Octave's optim package takes no extra parameters after the options,
+    % and expects constraint Jacobians (a row per constraint), not gradients
+    [xout,fmin,flag,output] = fmincon(@(x)fmincon_fungp(x,prob),x0,[],[],[],[],lb,ub,@(x)fmincon_congp_octave(x,prob),options.fmincon);
     lambda = [];
 end
 solvertime = toc(solvertime);
@@ -151,3 +153,13 @@ end
 
 % Standard interface
 output = createOutputStructure(x,D_struc,[],problem,interfacedata.solver.tag,solverinput,solveroutput,solvertime);
+
+
+function [g,geq,dg,dgeq] = fmincon_congp_octave(x,prob)
+if nargout > 2
+    [g,geq,dg,dgeq] = fmincon_congp(x,prob);
+    dg = dg.';
+    dgeq = dgeq.';
+else
+    [g,geq] = fmincon_congp(x,prob);
+end
