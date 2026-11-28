@@ -1,5 +1,12 @@
 function output = calllinprog(interfacedata)
 
+% Octave: the linprog of the optim package, linprog(f,A,b,Aeq,beq,lb,ub), wraps GLPK
+% without options, exit flag or duals, so call GLPK directly instead
+if exist('OCTAVE_VERSION','builtin') && nargin('linprog') == 7
+    output = callglpkoctave(interfacedata);
+    return
+end
+
 % Standard input interface
 options = interfacedata.options;
 F_struc = interfacedata.F_struc;
@@ -54,7 +61,7 @@ end
 
 solvertime = tic;
 % The LINPROG signature depends on MATLAB, not on the caller's solver tag.
-if ~verLessThan('matlab','9.2') % R2017a and later
+if exist('OCTAVE_VERSION','builtin') || ~verLessThan('matlab','9.2') % Octave, or R2017a and later
     [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, options.linprog);
 else
     [x,fmin,flag,output,lambda] = linprog(c, A, b, Aeq, beq, lb, ub, x0, options.linprog);

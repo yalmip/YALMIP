@@ -1,5 +1,13 @@
 function output = callquadprog(interfacedata)
 
+% Octave, LP: quadprog cannot solve LPs, and the linprog of the optim package,
+% linprog(f,A,b,Aeq,beq,lb,ub), wraps GLPK without options, exit flag or duals,
+% so call GLPK directly instead
+if exist('OCTAVE_VERSION','builtin') && nnz(interfacedata.Q) == 0 && (~exist('linprog') || nargin('linprog') == 7)
+    output = callglpkoctave(interfacedata);
+    return
+end
+
 options = interfacedata.options;
 model = yalmip2quadprog(interfacedata);
 
@@ -53,14 +61,14 @@ if nnz(model.Q) == 0
     % cases. To avoid seeing this when we don't want the lambdas anyway, we
     % don't ask for it
     if options.saveduals
-        if ~verLessThan('matlab','9.2') % R2017a and later
+        if exist('OCTAVE_VERSION','builtin') || ~verLessThan('matlab','9.2') % Octave, or R2017a and later
             [x,fmin,flag,output,lambda] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.ops);
         else
             [x,fmin,flag,output,lambda] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0, model.ops);
         end
     else
         lambda = [];
-        if ~verLessThan('matlab','9.2') % R2017a and later
+        if exist('OCTAVE_VERSION','builtin') || ~verLessThan('matlab','9.2') % Octave, or R2017a and later
             [x,fmin,flag,output] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.ops);
         else
             [x,fmin,flag,output] = linprog(model.c, model.A, model.b, model.Aeq, model.beq, model.lb, model.ub, model.x0, model.ops);
